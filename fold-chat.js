@@ -2492,6 +2492,10 @@ export function mount(root, opts = {}) {
             const start = 0, end = text.length;
             webPassages = [{ ref: urlTarget + "#" + start + "-" + end, title: rd.title || host, source: urlTarget, url: urlTarget, text: text.slice(0, 24000), via: rd.via, start, end, at: { start, end } }];
             if (murmur && !(Array.isArray(murmur.lines) && murmur.lines.some((l) => l.op === "page"))) { try { murmur.lines.push({ op: "page", host, url: urlTarget, text: `reading the page at ${host} (${rd.via || "direct"})` }); } catch (e) {} }
+            // A question AFTER the URL ("read <url> and then: why does X…") becomes the question — the page is the
+            // material, the mouth answers THAT, grounded in the page's own words.
+            const urlQuery = String(said || "").replace(urlTarget, "").replace(/^(?:read|open|add|fetch|summarize|look\s*(at|up)?|go\s*(to)?|visit|check)\b[\s:]*/i, "").replace(/^(?:the|this)\s+(?:page|url|site|link|webpage|address)\s*/i, "").replace(/^(?:then|and then)\b[\s:]*/i, "").replace(/^[,;:\s"']+/, "").trim();
+            if (urlQuery && urlQuery.length >= 4) { question = urlQuery; }
             say(`turn · ${kindWord} · read the page (${rd.via || "direct"}, ${text.length.toLocaleString("en")} chars) · answering…`);
             return { pages: webPassages, passages: webPassages, results: [], trace: [] };
           }
