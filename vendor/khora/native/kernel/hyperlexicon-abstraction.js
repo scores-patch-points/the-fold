@@ -487,3 +487,51 @@ export function priorsFromRegistry(registry) {
   }
   return freeze({ schema: "EOReceivedPrior@1", entries: freeze(entries) });
 }
+
+/**
+ * surfaceKinds — THE SURFACE GATE (2026-10-11). A presentation layer (routes,
+ * chat, holodeck) may surface a kind only if its backing abstraction in the
+ * registry RELEASES (earned/given). Withholding is DISCLOSED, never silent: an
+ * absent, candidate, or refuted kind is returned in `withheld` with its
+ * standing and reason, so a surface can say "provisional" or "withheld"
+ * instead of fabricating a fact. Kinds not registered at all are withheld as
+ * `unknown — the ledger does not hold it`.
+ */
+export function surfaceKinds(registry, kinds = []) {
+  const r = normalizeAbstractionRegistry(registry);
+  const surfaced = [];
+  const withheld = [];
+  for (const kind of kinds ?? []) {
+    const id = kind?.id ?? kind?.kindId ?? null;
+    const row = id ? r.abstractions[id] : null;
+    const gate = row
+      ? releaseDecision(r, { id: row.id })
+      : freeze({ released: false, standing: "unknown", why: "no registered abstraction — the ledger does not hold it" });
+    if (gate.released) surfaced.push(kind);
+    else withheld.push(freeze({ kind, released: false, standing: gate.standing, why: gate.why }));
+  }
+  return freeze({ surfaced: freeze(surfaced), withheld: freeze(withheld) });
+}
+
+/**
+ * sealMind / unsealMind — THE PORTABLE MIND (2026-10-11). All rows are sealed
+ * (defeats preserved — a refuted abstraction travels with its defeat), plus
+ * the derived received-prior. Hash-integrity over the body: an altered seal is
+ * refused, never silently repaired. `node:`-free by construction so it remains
+ * vendorable to the browser surfaces unchanged.
+ */
+export function sealMind(registry, { giver = null } = {}) {
+  const r = normalizeAbstractionRegistry(registry);
+  const body = JSON.stringify({ registry: serializeAbstractions(r), prior: priorsFromRegistry(r) });
+  return freeze({ schema: "EOSealedMind@1", at: new Date().toISOString(), giver: giver ?? null, hash: stableHash(body), body });
+}
+export function unsealMind(sealed) {
+  if (sealed?.schema !== "EOSealedMind@1") return freeze({ ok: false, why: "not an EOSealedMind@1" });
+  if (stableHash(sealed.body) !== sealed.hash) return freeze({ ok: false, why: "hash mismatch — the sealed mind was altered" });
+  const data = JSON.parse(sealed.body);
+  return freeze({
+    ok: true,
+    registry: createAbstractionRegistry({ abstractions: Object.values(data.registry?.abstractions ?? {}) }),
+    prior: data.prior,
+  });
+}
