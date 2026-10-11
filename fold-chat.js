@@ -2500,8 +2500,6 @@ export function mount(root, opts = {}) {
       : (kind === "transform" || kind === "code" || kind === "compose") ? [KIND_PROMPT[kind], identityLine, langLine].filter(Boolean).join("\n\n")
       : kind === "compute" ? [COMPUTE_BASE, langLine].filter(Boolean).join("\n\n")
       : [basePrompt, kind === "advice" ? KIND_PROMPT.advice : null, langLine].filter(Boolean).join(" ");
-    // THE PERFECTED CONTEXT RIDES GARY'S DOOR every turn: past lessons + the fold's own reading of the ask.
-    if (perfected) turnBase = [turnBase, perfected].filter(Boolean).join("\n\n");
     // asked; the fold draws the typed gap from the real search trace (fold-chat-gaps.js). A live-data ask is a
     // gap likewise. Everything below that could call the model goes through `callModel`, which is barred
     // (`modelBarred`) on a turn with no source, a Sources-only turn, and a kind the model may not answer alone.
@@ -2593,6 +2591,12 @@ export function mount(root, opts = {}) {
     const callModel = (msgs, opts) => {
       if (modelBarred) throw new Error("the model is barred on this turn (it never speaks alone)");
       if (doorRefusal) throw doorRefusal;
+      // THE MODEL IS FED THE PERFECTED CONTEXT every call (user, 2026-10-11): past lessons + the fold's own
+      // reading of the ask, appended to the system message through Gary/this door — so the mouth understands
+      // the CURRENT task as the fold perfected it, not as the typos landed.
+      if (perfected && Array.isArray(msgs) && msgs.length && msgs[0] && msgs[0].role === "system") {
+        msgs = [{ ...msgs[0], content: String(msgs[0].content || "") + "\n\n" + perfected }, ...msgs.slice(1)];
+      }
       return client.chat(m.id, msgs, opts);
     };
     // COMPUTE: the value comes from the evaluator, never the model (II.9); the model only phrases it.

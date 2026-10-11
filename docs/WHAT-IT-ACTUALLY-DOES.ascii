@@ -1,0 +1,144 @@
+WHAT THE FOLD ACTUALLY DOES (runtime map) — ascii, code-grounded
+=================================================================
+Citations are file:line in this repo (the-fold). This is the REAL path, not the claimed one.
+Written 2026-10-10. Read alongside docs/VOID-AND-FELT.md.
+
+
+1. THE TURN  (#send -> answer)
+==============================
+
+  [#send / Enter]
+        |  fold-chat.js:3196  composer.onsubmit -> push user msg -> run(s.id) :1849
+        v
+  classifyTurn(question)                                    fold-chat-discourse.js:52
+        |  ^who -> "research" | advice | compute | generate | smalltalk ...
+        v
+  senseTerm(q)  -> bare term ("president")                   fold-chat-senses.js:31
+        |  sensesProbe = web.search("wikipedia", term)       fold-chat.js:2045,2150
+        v
+  web.searchWeb(searchQ, effort)                             fold-chat-web.js:714
+        |
+        |- routeSources -> scopes [web,wikipedia,github,archive,openalex,crossref]
+        |                                                   fold-chat-route.js:78
+        |- queriesFor -> per-entity queries                 fold-chat-web.js:499
+        |- ON-TOPIC GATE   applyGate  (entities/content)     fold-chat-web.js:854
+        |                  titleGate  (same-name demote)     fold-chat-web.js:622
+        |- READ CHAIN     readText:                          fold-chat-web.js:339
+        |     direct -> bridge(/api/page) -> FOLD_RELAY/raw
+        |            -> allorigins/codetabs/corsproxy/cors.eu.org/thingproxy
+        |            -> r.jina.ai / microlink (text readers)
+        |     looksBlocked / looksDisambiguation  (post-hoc only)
+        |- impressionOf -> webPassages                       fold-chat-web.js:913
+        v
+  genVoid filter (generate turns only)                       fold-chat.js:2153
+        v
+  strand? (Sources-only)  snipsOf(webPassages)               fold-chat.js:2251
+        |   if no snips -> strandEmpty=true; plan=unsourcedPlan  fold-chat.js:2253
+        v
+  aloneBarred = !wantWeb && !mayWriteAlone && !threadTurn     fold-chat.js:2259
+        v
+  callModel -> client.chat -> /heimdall/v1/chat/completions  fold-chat.js:2371
+        |           (mouth = local ollama gemma2:2b, in-tab WebLLM, or fleet)
+        v
+  scrub: stripSelfCitations -> stripScaffolding[W#] -> checkAttributions(remove invented srcs)
+        |                                                   fold-chat.js:2434..2493
+        v
+  REC LOOP: falsifyAnswer -> failing sentences -> re-search -> restate   fold-chat.js:2505
+        v
+  pivotText: read draft against material, requireGrounding   fold-chat.js:2645
+        |   untraceable -> strand fallback
+        v
+  ground.coverage / turnRecord -> record.coverage{total,grounded}  fold-chat-ground.js:710,753
+        v
+  *** VOID CONSTRUCTION ***                                  fold-chat.js:2888
+        |- genGate.void (generate)     -> kind "generate"
+        |- plan || liveDrop            -> "live" | "unreached"
+        |- voidReport(record, ...)     -> "unreached" | "unsupported" | "partial"
+        v
+  render: buildMsg -> gapV=normVoid(rec.void) -> renderFacingPage | renderGap
+                                                             fold-chat.js:1421/1452/1491
+
+
+2. THE VOID: FIVE SHAPES UNDER ONE WORD
+=======================================
+The word "void" names five different objects. They do NOT agree on shape, on vocabulary,
+or even on what `read` means.
+
+  (a) CHAT GAP          producer voidReport()          fold-chat-channels.js:47
+      { kind: "unreached"|"unsupported"|"partial",
+        counts:{sentences,grounded},
+        read:[{title,domain,url}],   <- pages READ that did NOT establish the claim
+        tried:[engine...],           <- only filled when kind==="unreached"
+        question, closeBy:[...] }
+
+  (b) APP GAPS          producer unreachedGap()/liveGap()   fold-chat-gaps.js:119 / :136
+      { kind:"unreached"|"live", counts, read:[...], tried:[...], attempts:[...],
+        readFailed, note, question, closeBy:[...] }
+      -> SAME name "unreached" as (a), DIFFERENT shape.
+
+  (c) GENERATE VOID     producer genVoid()              fold-chat-genvoid.js:297
+      { kind:"generate", reason, outputType, topic, missing, had, setAside, unblock,
+        note, counts, read:[pageEntries], closeBy:unblock, retry }
+        read = pages the turn HAD (USABLE)   * * * OPPOSITE MEANING from (a) * * *
+
+  (d) SLOT TREE         producer projectVoid()          fold-chat-void.js:206
+      { id:"v0", kind:"ask",
+        status: "open"|"satisfied"|"contested"|"refused"|"unmeasured",
+        basis: "declared"|"read"|"unmeasured", children:[...], events:[...] }
+      -> a STATUS VOCABULARY, not a gap. Shares only the name.
+
+  (e) FOREIGN VOID      penelope/agent records          fold-chat.js:1616, fold-chat-explain.js:659
+      { kind, reason, satisfy?, source? }
+
+  DECLARED KINDS: VOID_KINDS = ["unreached","unsupported","partial","live","model","generate"]
+                                                          fold-chat-channels.js:32
+  PRODUCED KINDS (a): only "unreached" | "unsupported" | "partial".  "model" is declared,
+  labeled (channels:86) and never produced by any live code path.
+
+
+3. THE PRESIDENT CASE, TRACED
+=============================
+  "Who is the president?"            (measured: 14-24 s; 1 of 3 runs wrong)
+     classify -> research
+     senseTerm -> "president"
+     search returns:  President (Wikipedia, actually a disambiguation) | President (band)
+                      | List of actors who have played the president ...
+     applyGate/titleGate pass all three  (why: C7 -- looksDisambiguation is NEVER consulted
+                                          by the read chain or the gate; "President" has no
+                                          "(disambiguation)" suffix to trip titleGate)
+     all three are READ -> webPassages
+     model writes one sentence from memory (the pages hold no such sentence)
+     coverage = { total: 1, grounded: 0 }  ->  voidReport -> kind "unsupported"
+        read:  the disambiguation/band/actors pages (C3)
+        tried: []   (facts are gathered only for "unreached")
+     render: gapAnswerLine("unsupported") returns "" -> the ungrounded sentence STILL shows as
+             the answer, with a small label "nothing retrieved supports this" (C8)
+
+  ROOT: the ask was under-specified AND disambiguation pages are read as ground. The void
+  then reports "unsupported" -- correct in letter, but it is drawn beside the answer it condemns.
+
+
+4. THE VOID DEFECTS (the "fucked up on defining the void")
+==========================================================
+  C1  five shapes named "void" (a-e above), one word.
+  C2  6 kinds declared, 3 produced; "model" is dead vocabulary.
+  C3  `read` means "read but did NOT establish" in (a) and "usable pages HAD" in (c).
+  C4  the strand's real gap (minimalGap "no sentence states this") is DISCARDED at
+      fold-chat.js:2253 (only its reason string survives as strandWhy); the drawn void
+      becomes kind "unreached" although pages WERE read (note patched at :2895, kind not).
+  C5  fold-chat.js:2240 injects a gaps.js field (`attempts`) into a genvoid.js shape -> hybrid.
+  C6  a "generate" void is produced+stored, but buildMsg's render gate nulls ownRec for
+      generate/code (fold-chat.js:1451) and run() never sets meta.void -> neither of the two
+      renderers that can draw it is reachable from the producing path.
+  C7  disambiguation pages are read as ground; looksDisambiguation exists but is never called
+      by the read chain or the on-topic gate.
+  C8  an "unsupported" void is drawn as failure text BESIDE the answer it condemns
+      (gapAnswerLine returns "" for unsupported/partial).
+  C9  slot gaps (answercard GAP_LABELS) live entirely outside record.void -> two philosophies.
+  C10 dead code: voidsAfterSearch imported, never called.
+  C11 the warrant summary writes `context:"open: ..."` but warrant records `open: []`
+      regardless of the void (fold-chat.js:1827/2851) -> the void never reaches the summary.
+
+  THE SURVIVING READING: the void is not mis-implemented in one place; it is FIVE
+  implementations that were each locally reasonable and never reconciled. The fix is one
+  shape, one kind vocabulary, one meaning of `read`, and a calibration (see VOID-AND-FELT.md).
