@@ -27,9 +27,13 @@ export const JUDGE_RULES = Object.freeze({
   lessons: "every judgement that lands becomes a lesson; the same signature is then answered from the lesson",
 });
 
-/** Does the machine hold an Anthropic token? env first (node/tools), then the tools' key file — the judge
- *  only exists if the key does; without it the pipeline is byte-for-byte what it was. The browser fold finds
- *  the token through its own bridge; here a browser simply reports none. */
+/** In the browser fold the token lives server-side (heimdall), never in the page: an Anthropic model in
+ *  the served model list IS the signal. In node the check is env/file. Either proves reach — that is the
+ *  only thing the judge needs to know; the token itself is never touched by the page. */
+export function judgeReachable({ models = [], env = typeof process !== "undefined" ? process.env : {}, keyFile = null } = {}) {
+  if (hasJudgeToken({ env, keyFile })) return true;
+  return Array.isArray(models) && models.some((m) => /^claude-|anthropic/i.test(String(m?.id || m?.name || "")));
+}
 export function hasJudgeToken({ env = typeof process !== "undefined" ? process.env : {}, keyFile = typeof process !== "undefined" ? join(process.cwd(), "tools", ".anthropic-key") : null } = {}) {
   if (env.ANTHROPIC_API_KEY && env.ANTHROPIC_API_KEY.trim().length >= 20) return true;
   try { if (keyFile && existsSync(keyFile)) return readFileSync(keyFile, "utf8").trim().length >= 20; } catch (e) { return false; }
@@ -146,4 +150,4 @@ export async function Angelica({ sealed = null, run = null, timeoutMs = 3500 } =
   return parseJudge(settled || "");
 }
 
-export default { hasJudgeToken, decisionSignature, needsJudge, sealJudge, judgePrompt, parseJudge, lessonOf, Angelica, judgeOn, judgeLessonsOf, addJudgeLesson, JUDGE_SCHEMA, JUDGE_KEY, JUDGE_TOGGLE };
+export default { hasJudgeToken, judgeReachable, decisionSignature, needsJudge, sealJudge, judgePrompt, parseJudge, lessonOf, Angelica, judgeOn, judgeLessonsOf, addJudgeLesson, JUDGE_SCHEMA, JUDGE_KEY, JUDGE_TOGGLE };

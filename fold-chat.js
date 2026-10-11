@@ -52,7 +52,7 @@ import { healedCorrections, healQuestion } from "./fold-chat-heal.js";   // the 
 import { proposalsOf, lessonsPrompt, readAsLine } from "./fold-chat-lessons.js";   // the model is FED the perfected context + past lessons
 import { lintTurn } from "./fold-chat-reason-lint.js";   // the modelless Kelsen chain-lint: derive claims from the read, lint each inference, murmur the findings
 import { modelCallRule } from "./fold-chat-model-rule.js";   // THE RULE: the mouth speaks what the fold established — every barred turn names its rule on the record
-import { hasJudgeToken, decisionSignature, needsJudge, sealJudge, Angelica, lessonOf, judgeOn, judgeLessonsOf, addJudgeLesson } from "./fold-chat-sealed-judge.js";   // ANGELICA: the sealed judge — advisory, sealed, typed, and learned (the same signature stops consulting her)
+import { judgeReachable, decisionSignature, needsJudge, sealJudge, Angelica, lessonOf, judgeOn, judgeLessonsOf, addJudgeLesson } from "./fold-chat-sealed-judge.js";   // ANGELICA: the sealed judge — advisory, sealed, typed, and learned (the same signature stops consulting her)
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
 import { castOf } from "./fold-chat-casts.js";
 import { claimsOfTurn, appendClaims, pointerOf } from "./fold-chat-record.js";
@@ -2667,7 +2667,7 @@ export function mount(root, opts = {}) {
     // from the lesson next time — the system needs her less and less. No token, no sealed consult, no judge:
     // the turn is exactly what it was.
     let angelica = null;
-    if (modelRule.allowed && judgeOn() && hasJudgeToken()) {
+    if (modelRule.allowed && judgeOn() && judgeReachable({ models })) {
       const sig = decisionSignature({ kind, question, gap: "topic-or-tool" });
       const judgeLessons = judgeLessonsOf(s);   // the lessons she has already steered by — fed back to her
       if (needsJudge({ signature: sig, gap: "topic-or-tool", lessons: judgeLessons })) {
