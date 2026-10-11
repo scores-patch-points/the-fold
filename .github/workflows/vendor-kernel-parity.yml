@@ -1,0 +1,38 @@
+name: Vendored khora kernel parity
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  vendor-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The vendored kernel must BE the canonical khora — khora is the base,
+      # vendored, never a second definition. Fetch main byte-identical and
+      # compare the whole subtree; any drift is a red gate (never a silent
+      # divergence the surfaces then run on).
+      - name: Fetch canonical khora main
+        run: git clone --depth 1 https://github.com/scores-patch-points/khora.git "${GITHUB_WORKSPACE}/../khora"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compare the vendored kernel with canonical khora (byte-identical)
+        run: |
+          set -euo pipefail
+          drifts=0
+          while IFS= read -r f; do
+            rel="${f#vendor/khora/native/kernel/}"
+            want="${GITHUB_WORKSPACE}/../khora/native/kernel/${rel}"
+            if [ ! -f "$want" ]; then printf 'VENDOR-ONLY %s (no upstream)\n' "$f"; drifts=1; continue; fi
+            if ! diff -q "$f" "$want" >/dev/null; then printf 'DRIFT %s\n' "$f"; drifts=1; fi
+          done < <(find vendor/khora/native/kernel -name '*.js')
+          if [ "$drifts" -ne 0 ]; then echo "::error::the vendored khora kernel drifted from scores-patch-points/khora main"; exit 1; fi
+          echo "vendored kernel identical to khora main"
+      - name: Vendored kernel import smoke (node --check + one consumer)
+        run: |
+          for f in vendor/khora/native/kernel/cube.js vendor/khora/native/kernel/hyperlexicon-abstraction.js vendor/khora/native/kernel/kind-induction.js vendor/khora/native/kernel/index.js; do node --check "$f"; done
+          node --test fold-chat-cube.test.mjs 2>&1 | tail -n 3
