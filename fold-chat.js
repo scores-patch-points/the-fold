@@ -2208,6 +2208,26 @@ export function mount(root, opts = {}) {
     // watcher left (kept on the assistant message, apart from the discourse summary) and says so in the feed; POST below holds the turn to it and leaves the next baton.
     let watcherPre = null;
     try { watcherPre = watchPre({ ask: said, prior: askAt > 0 ? s.messages.slice(0, askAt) : [], opts: { referents: s.referents || null, rejected: rejectedSurfaces(s.minds), hints: hintsFor(lang0 === "unknown" ? "en" : lang0), lang: lang0 } }); } catch (e) { /* an aid, never a reason to lose a turn */ }
+    // THE DISCOURSE-AWARE THREAD, MADE VISIBLE (user, 2026-10-11 — "visible for now until it stops messing up"):
+    // every turn that follows earlier ones says, in the feed, exactly what the discourse layer read — the plan's
+    // mode (a follow-up to turn N / a new ask / a cold follow-up), the relation and want the watcher read, whether
+    // the anaphora gate carries the thread or stands it down, the carried sources, and any open baton. Nothing
+    // here changes the turn; it is the layer's own words, so a misfire is seen where it happens.
+    if (askAt > 0) {
+      try {
+        const bits = [];
+        if (follow.mode === "thread") bits.push(`follows turn ${follow.thread?.turn ?? "?"}${follow.thread?.ask ? ` (\u201c${String(follow.thread.ask).slice(0, 40)}\u201d)` : ""}`);
+        else if (follow.mode === "cold-gap") bits.push("cold follow-up \u2014 nothing earlier to follow");
+        else if (follow.mode === "web") bits.push("a new ask (searched)");
+        else bits.push(String(follow.mode || "no thread"));
+        if (watcherPre?.relation) bits.push(`read as ${watcherPre.relation}`);
+        if (watcherPre?.want && watcherPre.want !== "answer") bits.push(`want: ${watcherPre.want}`);
+        if (follow.gate) bits.push(continuesByAnaphora(follow) ? "gate: carries the thread" : "gate: a new topic \u2014 nothing carried");
+        if (Array.isArray(follow.carried) && follow.carried.length) bits.push(`${follow.carried.length} carried source(s)`);
+        if (watcherPre?.unmet) bits.push(`open baton: ${String(watcherPre.unmet.want || "?")}${watcherPre.unmet.tried?.length ? ` (tried ${watcherPre.unmet.tried.length} host(s))` : ""}`);
+        feedPush(lineEvent(tt, "Thread", { tone: "info", note: bits.join(" \u00b7 ") }));
+      } catch (e) {}
+    }
     let question = follow.retry || said;
     // THE FOLD HEALS ITSELF FIRST (a confirmed lesson — supervisor or the person — is applied at runtime:
     // "meam" -> "mean", "itnow" -> "it now"), so the murmur and the search BOTH read the healed wording.
@@ -3185,7 +3205,12 @@ export function mount(root, opts = {}) {
         const best = tiers.includes("primary") ? "primary" : tiers.includes("origin") ? "origin" : tiers[0] || null;
         const aw = watchPost({ ask: said, prior: askAt > 0 ? s.messages.slice(0, askAt) : [], pre: watcherPre, reads: surfedUrls.length ? surfedUrls : webPassages.map((p) => String(p.url || p.source || "")).filter(Boolean), setAside: asideUrls, events: turnEvents, passages: webPassages, spoken: text, reached: !!((provenance && provenance.verified) || srcRecall), tier: best });
         discourseWatch = { relation: aw.relation, want: aw.want, flags: aw.flags.map((f) => f.flag), baton: aw.baton, ...(aw.detail ? { detail: aw.detail } : {}), ...(aw.appAnswered ? { appAnswered: true } : {}) };
-        if (aw.flags.length) feedPush(lineEvent(tt, "Discourse check", { tone: "warn", note: aw.flags.map((f) => f.flag.replace(/_/g, " ")).join(", ") + " \u2014 this turn read the conversation differently from how it answered" }));
+        // VISIBLE (same review as the Thread line above): the post half of the loop, every turn — what the turn
+        // DID against what PRE expected, and the baton it leaves. Warn tone only when it flags.
+        { const wbits = [`read as ${aw.relation}`, `want: ${aw.want}`];
+          if (aw.baton) wbits.push(`baton: ${aw.baton.want || "?"}${aw.baton.met === false ? " (unmet)" : ""}`);
+          if (aw.flags.length) wbits.push(`flags: ${aw.flags.map((f) => f.flag.replace(/_/g, " ")).join(", ")}`);
+          feedPush(lineEvent(tt, "Discourse", { tone: aw.flags.length ? "warn" : "info", note: wbits.join(" \u00b7 ") })); }
       } catch (e) { /* the watcher is an aid, never a reason to lose a turn */ }
       if (!provenance && srcRecall && srcRecall.provenance) provenance = srcRecall.provenance;   // the same source line, drawn again under this turn
       if (aloneBarred) { const at = follow.mode === "cold-gap" ? { notice: follow.missing ? missingAnswerNotice(follow.missing) : coldFollowUpNotice() } : recall ? { notice: { kind: "alone", text: recall.text } } : srcRecall ? { notice: { kind: "alone", text: srcRecall.text } } : primaryNotice ? { notice: { kind: "alone", text: primaryNotice } } : aloneTurn(noLookup ? "nolookup" : kind, genOt && !noLookup ? { outputType: genOt, hasMaterial: materialOf(s).length > 0, question } : undefined); if (at.void && !genGate) genGate = { ok: false, void: at.void, notice: { kind: "gen-void", text: at.notice?.text || at.void.note }, fallbackAllowed: false }; if (at.notice && !at.void) notices.push(at.notice); }
