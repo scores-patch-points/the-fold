@@ -535,3 +535,60 @@ export function unsealMind(sealed) {
     prior: data.prior,
   });
 }
+
+
+/**
+ * routeReadingOutcome — THE CON/DEF ROUTING LOOP (2026-10-11). A reading's
+ * measured outcome on a previously admitted abstraction routes the standing
+ * transition, witnessed, ephemeral nothing erased:
+ *   CHEERED  heldOut.succeeded===true & candidate  -> promote to earned [CON]
+ *   REINFORCED (succeeded & earned) -> stays earned, outcome appended to meta
+ *   DEFEATED (succeeded===false) -> refute [DEF], preserved, the mind withdraws
+ *   REFUSED on a refuted row -> no-op (a defeat never re-earns through routing;
+ *            a NEW falsifier must be examined upstream first)
+ *   REFUSED on an unmeasured "success" -> TypeError (coherence alone never earns)
+ * heldOut := { method, success, effect?, pValue? }. Pure; returns registry +
+ * report.
+ */
+export function routeReadingOutcome(registry, { id = null, heldOut = null } = {}) {
+  if (!id) throw new TypeError("routeReadingOutcome requires an abstraction id");
+  if (!heldOut?.method || typeof heldOut.success !== "boolean") throw new TypeError("routeReadingOutcome requires heldOut evidence {method, success[, effect, pValue]}");
+  const r = normalizeAbstractionRegistry(registry);
+  const row = r.abstractions[id];
+  if (!row || row.schema !== HL_ABSTRACTION_SCHEMA) return { registry: r, acted: "unknown_row", standing: null };
+  if (row.standing === "refuted") {
+    return { registry: r, acted: "refused_refuted", standing: "refuted", why: "refuted rows never re-earn through routing; a new falsifier must be examined upstream first" };
+  }
+  if (heldOut.success) {
+    if (heldOut.effect == null && heldOut.pValue == null) throw new TypeError("coherence alone never earns — a claiming success needs a measured effect or pValue");
+    if (row.standing === "candidate") {
+      const updated = earnAbstraction(r, { id, validation: { method: heldOut.method, effect: heldOut.effect ?? null, pValue: heldOut.pValue ?? null } });
+      return { registry: updated, acted: "promoted_con", standing: "earned" };
+    }
+    const meta = freeze({ ...(row.meta ?? {}), routedOutcomes: [...(row.meta?.routedOutcomes ?? []), heldOut.method] });
+    const updated = normalizeAbstraction({ ...row, meta });
+    return { registry: nextTable(r, [updated]), acted: "corroborated", standing: "earned" };
+  }
+  const updated = refuteAbstraction(r, {
+    id,
+    falsifier: heldOut.method,
+    reason: { basis: `held-out ${heldOut.method} failed: a routed defeat (${heldOut.effect != null ? "effect " + heldOut.effect : ""}${heldOut.pValue != null ? ", p " + heldOut.pValue : ""}) — the abstraction is preserved refuted, the mind withdraws it` },
+  });
+  return { registry: updated, acted: "defeated_def", standing: "refuted" };
+}
+
+/**
+ * reviseReading — REC: a superseding reading revises. The old row is refuted
+ * (`superseded by revision`) and the REVISION is admitted as a fresh candidate
+ * that must re-earn on its own consequence. Old and new both preserved.
+ */
+export function reviseReading(registry, { id = null, revision = null } = {}) {
+  if (!id) throw new TypeError("reviseReading requires the superseded id");
+  const r = normalizeAbstractionRegistry(registry);
+  const row = r.abstractions[id];
+  if (!row || row.schema !== HL_ABSTRACTION_SCHEMA) throw new TypeError(`reviseReading: no such abstraction ${id}`);
+  const old = refuteAbstraction(r, { id, falsifier: "superseded-by-revision", reason: { basis: "REC — this reading was superseded; the revision must re-earn on its own consequence" } });
+  const revisionRow = normalizeAbstraction({ ...(revision ?? {}), standing: "candidate", meta: freeze({ ...(revision?.meta ?? {}), supersedes: id }) }, { cellHint: revision ?? {} });
+  const next = nextTable(old, [revisionRow]);
+  return { registry: next, acted: "revised_rec", superseded: id, revisionId: revisionRow.id };
+}
