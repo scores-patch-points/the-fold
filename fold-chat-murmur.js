@@ -20,6 +20,7 @@ import { anaphoraOf } from "./fold-chat-anaphora.js";
 import { salienceOf } from "./fold-chat-salience-infer.js";
 import { SALIENCE_PRIOR } from "./fold-chat-salience-prior.js";
 import { senseTerm } from "./fold-chat-senses.js";
+import { stemOf } from "./fold-chat-ground.js";
 
 import { foldText as fold } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13): Latin vowel accents only, never a blanket mark strip
 
@@ -60,12 +61,21 @@ export function murmurOf({ question, carried = [], rejected = [], prior = null, 
   say("listen", "listening for what is being asked");
   say("language", `language: ${lang}` + (d.confident === false ? " (uncertain)" : ""), { lang });
 
-  // 2. WEIGH THE WORDS — salience from the real POSPrior, not a hand list
+  // 2. WEIGH THE WORDS — salience from the real POSPrior, not a hand list.
+  //    A form the prior lacks is NOT automatically "a word I do not hold": stem-fold it (perspectives → perspective,
+  //    a known word in another inflection), and a CAPITALIZED token is a NAME (Strauss) — never an unheld word.
+  const cased = new Map();
+  for (const rt of (String(q).match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || [])) { const f = fold(rt); if (!cased.has(f)) cased.set(f, /^\p{Lu}/u.test(rt)); }
   const names = [], content = [], low = [], unknown = [];
   for (const t of [...new Set(toksOf(q))]) {
     const s = salienceOf(t);
-    if (s == null) { if (!fw.has(t) && t.length > 1) unknown.push(t); continue; }
-    if (s >= 0.8) names.push([t, s]); else if (s >= 0.5) content.push([t, s]); else low.push([t, s]);
+    if (s != null) { if (s >= 0.8) names.push([t, s]); else if (s >= 0.5) content.push([t, s]); else low.push([t, s]); continue; }
+    if (fw.has(t)) continue;                                   // a function word: nothing to weigh
+    let st = t; try { st = stemOf(t); } catch (e) { st = t; }
+    const s2 = (st && st !== t) ? salienceOf(st) : null;
+    if (s2 != null) { (s2 >= 0.5 ? content : low).push([t, s2]); continue; }   // a known word in another inflection
+    if (cased.get(t) && t.length > 1) { names.push([t, 0.9]); continue; }      // a Capitalized token is a NAME
+    if (t.length > 1) unknown.push(t);                          // genuinely OOV: a coinage, a typo, a fused word
   }
   if (names.length) say("subject", `the ask names ${names.map(([t]) => `"${t}"`).join(", ")}`, { names: names.map(([t]) => t) });
   else if (content.length) say("subject", `the ask is about ${content.map(([t]) => `"${t}"`).join(", ")}`, { content: content.map(([t]) => t) });
