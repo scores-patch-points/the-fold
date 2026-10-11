@@ -14,9 +14,9 @@
 // the browser, the Anthropic client in the tools). Without a token `needsJudge` says false and the turn
 // is exactly as it was before Angelica existed.
 
-import { createHash } from "node:crypto";
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+// NO node: imports here — this module is imported by the browser's fold-chat.js. A deterministic pure-JS
+// hash signs decisions (stability is all a signature needs), and the token check takes an injectable
+// reader so node callers can hand it the key file while the browser simply reports what its bridge serves.
 
 export const JUDGE_SCHEMA = "EOSealedJudgeVerdict@1";
 
@@ -27,16 +27,25 @@ export const JUDGE_RULES = Object.freeze({
   lessons: "every judgement that lands becomes a lesson; the same signature is then answered from the lesson",
 });
 
+// a deterministic, dependency-free hash (FNV-1a, both directions → 16 hex chars) — a signature only needs
+// to be stable across sessions, never cryptographic. Keeps this module importable in the browser.
+function fnv1a(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8, "0"); }
+const signatureHash = (s) => fnv1a(s) + fnv1a([...s].reverse().join(""));
+
 /** In the browser fold the token lives server-side (heimdall), never in the page: an Anthropic model in
  *  the served model list IS the signal. In node the check is env/file. Either proves reach — that is the
  *  only thing the judge needs to know; the token itself is never touched by the page. */
-export function judgeReachable({ models = [], env = typeof process !== "undefined" ? process.env : {}, keyFile = null } = {}) {
-  if (hasJudgeToken({ env, keyFile })) return true;
+export function judgeReachable({ models = [], env = typeof process !== "undefined" ? process.env : {}, keyFile = null, read = null } = {}) {
+  if (hasJudgeToken({ env, keyFile, read })) return true;
   return Array.isArray(models) && models.some((m) => /^claude-|anthropic/i.test(String(m?.id || m?.name || "")));
 }
-export function hasJudgeToken({ env = typeof process !== "undefined" ? process.env : {}, keyFile = typeof process !== "undefined" ? join(process.cwd(), "tools", ".anthropic-key") : null } = {}) {
+
+/** Does the machine hold an Anthropic token? env first; a key FILE only when the caller hands a reader
+ *  (node/tools: `read: (p) => readFileSync(p, "utf8")`) — the browser has no filesystem and reports false
+ *  here, then proves reach through `judgeReachable`'s model list instead. */
+export function hasJudgeToken({ env = typeof process !== "undefined" ? process.env : {}, keyFile = null, read = null } = {}) {
   if (env.ANTHROPIC_API_KEY && env.ANTHROPIC_API_KEY.trim().length >= 20) return true;
-  try { if (keyFile && existsSync(keyFile)) return readFileSync(keyFile, "utf8").trim().length >= 20; } catch (e) { return false; }
+  try { if (keyFile && typeof read === "function") { const v = read(keyFile); return typeof v === "string" && v.trim().length >= 20; } } catch (e) { return false; }
   return false;
 }
 
@@ -45,7 +54,7 @@ export function hasJudgeToken({ env = typeof process !== "undefined" ? process.e
 export function decisionSignature({ kind = "chat", question = "", gap = "topic-or-tool" } = {}) {
   const profile = Array.from(new Set(String(question).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((t) => t.length <= 2)))
     .sort().join(",");
-  return createHash("sha1").update(`${kind}|${profile}|${gap}`, "utf8").digest("hex").slice(0, 24);
+  return signatureHash(`${kind}|${profile}|${gap}`).slice(0, 24);
 }
 
 /** Does this decision need the judge at all? A lesson that already covers the signature answers modellessly —
