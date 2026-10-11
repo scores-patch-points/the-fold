@@ -510,7 +510,6 @@ export function mount(root, opts = {}) {
     side: $("side"), models: $("models"), projects: $("projects"), chats: $("chats"), projAdd: $("projAdd"), projNewProject: $("projNewProject"),
     memory: $("memory"), memoryNew: $("memoryNew"), cfToggle: $("cfToggle"),
     sideNewChat: $("sideNewChat"), sideCollapse: $("sideCollapse"), chatSearch: $("chatSearch"), chatSearchClear: $("chatSearchClear"), sideSearch: $("sideSearch"),
-    sideEvidence: $("sideEvidence"), sideSettings: $("sideSettings"),
     composerMode: $("composerMode"), composerCwd: $("composerCwd"), composerTag: $("composerTag"),
     topNew: $("topNew"), topFocus: $("topFocus"), topMenu: $("topMenu"), scrim: $("scrim"), turnSlot: $("turnSlot"),
     welcome: $("welcome"), welcomeSub: $("welcomeSub"), thread: $("thread"), threadCol: $("threadCol"), stage: $("stage"), main: document.querySelector("main.main"),
@@ -2807,9 +2806,20 @@ export function mount(root, opts = {}) {
           say(`turn \u00b7 ${kindWord} \u00b7 loading the model in this tab \u00b7 ${pct}%\u2026`);
         };
       }
+      // A STALLED MOUTH IS A FAILED CALL (user, 2026-10-11: "we really don't need a model to write an answer on
+      // this" — when the model stalls, the sources answer). No token for STALL_MS aborts the call LOCALLY (never
+      // the person's stop), so the turn falls into the same failure path as a refusal: the sources-only strand,
+      // their own words, no model. A model that answers normally never sees this.
+      const STALL_MS = 45000;
+      let stallTimer = null, stalled = false;
+      const mouthCtl = new AbortController();
+      try { ac.signal.addEventListener("abort", () => { try { mouthCtl.abort(); } catch (e) {} }, { once: true }); } catch (e) {}
+      const armStall = () => { clearTimeout(stallTimer); stallTimer = setTimeout(() => { stalled = true; try { mouthCtl.abort(); } catch (e) {} }, STALL_MS); };
+      if (!skipModel) armStall();
       if (!skipModel) try { out = await callModel(messages, {
         base: bridge, privacy: "sealed-external", audit: { run: runId },
         onToken: (t) => {
+          armStall();
           if (!firstToken) { firstToken = true; feedPush(noteEvent(tt, "write", "the first words are coming in")); }
           if (!body.dataset.streaming) {
             body.dataset.streaming = "1";
@@ -2820,8 +2830,10 @@ export function mount(root, opts = {}) {
           flight.stage = pivotOn ? "drafting…" : "answering…";
           if (isLive()) { if (!pivotOn) E.thread.scrollTop = E.thread.scrollHeight; E.stage.textContent = pivotOn ? "drafting\u2026 (read before it is shown)" : "answering…"; }
         },
-        signal: ac.signal,
+        signal: mouthCtl.signal,
       }); } catch (modelErr) {
+        clearTimeout(stallTimer);
+        if (stalled && !ac.signal.aborted) modelErr = Object.assign(new Error(`the model stalled — no words for ${Math.round(STALL_MS / 1000)} s`), { stalled: true });
         if (genOt && !ac.signal.aborted) {
           // a WRITTEN OUTPUT is never answered by quoting pages: the typed gap names it, says what the turn had, and what would unblock it
           genGate = genVoid({ outputType: genOt, webPassages, failure: modelErr, question }); skipModel = true; out = { text: "", tokens: 0 };
@@ -2840,7 +2852,7 @@ export function mount(root, opts = {}) {
         feedPush(lineEvent(tt, "Fell back to the sources", { tone: "ok", note: `${fb.snips.length} passage(s), their own words \u2014 no model, so no gate` }));
         say(`turn \u00b7 ${kindWord} \u00b7 the model declined \u00b7 showing the sources instead (${strand.snips.length} passage(s), no model)\u2026`);
         }
-      }
+      } finally { clearTimeout(stallTimer); }
       if (ac.signal.aborted) throw abortError();
       // THE REPROMPT: a draft the model ran out of room on (finish "length", or no finish reported and it stops mid-sentence) is handed back
       // and the model is asked for the rest, at most CONTINUE.maxRounds times; the pieces are joined with no word added (fold-chat-continue.js).
@@ -4082,8 +4094,6 @@ export function mount(root, opts = {}) {
   // the rail's search button now just opens the panel's own field (one search, not two)
   E.railSearch.onclick = () => { if (E.side.classList.contains("hide")) { E.side.classList.remove("hide"); markOn(E.railToggle, true); } E.sideSearch?.scrollIntoView?.({ block: "nearest" }); E.chatSearch?.focus(); };
   E.railEvidence.onclick = (e) => { e.preventDefault(); drawerOpener = e.currentTarget; toggleDrawer(); };
-  if (E.sideEvidence) E.sideEvidence.onclick = (e) => { e.preventDefault(); if (root.classList.contains("nav-open")) setNav(false); drawerOpener = e.currentTarget; toggleDrawer(); };
-  if (E.sideSettings) E.sideSettings.onclick = () => { if (root.classList.contains("nav-open")) setNav(false); openSettings(); };
   // A live window on every external call and how it was anonymized (its own module: its own button, panel and styles).
   if (!HIDE_EXTERNAL) mountMonitor({ outbound });
   E.topFocus.onclick = () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); };

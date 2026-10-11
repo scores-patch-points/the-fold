@@ -200,11 +200,6 @@
   .side-search.has-q .qclear { opacity: 1; visibility: visible; }
   .side-search .qclear:hover { background: var(--line); color: var(--ink); }
   .side-search .qclear svg { width: 13px; height: 13px; }
-  .side-foot { display: flex; align-items: center; gap: 2px; margin-top: 10px; padding: 8px 8px 2px; border-top: 1px solid var(--line); }
-  .side-foot .fmark { width: 24px; height: 24px; flex: none; margin-right: 4px; border-radius: 50%; background: var(--acc-grad); display: grid; place-items: center; color: #fff; font: 700 11px/1 var(--sans); text-shadow: 0 1px 1px rgba(0,0,0,.25); }
-  .side-foot button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: var(--touch); border: none; border-radius: var(--r-md); background: transparent; color: var(--mut); font: 500 var(--fs-sm) var(--sans); cursor: pointer; transition: background .12s, color .12s; }
-  .side-foot button:hover { background: var(--side2); color: var(--ink); }
-  .side-foot svg { width: 16px; height: 16px; }
 
   /* collapsible section headers */
   .sec-head { border-radius: var(--r-md); }
@@ -1742,17 +1737,6 @@
         <div class="sec-head"><span>Folds</span><span class="grow"></span><button type="button" id="foldsCodebase" title="Add a codebase" aria-label="Add a codebase">📁</button><button type="button" id="foldsNew" title="New fold" aria-label="New fold">＋</button></div>
         <div class="sec-body" id="folds"></div>
       </div>
-    </div>
-    <div class="side-foot">
-      <span class="fmark" aria-hidden="true">F</span>
-      <button type="button" id="sideEvidence" title="Evidence — who did the work" aria-label="Evidence — who did the work">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
-        Evidence
-      </button>
-      <button type="button" id="sideSettings" title="Settings" aria-label="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-        Settings
-      </button>
     </div>
   </aside>
   </div>

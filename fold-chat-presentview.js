@@ -1000,7 +1000,7 @@ function buildPanels() {
   };
   return { rp, hg, say, hop, dlog, L, F, foot, rlog, setLevel, loopFx };
 }
-const newCtx = (question) => ({ question, drows: new Map(), rows: new Map(), looked: null, srcs: 0, g: null, material: [], level: -1 });
+const newCtx = (question) => ({ question, drows: new Map(), rows: new Map(), looked: null, srcs: 0, g: null, material: [], level: -1, liveText: "" });
 
 /** Apply one tape entry. No timers: motion comes from CSS on the nodes it inserts or moves. */
 function applyEntry(P, en, ctx) {
@@ -1375,20 +1375,28 @@ const FRAMES = [
   },
 ];
 
-/** SYN: from the web CON built, the bonds the answer will use, strongest first, as numbered steps (subject, verb, object).
- *  The step the sentence being written touches lights up; the rest recede. Beneath it, the sentence as it is written. */
+/** SYN: from the web CON built, the PATH the answer is taking — numbered steps (subject, verb, object).
+ *  THE PATH, NOT THE FORKS (user, 2026-10-11): once the answer's own words have walked a bond, the box shows
+ *  only the bonds its words touch — the forks it does not go down drop away. Before any words: all candidates.
+ *  A sentence still being drafted lights its own bond; the rest of the walked path stays lit beneath it. */
 function synFrame(ctx, ph) {
   const b = el("div", "pv-ph-b ph-syn2");
   const G2 = ctx.g?.G, draft = ph.draft;
   const nodeOf = new Map((G2?.nodes || []).map((n) => [n.id, n]));
-  const words = draft ? new Set(String(draft.s).toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []) : null;
+  const wordsOf = (s) => new Set(String(s || "").toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []);
+  const words = draft ? wordsOf(draft.s) : ctx.liveText ? wordsOf(ctx.liveText) : null;
   const lit = (n) => !!words && n.keys.some((k) => words.has(k));
-  const bonds = (G2?.edges || []).map((e) => ({ e, a: nodeOf.get(e.from), z: nodeOf.get(e.to) })).filter((x) => x.a && x.z)
-    .sort((p, q) => (q.a.rows.length + q.z.rows.length) - (p.a.rows.length + p.z.rows.length)).slice(0, 4);
+  const all = (G2?.edges || []).map((e) => ({ e, a: nodeOf.get(e.from), z: nodeOf.get(e.to) })).filter((x) => x.a && x.z)
+    .sort((p, q) => (q.a.rows.length + q.z.rows.length) - (p.a.rows.length + p.z.rows.length));
+  // fudge: a bond counts as walked when both its ends appear in the words so far; if NOTHING matches (a small
+  // model's own phrasing, no shared vocabulary), the strongest bond stands for the path rather than an empty box.
+  const walked = words ? all.filter((x) => lit(x.a) && lit(x.z)) : [];
+  const shown = (walked.length ? walked : all).slice(0, 4);
   const out = el("div", "outline");
-  out.append(el("div", "oh", bonds.length ? (draft ? "the steps this sentence follows" : "the steps the answer will follow") : "nothing linked to follow"));
+  const title = draft ? "the steps this sentence follows" : walked.length ? "the path the answer is taking" : "the steps the answer will follow";
+  out.append(el("div", "oh", shown.length ? title : "nothing linked to follow"));
   const pill = (n) => { const p = el("span", "pl" + (lit(n) ? " on" : ""), clip(n.label, 34)); if (n.rows.length > 1) p.append(el("i", "", String(n.rows.length))); return p; };
-  bonds.forEach((r, i) => { const on = lit(r.a) && lit(r.z); const line = el("div", "step" + (on ? " on" : words ? " off" : "")); line.append(el("span", "no", String(i + 1)), pill(r.a), el("span", "vb", clip(r.e.verb || "\u2192", 16)), pill(r.z)); out.append(stag(line, i)); });
+  shown.forEach((r, i) => { const on = lit(r.a) && lit(r.z); const line = el("div", "step" + (on ? " on" : words ? " off" : "")); line.append(el("span", "no", String(i + 1)), pill(r.a), el("span", "vb", clip(r.e.verb || "\u2192", 16)), pill(r.z)); out.append(stag(line, i)); });
   b.append(out, writingEl(draft));
   return b;
 }
@@ -1693,6 +1701,7 @@ export function mountLive(body, { question = "", mdHtml = null } = {}) {
     wrote(full, final = false) {
       if (closed) return;
       liveText = full;
+      ctx.liveText = full;   // the steps box reads the answer's own words to walk its path (synFrame)
       // every sentence the model has finished becomes a "draft" frame, so the middle shows the writing as it happens
       { const ss = sentencesOf(full); const doneN = final ? ss.length : Math.max(0, ss.length - 1); while (drafted < Math.min(doneN, 6)) { const at = Math.max(now(), readEnd, lastDraft + 0.9); lastDraft = at; push("draft", { i: drafted, s: ss[drafted] }, at); drafted++; readEnd = Math.max(readEnd, at); } }
       if (!painted) { painted = true; requestAnimationFrame(() => { painted = false; if (mdHtml) ansMd.innerHTML = mdHtml(liveText); else ansMd.textContent = liveText; }); }
