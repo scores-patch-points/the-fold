@@ -59,3 +59,28 @@ test("localeContext with no IP still gives time + a rough zone, and never invent
   assert.doesNotMatch(line, /Nashville/);
   assert.equal(localeContext({}), null);
 });
+
+// ── THE CONSENT GATE (folded from the "multiple affordances" review, 2026-10-11) ──
+import { mayLookupIp } from "./fold-chat-locale.js";
+
+test("FALSIFIER: force NEVER bypasses consent — the old button's force:true could, and no longer can", () => {
+  const r = mayLookupIp({ locale: { ipLookup: false, location: { label: "Chicago" } }, force: true });
+  assert.equal(r.ok, false);
+  assert.equal(r.why, "consent-off");
+});
+
+test("consent on + no place → first-detect; consent on + place + force → re-detect", () => {
+  assert.deepEqual(mayLookupIp({ locale: {}, force: false }), { ok: true, why: "first-detect" });
+  assert.deepEqual(mayLookupIp({ locale: { location: { label: "Chicago" } }, force: true }), { ok: true, why: "re-detect" });
+});
+
+test("consent on + place + no force → already-have-place (a passive call never re-hits the IP service)", () => {
+  const r = mayLookupIp({ locale: { location: { label: "Chicago" } }, force: false });
+  assert.equal(r.ok, false);
+  assert.equal(r.why, "already-have-place");
+});
+
+test("consent defaults ON when unset (the checkbox ships checked)", () => {
+  assert.equal(mayLookupIp({ locale: null }).ok, true);
+  assert.equal(mayLookupIp({ locale: { ipLookup: true } }).ok, true);
+});

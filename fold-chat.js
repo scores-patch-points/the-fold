@@ -955,11 +955,17 @@ export function mount(root, opts = {}) {
     const g = el("div", "mem-group");
     g.append(el("div", "mem-label", "Where you are"));
     const L = memStore.locale || {};
+    const consent = L.ipLookup !== false;   // the checkbox is the ONE consent affordance
     const line = locale.localeContext({ location: L.location, tz: L.tz, locale: L.locale, now: now() });
-    g.append(el("div", "mem-note", line || "not known yet — set it below, or let the fold guess from your IP"));
+    g.append(el("div", "mem-note", line || (consent ? "not known yet — detect from your IP, or edit the place by hand" : "not known yet — edit the place by hand, or turn the IP guess on")));
     const acts = el("div", "mem-actions");
-    const det = el("button", "btn", L.location ? "Re-detect from IP" : "Detect from IP"); det.type = "button";
-    det.onclick = () => detectLocaleFromIp({ force: true });
+    // the detect ACTION exists only while consent is on — with the gate off there is no second affordance
+    // that could disagree with the checkbox; the panel re-renders on every change (saveMemory → renderMemory)
+    if (consent) {
+      const det = el("button", "btn", L.location ? "Re-detect from IP" : "Detect from IP"); det.type = "button";
+      det.onclick = () => detectLocaleFromIp({ force: true });   // safe now: the gate above still owns consent
+      acts.append(det);
+    }
     const edit = el("button", "btn", "Edit place"); edit.type = "button";
     edit.onclick = async () => {
       const cur = locale.locationLabel(L.location) || "";
@@ -968,9 +974,9 @@ export function mount(root, opts = {}) {
       memStore = memorystore.setLocale(memStore, { location: v.trim() ? { label: v.trim(), source: "manual", at: now() } : null });
       saveMemory();
     };
-    acts.append(det, edit); g.append(acts);
+    acts.append(edit); g.append(acts);
     const tgl = el("label", "mem-toggle");
-    const ic = document.createElement("input"); ic.type = "checkbox"; ic.checked = L.ipLookup !== false;
+    const ic = document.createElement("input"); ic.type = "checkbox"; ic.checked = consent;
     ic.onchange = () => { memStore = memorystore.setLocale(memStore, { ipLookup: ic.checked }); saveMemory(); if (ic.checked) detectLocaleFromIp({ force: true }); };
     tgl.append(ic, el("span", "", "Use my IP to guess my location"));
     g.append(tgl);
@@ -2049,8 +2055,10 @@ export function mount(root, opts = {}) {
   // other external read uses (never silent), kept as an editable memory, and OFF-able.
   // One attempt at boot, and on demand from the panel; a failure is a typed gap.
   async function detectLocaleFromIp({ force = false } = {}) {
-    if (memStore.locale?.location && !force) return;
-    if (memStore.locale?.ipLookup === false && !force) return;
+    // ONE AFFORDANCE OWNS CONSENT (folded from the "multiple affordances" review, 2026-10-11): the checkbox
+    // is the gate, and `force` (a re-detect) NEVER bypasses it — the old button could, and no longer can.
+    const gate = locale.mayLookupIp({ locale: memStore.locale, force });
+    if (!gate.ok) return null;
     const purpose = "locale: coarse IP location (city/country only, to give the turn a place and a clock)";
     for (const url of ["https://ipwho.is/", "https://ipapi.co/json/"]) {
       try {
