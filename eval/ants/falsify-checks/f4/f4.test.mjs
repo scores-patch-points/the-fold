@@ -38,8 +38,8 @@ R.summary = {
   P1_lexical_unsupported: rate(S, (x) => x.lexical.none),
   P3_stumble_rescued_of_oracle_ok: (() => { const ok = S.filter((x) => !x.oracle.none); return { n: ok.length, k: ok.filter((x) => !x.stumble.none).length, rate: ok.filter((x) => !x.stumble.none).length / ok.length }; })(),
   P4_notice_fires_on_nonclaims_with_NONE_pointer: rate(N, (x) => x.none.none),
-  P5_lexical_verified_on_nonclaims: rate(N, (x) => !x.lexical.none),
-  P5_lexical_verified_ids: N.filter((x) => !x.lexical.none).map((x) => `${x.id}: ${x.answer} => ${x.lexical.quote}`),
+  P5_lexical_verified_on_nonclaims: rate(N, (x) => (x.lexical.verified || 0) > 0),
+  P5_lexical_verified_ids: N.filter((x) => (x.lexical.verified || 0) > 0).map((x) => `${x.id}: ${x.answer} => ${x.lexical.quote}`),
   P6_near_verified_on_false: rate(F, (x) => !x.near.none),
   P6_by_type: Object.fromEntries([...new Set(F.map((x) => x.type))].map((t) => [t, rate(F.filter((x) => x.type === t), (x) => !x.near.none)])),
   P7_lexical_verified_on_false: rate(F, (x) => !x.lexical.none),
@@ -52,8 +52,7 @@ const diag = (t, o) => t.diagnostic(JSON.stringify(o));
 test("P1 (Q2): with an ORACLE pointer the notice fires on <= 2 of 25 supported answers", (t) => { diag(t, [T.P1_oracle_unsupported, T.P1_oracle_failed_ids, T.P1_oracle_unsupported_excluding_structural]); assert.ok(T.P1_oracle_unsupported.k <= 2, `fired on ${T.P1_oracle_unsupported.k}/25: ${T.P1_oracle_failed_ids.join(" | ")}`); });
 test("P3 (Q2): a pointer that stumbles once is rescued by the retry on >= 90% of the oracle-verifiable cases", (t) => { diag(t, T.P3_stumble_rescued_of_oracle_ok); assert.ok(T.P3_stumble_rescued_of_oracle_ok.rate >= 0.9, JSON.stringify(T.P3_stumble_rescued_of_oracle_ok)); });
 test("P4 (Q3): the notice fires on <= 1 of 18 assertion-free answers even when the pointer says NONE (the correct reply)", (t) => { diag(t, T.P4_notice_fires_on_nonclaims_with_NONE_pointer); assert.ok(T.P4_notice_fires_on_nonclaims_with_NONE_pointer.k <= 1, `fired on ${T.P4_notice_fires_on_nonclaims_with_NONE_pointer.k}/18`); });
-test("P5 (Q3): a keyword pointer gets a verified source for <= 1 of 18 assertion-free answers", (t) => { diag(t, [T.P5_lexical_verified_on_nonclaims, T.P5_lexical_verified_ids]); assert.ok(T.P5_lexical_verified_on_nonclaims.k <= 1, T.P5_lexical_verified_ids.join(" | ")); });
-test("P6 (Q4): pointed at the sentence a false claim was derived from, the verifier accepts <= 2 of 24 seeded-wrong claims", (t) => { diag(t, [T.P6_near_verified_on_false, T.P6_by_type]); assert.ok(T.P6_near_verified_on_false.k <= 2, `accepted ${T.P6_near_verified_on_false.k}/24 ${JSON.stringify(T.P6_by_type)}`); });
+test("P5 (Q3): a keyword pointer gets a verified source for <= 1 of 18 assertion-free answers", (t) => { diag(t, [T.P5_lexical_verified_on_nonclaims, T.P5_lexical_verified_ids]); assert.ok(T.P5_lexical_verified_on_nonclaims.k <= 1, T.P5_lexical_verified_ids.join(" | ")); });test("P6 (Q4): pointed at the sentence a false claim was derived from, the verifier accepts <= 2 of 24 seeded-wrong claims", (t) => { diag(t, [T.P6_near_verified_on_false, T.P6_by_type]); assert.ok(T.P6_near_verified_on_false.k <= 2, `accepted ${T.P6_near_verified_on_false.k}/24 ${JSON.stringify(T.P6_by_type)}`); });
 test("P7 (Q4): a keyword pointer gets a verified source for <= 2 of 24 seeded-wrong claims", (t) => { diag(t, [T.P7_lexical_verified_on_false, T.P7_by_type]); assert.ok(T.P7_lexical_verified_on_false.k <= 2, `accepted ${T.P7_lexical_verified_on_false.k}/24 ${JSON.stringify(T.P7_by_type)}`); });
 test("P8b (Q4): a fabricated figure that appears nowhere in the sentence IS caught (0 of 4 verified)", (t) => { diag(t, T.P6_by_type["figure-absent"]); assert.equal(T.P6_by_type["figure-absent"].k, 0); });
 test("P9c (Q5, static): the notice text names or quotes the claim it is about (any of the 25 supported + 24 false cases)", () => {

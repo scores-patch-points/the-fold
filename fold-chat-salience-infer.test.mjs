@@ -67,3 +67,34 @@ test("FALSIFIER: without the prior, the old content/function split needs the han
   assert.ok(forms.includes("band") && forms.includes("form"));   // both are content (NOUN/VERB)
   for (const fn of ["how", "did", "the"]) assert.ok(!forms.includes(fn), fn + " must not be salient");
 });
+
+test("IDENTITY (referent-first 2026-10-11): unmeasured forms are exposed as candidate referent surfaces, still not salience terms", () => {
+  const r = salientTerms("Make my login code better with PyQt5");
+  assert.ok(!r.terms.some((t) => t.form === "pyqt5"), "still UNMEASURED, never guessed as salience");
+  assert.ok(r.identity.includes("pyqt5"), "but present as an identity surface to resolve by identity");
+  assert.deepEqual(r.identity, r.unmeasured);
+});
+
+test("IDENTITY: a title bearing the ask's unresolved referent outranks generic salience matches", () => {
+  const ask = "Make my login code better with PyQt5";
+  const cands = [
+    { title: "HTML login forms", snippet: "make a login code form" },
+    { title: "PyQt5 login dialog", snippet: "a dialog" },
+  ];
+  const { ranked, identityHits, measured } = rankBySalience(cands, ask);
+  assert.equal(ranked[0].title, "PyQt5 login dialog");   // the referent decides, not login/code/make
+  assert.equal(identityHits[0].title, 1);
+  assert.equal(identityHits[1].title, 0);
+  assert.ok(measured, "measured stays true (login/code measured); identity only orders");
+});
+
+test("IDENTITY: measured:false still orders by identity — no prior coverage is never a refusal", () => {
+  const cands = [
+    { title: "Unrelated page", snippet: "nothing" },
+    { title: "Xylophonia", snippet: "a thing" },
+  ];
+  const r = rankBySalience(cands, "Xylophonia?");
+  assert.equal(r.measured, false, "the prior covers nothing: honestly disclosed");
+  assert.deepEqual(r.identity, ["xylophonia"]);
+  assert.equal(r.ranked[0].title, "Xylophonia", "resolved by identity anyway");
+});

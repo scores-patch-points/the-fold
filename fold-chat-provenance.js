@@ -19,6 +19,7 @@
 
 import * as ground from "./fold-chat-ground.js";
 import { isTertiary as isWikiIndex } from "./fold-chat-tertiary.js";
+import { namesOf } from "./fold-chat-falsify-answer.js";
 
 // An INDEX is a pointer, not a source: Wikipedia (declared in fold-chat-tertiary.js) and the other encyclopedias / reference works (declared in fold-chat-primary.js ENCYCLOPEDIAS;
 // kept as a small copy here because primary imports this module). Measured 2026-10-06: the source line for "Who is the king of the UK?" said "I got this from Britannica" — an encyclopedia
@@ -100,18 +101,65 @@ export function locate(sentence, passages, hint = null) {
 }
 
 const stemsOf = (t, fw) => ground.tokenize(String(t ?? "")).filter((x) => x.length > 2 && !(fw && fw.has(x))).map((x) => (ground.stemOf ? ground.stemOf(x) : x));
-/** The minimal relevance check on a pointer: the sentence shares at least HALF of the claim's content stems (rounded up), and every figure the claim states is in the sentence. Nothing finer is claimed.
+// opposite superlatives of MAGNITUDE (F4 P6/P7 F23/F24: "lowest" vs "highest"). Declared PAIRS
+// (giver: author, II.11) — deliberately NOT most/least/first/last/best/worst, which co-occur innocently
+// across different referents ("first" here, "last" there). Kept as pairs (not a reversed map: several
+// share an end — "tallest"/"longest" both oppose "shortest" — and a reversed map keeps only the last).
+// Matched on raw words, never stems.
+const OPPOSITE_PAIRS = [
+  ["highest", "lowest"], ["largest", "smallest"], ["tallest", "shortest"], ["longest", "shortest"],
+  ["biggest", "smallest"], ["fastest", "slowest"], ["deepest", "shallowest"], ["widest", "narrowest"],
+  ["heaviest", "lightest"], ["oldest", "youngest"], ["strongest", "weakest"],
+];
+const rawWords = (s) => String(s ?? "").toLowerCase().match(/[\p{L}]+/gu) || [];
+/** The minimal relevance check on a pointer: the sentence shares at least HALF of the claim's content stems (rounded up), every figure of the claim is in the sentence (same value in the same dimension — "1,083 metres" is not "1,083 ft"), polarity is not flipped across the pair, every name the claim commits to resolves (in the sentence or, for a shortened form, in the page title), and no opposite superlative stands in its place. Nothing finer is claimed.
  *  Measured 2026-10-06 (live chat): with "shares one stem" the source line for "The King of the UK is King Charles III." quoted "In 1917 King George V changed the royal house's name to Windsor…" (shared: "king").
  *  DECLARED, NOT MEASURED (II.11): one half. Giver: the author; it keeps a paraphrase that names the entity and drops a filler, and refuses a sentence that shares only the commonest word. */
-export function bearsOn(claim, sentence, fw) {
+export function bearsOn(claim, sentence, fw, titleText = "") {
   const c = new Set(stemsOf(claim, fw)), s = new Set(stemsOf(sentence, fw));
   const shared = [...c].filter((x) => s.has(x));
-  const figs = ground.numbersIn(String(claim ?? ""));
-  const sFigs = new Set(ground.numbersIn(String(sentence ?? "")));
-  const missing = figs.filter((f) => !sFigs.has(f));
+  // figures, strict and unit-aware (F4 P6 F05/F06 + P1): same norm AND (both unitless or same
+  // dimension+factor). "330 metres" meets "330 m"; it never meets "1,083 ft" or "324 m".
+  let cfigs = [], sfigs = [];
+  try { cfigs = ground.figuresIn(String(claim ?? "")); sfigs = ground.figuresIn(String(sentence ?? "")); } catch { cfigs = []; sfigs = []; }
+  const figOk = (f, w) => f.norm === w.norm && ((!f.unit && !w.unit) || (f.unit && w.unit && f.unit.dim === w.unit.dim && f.unit.f === w.unit.f));
+  const missing = cfigs.filter((f) => !sfigs.some((w) => figOk(f, w)));
   if (!shared.length) return { ok: false, why: "unrelated" };
-  if (missing.length) return { ok: false, why: "figure_missing:" + missing.join(",") };
+  if (missing.length) return { ok: false, why: "figure_missing:" + missing.map((f) => f.raw).join(",") };
   if (shared.length < Math.ceil(c.size / 2)) return { ok: false, why: "unrelated" };
+  // polarity, verifier-strict (F4 P6 polarity): ANY asymmetry of negation is unverifiable — a claim
+  // the sentence negates differently is not support. (Falsification uses the precise same-proposition
+  // flip; verification refuses what it cannot resolve. Mutual negation passes through to the checks below.)
+  const hasNeg = (t) => /\b(?:not|no|never|neither|nor|none|without|cannot|n't|failed to|did not|does not|is not|was not)\b/i.test(String(t ?? "").replace(/\bnot\s+(?:only|just|merely|simply)\b|\bno\s+(?:doubt|question)\b/i, " "));
+  if (hasNeg(claim) !== hasNeg(sentence)) return { ok: false, why: "polarity" };
+  // entities (F4 P6 name/place/keyword-only + P1 true names): every name resolves in the sentence or,
+  // for a shortened form, in the page title ("Eiffel Tower" via "The tower…" on its own page; the fold's
+  // own rule that a source title is the strongest authority for a name). Names read leniently
+  // (ground.namesIn keeps sentence-initial singles like "Sydney" — the non-claim gate, which runs first,
+  // already filtered greetings with namesOf-strict). Single-token ALL-CAPS ("US") is adjectival, not
+  // identifying — skipped both sides. A claim naming nobody needs nothing. Without a title (old callers:
+  // unit tests, c8) the check is skipped entirely — exactly the old behavior, which had none.
+  const capName = (n) => /\s/.test(n.trim()) || !/^[A-Z]{2,}$/.test(n.trim());
+  const cn = ground.namesIn(claim).filter(capName);
+  if (titleText && cn.length) {
+    const low = String(sentence).toLowerCase(), titleLow = String(titleText ?? "").toLowerCase();
+    const stemOf = (w) => { try { return ground.stemOf ? ground.stemOf(w) : w; } catch { return w; } };
+    const bad = cn.filter((n) => {
+      const parts = n.split(/[^a-z0-9]+/i).filter((x) => x.length > 1);
+      // inflected forms meet ("Prizes"/"Prize", F4 S04) — stemmed or raw, sentence or title
+      return !parts.every((p) => {
+        const pl = p.toLowerCase(), ps = String(stemOf(pl)).toLowerCase();
+        return low.includes(pl) || low.includes(ps) || titleLow.includes(pl) || titleLow.includes(ps);
+      });
+    });
+    if (bad.length) return { ok: false, why: "unstated_name:" + bad[0] };
+  }
+  // opposite superlatives (F4 P6/P7 F23/F24): either end in the claim met by the other end.
+  const rw = new Set(rawWords(sentence));
+  for (const t of rawWords(claim)) {
+    const hit = OPPOSITE_PAIRS.find(([a, b]) => (t === a && rw.has(b)) || (t === b && rw.has(a)));
+    if (hit) return { ok: false, why: "opposite:" + t };
+  }
   return { ok: true, shared };
 }
 
@@ -121,7 +169,7 @@ export function verifyPointer({ reply, claim, passages, fw = null }) {
   if (r.none) return { ok: false, why: "none" };
   const at = locate(r.sentence, passages, r.source);
   if (!at.ok) return { ok: false, why: at.why, claimedSource: r.source };
-  const rel = bearsOn(claim, at.text, fw);
+  const rel = bearsOn(claim, at.text, fw, titleOf((passages || [])[at.index] || {}));
   if (!rel.ok) return { ok: false, why: rel.why };
   const p = passages[at.index];
   const url = p.url || p.source || "";
@@ -150,6 +198,7 @@ export function looksLikeSentence(t) {
 export function candidatesFor(claim, passages, fw = null, { perPage = 6, max = 20 } = {}) {
   const terms = askTerms({ question: claim }, fw);
   const out = [];
+  const have = new Set();
   (Array.isArray(passages) ? passages : []).forEach((p, passageIndex) => {
     const text = String(p?.text ?? "");
     if (!text.trim()) return;
@@ -159,7 +208,29 @@ export function candidatesFor(claim, passages, fw = null, { perPage = 6, max = 2
     else slices = sentencesWithOffsets(text).slice(0, perPage).map((s) => ({ start: s.start, end: s.end }));
     for (const s of slices.slice(0, perPage)) {
       const t = text.slice(s.start, s.end).trim();
-      if (t.length >= PROVENANCE.minSentence && looksLikeSentence(t)) out.push({ passageIndex, start: s.start, end: s.end, text: t });
+      if (t.length >= PROVENANCE.minSentence && looksLikeSentence(t)) { out.push({ passageIndex, start: s.start, end: s.end, text: t }); have.add(passageIndex + ":" + s.start + ":" + s.end); }
+    }
+    // RECALL BACKSTOP (F4 P1 S01/S13): a sentence carrying a distinctive stem of the ask (in ≤2
+    // sentences of its page — figures, names, rare words) is always offered, past perPage, within max.
+    // Page order is kept for the first perPage; the backstop appends after them, in page order.
+    // Stems match exactly the way askTerms stems (ground.tokenize + ground.stemOf), or nothing meets.
+    if (terms && out.length < max) {
+      const units = sentencesWithOffsets(text);
+      const stem = (t) => (ground.stemOf ? ground.stemOf(t) : t);
+      const sts = units.map((u) => new Set(ground.tokenize(text.slice(u.start, u.end)).map(stem)));
+      const df = new Map();
+      for (const t of terms) { let n = 0; for (const s of sts) if (s.has(t)) n++; df.set(t, n); }
+      const rare = [...terms].filter((t) => (df.get(t) || 0) >= 1 && (df.get(t) || 0) <= 2);
+      if (rare.length) {
+        units.forEach((u, i) => {
+          if (out.length >= max) return;
+          const k = passageIndex + ":" + u.start + ":" + u.end;
+          if (have.has(k)) return;
+          if (!rare.some((t) => sts[i].has(t))) return;
+          const t = text.slice(u.start, u.end).trim();
+          if (t.length >= PROVENANCE.minSentence && looksLikeSentence(t)) { out.push({ passageIndex, start: u.start, end: u.end, text: t }); have.add(k); }
+        });
+      }
     }
   });
   return out.slice(0, max).map((c, i) => ({ ...c, n: i + 1 }));
@@ -186,7 +257,8 @@ export function verifyNumber({ reply, claim, candidates, passages, fw = null }) 
   if (r.none) return { ok: false, why: "none" };
   const c = (candidates || []).find((x) => x.n === r.n);
   if (!c) return { ok: false, why: "no_such_sentence" };
-  const rel = bearsOn(claim, c.text, fw);
+  const pass0 = (passages || [])[c.passageIndex] || {};
+  const rel = bearsOn(claim, c.text, fw, titleOf(pass0));
   if (!rel.ok) return { ok: false, why: rel.why };
   const pass = passages[c.passageIndex];
   const url = pass.url || pass.source || "";
@@ -198,12 +270,43 @@ export function verifyNumber({ reply, claim, candidates, passages, fw = null }) 
 // ─────────────── the narration: the app's words around the source's words ───────────────
 
 export const TEMPLATES = Object.freeze({
-  primary: (v) => `I got this from ${v.title || v.host} (${v.host}). It says:`,
-  origin: (v, idx) => `I checked this on ${idx ? nameOfHost(idx.host) : "an encyclopedia"}, but I treat that as an index to primary sources, so I followed it to ${v.host} and verified it there. It says:`,
-  index: (v) => `I found this on ${nameOfHost(v.host)}, which I treat as a pointer rather than a source, and I could not reach a primary page that says it, so treat it as unconfirmed. It says:`,
-  also: (v) => `It also says it on ${v.host}:`,
-  none: () => "I couldn't point to a sentence in what I read that says this, so I'm treating it as unsupported.",
+  primary: (v) => `I got this from ${v.title || v.host} (${v.host}) for the answer's first sentence. It says:`,
+  origin: (v, idx) => `I checked this on ${idx ? nameOfHost(idx.host) : "an encyclopedia"} for the answer's first sentence, but I treat that as an index to primary sources, so I followed it to ${v.host} and verified it there. It says:`,
+  index: (v) => `I found this on ${nameOfHost(v.host)} for the answer's first sentence, which I treat as a pointer rather than a source, and I could not reach a primary page that says it, so treat it as unconfirmed. It says:`,
+  also: (v) => `It also says what the first sentence says on ${v.host}:`,
+  none: () => "I couldn't point to a sentence in what I read that says what the answer's first sentence says, so I'm treating it as unsupported.",
 });
+
+/** An answer that asserts nothing checkable — a greeting, a hedge, a refusal to answer ("I don't
+ *  know", "It depends", "The sources do not say"). No names, no figures, no number-words: there is
+ *  nothing a pointer could verify, so there is nothing to point at. Pure. */
+const NUMBER_WORDS = new Set(("one two three four five six seven eight nine ten eleven twelve hundred thousand million billion dozen half quarter").split(" "));
+// a negated assertion about a WORLD subject ("Water is not an inorganic compound") IS checkable —
+// the positive is what a pointer verifies against. Hedges stay hedges: first-person ("I could not
+// find"), existential ("There is no single answer"), and meta-subject ("The sources do not say",
+// "The answer is not straightforward") negations assert nothing about the world. F4 P6/P7 F19.
+const NEGATION_WORD = /\b(?:not|no|never|neither|nor|none|without|cannot|can't|don't|doesn't|isn't|aren't|wasn't|weren't|couldn't|wouldn't|shouldn't|n't|failed to|unable to)\b/i;
+const META_SUBJECT = new Set(("sources source answer answers question questions opinion opinions views view information historians historian evidence debate dispute doubt knowledge readers people everyone everybody it there that this these those here what which who whom whose").split(" "));
+const HEDGE_WORD = new Set(("the a an of in on to for and are was were is be been being does did do had has have its their his her your our my as at by or if then than so such only some more most other very will would could should shall may might must can cannot not no never neither nor none without also into over under about after before between through during out up down off again once when where why how all any both each few many much own same too until while am".split(" ")));
+export function isNonClaim(text) {
+  const s = String(text ?? "").trim();
+  if (!s) return true;
+  if (namesOf(s).length) return false;
+  let figs = [];
+  try { figs = ground.numbersIn(s); } catch { figs = []; }
+  if (figs.length) return false;
+  const words = s.toLowerCase().match(/[\p{L}]+/gu) || [];
+  if (words.some((w) => NUMBER_WORDS.has(w))) return false;
+  if (NEGATION_WORD.test(s)) {
+    const ws = (s.toLowerCase().match(/[\p{L}']+/gu) || []).map((w) => w.replace(/'s$/, "").replace(/n't$/, ""));
+    if (/^(i|we|you)$/.test(ws[0] || "")) return true;
+    if (/^\s*there\s+(is|are|was|were|['’]s|['’]re)\b/i.test(s)) return true;
+    const fc = ws.find((w) => !HEDGE_WORD.has(w) && w.length > 1);
+    if (!fc || META_SUBJECT.has(fc)) return true;
+    return false;
+  }
+  return true;
+}
 
 /** The narration for the verified pointers (best first). `indexPassage` names the encyclopedia an origin was reached through, when known. Returns { text, parts[] }: each part is { kind:"app", text, rule } or { kind:"quote", text, index, start, end, host }. */
 export function narrate(pointers, { indexHost = null } = {}) {
@@ -254,6 +357,13 @@ const firstSentence = (s) => { const t = String(s ?? "").replace(/\s+/g, " ").tr
  */
 export async function provenanceFor({ answer, passages, point, fw = null, preferRefs = null, corroborate = true, maxPages = 4 }) {
   const claim = firstSentence(answer);
+  // NON-CLAIMS (F4 P4): greetings, hedges, refusals-to-answer assert nothing checkable — no names, no
+  // figures, no number-words. There is nothing to point at, so no box is drawn (and no model call spent):
+  // showing "unsupported" for "I don't know" is the falsehood P4 falsified.
+  if (isNonClaim(claim)) {
+    const skip = { text: "", parts: [], verified: 0 };
+    return { narr: skip, pointers: [], calls: 0, claim, ps: [], stored: { schema: "Provenance@1", claim, calls: 0, verified: 0, parts: [], pointers: [], why: "nonclaim" } };
+  }
   const all = (Array.isArray(passages) ? passages : []).filter((p) => p && String(p.text ?? "").trim());
   const pref = preferRefs instanceof Set ? preferRefs : new Set(preferRefs || []);
   const rank = (p) => (p.origin ? 4 : 0) + (p.tertiary || isTertiary(p.url || p.source) ? 0 : 2) + (pref.has(String(p.ref)) ? 1 : 0);   // an origin or a primary page before the encyclopedia; the witnessing page first within a tier
@@ -267,7 +377,13 @@ export async function provenanceFor({ answer, passages, point, fw = null, prefer
       catch (e) { if (e && (e.name === "AbortError" || /abort|stopped/i.test(String(e.message || "")))) throw e; return { ok: false, why: "call_failed:" + String(e?.message || e).slice(0, 60) }; }
       const v = verifyNumber({ reply, claim, candidates, passages: ps, fw });
       if (v.ok || v.why === "none" || v.why === "unparsed") return v;
-      // the pick was a real number but a sentence that does not say it: withdraw THAT candidate and ask once more over the rest
+      // the pick was a real number but a sentence that does not say it. Re-ask ONCE over the rest
+      // only when the pick failed as a sentence (no_such_sentence), lacks the claim's figure, or
+      // does not bear on it (unrelated) — the pointer may have grabbed a neighbour (F4 P3). A pick
+      // rejected for polarity, an unstated name, or an opposite is a verdict on the CLAIM, not a
+      // pointing slip: re-asking shops the rest for a weaker sentence that verifies spuriously
+      // (F4 P7 F12/F14 — the first pick exonerates, the second launders). So those stop here.
+      if (v.why !== "no_such_sentence" && v.why !== "figure_missing" && v.why !== "unrelated") return v;
       const asked = parsePointerNumber(reply);
       const rest = candidates.filter((c) => c.n !== asked?.n).map((c, i) => ({ ...c, n: i + 1 }));
       if (attempt === 0 && retry && rest.length) candidates = rest; else return v;

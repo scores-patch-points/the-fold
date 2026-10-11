@@ -1,9 +1,10 @@
-// fold-chat-answerspan.test.mjs — node --test. Mechanism tests on small inline texts (the measured behaviour on REAL pages is eval/ants/p2/run.mjs).
+// eval/ants/p2/answerspan-v1-frozen.test.mjs — frozen v1 mechanism tests (see header below).
+// Imports are root-relative so the suite runs in place under `node --test`.
 // ANSWERSPAN=<path> runs the same tests against a mutated copy of the module (eval/ants/p2/mutate.mjs).
 import test from "node:test";
 import assert from "node:assert/strict";
 
-const M = await import(process.env.ANSWERSPAN || "./fold-chat-answerspan.js");
+const M = await import(process.env.ANSWERSPAN || "../../../fold-chat-answerspan.js");
 const { answerSpan, classifyAsk, verifyRewrite, quantitiesIn, datesIn, clausesOf, isMinimal, shownText, RULES } = M;
 
 const P = (text, extra = {}) => ({ text, ref: "Test — page", ...extra });

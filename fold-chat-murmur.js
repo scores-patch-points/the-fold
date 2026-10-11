@@ -84,7 +84,7 @@ export function murmurOf({ question, carried = [], rejected = [], prior = null, 
   for (const u of unknown) {
     const parts = splitRunTogether(u, fw);
     if (parts) say("suspicion", `"${u}" is one run-together token the prior has never seen; it should be "${parts[0]} ${parts[1]}" — not a name`, { token: u, split: parts, serious: true });
-    else say("unknown", `"${u}" is not in the prior: a name, a coinage, or a typo — never a name by default`, { token: u });
+    else say("unknown", `"${u}" names something the prior never met: an unresolved referent — resolve it by identity (look for what bears that name), never by the prior`, { token: u });
   }
 
   // 4. LEAN — does it point back, or name nothing of its own?
@@ -149,7 +149,7 @@ export function sentenceFor(l) {
     case "language": return l.lang && l.lang !== "en" ? `It arrives in ${LANG_NAME[l.lang] || l.lang}.` : null;
     case "subject": return l.names?.length ? `It names ${joinList(l.names.map(q))}.` : l.content?.length ? `It is about ${joinList(l.content.map(q))}.` : null;
     case "suspicion": return `You wrote ${q(l.token)}; I read that as ${q(l.split.join(" "))} — a run-together, not a name.`;
-    case "unknown": return `${cap(q(l.token))} is a word I do not hold, so I will not take it for a name.`;
+    case "unknown": return `${cap(q(l.token))} names something I have not met — I will look for what bears that name.`;
     case "referent": return l.carried?.length ? `It points back to ${joinList(l.carried)}.` : "It leans on your last turn and names no subject of its own.";
     case "warning": return "It carries no content word of its own.";
     case "caution": return l.low?.length === 1 ? `${cap(q(l.low[0]))} is a follow-up word, so I will not let it choose the source.` : `${joinList((l.low || []).map(q))} are follow-up words, so I will not let them choose the source.`;

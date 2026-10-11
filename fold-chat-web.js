@@ -561,12 +561,33 @@ export function framings(r, entities = []) {
 /** Content words of a question (no names to anchor on): length >= 4, not a declared function word.
  *  Language-neutral by construction: a script that has no such tokens yields none, and the gate
  *  then asks nothing of the result (never 'no beings'). The function-word list is the chat's own
- *  hand-typed set — a declared stopgap until the ethos-derived closed class replaces it (II.11). */
+ *  hand-typed set — a declared stopgap until the ethos-derived closed class replaces it (II.11).
+ *  PLUS identifier surfaces (referent-first, 2026-10-11): a whitespace segment carrying a separator
+ *  (src/App.js), capitals (ID.AM-1), or a digit (PyQt5) contributes its alphanumeric pieces (length ≥ 2,
+ *  never pure digits, never function words) REGARDLESS of length — a short identifier is a candidate
+ *  referent surface, and dropping it is how "dnd"/"src"/"am-1" asks lost their subject. Single letters
+ *  never count (a pronoun initial is not a name). Recall-direction only: added stems can keep a title,
+ *  never newly demote one. */
 const FUNCTION_WORDS = new Set(["what", "whats", "which", "that", "this", "these", "those", "with", "from", "about", "there", "their", "where", "when", "will", "would", "could", "should", "have", "does", "good", "best", "some", "give", "tell", "make", "need", "want", "like", "into", "than", "then", "them", "they", "your", "you're", "much", "many", "most", "more", "also", "just", "very", "really", "please", "show", "find", "help"]);
+const IDENT_SEP = /[._/\-]/;
+export function identifierPieces(q) {
+  const out = [];
+  for (const seg of String(q ?? "").split(/\s+/)) {
+    if (seg.length < 2) continue;
+    if (!IDENT_SEP.test(seg) && !/[A-Z]{2}/.test(seg) && !/\d/.test(seg)) continue;
+    for (const p of seg.match(/[\p{L}\p{N}]+/gu) || []) {
+      const f = p.toLowerCase();
+      if (f.length >= 2 && !/^\d+$/.test(f) && !FUNCTION_WORDS.has(f) && !out.includes(f)) out.push(f);
+    }
+  }
+  return out;
+}
 export function contentTerms(q) {
   const toks = String(q ?? "").toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
   const UNSPACED = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u; // a run of these is a sentence, not a word
-  return [...new Set(toks.filter((t) => t.length >= 4 && !FUNCTION_WORDS.has(t) && !/^\d+$/.test(t) && !UNSPACED.test(t)))];
+  const base = [...new Set(toks.filter((t) => t.length >= 4 && !FUNCTION_WORDS.has(t) && !/^\d+$/.test(t) && !UNSPACED.test(t)))];
+  for (const p of identifierPieces(q)) if (!base.includes(p)) base.push(p);
+  return base;
 }
 
 /** The on-topic gate, pure. With named entities: the swarm's convergence (see `framings`).

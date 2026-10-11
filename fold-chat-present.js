@@ -19,8 +19,8 @@
 // SITE_TYPE: each source's passage is drawn in its own site's typesetting (title face, body face, colours), so a
 // clipping reads as borrowed. Known sites are listed; anything else gets a neutral reading style.
 
-import { sourceDocs, falsify } from "./fold-chat-ground.js";
-import { falsifyAnswer, passagesOfRecord } from "./fold-chat-falsify-answer.js";
+import { sourceDocs, falsify, figuresIn, figureMatches } from "./fold-chat-ground.js";
+import { falsifyAnswer, passagesOfRecord, negationFlips } from "./fold-chat-falsify-answer.js";
 
 const BACKED = new Set(["corroborated", "held"]);
 /** The cross-reference of a turn: every answer sentence tried against every source read (fold-chat-falsify-answer.js).
@@ -173,7 +173,7 @@ export function presentationOf(rec, { question = "" } = {}) {
   if (mixed) checks.push({ ok: true, q: "Which parts are invented?", a: n - g ? `${n - g} of ${n} sentences are imagined; ${g} come from the sources.` : `None: all ${n} sentences come from the sources.` });
   else checks.push({ ok: g === n, q: "Is each sentence stated by a source?", a: g === n ? `Yes, all ${n}.` : `${g} of ${n}. The rest: no source states them.` });
   if (fz && fz.sources.length) {
-    const S = fz.summary, contra = fz.claims.flatMap((c) => c.witnesses.filter((w) => w.verdict === "contradicts").map((w) => ({ c, w })));
+    const S = fz.summary, contra = fz.claims.flatMap((c) => [...c.witnesses.filter((w) => w.verdict === "contradicts").map((w) => ({ c, w })), ...(c.witnesses || []).filter((w) => w.verdict !== "contradicts" && w.contraAlt).map((w) => ({ c, w: w.contraAlt }))]);
     const site = (k) => String((fz.sources.find((s) => s.key === k) || {}).ref || k).split(" \u2014 ")[0];
     checks.push({ ok: !contra.length, q: "Does any source contradict it?", a: contra.length ? `Yes: ${site(contra[0].w.src)} ${contra[0].w.why} (s${contra[0].c.i + 1}).` : `No. Each sentence was tried against all ${fz.sources.length} source${fz.sources.length === 1 ? "" : "s"}.` });
     if (S.backed) checks.push({ ok: true, q: "How many independent sources state it?", a: S.corroborated === S.backed ? `Two or more for every backed sentence.` : `${S.corroborated} sentence${S.corroborated === 1 ? "" : "s"} by 2+ sources; ${S.held} by one.` });
@@ -219,7 +219,9 @@ export function salientSentences(text, query, n = 3) {
 // (a refusal or a gap is not a falsehood, and "no null, no verdict").
 const NEG = /\b(?:not|no|never|neither|nor|none|without|n't)\b/i;
 const CMP = /\b(?:highest|lowest|most|least|largest|smallest|biggest|best|worst|first|last|only|rising|falling|increas\w*|decreas\w*|more than|less than|fewer than|lower than|higher than|greater than|compared (?:to|with)|record)\b/i;
-const CAUSE = /\b(?:because|caused|causes|led to|leads to|resulted in|due to|therefore|so that|total(?:led|s)?|in all|altogether)\b/i;
+const CAUSE = /\b(?:because|caused|causes|led to|leads to|resulted in|due to|therefore|so that|total(?:led|s)?|in all|altogether|overall|giving|making|makes?|as a result|hence)\b/i;
+// total-markers: the figure beside one is claimed as the recomputed whole ("12, 7 and 5, in total 24").
+const TOTAL_MARK = /\b(?:total(?:led|s)?|in all|altogether|overall|giving|making|makes?)\b/i;
 const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
 const QUOTE = /[“"]([^”"]{8,})[”"]/g;
 const DEF_STOP = new Set("about above after again against along among around because before being below between could during every first found given great having their there these those through under until using various where which while whose would which other often still since since".split(" "));
@@ -234,6 +236,103 @@ export const FALSIFIERS = [
   ["EVA", "Does the comparison hold against a null?", "run it against the declared null \u2014 no null, no verdict"],
   ["REC", "Is it still true on the rebuilt ground?", "re-derive the ground and re-run \u2014 covers retractions and updates"],
 ];
+/** status: held | failed | gap | refused | open (cannot be run from this record) | n/a (nothing of that kind in the answer) */
+// ---- staleness (F2 S4): speaks of the present from superseded ground ----
+// A present-tense claim ("is", "still", "current") over sources that carry supersession markers
+// (until/reclassified/demolition/former/no longer/fell) whose present-tense sentences never state the
+// claim's status: possibly stale — a gap, never a verdict of falsehood. Timeless cleans ("is 330 m",
+// with the figure stated in the present) and past-tense answers never enter it.
+const PRESENT_MARK = /\b(?:is|are|still|currently|now|today|current)\b/i;
+const SUPERSEDE_MARK = /\b(?:until|reclassified|demolition|demolished|former|no longer|fell)\b/i;
+function staleGap(answerText, passTexts) {
+  if (!PRESENT_MARK.test(answerText)) return null;
+  const src = passTexts.join(" ");
+  if (!SUPERSEDE_MARK.test(src)) return null;
+  const cw = (s) => new Set((String(s).toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []));
+  const ct = cw(answerText);
+  const figs = (String(answerText).match(/\d[\d,.]*/gu) || []).map((x) => x.replace(/,/g, ""));
+  const present = (s) => /\b(?:is|are)\b/i.test(s) && !/\b(?:was|were|until|reclassified|fell|demolition)\b/i.test(s);
+  for (const s of src.split(/(?<=[.!?])\s+/)) {
+    if (!present(s)) continue;
+    if (figs.some((f) => s.includes(f))) return null;   // the claim's figure stands in the present
+    const shared = [...cw(s)].filter((w) => ct.has(w)).length;
+    if (shared >= 3) return null;   // the claim's status stands in the present: not stale
+  }
+  return "speaks of the present from superseded ground \u2014 possibly stale, re-cut to now";
+}
+
+// ---- synthesis checks (F2 Y2/Y3/Y4): recompute the whole, back the link ----
+// Total-markers claim a recomputed whole ("12, 7 and 5, in total 24"); consequence-markers
+// (therefore/hence) claim a LINK. A verified sum holds the sentence by itself; anything else about
+// the chain must be backed or it breaks.
+const TOTAL_SUB = /\b(?:total(?:led|s)?|in all|altogether|overall|giving|making|makes?)\b/i;
+const CONSEQUENCE_MARK = /\b(?:therefore|hence|so that|as a result)\b/i;
+const cwStems = (s) => [...new Set((String(s).toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) || []).filter((w) => !FUNCW.has(w)))];
+/** the claimed total: nearest figure within 4 tokens of a total-marker (either side), or null. */
+function totalOf(text) {
+  const toks = String(text ?? "").split(/\s+/);
+  for (let i = 0; i < toks.length; i++) {
+    if (!TOTAL_SUB.test(toks[i])) continue;
+    for (const x of toks.slice(i + 1, i + 5)) { const m = String(x).match(/\d[\d,.]*/); if (m) return Number(m[0].replace(/,/g, "")); }
+    for (let j = i - 1; j >= Math.max(0, i - 4); j--) { const m = String(toks[j]).match(/\d[\d,.]*/); if (m) return Number(m[0].replace(/,/g, "")); }
+  }
+  return null;
+}
+/** sum verdict: true = recomputed and matches, false = recomputed and does not, null = no total claim
+ *  (or mixed units — recomputation needs one dimension). Parts exclude the total and 4-digit years. */
+function sumVerdict(text) {
+  const total = totalOf(text);
+  if (total == null) return null;
+  let figs = [];
+  try { figs = figuresIn(text); } catch { return null; }
+  const isY = (f) => f.numeric && !f.unit && /^\d{4}$/.test(f.norm);
+  const totalFig = figs.find((f) => f.numeric && f.v === total);
+  const parts = figs.filter((f) => f.numeric && f !== totalFig && !isY(f));
+  if (parts.length < 2) return null;
+  const dim = totalFig?.unit?.dim || (parts.every((f) => !f.unit) ? "bare" : null);
+  if (!dim || !parts.every((f) => (f.unit ? f.unit.dim === dim : dim === "bare"))) return null;
+  const sum = parts.reduce((a, f) => a + (f.unit ? f.v * f.unit.f : f.v), 0);
+  const tval = totalFig?.unit ? total * totalFig.unit.f : total;
+  return Math.abs(sum - tval) < 1e-9 * Math.max(1, Math.abs(tval));
+}
+const sumMismatch = (text) => sumVerdict(text) === false;
+/** the cause-link is backed: EVERY content stem of the complement (after the first cause-marker)
+ *  stands somewhere in what was read. "Because of gunpowder" with no gunpowder anywhere breaks; "because
+ *  they had no fresh fruit" with the sentence verbatim holds. Single-stem overlap ("Southampton" while
+ *  "set out" is nowhere) is not backing — the link's own words must all be met. */
+function causeUnbacked(text, passTexts) {
+  const m = String(text ?? "").match(CAUSE);
+  if (!m) return false;
+  const comp = cwStems(String(text).slice(m.index + m[0].length));
+  if (!comp.length) return false;
+  const hay = new Set(passTexts.flatMap((p) => cwStems(p)));
+  return !comp.every((w) => hay.has(w));
+}
+/** a chain sentence resting on a figure no source states ("…making 90" where 90 is printed nowhere). */
+function chainFigUnstated(text, passTexts) {
+  let figs = [];
+  try { figs = figuresIn(text); } catch { return false; }
+  if (!figs.length) return false;
+  const hay = passTexts.join(" ");
+  let hayFigs = [];
+  try { hayFigs = figuresIn(hay); } catch { hayFigs = []; }
+  return figs.some((c) => !hayFigs.some((w) => { try { return figureMatches(c, w); } catch { return false; } }));
+}
+const BE_LIKE = new Set(["am", "is", "are", "was", "were", "be", "been", "being", "has", "have", "had"]);
+/** post hoc: a consequence-marker joining the SAME non-be verb on both sides about DIFFERENT subjects
+ *  ("fell in 476, therefore Eastern fell") — the same event twice is not shown to be cause and effect.
+ *  A gap, never failed. No clean answer uses therefore/hence/so-that/as-a-result, by construction. */
+function postHocGap(text) {
+  const m = String(text ?? "").match(CONSEQUENCE_MARK);
+  if (!m) return false;
+  const pre = String(text).slice(0, m.index), post = String(text).slice(m.index + m[0].length);
+  const verbs = (s) => [...new Set((String(s).toLowerCase().match(/[\p{L}]{3,}/gu) || []).filter((w) => !FUNCW.has(w) && !BE_LIKE.has(w)))];
+  const shared = verbs(pre).filter((v) => verbs(post).includes(v));
+  if (!shared.length) return false;
+  const subj = (s) => { const mm = String(s).match(/([\p{Lu}][\p{L}'’-]+(?:\s+[\p{Lu}][\p{L}'’-]+)*)/u); return mm ? mm[1].toLowerCase() : ""; };
+  const a = subj(pre), b = subj(post);
+  return !!a && !!b && !(a.includes(b) || b.includes(a));
+}
 /** status: held | failed | gap | refused | open (cannot be run from this record) | n/a (nothing of that kind in the answer) */
 export function falsifiersOf(rec, { meanChecks = null, fz = null } = {}) {
   const resp = rec?.facing?.response || [], text = resp.map((r) => r.text).join(" ");
@@ -254,19 +353,59 @@ export function falsifiersOf(rec, { meanChecks = null, fz = null } = {}) {
   const badQ = quotes.filter((q) => !srcText.includes(q.toLowerCase()));
   row(2, badQ.length ? "failed" : (rec?.facing?.sources || []).length ? "held" : "n/a", badQ.length ? `quoted words not found in the bytes: \u201c${badQ[0].slice(0, 50)}\u201d` : quotes.length ? `${quotes.length} quotation${quotes.length === 1 ? "" : "s"} found verbatim` : "every cited passage is checked to occur in the page it came from");
   const ag = rec?.agreement && rec.agreement.groups?.length > 1 ? rec.agreement : null;
-  row(3, nums.length ? "failed" : ag ? "gap" : "held", nums.length ? `${nums.slice(0, 3).join(", ")} \u2014 a figure no source gives` : ag ? `sources give ${ag.groups.map((x) => x.label).join(" / ")} \u2014 different moments or scopes; the answer's must be re-cut to its scope` : "dates and figures match the sources' own");
-  // a polarity flip only when the negation governs something the claim says: a content word of the claim within the four
-  // words after the source's (or the claim's) "not"
-  const scopeHas = (neg, other) => { const ow = new Set((String(other).toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || [])); const ws = String(neg).toLowerCase().split(/\s+/); return ws.some((w, i) => NEG.test(w) && ws.slice(i + 1, i + 5).some((x) => ow.has(x.replace(/[^\p{L}\p{N}]/gu, "")))); };
+  // ---- SEG figure grain, referent-first repair (F2 S2b/S3/S4/S5/S6) ----
+  // The old rule (any unstated figure → failed) could not see attachment: a stated figure on the
+  // wrong event ("fell in 1961") read held, and honest derivation ("22 June", "28 years") read failed.
+  // Now: failed on positive contradiction (same-kind stated, a figure-clash witness, a role reversal);
+  // gap on the unverifiable (unstated figures/names, possibly-stale present-tense).
+  const fzContraAll = (fz?.claims || []).flatMap((c) => [
+    ...c.witnesses.filter((w) => w.verdict === "contradicts").map((w) => ({ c, w })),
+    ...(c.witnesses || []).filter((w) => w.verdict !== "contradicts" && w.contraAlt).map((w) => ({ c, w: w.contraAlt })),
+  ]);
+  const clashContra = fzContraAll.filter(({ w }) => w.kind === "figure");
+  const roleContra = fzContraAll.filter(({ w }) => w.kind === "role");
+  const passTexts = passagesOfRecord(rec).map((p) => String(p.text ?? ""));
+  const hayFigs = passTexts.flatMap((t) => { try { return figuresIn(t); } catch { return []; } });
+  const ansFigs = (() => { try { return figuresIn(text); } catch { return []; } })();
+  const isYear4 = (f) => f.numeric && !f.unit && /^\d{4}$/.test(f.norm) && f.v >= 1000 && f.v <= 2200;
+  const sameKind = (c) => hayFigs.some((w) => w.norm !== c.norm && ((c.unit && w.unit && c.unit.dim === w.unit.dim) || (isYear4(c) && isYear4(w)) || (!c.unit && !w.unit && c.norm.endsWith("%") && w.norm.endsWith("%"))));
+  const unFigs = ansFigs.filter((f) => nums.includes(f.norm));
+  const contradictedNums = unFigs.filter((c) => sameKind(c));
+  // unstated names past the sentence opener: a swapped-in place/entity reads gap, never held — while a
+  // sentence-initial capital ("Construction of the wall…") is position, not a name, and stays out.
+  const occursPastOpener = (nm) => { const low = String(text).toLowerCase(), n = String(nm).toLowerCase(); let i = low.indexOf(n); while (i >= 0) { const pre = String(text).slice(0, i); if (i > 0 && /[\p{L}\p{N}]/u.test(pre) && !/[.!?]\s*$/.test(pre)) return true; i = low.indexOf(n, i + 1); } return false; };
+  const strayNames = names.filter(occursPastOpener);
+  const stale = staleGap(text, passTexts);
+  const segFailed = contradictedNums.length || clashContra.length || roleContra.length;
+  const segGap = !segFailed && (nums.length || strayNames.length || stale || ag);
+  row(3, segFailed ? "failed" : segGap ? "gap" : "held",
+    segFailed ? (contradictedNums.length ? `${contradictedNums.slice(0, 3).map((f) => f.raw).join(", ")} \u2014 a figure no source gives for what it is attached to` : `${clashContra.concat(roleContra).slice(0, 2).map(({ w }) => w.why).join("; ")}`)
+    : nums.length ? `${nums.slice(0, 3).join(", ")} \u2014 stated nowhere (unverified, not disproven)`
+    : strayNames.length ? `${strayNames.slice(0, 3).join(", ")} \u2014 named in the answer, never read`
+    : stale ? stale
+    : ag ? `sources give ${ag.groups.map((x) => x.label).join(" / ")} \u2014 different moments or scopes; the answer's must be re-cut to its scope` : "dates and figures match the sources' own");
+  // a polarity flip only when the negation governs something the claim says: the negated PREDICATE
+  // (first content after the negator) committed to by the other side, about the SAME proposition
+  // (same clause-subject). One rule for the k6 branch and the cross-reference branch: scopeHas delegates
+  // to falsify-answer.js :: negationFlips (F2 C1/C5 — "did not win" vs "was fought", "no doubt" vs "stands",
+  // "not only divided" vs "divided", "did not remain" vs "Collins remained" must none of them flip).
+  const scopeHas = (neg, other) => {
+    const stems = (String(other).toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []);
+    return negationFlips(neg, other, stems);
+  };
   const flips = mc.filter((c) => c.meaning?.sourceSentence && NEG.test(c.s) !== NEG.test(c.meaning.sourceSentence) && (c.meaning.level === "same" || c.meaning.level === "related") && (NEG.test(c.s) ? scopeHas(c.s, c.meaning.sourceSentence) : scopeHas(c.meaning.sourceSentence, c.s)));
   const off = mc.filter((c) => c.meaning && c.meaning.level === "touches");
-  const fzContra = (fz?.claims || []).flatMap((c) => c.witnesses.filter((w) => w.verdict === "contradicts").map((w) => ({ c, w })));
+  const fzContra = fzContraAll.filter(({ w }) => w.kind !== "figure");
+  // Figure-clash witnesses ("gives 324 where the claim says 330") are SEG's business — the agreement
+  // gap already says it (F2 C7: a figure disagreement between sources must not fail CON, whose question
+  // is links). Role reversals ("reverses who did what to whom") ARE link failures and fail here (F2 C4).
   if (fzContra.length) row(4, "failed", `s${fzContra[0].c.i + 1}: ${fzContra[0].w.src} ${fzContra[0].w.why}`);
-  else if (!mc.length && fz?.claims?.length) { const linked = fz.claims.filter((c) => c.witnesses.some((w) => w.verdict === "states")); row(4, linked.length ? "held" : "gap", linked.length ? `${plural(linked.length, "claim")} link the same things a source links, read in the cross-reference` : "no claim's link is stated by a source \u2014 a gap, not a contradiction"); }
-  else row(4, flips.length ? "failed" : off.length ? "gap" : mc.length ? "held" : "gap", flips.length ? `s${mc.indexOf(flips[0]) + 1} reverses the source's polarity (one says not, the other does not)` : off.length ? `${off.length} claim${off.length === 1 ? "" : "s"} name the same thing but link it to something else` : mc.length ? "each link matches a link a source makes, same direction" : "links not read as relations in this turn");
+  else if (!mc.length && fz?.claims?.length) { const linked = fz.claims.filter((c) => c.witnesses.some((w) => w.verdict === "states")); const scored = fz.claims.filter((c) => c.verdict !== "n/a"); row(4, linked.length && scored.every((c) => linked.includes(c)) ? "held" : "gap", linked.length && scored.every((c) => linked.includes(c)) ? `${plural(linked.length, "claim")} link the same things a source links, read in the cross-reference` : "no claim's link is stated by a source \u2014 a gap, not a contradiction"); }
+  else row(4, flips.length ? "failed" : off.length ? "gap" : mc.some((c) => c.meaning && c.meaning.level === "none") ? "gap" : mc.length ? "held" : "gap", flips.length ? `s${mc.indexOf(flips[0]) + 1} reverses the source's polarity (one says not, the other does not)` : off.length ? `${off.length} claim${off.length === 1 ? "" : "s"} name the same thing but link it to something else` : mc.some((c) => c.meaning && c.meaning.level === "none") ? "a claim's link is matched nowhere \u2014 held would claim every link matched" : mc.length ? "each link matches a link a source makes, same direction" : "links not read as relations in this turn");
   const chain = resp.filter((r) => CAUSE.test(r.text));
-  const brokenChain = chain.filter((r) => !r.grounded && !mc.some((c) => c.s === r.text && c.meaning && c.meaning.level !== "none" && c.meaning.level !== "touches"));
-  row(5, !chain.length ? "n/a" : brokenChain.length ? "failed" : "held", !chain.length ? "no total or causal chain in the answer" : brokenChain.length ? `${brokenChain.length} link${brokenChain.length === 1 ? "" : "s"} of a causal chain stand on no source` : `each link of ${chain.length} causal step${chain.length === 1 ? "" : "s"} is sourced`);
+  const brokenChain = chain.filter((r) => sumMismatch(r.text) || causeUnbacked(r.text, passTexts) || chainFigUnstated(r.text, passTexts) || (!r.grounded && !mc.some((c) => c.s === r.text && c.meaning && c.meaning.level !== "none" && c.meaning.level !== "touches")));
+  const postHocChain = chain.filter((r) => !brokenChain.includes(r) && postHocGap(r.text));
+  row(5, !chain.length ? "n/a" : brokenChain.length ? "failed" : postHocChain.length ? "gap" : "held", !chain.length ? "no total or causal chain in the answer" : brokenChain.length ? `${brokenChain.length} link${brokenChain.length === 1 ? "" : "s"} of a causal chain stand on no source` : postHocChain.length ? "the same event twice is not shown to be cause and effect (post hoc) \u2014 a gap, not a refutation" : `each link of ${chain.length} causal step${chain.length === 1 ? "" : "s"} is sourced`);
   // DEF: each term the answer leans on, against the definition the material gives for it ("X is …", "X refers to …").
   // Used inside it: the answer's sentence shares the definition's content. No definition read: a gap, never "true".
   const readTxt = [...(rec?.tape || []).filter((e) => e.kind === "quick").map((e) => String(e.p?.text || "")), ...(rec?.facing?.sources || []).map((s) => [s.before, s.mark, s.after].join(" "))].map((x) => x.slice(0, 4000));
@@ -317,7 +456,7 @@ export function falsifiersOf(rec, { meanChecks = null, fz = null } = {}) {
     [cell(read.length ? "held" : "refused", `${plural(read.length, "page")} read from ${plural(domains.length, "site")}${engines.length ? " via " + engines.join(", ") : ""}`), backedSrc.length > 1 ? cell("held", `attested by ${backedSrc.length} different sites: ${backedSrc.slice(0, 3).join(", ")}`) : backedSrc.length === 1 ? cell("gap", `every attestation traces to one site (${backedSrc[0]})`) : cell("refused", "no attestation to trace")],
     [cell(read.length ? "held" : "open", read.length ? "pages fetched whole and cut to passages; nothing was paraphrased into the record" : "no document to authenticate"), marks.length ? cell(copies ? "held" : "gap", copies ? `${copies} cited passage${copies === 1 ? "" : "s"} appear verbatim in more than one page` : "each cited passage appears in one page only") : cell("n/a", "no cited passage")],
     [cell(years.length ? "held" : "open", years.length ? `the record spans ${years[0]}${years.length > 1 ? "\u2013" + years[years.length - 1] : ""}` : "no dates in what it read to bound the scope"), cell("open", "the cut is not re-checked against later records")],
-    [cell(mc.length ? "held" : "open", mc.length ? `${plural(mc.length, "claim")} read as relations against the sources'` : "relations not read in this turn"), ag && ag.groups.length === 1 && ag.groups[0].sources.length > 1 ? cell("held", `${ag.groups[0].sources.length} independent pages bind the same value`) : ag ? cell("failed", "independent pages bind different values") : cell("open", "only one source per edge was compared")],
+    [cell(mc.length ? "held" : "open", mc.length ? `${plural(mc.length, "claim")} read as relations against the sources'` : "relations not read in this turn"), ag && ag.groups.length === 1 && ag.groups[0].sources.length > 1 ? cell("held", `${ag.groups[0].sources.length} independent pages bind the same value`) : ag ? cell("gap", "independent pages bind different values \u2014 a figure disagreement, SEG's gap to re-cut, never a link failure") : cell("open", "only one source per edge was compared")],
     [cell(totals ? "held" : "n/a", totals ? `${totals} page${totals === 1 ? "" : "s"} state a total` : "no totals stated"), cell(chain.length ? "open" : "n/a", chain.length ? "the composition is not compared across periods" : "nothing composed")],
     [cell(defs ? "held" : "open", defs ? `${defs} page${defs === 1 ? "" : "s"} carry a definition` : "no definitions carried by what it read"), cell("open", "usage drift across the document is not measured")],
     [cell(cmp.length ? "open" : "n/a", cmp.length ? "no baseline declared for this measure" : "no measure to set a baseline for"), cell(cmp.length ? "open" : "n/a", cmp.length ? "no held-out cases" : "nothing to hold out")],

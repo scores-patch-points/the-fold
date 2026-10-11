@@ -10,7 +10,13 @@
 //   isName(form)      -> the form is tagged a proper noun more than anything else
 //   salientTerms(text)-> the ask's measured, content-bearing terms (salience >= floor), most salient first,
 //                        with the forms the prior could NOT measure listed apart (never silently dropped)
-//   rankBySalience(...) -> order candidates by how much of the ask's SALIENT matter they carry
+//   identity(text)    -> the unmeasured forms reframed: candidate REFERENT surfaces (a rare name, a coinage,
+//                        a typo, an identifier) — unresolved, never salience. A word is a surface; a referent
+//                        is the being it may name. Ranking by identity resolves by identity; the prior never
+//                        refuses what it never measured.
+//   rankBySalience(...) -> order candidates by referent identity first (a title bearing the ask's unresolved
+//                        referent outranks generic salience matches), then by how much of the ask's SALIENT
+//                        matter they carry
 //
 // It never guesses: an unseen form is `unmeasured`, not assumed content or function. Pure, no IO.
 import { SALIENCE_PRIOR, SALIENCE_PRIOR_SCHEMA, SALIENCE_PRIOR_SOURCE } from "./fold-chat-salience-prior.js";
@@ -35,7 +41,13 @@ export function isName(form) { return (SALIENCE_PRIOR[fold(form)] || 0) >= 8; }
  * The ask's measured terms. Returns:
  *   terms      [{ form, salience }] with a measured salience >= floor, deduped, most salient first
  *   unmeasured forms the prior never saw and that are not a known function word (a rare name, a coinage)
- *   measured   false when NOTHING in the ask was measurable (no prior coverage) — a typed gap, not a guess
+ *   identity   the SAME unmeasured forms reframed as candidate referent surfaces: what the ask may NAME
+ *              that the prior cannot read. Never salience, never a guess at meaning — the handle a
+ *              referent-first retrieval resolves by identity (title bearing the surface outranks a
+ *              generic salience match). Empty exactly when unmeasured is empty.
+ *   measured   false when NOTHING in the ask was measurable (no prior coverage) — a typed gap, not a guess.
+ *              A measured:false ask WITH identity still ranks by identity: no prior coverage is a fact
+ *              about the prior, never a refusal of the question.
  * The function class is read from the real prior too: a form absent from SALIENCE_PRIOR **and** absent from
  * FUNCTION_WORDS is `unmeasured`; absent and in FUNCTION_WORDS is simply not salient (who/the/is/of).
  */
@@ -48,29 +60,35 @@ export function salientTerms(text, { floor = 0.5, max = 8, functionWords = EN_FW
     if (s >= floor) seen.set(stemOf(t), { form: t, stem: stemOf(t), salience: s });
   }
   const terms = [...seen.values()].sort((a, b) => b.salience - a.salience || (a.form < b.form ? -1 : 1)).slice(0, max);
-  return { terms, unmeasured, measured: terms.length > 0 };
+  return { terms, unmeasured, identity: [...unmeasured], measured: terms.length > 0 };
 }
 
 /** The salience weight a form contributes to a match (0 when unmeasured). */
 const weight = (form) => salienceOf(form) || 0;
 
 /**
- * Order candidates by how much of the ask's SALIENT matter each carries. A candidate's own words are read
+ * Order candidates by REFERENT IDENTITY first, then by salience. A candidate's own words are read
  * the same way; its TITLE counts double (a page named for the subject is about it). Matching is stem-folded,
- * so "presidents" answers an ask about "president". Returns the reordered list (stable: ties keep their
- * order) with a per-candidate score, and the ask's terms.
+ * so "presidents" answers an ask about "president". An unresolved referent surface (identity) borne in a
+ * title outranks generic salience matches: the ask is about the being it names, not about the words
+ * around it. Returns the reordered list (stable: ties keep their order) with a per-candidate score,
+ * the ask's terms, and the identity hits per candidate ({ title, body }).
  *   candidates: [{ title, snippet?, url?, ... }]
  */
 export function rankBySalience(candidates, ask, { titleOf = (c) => String(c?.title ?? ""), snippetOf = (c) => String(c?.snippet ?? ""), floor = 0.5 } = {}) {
   const list = Array.isArray(candidates) ? candidates : [];
-  const { terms, measured } = salientTerms(ask, { floor });
-  if (!measured) return { ranked: list, scores: list.map(() => 0), terms, measured: false };
+  const { terms, measured, identity } = salientTerms(ask, { floor });
+  const idStems = new Set((identity || []).map(stemOf));
   const scored = list.map((c, i) => {
     const inTitle = new Set(tokens(titleOf(c)).map(stemOf)), inBody = new Set(tokens(snippetOf(c)).map(stemOf));
     let score = 0;
     for (const { stem, salience } of terms) { if (inTitle.has(stem)) score += 2 * salience; else if (inBody.has(stem)) score += salience; }
-    return { c, i, score };
+    let idTitle = 0, idBody = 0;
+    for (const s of idStems) { if (inTitle.has(s)) idTitle++; else if (inBody.has(s)) idBody++; }
+    return { c, i, score, idTitle, idBody };
   });
-  scored.sort((a, b) => b.score - a.score || a.i - b.i);
-  return { ranked: scored.map((x) => x.c), scores: scored.map((x) => x.score), terms, measured: true };
+  // Identity first (a title bearing the ask's unresolved referent), then salience, then body identity.
+  // With no identity terms this reduces exactly to the old salience order.
+  scored.sort((a, b) => b.idTitle - a.idTitle || b.score - a.score || b.idBody - a.idBody || a.i - b.i);
+  return { ranked: scored.map((x) => x.c), scores: scored.map((x) => x.score), terms, measured, identity, identityHits: scored.map((x) => ({ title: x.idTitle, body: x.idBody })) };
 }
