@@ -423,3 +423,67 @@ export function serializeAbstractions(registry) {
     meta: freeze({ ...r.meta }),
   });
 }
+
+/**
+ * recordReading — THE WRITE PATH (2026-10-11). A reading (a seam epoch: a
+ * population encountered with its recognized differences) admits one
+ * abstraction row per declared cell as a CANDIDATE. Coherence never earns at
+ * this door: every row lands candidate / released:false, witnessed, and must
+ * later pass a measured consequence to shape the mind (priorsFromRegistry
+ * ignores un-earned rows). `reading.cells` = [{ op, grain, terrain, id,
+ * memberRefs, witnesses, firstAt, lastAt, meta (may carry per-referent
+ * `rates`), validation }]. Pure; returns a new frozen registry.
+ */
+export function recordReading(registry, reading = {}) {
+  const id = String(reading.id ?? "").trim();
+  if (!id) throw new TypeError("recordReading requires a reading id");
+  const cells = Array.isArray(reading.cells) ? reading.cells : [];
+  let r = normalizeAbstractionRegistry(registry);
+  for (const cell of cells) {
+    const op = cell?.op;
+    if (!op) continue;
+    const grain = cell.grain ?? "Pattern";
+    const hint = { op, grain, ...(cell.terrain ? { terrain: cell.terrain } : {}) };
+    r = admitAbstraction(r, {
+      ...hint,
+      id: cell.id ?? undefined,
+      depth: cell.depth ?? 0,
+      referentType: cell.referentType ?? "reading-participant",
+      memberRefs: [...(cell.memberRefs ?? [])],
+      witnesses: [...(cell.witnesses ?? [])],
+      firstAt: cell.firstAt ?? null,
+      lastAt: cell.lastAt ?? null,
+      meta: freeze({ ...(cell.meta ?? {}), reading: id }),
+    });
+  }
+  return r;
+}
+
+/**
+ * priorsFromRegistry — THE MIND'S SOURCE (2026-10-11). The accumulated
+ * EARNED/GIVEN takings become the received prior that conditions the next
+ * reading. Only rows that release (releaseDecision) contribute — a candidate,
+ * however coherent, shapes nothing (the fold self-audit ruling). Per-referent
+ * expectation rates ride on `row.meta.rates` when the reading declared them.
+ * Returns { schema: "EOReceivedPrior@1", entries: [{ referent, standing,
+ * terrain, basis, rate }] }.
+ */
+export function priorsFromRegistry(registry) {
+  const r = normalizeAbstractionRegistry(registry);
+  const entries = [];
+  for (const row of Object.values(r.abstractions)) {
+    const release = releaseDecision(r, { id: row.id });
+    if (!release.released) continue;
+    for (const ref of row.memberRefs ?? []) {
+      const rate = row.meta?.rates?.[ref] ?? row.meta?.rate ?? null;
+      entries.push(freeze({
+        referent: ref,
+        standing: row.standing,
+        terrain: row.terrain,
+        basis: row.provenance.basis,
+        ...(rate != null ? { rate } : {}),
+      }));
+    }
+  }
+  return freeze({ schema: "EOReceivedPrior@1", entries: freeze(entries) });
+}
