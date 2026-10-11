@@ -50,6 +50,7 @@ import { continuesByAnaphora } from "./fold-chat-anaphora.js";   // G3: does the
 import { murmurOf, murmurSay, interpretPrompt } from "./fold-chat-murmur.js";   // the modelless deliberation + the mouth's interpret-only prompt
 import { healedCorrections, healQuestion } from "./fold-chat-heal.js";   // the fold repairs its own misreadings from past lessons
 import { proposalsOf, lessonsPrompt, readAsLine } from "./fold-chat-lessons.js";   // the model is FED the perfected context + past lessons
+import { lintTurn } from "./fold-chat-reason-lint.js";   // the modelless Kelsen chain-lint: derive claims from the read, lint each inference, murmur the findings
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
 import { castOf } from "./fold-chat-casts.js";
 import { claimsOfTurn, appendClaims, pointerOf } from "./fold-chat-record.js";
@@ -2345,7 +2346,7 @@ export function mount(root, opts = {}) {
     // never answered from parametric memory. The weave (ungrounded single-draw)
     // is retired from this path for that reason.
     let surfedUrls = [], asideUrls = [];
-    let webPassages = [], webTrace = null, sourceBlock = null, webResults = [], bookFound = null;
+    let webPassages = [], webTrace = null, sourceBlock = null, webResults = [], bookFound = null, reasonLint = null;
     let turnPages = [];   // the FULL pages this turn read — memory only, never stored or sent; the REC loop recalls against them
     // ALWAYS GROUNDED: every turn that makes or needs a claim seeks sources first. There
     // is no ungrounded/oracle path — the fold reads before it answers. (An
@@ -2525,6 +2526,14 @@ export function mount(root, opts = {}) {
             // THE HOLOGRAPH THE MODEL READS: each passage cut to its most salient sentences — the same ones the panel parses —
             // so a small model sees the claims, not a page's tagline. The full passages stay the material the answer is checked against.
             sourceBlock = sourcesPrompt(webPassages.map((p) => { const sal = salientSentences(p.text, searchQ, 4); return sal.length >= 2 ? { ...p, text: sal.join(" ") } : p; })) + (webPassages.some((p) => p.recipe) ? "\n\n" + CARD_PROMPT : "");
+            // THE MODELLESS REASON LINT (2026-10-11): derive claims from the read, lint each inference with the
+            // vendored Kelsen linter at strict, and murmur what the lint found — never a model, never a finding that
+            // was not produced. What cannot be recovered is a typed gap, spoken as such.
+            try {
+              const rl = lintTurn({ passages: webPassages });
+              if (rl.lines.length && murmur && murmur.lines) for (const l of rl.lines) murmur.lines.push(l);
+              reasonLint = { claims: rl.claims.length, findings: rl.findings.length, ok: rl.ok };
+            } catch (e) { reasonLint = { claims: 0, findings: 0, ok: false, why: String(e?.message || e).slice(0, 120) }; }
             say(`turn · ${kindWord} · read ${webPassages.length} source(s) · ${placeLabel(m)} · answering…`);
           }
         } catch (e) {
@@ -3121,6 +3130,8 @@ export function mount(root, opts = {}) {
       // A strand is never SCORED: its words are the sources', not a claim of ours (turnRecord gets an empty answer).
       const record = recordable(kind) ? ground.turnRecord(strand ? "" : text, material, { turn, question: lastUser?.content || "", model: m.id, sealed: !!m.sealed, effort }) : null;
       if (record && webTrace) record.web = webTrace;
+      // the modelless reason lint of this turn's read — what the Kelsen linter actually found (or did not find)
+      if (record && reasonLint) record.reasonLint = reasonLint;
       // what this turn read, kept (clipped) so a follow-up can use and cite it without searching again
       if (record && webPassages.length) record.passages = webPassages.slice(0, 8).map((p) => ({ ref: p.ref, source: p.source, url: p.url, title: p.title, domain: p.domain, text: String(p.text || "").slice(0, 3000), shadow: p.shadow ? { chars: p.shadow.chars, hash: p.shadow.hash, segments: p.shadow.segments } : undefined }));   // 3000 = IMPRESSION_BUDGET, so a claim's support span is never cut off the stored text; the shadow maps a span back to the page (impression.js originalSpan)
       if (record && recLoop) {
