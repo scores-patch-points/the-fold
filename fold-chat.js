@@ -51,6 +51,7 @@ import { murmurOf, murmurSay, interpretPrompt } from "./fold-chat-murmur.js";   
 import { healedCorrections, healQuestion } from "./fold-chat-heal.js";   // the fold repairs its own misreadings from past lessons
 import { proposalsOf, lessonsPrompt, readAsLine } from "./fold-chat-lessons.js";   // the model is FED the perfected context + past lessons
 import { lintTurn } from "./fold-chat-reason-lint.js";   // the modelless Kelsen chain-lint: derive claims from the read, lint each inference, murmur the findings
+import { modelCallRule } from "./fold-chat-model-rule.js";   // THE RULE: the mouth speaks what the fold established — every barred turn names its rule on the record
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
 import { castOf } from "./fold-chat-casts.js";
 import { claimsOfTurn, appendClaims, pointerOf } from "./fold-chat-record.js";
@@ -2526,14 +2527,8 @@ export function mount(root, opts = {}) {
             // THE HOLOGRAPH THE MODEL READS: each passage cut to its most salient sentences — the same ones the panel parses —
             // so a small model sees the claims, not a page's tagline. The full passages stay the material the answer is checked against.
             sourceBlock = sourcesPrompt(webPassages.map((p) => { const sal = salientSentences(p.text, searchQ, 4); return sal.length >= 2 ? { ...p, text: sal.join(" ") } : p; })) + (webPassages.some((p) => p.recipe) ? "\n\n" + CARD_PROMPT : "");
-            // THE MODELLESS REASON LINT (2026-10-11): derive claims from the read, lint each inference with the
-            // vendored Kelsen linter at strict, and murmur what the lint found — never a model, never a finding that
-            // was not produced. What cannot be recovered is a typed gap, spoken as such.
-            try {
-              const rl = lintTurn({ passages: webPassages });
-              if (rl.lines.length && murmur && murmur.lines) for (const l of rl.lines) murmur.lines.push(l);
-              reasonLint = { claims: rl.claims.length, findings: rl.findings.length, ok: rl.ok };
-            } catch (e) { reasonLint = { claims: 0, findings: 0, ok: false, why: String(e?.message || e).slice(0, 120) }; }
+            // (the modelless reason lint runs ONCE, on the FINAL passages of the turn — after the search, the
+            // encyclopedia's originals and the carried thread — see the modelBarred site below)
             say(`turn · ${kindWord} · read ${webPassages.length} source(s) · ${placeLabel(m)} · answering…`);
           }
         } catch (e) {
@@ -2644,7 +2639,26 @@ export function mount(root, opts = {}) {
       try { const probe = await sensesProbe; clarify = probe && probe.results ? disambiguationOf(probeTerm, probe.results) : null; } catch (e) { clarify = null; }
       if (clarify) followup = { question: `Which ${clarify.term} did you mean?`, options: (clarify.senses || []).map((s) => s.label).filter(Boolean).slice(0, 6) };
     }
+    // THE MODELLESS REASON LINT, ONCE PER TURN, ON THE FINAL PASSAGES (user, 2026-10-11): the search's reads,
+    // the encyclopedia's originals, and the thread's carried passages are all in webPassages now. Derive the
+    // claims in the turn's own language, lint every inference with the vendored Kelsen linter at strict, and
+    // murmur what the lint found — never a model, never a finding that was not produced. A follow-up is linted
+    // against exactly what the reply will rest on; a turn with no passages simply has nothing to lint.
+    try {
+      const rl = lintTurn({ passages: webPassages, lang: lang0 && lang0 !== "unknown" ? lang0 : undefined });
+      if (rl.lines.length && murmur && murmur.lines) {
+        for (const l of rl.lines) murmur.lines.push(l);
+        try { const mm = body.querySelector(".murmur"); if (mm) mm.textContent = murmurSay(murmur).join(" "); } catch (e) {}
+      }
+      reasonLint = { claims: rl.claims.length, findings: rl.findings.length, ok: rl.ok, lang: rl.lang };
+      if (reasonLint.claims) feedPush(lineEvent(tt, "chain-lint", { tone: reasonLint.ok ? "ok" : "warn", note: rl.lines.map((l) => l.text).join(" · ").slice(0, 240) }));
+    } catch (e) { reasonLint = { claims: 0, findings: 0, ok: false, lang: lang0 || null, why: String(e?.message || e).slice(0, 120) }; }
+    // THE MODEL-CALL RULE (fold-chat-model-rule.js, user 2026-10-11): the mouth speaks what the fold already
+    // established. Every barred kind names its rule on the record; an allowed call is R0 — steer, residue,
+    // prosify — never know, decide, or reason.
+    const barReasons = { plan, strand, aloneBarred, clarify, gateRefused: !!(genGate && !genGate.ok) };
     const modelBarred = !!(plan || strand || aloneBarred || clarify || (genGate && !genGate.ok));
+    let modelRule = modelBarred ? modelCallRule(barReasons) : { allowed: true, rule: "R0_MOUTH", why: "the fold established the material; the model only phrases it — steer the perfected context, speak the small residue, prosify the result" };
     // The reading panel's writing stage, fired once it is known who writes this turn: by:"mechanical" on a
     // Sources-only / no-model turn, so the panel never claims a model wrote the sources' own words.
     try { pvLive?.writing(modelBarred ? "mechanical" : "model"); } catch {}
@@ -3132,6 +3146,9 @@ export function mount(root, opts = {}) {
       if (record && webTrace) record.web = webTrace;
       // the modelless reason lint of this turn's read — what the Kelsen linter actually found (or did not find)
       if (record && reasonLint) record.reasonLint = reasonLint;
+      // the model-call decision — the named rule this turn ran under, so every call or non-call is auditable
+      if (record && modelRule) record.modelRule = modelRule;
+      if (record && lang0) record.lang = lang0;
       // what this turn read, kept (clipped) so a follow-up can use and cite it without searching again
       if (record && webPassages.length) record.passages = webPassages.slice(0, 8).map((p) => ({ ref: p.ref, source: p.source, url: p.url, title: p.title, domain: p.domain, text: String(p.text || "").slice(0, 3000), shadow: p.shadow ? { chars: p.shadow.chars, hash: p.shadow.hash, segments: p.shadow.segments } : undefined }));   // 3000 = IMPRESSION_BUDGET, so a claim's support span is never cut off the stored text; the shadow maps a span back to the page (impression.js originalSpan)
       if (record && recLoop) {
