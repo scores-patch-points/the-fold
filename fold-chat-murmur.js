@@ -147,6 +147,7 @@ export function sentenceFor(l) {
     case "interpretation": return `So I am reading the question as being about ${joinList(l.about.split(" and "))}.`;
     case "plan": return "I will look for that, and show only what a source actually says.";
     case "heal": return `A past lesson taught me to read ${q(l.from)} as ${q(l.to)}.`;
+    case "interpreted": return `I could not read the ask, so I asked the mouth what you meant: it read ${q(l.from)} as ${q(l.to)}.`;
     default: return null;
   }
 }

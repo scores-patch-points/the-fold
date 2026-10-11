@@ -47,7 +47,7 @@ import { hintsFor } from "./fold-chat-hints.js";
 import { admitReferents, emptyReferents } from "./fold-chat-mind.js";
 import { applyCarry } from "./fold-chat-carry.js";
 import { continuesByAnaphora } from "./fold-chat-anaphora.js";   // G3: does the ask lean on the earlier turn? one verdict, pure code
-import { murmurOf, murmurSay } from "./fold-chat-murmur.js";      // the modelless deliberation about what the question is
+import { murmurOf, murmurSay, interpretPrompt } from "./fold-chat-murmur.js";   // the modelless deliberation + the mouth's interpret-only prompt
 import { healedCorrections, healQuestion } from "./fold-chat-heal.js";   // the fold repairs its own misreadings from past lessons
 import { proposalsOf, lessonsPrompt, readAsLine } from "./fold-chat-lessons.js";   // the model is FED the perfected context + past lessons
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
@@ -2216,6 +2216,27 @@ export function mount(root, opts = {}) {
     try {
       perfected = [lessonsPrompt(proposalsOf(localStorage)), readAsLine(murmur), healedRead && healedRead.healed ? `The ask was received with "${healedRead.from}" and is read as "${healedRead.to}".` : null].filter(Boolean).join("\n\n");
     } catch (e) { perfected = ""; }
+    // THE MOUTH INTERPRETS WHAT THE MACHINE CANNOT READ (the throughline fix, 2026-10-11): a HARD ask — a
+    // fused token ("itnow"), or nothing readable — is NOT rejected. The mouth is asked ONCE what the question
+    // MEANS, and that reading drives the search and the answer below. If there is no mouth, the typed gap
+    // still stands. (Anthropic's recurring throughline: "prematurely abandons valid input instead of reasoning
+    // through context to understand user intent.")
+    let interpreted = false;
+    try {
+      const canInterpret = !!m && !m.none && !!bridge && !client.isPageModel(m);   // a real bridge mouth only; an unloaded in-tab model would stall
+      if (canInterpret && !plan && !strand && murmur && murmur.hard) {
+        const interp = await Promise.race([
+          client.chat(m.id, interpretPrompt(murmur), { base: bridge, temperature: 0, maxTokens: 180 }),
+          new Promise((res) => setTimeout(() => res({ text: "" }), 12000)),
+        ]);
+        const txt = String((interp && interp.text) || "").trim();
+        if (txt.length >= 4) {
+          interpreted = true;
+          if (murmur) { try { murmur.lines.push({ op: "interpreted", from: String(said).slice(0, 72), to: txt.slice(0, 72), text: `the mouth read "${said.slice(0, 64)}" as "${txt.slice(0, 64)}"` }); } catch (e) {} }
+          question = txt;   // the SEARCH below goes out as the intended reading, not the typo
+        }
+      }
+    } catch (e) { interpreted = false; }
     // A BOOK ASK (fold-chat-book.js): the person named a book the fold holds WHOLE. The fold reads it — it never searches
     // the web for what it can read itself. `content` distinguishes "summarize war and peace" (read and narrate) from a bare
     // mention ("war and peace?"), where the fold offers the two ways it could go.
@@ -2575,7 +2596,7 @@ export function mount(root, opts = {}) {
     // nothing readable) does NOT get a model answer: the model would answer the machine's own misreading
     // (ITNOW, for "it now"). The turn becomes a typed gap carrying the murmur's reading, so the person can
     // confirm it. (The model INTERPRET step — ask it only what the question MEANS, then re-search — is next.)
-    if (!plan && !strand && murmur && murmur.hard) plan = unsourcedPlan(UNSOURCED_ANSWERS, { live: false });
+    if (!plan && !strand && murmur && murmur.hard && !interpreted) plan = unsourcedPlan(UNSOURCED_ANSWERS, { live: false });
     // THE CLARIFICATION PATHWAY: a bare term that names several things ("president") is not answered and not
     // guessed — the machine ASKS WHICH, listing the senses as options the person can pick. No model writes it.
     let clarify = null, followup = null;
