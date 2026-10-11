@@ -37,3 +37,21 @@ An allowed call is R0 and only ever one of three roles (`MODEL_ROLES`):
 small residue the box and the field cannot hold, pivot-realised, quotes verbatim or struck),
 **prosify** (phrases mechanical content — a computed value, a record's facts — into natural
 words). It NEVER decides standing: earning is a measured consequence, not a sentence.
+
+## ANGELICA, THE SEALED JUDGE (2026-10-11)
+
+Consulted ONLY on an R0 turn (the mouth will speak), ONLY at a real decision gap, ONLY when the
+fold holds an Anthropic token (`fold-chat-sealed-judge.js`, a browser reports none through its own
+bridge). Her word is advisory — never standing, never an execution:
+
+- she may judge topic (on / drift / undecided) and PROPOSE one tool; a proposal is a feed line, a
+  drift is a notice — R0–R7 still decide alone (falsified: a glowing verdict cannot unbar R1).
+- SEALED: the payload carries counts, the canonical reading, tool names, the topic line — no raw
+  passage ever leaves (falsified by test on the payload bytes).
+- TYPED: only `EOSealedJudgeVerdict@1` parses; garbage/prose/unknown topics are a typed gap and the
+  machine's own decision stands (falsified). A slow Angelica (timeout 3.5s) never blocks the turn.
+- LEARNED: every landed judgement appends a lesson (`hd:fold-judged`); the identical decision
+  signature is then answered FROM THE LESSON — she is consulted once for N identical decisions
+  (falsified: 3 turns, 1 consult). Her own prompt carries the lessons, so she steers the same way
+  the fold already learned — the system needs her less and less, auditable turn by turn on
+  `record.angelica` (a `covered_by_lesson` verdict is kept and stored).

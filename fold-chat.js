@@ -52,6 +52,7 @@ import { healedCorrections, healQuestion } from "./fold-chat-heal.js";   // the 
 import { proposalsOf, lessonsPrompt, readAsLine } from "./fold-chat-lessons.js";   // the model is FED the perfected context + past lessons
 import { lintTurn } from "./fold-chat-reason-lint.js";   // the modelless Kelsen chain-lint: derive claims from the read, lint each inference, murmur the findings
 import { modelCallRule } from "./fold-chat-model-rule.js";   // THE RULE: the mouth speaks what the fold established — every barred turn names its rule on the record
+import { hasJudgeToken, decisionSignature, needsJudge, sealJudge, Angelica, lessonOf, judgeOn, judgeLessonsOf, addJudgeLesson } from "./fold-chat-sealed-judge.js";   // ANGELICA: the sealed judge — advisory, sealed, typed, and learned (the same signature stops consulting her)
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
 import { castOf } from "./fold-chat-casts.js";
 import { claimsOfTurn, appendClaims, pointerOf } from "./fold-chat-record.js";
@@ -2659,6 +2660,35 @@ export function mount(root, opts = {}) {
     const barReasons = { plan, strand, aloneBarred, clarify, gateRefused: !!(genGate && !genGate.ok) };
     const modelBarred = !!(plan || strand || aloneBarred || clarify || (genGate && !genGate.ok));
     let modelRule = modelBarred ? modelCallRule(barReasons) : { allowed: true, rule: "R0_MOUTH", why: "the fold established the material; the model only phrases it — steer the perfected context, speak the small residue, prosify the result" };
+    // ANGELICA, THE SEALED JUDGE (fold-chat-sealed-judge.js, user 2026-10-11): ONLY when the mouth will
+    // speak does a sealed consult happen — she may judge topic adherence and propose a tool, never stand
+    // (R0–R7 still decide alone; her tool is a proposal, never an execution). The payload is sealed: no raw
+    // passage leaves. A lesson is recorded for the decision signature, so the identical decision is answered
+    // from the lesson next time — the system needs her less and less. No token, no sealed consult, no judge:
+    // the turn is exactly what it was.
+    let angelica = null;
+    if (modelRule.allowed && judgeOn() && hasJudgeToken()) {
+      const sig = decisionSignature({ kind, question, gap: "topic-or-tool" });
+      const judgeLessons = judgeLessonsOf(s);   // the lessons she has already steered by — fed back to her
+      if (needsJudge({ signature: sig, gap: "topic-or-tool", lessons: judgeLessons })) {
+        try {
+          const sealed = sealJudge({ question, kind, reading: reasonLint, tools: ["web", "slot", "mouth"], topic: String(murmur?.question || question).slice(0, 80), lessons: judgeLessons });
+          const verdict = await raceAbort(Angelica({ sealed, run: (prompt) => judgeBridge(prompt, m) }), ac.signal);
+          angelica = { verdict, signature: sig, consulted: true };
+          // a drift verdict is a NOTICE — it is never a bar, so the machine shows it and decides alone
+          if (verdict.topic === "drift") notices.push({ kind: "fold note", text: `Angelica reads a drift (${String(verdict.why || "off topic").slice(0, 80)}) — noted; the machine's own decision stands` });
+          // a tool proposal is a FEED line, advisory: the machine accepts, refuses or ignores it
+          if (verdict.tool) feedPush(lineEvent(tt, "Angelica proposes", { tone: "info", note: `judging the read: ${verdict.tool} (${String(verdict.why || "").slice(0, 80)}) — a proposal, not a call` }));
+          // THE LESSON: this signature was judged by her — the identical decision answers from the lesson from now on
+          addJudgeLesson(s, lessonOf({ signature: sig, answer: verdict.topic === "drift" ? "drift" : "ok", topic: verdict.topic }));
+        } catch (e) {
+          if (ac.signal.aborted) throw e;
+          angelica = { verdict: { gap: "consult_failed", topic: null, tool: null, why: String(e?.message || e).slice(0, 80) }, signature: sig, consulted: true };
+        }
+      } else {
+        angelica = { verdict: { gap: "covered_by_lesson", topic: null, tool: null, why: "an earlier judgement already covers this decision — Angelica was not consulted" }, signature: sig, consulted: false };
+      }
+    }
     // The reading panel's writing stage, fired once it is known who writes this turn: by:"mechanical" on a
     // Sources-only / no-model turn, so the panel never claims a model wrote the sources' own words.
     try { pvLive?.writing(modelBarred ? "mechanical" : "model"); } catch {}
@@ -2674,6 +2704,11 @@ export function mount(root, opts = {}) {
       }
       return client.chat(m.id, msgs, opts);
     };
+    // ANGELICA'S EXECUTOR: a sealed consult goes OUT over the same bridge as the mouth but as
+    // sealed-external (a profile that never meets the thread's material), temperature 0, and the answer is
+    // only ever the tight JSON the judge prompt asks for — parsed TIGHTLY by parseJudge, a gap if not.
+    const judgeBridge = (prompt, mm) =>
+      client.chat(mm?.id ?? m.id, [{ role: "user", content: prompt }], { base: bridge, temperature: 0, maxTokens: 400, privacy: "sealed-external", audit: { run: runId } });
     // COMPUTE: the value comes from the evaluator, never the model (II.9); the model only phrases it.
     const computed = kind === "compute" ? computeEvaluate(question) : null;
     if (computed && computed.ok) sourceBlock = `The fold's evaluator computed: ${computed.text}\nThis is exact. State the result to the person in one short, natural sentence, using exactly this value and only the numbers they gave. Do not do any other arithmetic and do not show other figures or steps.`;
@@ -3149,6 +3184,9 @@ export function mount(root, opts = {}) {
       // the model-call decision — the named rule this turn ran under, so every call or non-call is auditable
       if (record && modelRule) record.modelRule = modelRule;
       if (record && lang0) record.lang = lang0;
+      // Angelica's consult — advisory, sealed, typed; a covered-by-lesson verdict is kept too, so the record
+      // shows WHY she was not called again (the "needs her less and less" is auditable turn by turn)
+      if (record && angelica) record.angelica = angelica;
       // what this turn read, kept (clipped) so a follow-up can use and cite it without searching again
       if (record && webPassages.length) record.passages = webPassages.slice(0, 8).map((p) => ({ ref: p.ref, source: p.source, url: p.url, title: p.title, domain: p.domain, text: String(p.text || "").slice(0, 3000), shadow: p.shadow ? { chars: p.shadow.chars, hash: p.shadow.hash, segments: p.shadow.segments } : undefined }));   // 3000 = IMPRESSION_BUDGET, so a claim's support span is never cut off the stored text; the shadow maps a span back to the page (impression.js originalSpan)
       if (record && recLoop) {
