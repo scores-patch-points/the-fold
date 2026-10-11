@@ -146,6 +146,7 @@ export function sentenceFor(l) {
     case "ambiguity": return `The bare term ${q(l.term || (l.text.match(/\u201c([^\u201d]+)\u201d/) || l.text.match(/"([^"]+)"/) || [])[1] || "")} can name more than one thing.`;
     case "interpretation": return `So I am reading the question as being about ${joinList(l.about.split(" and "))}.`;
     case "plan": return "I will look for that, and show only what a source actually says.";
+    case "page": return `Reading the page${l.host ? " at " + l.host : ""}.`;
     case "heal": return `A past lesson taught me to read ${q(l.from)} as ${q(l.to)}.`;
     case "interpreted": return `I could not read the ask, so I asked the mouth what you meant: it read ${q(l.from)} as ${q(l.to)}.`;
     default: return null;

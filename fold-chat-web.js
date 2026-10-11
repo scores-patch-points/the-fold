@@ -139,6 +139,21 @@ export const getBridge = () => LOCAL_BRIDGE;
  *  fold-chat-strand.js looksBlocked (one definition, shared with the strand). */
 export { looksBlocked };
 
+/** The URL an ask is pointing the fold AT, or null. A bare URL ("https://…"), or a verb + URL
+ *  ("read this page: <url>", "open <url>", "summarize <url>") — the page is READ, never searched. */
+export function urlOf(text) {
+  const t = String(text || "").trim();
+  if (!t) return null;
+  const cleaned = t
+    .replace(/^(?:read|open|add|fetch|summarize|look\s*(at|up)|go\s*(to)?|visit|check)\b[\s:]*/i, "")
+    .replace(/^(?:the|this)\s+(?:page|url|site|link|webpage|address)\s*/i, "")
+    .trim();
+  const m = cleaned.match(/https?:\/\/[^\s"'<>]+/i);
+  if (!m) return null;
+  const u = m[0].replace(/[),.;:!?]+$/u, "");
+  try { const x = new URL(u); return (x.protocol === "http:" || x.protocol === "https:") ? u : null; } catch { return null; }
+}
+
 /** Open-web search through the fold's Cloudflare Worker relay: the Worker does
  *  the server-side DuckDuckGo/Brave fetch (keyless, CORS-open) that a static
  *  browser page cannot. This is what actually finds a people/records/anything

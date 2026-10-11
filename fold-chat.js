@@ -2207,7 +2207,15 @@ export function mount(root, opts = {}) {
     // question (never the misread); a hard ask (a run-together token, or nothing readable) escalates to the model
     // for the MEANING only.
     let murmur = null;
-    try { murmur = murmurOf({ question, carried: (follow && Array.isArray(follow.carried) ? follow.carried.filter(Boolean) : []) }); } catch (e) { murmur = null; }
+    // A URL ask is AUTHORITATIVE — the page is what is meant; it must never be "interpreted" as a question.
+    const urlAskDetect = (() => { try { return web.urlOf(String(said || "")); } catch { return null; } })();
+    // A URL ask IS the page: a clean "reading the page at <host>" murmur, never a scrape of URL tokens.
+    if (urlAskDetect) {
+      const host = (() => { try { return new URL(urlAskDetect).hostname; } catch { return urlAskDetect; } })();
+      murmur = { schema: "Murmur@1", question: said, interpretation: null, hard: false, ambiguous: false, names: [], content: [], unknown: [], low: [], carried: [], lines: [{ op: "listen", text: "reading the page you gave me." }, { op: "page", host, url: urlAskDetect, text: `reading the page at ${host}` }] };
+    } else {
+      try { murmur = murmurOf({ question, carried: (follow && Array.isArray(follow.carried) ? follow.carried.filter(Boolean) : []) }); } catch (e) { murmur = null; }
+    }
     if (healedRead && healedRead.healed && murmur) { try { murmur.lines.push({ op: "heal", from: healedRead.from, to: healedRead.to, text: `healing: a past lesson reads "${healedRead.from}" as "${healedRead.to}"` }); } catch (e) {} }
     // THE MODEL IS FED THE PERFECTED CONTEXT (user, 2026-10-11): the fold's own reading of the ask (typos
     // healed, interpretation, the learned lessons) rides the base prompt through Gary's door — so the local
@@ -2224,7 +2232,7 @@ export function mount(root, opts = {}) {
     let interpreted = false;
     try {
       const canInterpret = !!m && !m.none && !!bridge && !client.isPageModel(m);   // a real bridge mouth only; an unloaded in-tab model would stall
-      if (canInterpret && !plan && !strand && murmur && murmur.hard) {
+      if (canInterpret && !plan && !strand && murmur && murmur.hard && !urlAskDetect) {
         const interp = await Promise.race([
           client.chat(m.id, interpretPrompt(murmur), { base: bridge, temperature: 0, maxTokens: 180 }),
           new Promise((res) => setTimeout(() => res({ text: "" }), 12000)),
@@ -2370,7 +2378,7 @@ export function mount(root, opts = {}) {
     // a piece that needs no outside facts (a poem, a toast) has no claim for the model to invent, so it may be written without a source. DECISION FOR THE BOSS: ALONE_KINDS (fold-chat-gaps.js) is [] today; this is
     // the one place that says "creative, needs no sources, no typed gap" may stand alone. Both the barrier below (aloneBarred) and Gary's door (materialInView) read it.
     const mayWriteAlone = modelSpeaksAlone(kind) || (producing && !outType.needsSources && !activeGap && (kind === "generate" || kind === "compose"));
-    let wantWeb = !skipsSearch(kind) && !!question && follow.mode === "web" && !noLookup && !recall && !srcRecall && !primaryAsk && !needlessSearch && !activeGap;
+    let wantWeb = (!skipsSearch(kind) && !!question && follow.mode === "web" && !noLookup && !recall && !srcRecall && !primaryAsk && !needlessSearch && !activeGap) || !!urlAskDetect;   // a URL is always READ, never stopped by the search gates
     if (bookask && follow.mode === "web") wantWeb = true;   // a book ask is ALWAYS read from the shelf: the fold reads what it holds, it does not guess or defer to the web
     // The animation is for a FOLLOW-UP that researches; a first turn or a no-research turn shows only the murmur.
     feedGate.on = s.messages.filter((x) => x.role === "user").length > 1 && !!wantWeb;
@@ -2472,7 +2480,26 @@ export function mount(root, opts = {}) {
           // The search is cancellable: its fetches carry this turn's signal, and the
           // await itself yields the moment Stop is pressed (or the chat deleted).
           if (probeTerm) sensesProbe = raceAbort(Promise.race([web.search("wikipedia", probeTerm, 0, { fetchImpl: withSignal(outbound.auditedFetch("web search", runId), ac.signal) }), new Promise((r) => setTimeout(() => r(null), 7000))]), ac.signal).catch(() => null);
-          const w = await raceAbort(web.searchWeb(searchQ, { onStep, effort, read: readFor, memo: pageMemo, fetchImpl: withSignal(outbound.auditedFetch("web search", runId), ac.signal) }), ac.signal);
+          const w = await (async () => {
+          const urlTarget = (() => { try { return web.urlOf(String(said || "")); } catch { return null; } })();
+          if (!urlTarget) return raceAbort(web.searchWeb(searchQ, { onStep, effort, read: readFor, memo: pageMemo, fetchImpl: withSignal(outbound.auditedFetch("web search", runId), ac.signal) }), ac.signal);
+          // A URL IS READ, NOT SEARCHED (user, 2026-10-11): the page itself becomes the material.
+          let rd = null;
+          try { rd = await web.readText(urlTarget, { memo: pageMemo, timeoutMs: 20000 }); } catch (e) { rd = { ok: false, error: String((e && e.message) || e) }; }
+          const text = rd && rd.ok ? String(rd.text || "").trim() : "";
+          if (rd && rd.ok && text.length >= 60) {
+            const host = (() => { try { return new URL(urlTarget).hostname; } catch { return urlTarget; } })();
+            const start = 0, end = text.length;
+            webPassages = [{ ref: urlTarget + "#" + start + "-" + end, title: rd.title || host, source: urlTarget, url: urlTarget, text: text.slice(0, 24000), via: rd.via, start, end, at: { start, end } }];
+            if (murmur && !(Array.isArray(murmur.lines) && murmur.lines.some((l) => l.op === "page"))) { try { murmur.lines.push({ op: "page", host, url: urlTarget, text: `reading the page at ${host} (${rd.via || "direct"})` }); } catch (e) {} }
+            say(`turn · ${kindWord} · read the page (${rd.via || "direct"}, ${text.length.toLocaleString("en")} chars) · answering…`);
+            return { pages: webPassages, passages: webPassages, results: [], trace: [] };
+          }
+          const why = (rd && rd.error) ? String(rd.error) : (!rd || !rd.ok) ? "turned away on every door" : "the page's text is too short to read";
+          feedPush(lineEvent(tt, "A URL was given, but the page could not be read", { tone: "bad", note: why }));
+          say(`turn · ${kindWord} · could not read the page (${why})`);
+          return { pages: [], passages: [], results: [], trace: [{ scope: "url", ok: false, why }] };
+        })();
           webPassages = w.passages || [];
           if (genOt) {
             // pages ABOUT writing the output (tutorials, samples, templates, writing services, bot walls, pages that never mention the topic) are not material for it
@@ -2596,7 +2623,7 @@ export function mount(root, opts = {}) {
     // nothing readable) does NOT get a model answer: the model would answer the machine's own misreading
     // (ITNOW, for "it now"). The turn becomes a typed gap carrying the murmur's reading, so the person can
     // confirm it. (The model INTERPRET step — ask it only what the question MEANS, then re-search — is next.)
-    if (!plan && !strand && murmur && murmur.hard && !interpreted) plan = unsourcedPlan(UNSOURCED_ANSWERS, { live: false });
+    if (!plan && !strand && murmur && murmur.hard && !interpreted && !urlAskDetect) plan = unsourcedPlan(UNSOURCED_ANSWERS, { live: false });
     // THE CLARIFICATION PATHWAY: a bare term that names several things ("president") is not answered and not
     // guessed — the machine ASKS WHICH, listing the senses as options the person can pick. No model writes it.
     let clarify = null, followup = null;
