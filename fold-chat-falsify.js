@@ -63,7 +63,8 @@ export const SAY = Object.freeze({
   askTenseUnknown: "I could not tell whether the question is about now",
 });
 
-const norm = (s) => String(s ?? "").normalize("NFD").replace(/\p{M}+/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
+import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13)
+const norm = (s) => foldText(s).replace(/\s+/g, " ").trim();
 const toks = (s) => norm(s).match(/[\p{L}\p{N}]+/gu) || [];
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 

@@ -76,7 +76,8 @@ export const GRAMMAR = Object.freeze({
 });
 
 /** Case- and diacritic-folded form for matching only (never displayed). Locale-neutral lowercasing; no case is ever READ. */
-export const caseless = (s) => String(s ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLocaleLowerCase("und");
+import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13)
+export const caseless = (s) => foldText(s);
 
 // Tokens with UTF-16 offsets. A token is letters/digits joined by . ' ’ , - (so "U.S.", "1,082", "air-breathing", "doesn't" stay whole);
 // a possessive or contracted tail ('s 're 'll 've 'd 'm) is cut off — it is a clitic, not a word — so "Australia's" is the token "Australia".

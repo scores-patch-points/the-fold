@@ -13,6 +13,17 @@ test("a stated name is learned; a question never yields one", () => {
   assert.equal(extractStatedName("hello"), null);
 });
 
+test("FALSIFIER — a self-description is not a name (the copula form must not invent an identity)", () => {
+  assert.equal(extractStatedName("I'm from Paris"), null);
+  assert.equal(extractStatedName("I'm in Nashville"), null);
+  assert.equal(extractStatedName("I'm tired"), null);
+  assert.equal(extractStatedName("I am based in Chicago"), null);
+  assert.equal(extractStatedName("I'm working on a project"), null);
+  assert.equal(extractStatedName("I'm here to help"), null);
+  // and the explicit introduction still wins over the copula gate
+  assert.equal(extractStatedName("my name is Ada"), "Ada");
+});
+
 test("asksIdentity spots the identity question", () => {
   assert.equal(asksIdentity("what is my name?"), true);
   assert.equal(asksIdentity("do you know my name"), true);

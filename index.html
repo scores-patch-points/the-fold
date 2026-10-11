@@ -152,6 +152,24 @@
   .cstate + .menu { margin-left: 4px; }
   @keyframes cspin { to { transform: rotate(360deg); } }
   .empty-hint { padding: 8px 10px; color: var(--mut); font-size: var(--fs-sm); }
+  /* ---------------- memory: the visible, tiered store ----------------
+     The person's OWN memories (auditable, editable), grouped by project;
+     a history switch (on by default); and, per chat, a context-free toggle. */
+  .mem-group { margin-top: 8px; }
+  .mem-group .mem-label { display: flex; align-items: center; gap: 6px; padding: 4px 10px; color: var(--mut); font-size: var(--fs-sm); font-weight: 600; }
+  .mem { display: flex; align-items: flex-start; gap: 8px; padding: 6px 10px; border-radius: var(--r-md); color: var(--ink2); }
+  .mem:hover { background: var(--side2); }
+  .mem .mem-text { flex: 1; min-width: 0; font-size: var(--fs-sm); overflow-wrap: anywhere; }
+  .mem .mem-src { flex: none; font-family: var(--mono); font-size: var(--fs-xs); color: var(--dim); }
+  .mem .mem-act { margin-left: auto; flex: none; display: flex; gap: 2px; }
+  .mem .mem-act button { width: 26px; height: 26px; border: none; background: transparent; border-radius: var(--r-sm); color: var(--mut); opacity: 0; }
+  .mem:hover .mem-act button, .mem:focus-within .mem-act button { opacity: 1; }
+  .mem .mem-act button:hover { background: var(--line); color: var(--ink); }
+  .mem-toggle { display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: var(--ink2); font-size: var(--fs-sm); cursor: pointer; }
+  .mem-note { padding: 2px 10px 6px; color: var(--mut); font-size: var(--fs-xs); }
+  .mem-actions { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 10px 6px; }
+  .mem-actions .btn { font-size: var(--fs-xs); }
+  .composer .cbtn.on { background: var(--side2); color: var(--acc-deep); }
 
   /* ---------------- the sidebar, as Claude draws it ----------------
      One panel, not a drawer full of drawers: the brand and the two ways to
@@ -1716,6 +1734,10 @@
         <div class="sec-head"><span>Chats</span></div>
         <div class="sec-body" id="chats"></div>
       </div>
+      <div class="sec" data-sec="memory">
+        <div class="sec-head"><span class="caret" aria-hidden="true">⌄</span><span>Memory</span><span class="grow"></span><button type="button" id="memoryNew" title="Add a memory" aria-label="Add a memory">＋</button></div>
+        <div class="sec-body" id="memory"></div>
+      </div>
       <div class="sec" data-sec="folds">
         <div class="sec-head"><span>Folds</span><span class="grow"></span><button type="button" id="foldsCodebase" title="Add a codebase" aria-label="Add a codebase">📁</button><button type="button" id="foldsNew" title="New fold" aria-label="New fold">＋</button></div>
         <div class="sec-body" id="folds"></div>
@@ -1761,6 +1783,9 @@
         <div class="composer-tag" id="composerTag"><span class="ct-glyph">›</span><span class="ct-label" id="composerMode">agent</span><span class="ct-cwd" id="composerCwd"></span></div>
         <textarea id="input" rows="1" placeholder="Message the fold" aria-label="Message the fold"></textarea>
         <div class="tools">
+          <button type="button" class="cbtn" id="cfToggle" title="Context-free chat — this chat neither reads nor writes your memory, and is not saved" aria-label="Context-free (incognito) chat" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c5 0 9 4.5 9 7a11 11 0 0 1-2.2 3.3M6.6 6.6A11.6 11.6 0 0 0 3 12c0 2.5 4 7 9 7a9.7 9.7 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+          </button>
           <button type="button" class="cbtn" id="attach" title="Attach a text file — the khora reads it, and only the reading enters the chat" aria-label="Attach a text file — the khora reads it, and only the reading enters the chat">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>

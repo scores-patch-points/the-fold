@@ -48,7 +48,8 @@ const PRODUCING = TYPES.filter((t) => t !== "none");
 
 // ── text helpers ───────────────────────────────────────────────────────────────────────────────────────────────────────
 /** Lowercase, accents struck (NFD, marks removed): "révolution" → "revolution". Cyrillic й → и is applied the same on both sides. */
-export const fold = (s) => String(s ?? "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[’‘`]/g, "'");
+import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13)
+export const fold = (s) => foldText(s).replace(/[’‘`]/g, "'");
 const WORD = /[\p{L}\p{N}]+(?:['\-][\p{L}\p{N}]+)*/gu;
 const wordsOf = (s) => [...String(s).matchAll(WORD)].map((m) => ({ w: m[0], f: fold(m[0]), at: m.index, end: m.index + m[0].length }));
 const one = (s) => String(s ?? "").replace(/\s+/g, " ").trim();

@@ -28,6 +28,7 @@
 import { impressionOf, sentencesWithOffsets } from "./fold-chat-impression.js";
 import { snipOfPassage } from "./fold-chat-snip.js";
 import { contactOfPassage } from "./fold-chat-tip.js";
+import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13)
 import { junkOf, wallOf } from "./fold-chat-junk.js";
 import { maskNavRegion } from "./fold-chat-region.js";
 import { answerSpan, verifyRewrite } from "./fold-chat-answerspan.js";
@@ -331,7 +332,7 @@ function answerTurnBacksContent(msg) {
   // the content is the realised line, or the smallest span of the same source sentence (fold-chat-answerwire.js minimalOfTurn): the word check below holds for both
   const mini = msg.answerTurn.minimal && norm(msg.answerTurn.minimal.text);
   if (norm(a.text) !== norm(msg.content) && !(mini && mini === norm(msg.content))) return false;
-  const words = (t) => (String(t ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLocaleLowerCase("und").match(/[\p{L}\p{N}]+/gu) || []);
+  const words = (t) => (foldText(t).match(/[\p{L}\p{N}]+/gu) || []);
   const held = new Set(words(row.sentence));
   return words(msg.content).every((w) => held.has(w));
 }

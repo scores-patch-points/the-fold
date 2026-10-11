@@ -649,6 +649,34 @@ export function onTopic(r, entities = []) {
   return framings(r, entities).matters;
 }
 
+// THE OTHER-SENSE GATE (bare-term asks). When the ask names no proper noun, entitiesOf is empty and
+// the swarm gate reduces to ONE content word ("president"), so every page carrying that word
+// survives — the band, the actors list, the concept. A candidate that is the bare term's OTHER
+// sense is demoted (never deleted) behind the term's own pages:
+//   "<Term> (qualifier)"  -> a parenthetical sense (President (band))
+//   "List of <non-term> …" -> a list of something other than the term (List of actors who played the president)
+// This is what puts "List of presidents of the United States" before "President (band)" for
+// "who is the president?". It fires ONLY with no named entity (a name lets the swarm/title gates
+// decide) and never drops: a turn with nothing better left still reads the demoted pages. Pure.
+const singular = (w) => String(w || "").replace(/s$/, "");
+export function demoteOtherSenses(pool, query, entities = entitiesOf(query)) {
+  const list = Array.isArray(pool) ? pool : [];
+  if (entities.length || list.length < 2) return { pool: list, off: [] };
+  const t = singular(contentTerms(query)[0] || "");
+  if (!t) return { pool: list, off: [] };
+  const keep = [], off = [];
+  for (const r of list) {
+    const raw = String(r.title || "");
+    const toks = (fold(pageNameOf(raw)).match(/[\p{L}\p{N}]+/gu) || []);
+    let why = null;
+    if (new RegExp(`^${t}s?\\s*\\(`).test(fold(raw))) why = "parenthetical-sense";
+    else if (/^list of\s/i.test(pageNameOf(raw))) { if (singular(toks[2] || "") !== t) why = "list-of-other"; }
+    (why ? off : keep).push(why ? { ...r, _otherSense: why } : r);
+  }
+  if (!keep.length) return { pool: list, off: [] };
+  return { pool: [...keep, ...off], off: off.map((r) => ({ title: r.title, why: r._otherSense })) };
+}
+
 /** Search several scopes at once, then read the top results into passages the
  *  turn can be grounded on. Returns { results, passages, trace }. A multi-entity
  *  question is searched per entity and merged, so the passages are about the
@@ -859,6 +887,15 @@ export async function searchWeb(query, { scopes = EFFORT.balanced.scopes, read =
       pool = tg.pool;
       trace.push({ scope: "topic", ok: true, engine: "title gate", demoted: tg.off.map((o) => `${o.title} (${o.why})`) });
       step({ phase: "demoted", n: tg.off.length, titles: tg.off.map((o) => o.title) });
+    }
+    // THE OTHER-SENSE GATE (bare-term asks): with no named entity, the swarm gate reduces to ONE content
+    // word, and pages that are the term's OTHER sense survive. This is the STRUCTURAL fix for the case a
+    // salience prior cannot measure (every candidate ties on "president"); it demotes, never deletes.
+    const os = demoteOtherSenses(pool, query, entities);
+    if (os.off.length) {
+      pool = os.pool;
+      trace.push({ scope: "topic", ok: true, engine: "other-sense gate", demoted: os.off.map((o) => `${o.title} (${o.why})`) });
+      step({ phase: "demoted", n: os.off.length, titles: os.off.map((o) => o.title) });
     }
     if (g.skippedOff > 0 || g.fallback) {
       trace.push({ scope: "topic", ok: true, skippedOff: g.skippedOff, engine: "swarm gate", strict: !!cfg.strict, dissent: g.why, ...(g.fallback ? { fallback: "the gate passed nothing; ranked top results read instead" } : {}) });

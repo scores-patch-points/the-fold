@@ -102,9 +102,13 @@ export function segments(text, script = scriptOf(text)) {
   return out;
 }
 
-/** Case- and diacritic-fold a surface for matching (never for display). */
+import { foldText } from "./fold-chat-foldtext.js";
+
+/** Case- and diacritic-fold a surface for matching (never for display).
+ *  The khora's fold scope (II.13): the five Latin vowels' accents only — never a
+ *  blanket combining-mark strip, which corrupted Devanagari and Hangul. */
 export function fold(s) {
-  return String(s ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase();
+  return foldText(s);
 }
 
 // ── candidate entities ─────────────────────────────────────────────────────

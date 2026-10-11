@@ -36,6 +36,9 @@ import { createTurnGate, stopLine } from "./fold-chat-dmd.js";
 // itself); these close it — NEW GROUND (a search that adds nothing) and a
 // REPEATED STATE (the turn came back to where it was).
 import { createProgressGuard, novelGround, stateOf, isConverging } from "./fold-chat-outside.js";
+// THE TRAILS, PER SOURCE: deposit · evaporate · follow, each key at ITS source's decay rate
+// (web ground outlives the climb; a soured read fades fast so it is retried). fold-chat-trails.js.
+import { deposit, pheromone as pheromoneOf } from "./fold-chat-trails.js";
 
 const KEY = "fold-chat:folds@1";
 // THE WEAVE EXPERIMENT: ?stitch=1 makes the make stitch the page from what was
@@ -51,17 +54,17 @@ const uid = () => "fd_" + Date.now().toString(36) + Math.random().toString(36).s
 // is reinforced; a path that soured is marked down; every deposit lets all trails
 // evaporate a little, so stale ground is forgotten. The hunt then follows the
 // strongest trail first. (Ant-swarm protocol: deposit · evaporate · follow.)
+// THE RATE IS PER SOURCE (fold-chat-trails.js): "src:" web ground is durable (a host
+// that holds keeps leading) while the "rung:" climb fades sooner, and a SOURED read
+// fades faster still so a host with one bad day is retried, not blacklisted.
 const TRAIL_KEY = "fold-chat:trails@1";
-const EVAPORATE = 0.85;
 const loadTrails = () => { try { return JSON.parse(localStorage.getItem(TRAIL_KEY)) || {}; } catch { return {}; } };
 const saveTrails = (t) => { try { localStorage.setItem(TRAIL_KEY, JSON.stringify(t)); } catch {} };
-const pheromone = (k) => { try { return loadTrails()[k] || 0; } catch { return 0; } };
+const pheromone = (k) => { try { return pheromoneOf(loadTrails(), k); } catch { return 0; } };
 const domainKey = (m) => String((m && (m.source || m.url)) || "").replace(/^https?:\/\//i, "").split(/[/?#:]/)[0].toLowerCase();
-/** Lay a batch of trails: evaporate once, then add. A negative amount sours the ground. */
+/** Lay a batch of trails: evaporate once (each key at ITS source's rate), then add. A negative amount sours the ground. */
 function trail(keys, amount = 1) {
-  const t = loadTrails();
-  for (const k of Object.keys(t)) { t[k] *= EVAPORATE; if (Math.abs(t[k]) < 0.05) delete t[k]; }
-  for (const k of keys) t[k] = (t[k] || 0) + amount;
+  const t = deposit(loadTrails(), keys, amount);
   saveTrails(t); return t;
 }
 // THE OPERATORS (organs/cube.mjs): every act is one, and the log carries which.
@@ -251,7 +254,7 @@ const CODE_CSS = `
 @keyframes fsblink{50%{opacity:0}}
 `;
 
-export function mountFolds({ main, list, newBtn = null, railBtn = null, getModelId, toast = () => {}, onOpen = () => {}, onClose = () => {}, research = null }) {
+export function mountFolds({ main, list, newBtn = null, railBtn = null, getModelId, toast = () => {}, onOpen = () => {}, onClose = () => {}, research = null, onQuestion = null }) {
   if (!document.getElementById("fold-folds-style")) { const st = document.createElement("style"); st.id = "fold-folds-style"; st.textContent = CSS + CODE_CSS; document.head.append(st); }
   let folds = []; try { folds = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { folds = []; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(folds.map((f) => ({ ...f, log: f.log.slice(-400) })))); } catch {} };
@@ -524,6 +527,15 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     // president?". One act, zero draws, and it is done.
     const wantsBuild = /\b(make|build|create|design|draft|write|generate|spin up|set up|mock up|prototype|implement|turn .* into|add|change|edit|redo|rename|refactor|move)/i.test(text) || isMakeAsk(text) || !!cur.codebase || !!(cur.artifact && (cur.artifact.html || cur.artifact.doc));
     if (!wantsBuild) {
+      // A QUESTION IS ANSWERED, NOT REFUSED (user, 2026-10-11). The fold does not build here — it hands the
+      // question to the reading lane, which searches, reads and answers. Only when no reading lane is wired
+      // (a bare embed) does it fall back to naming the handoff.
+      if (typeof onQuestion === "function") {
+        push({ kind: "think", by: "app", op: "REC", say: `“${text.replace(/\s+/g, " ").trim().slice(0, 70)}” is a question — answering it in the reading lane.` });
+        paint();
+        try { await onQuestion(text); } catch (e) { push({ kind: "note", by: "app", op: "REC", text: "", ok: false, errors: [{ code: "handoff", msg: String((e && e.message) || e) }] }); }
+        return;
+      }
       push({ kind: "think", by: "app", op: "REC", say: `“${text.replace(/\s+/g, " ").trim().slice(0, 70)}” is a question, not a thing to make — I only build things here. Ask it in Chat instead.` });
       paint();
       return;
