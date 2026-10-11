@@ -383,7 +383,8 @@ export async function provenanceFor({ answer, passages, point, fw = null, prefer
       // rejected for polarity, an unstated name, or an opposite is a verdict on the CLAIM, not a
       // pointing slip: re-asking shops the rest for a weaker sentence that verifies spuriously
       // (F4 P7 F12/F14 — the first pick exonerates, the second launders). So those stop here.
-      if (v.why !== "no_such_sentence" && v.why !== "figure_missing" && v.why !== "unrelated") return v;
+      const code = String(v.why || "").split(":")[0];   // "figure_missing:330" is failure class "figure_missing"
+      if (code !== "no_such_sentence" && code !== "figure_missing" && code !== "unrelated") return v;
       const asked = parsePointerNumber(reply);
       const rest = candidates.filter((c) => c.n !== asked?.n).map((c, i) => ({ ...c, n: i + 1 }));
       if (attempt === 0 && retry && rest.length) candidates = rest; else return v;
