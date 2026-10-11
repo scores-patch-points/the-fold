@@ -153,6 +153,41 @@
   @keyframes cspin { to { transform: rotate(360deg); } }
   .empty-hint { padding: 8px 10px; color: var(--mut); font-size: var(--fs-sm); }
 
+  /* ---------------- the sidebar, as Claude draws it ----------------
+     One panel, not a drawer full of drawers: the brand and the two ways to
+     start sit pinned on top, the search rides under them, and everything else
+     (projects, chats grouped by time, the agent's folds, the quiet foot) is a
+     scrollable body. No chrome between the start affordances and the content. */
+  .side-head { display: flex; align-items: center; gap: 8px; padding: 2px 8px 10px 10px; }
+  .side-brand { display: flex; align-items: center; gap: 9px; min-width: 0; margin-right: auto; }
+  .side-brand .mark { width: 24px; height: 24px; flex: none; border-radius: var(--r-sm); background: var(--acc-grad); display: grid; place-items: center; color: #fff; font: 700 12px/1 var(--sans); text-shadow: 0 1px 1px rgba(0,0,0,.25); }
+  .side-brand .name { font: 700 var(--fs-md) var(--sans); letter-spacing: -.01em; color: var(--ink); }
+  .side-collapse { width: var(--touch); height: var(--touch); flex: none; border: none; background: transparent; border-radius: var(--r-md); display: grid; place-items: center; color: var(--mut); cursor: pointer; transition: background .12s, color .12s; }
+  .side-collapse:hover { background: var(--side2); color: var(--ink); }
+  .side-actions { display: flex; flex-direction: column; gap: 6px; padding: 0 8px 10px; }
+  .newchat { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: var(--touch); border: 0; border-radius: var(--r-lg); background: var(--acc-grad); color: #fff; padding: 0 12px; font: 600 var(--fs-md) var(--sans); cursor: pointer; box-shadow: var(--shadow-sm); transition: filter .12s, transform .12s; }
+  .newchat:hover { filter: brightness(1.08); }
+  .newchat:active { transform: translateY(1px); }
+  .newchat svg { width: 17px; height: 17px; flex: none; }
+  .agentstart { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: var(--touch); border: 1px solid var(--ag); border-radius: var(--r-lg); background: var(--ag-soft); color: var(--ag-deep); padding: 0 12px; font: 600 var(--fs-md) var(--sans); cursor: pointer; transition: filter .12s; }
+  .agentstart:hover { filter: brightness(1.05); }
+  .agentstart svg { width: 17px; height: 17px; flex: none; }
+  .side-search { display: flex; align-items: center; gap: 8px; margin: 0 8px 2px; min-height: var(--touch); padding: 0 10px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--side2); cursor: text; transition: border-color .12s, box-shadow .12s; }
+  .side-search:focus-within { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc); }
+  .side-search > svg { width: 16px; height: 16px; flex: none; color: var(--mut); }
+  .side-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--ink); font: var(--fs-md) var(--sans); padding: 0; }
+  .side-search input::placeholder { color: var(--dim); }
+  .side-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+  .side-search .qclear { flex: none; width: 24px; height: 24px; border: none; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--mut); cursor: pointer; opacity: 0; visibility: hidden; transition: opacity .12s, background .12s, color .12s; }
+  .side-search.has-q .qclear { opacity: 1; visibility: visible; }
+  .side-search .qclear:hover { background: var(--line); color: var(--ink); }
+  .side-search .qclear svg { width: 13px; height: 13px; }
+  .side-foot { display: flex; align-items: center; gap: 2px; margin-top: 10px; padding: 8px 8px 2px; border-top: 1px solid var(--line); }
+  .side-foot .fmark { width: 24px; height: 24px; flex: none; margin-right: 4px; border-radius: 50%; background: var(--acc-grad); display: grid; place-items: center; color: #fff; font: 700 11px/1 var(--sans); text-shadow: 0 1px 1px rgba(0,0,0,.25); }
+  .side-foot button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: var(--touch); border: none; border-radius: var(--r-md); background: transparent; color: var(--mut); font: 500 var(--fs-sm) var(--sans); cursor: pointer; transition: background .12s, color .12s; }
+  .side-foot button:hover { background: var(--side2); color: var(--ink); }
+  .side-foot svg { width: 16px; height: 16px; }
+
   /* collapsible section headers */
   .sec-head { border-radius: var(--r-md); }
   .sec-head .caret { transition: transform .15s ease; }
@@ -1646,20 +1681,56 @@
   </nav>
 
   <aside class="side" id="side" aria-label="Chats and projects">
+    <div class="side-head">
+      <div class="side-brand" title="The Fold">
+        <span class="mark" aria-hidden="true">F</span>
+        <span class="name">The Fold</span>
+      </div>
+      <button type="button" class="side-collapse" id="sideCollapse" title="Hide sidebar" aria-label="Hide sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><line x1="9" y1="6" x2="15" y2="12"/><line x1="15" y1="12" x2="9" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="side-actions">
+      <button type="button" id="sideNewChat" class="newchat" title="New chat" aria-label="New chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        New chat
+      </button>
+      <button type="button" id="agStart" class="agentstart" title="Start an agent" aria-label="Start an agent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5h10l6 6v8H4z"/><path d="M14 5v6h6"/><path d="M9 15h4"/></svg>
+        Agent
+      </button>
+    </div>
+    <div class="side-search" id="sideSearch">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="chatSearch" placeholder="Search chats…" autocomplete="off" spellcheck="false" aria-label="Search chats">
+      <button type="button" class="qclear" id="chatSearchClear" title="Clear search" aria-label="Clear search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
+    </div>
     <div class="side-scroll">
       <div class="sec" data-sec="projects">
         <div class="sec-head"><span class="caret" aria-hidden="true">⌄</span><span>Projects</span><span class="grow"></span><button type="button" id="projNewProject" title="New project" aria-label="New project">＋</button><button type="button" id="projAdd" title="New session in a project" aria-label="New session in the selected project">▶</button></div>
         <div class="sec-body" id="projects"></div>
       </div>
+      <div class="sec" data-sec="chats">
+        <div class="sec-head"><span>Chats</span></div>
+        <div class="sec-body" id="chats"></div>
+      </div>
       <div class="sec" data-sec="folds">
         <div class="sec-head"><span>Folds</span><span class="grow"></span><button type="button" id="foldsCodebase" title="Add a codebase" aria-label="Add a codebase">📁</button><button type="button" id="foldsNew" title="New fold" aria-label="New fold">＋</button></div>
         <div class="sec-body" id="folds"></div>
       </div>
-      <div class="sec" data-sec="chats">
-        <button type="button" id="chatsNew" class="chat" title="New chat" aria-label="New chat" style="width:100%;text-align:left;background:none;border:0"><span class="ct">Chat</span><span style="margin-left:auto;color:var(--mut)">＋</span></button>
-        <button type="button" id="agStart" class="chat" title="Start an agent" aria-label="Start an agent" style="width:100%;text-align:left;background:none;border:0"><span class="ct">Agent</span><span style="margin-left:auto;color:var(--mut)">＋</span></button>
-        <div class="sec-body" id="chats"></div>
-      </div>
+    </div>
+    <div class="side-foot">
+      <span class="fmark" aria-hidden="true">F</span>
+      <button type="button" id="sideEvidence" title="Evidence — who did the work" aria-label="Evidence — who did the work">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+        Evidence
+      </button>
+      <button type="button" id="sideSettings" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        Settings
+      </button>
     </div>
   </aside>
   </div>

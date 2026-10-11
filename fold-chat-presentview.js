@@ -276,7 +276,7 @@ if (typeof document !== "undefined" && !globalThis.__pvClipTap) { globalThis.__p
 export const armTailReplay = (t = 0) => { armed = { at: Date.now(), t }; };
 
 /** Draw the presented answer into `body`. */
-export function renderPresented(body, { rec, content, pres, mdHtml, question = "", senses = null, model = null }) {
+export function renderPresented(body, { rec, content, pres, mdHtml, question = "", senses = null, model = null, search = null }) {
   const box = el("div", "pv pv-" + (pres.register || "research"));
   box.dataset.layout = pres.layout;
   const pres2 = rec.book ? { ...pres, book: rec.book } : { ...pres };
@@ -291,7 +291,7 @@ export function renderPresented(body, { rec, content, pres, mdHtml, question = "
   ans.append(answer);
   const src = sourcesEl(pres2);
   face.append(ans, src);
-  const insp = inspectorEl(rec, pres2, question, model, box, !src.hidden);
+  const insp = inspectorEl(rec, pres2, question, model, box, !src.hidden, search);
   markSentences(answer, rec, pres2, insp);
   box.append(face);
   // The replay lives behind one small "watch" on the summary line; the strip itself stays hidden.
@@ -309,7 +309,7 @@ export function renderPresented(body, { rec, content, pres, mdHtml, question = "
 }
 
 /** One inspector per turn: a summary line whose parts open a tabbed panel (Sources · Checks · Process). */
-function inspectorEl(rec, pres, question, model, root, hasSrc) {
+function inspectorEl(rec, pres, question, model, root, hasSrc, srcSearch = null) {
   const { layout } = pres;
   const line = el("div", "pv-sum");
   const panel = el("div", "pv-insp"); panel.hidden = true;
@@ -334,14 +334,15 @@ function inspectorEl(rec, pres, question, model, root, hasSrc) {
   const x = el("button", "pv-tab-x", "\u00d7"); x.type = "button"; x.setAttribute("aria-label", "Close");
   x.onclick = () => { panel.hidden = true; paint(); };
 
-  // SOURCES: drawn on the right of the answer; the line only counts them
+  // SOURCES: drawn on the right of the answer; the line counts them, and the tab IS the linked source.
   const n = pres.counts?.sentences || 0, g = pres.counts?.grounded || 0;
   let srcSum = null, srcWarn = false;
   if (layout === "unsupported") { srcSum = `read ${plural(pres.read || 0, "page")} \u00b7 none back the answer`; srcWarn = true; }
   else if (layout === "paraphrase") srcSum = null;
   else if (layout === "creative") srcSum = pres.docs.length ? `drew on ${plural(pres.docs.length, "source")}` : null;
   else { srcSum = plural(pres.docs.length, "source") + (n ? ` \u00b7 ${g} of ${plural(n, "sentence")} backed` : ""); srcWarn = n > 0 && g < n; }
-  if (srcSum && hasSrc) line.append(el("span", "pv-sum-k" + (srcWarn ? " warn" : ""), srcSum));
+  let srcPane = null;
+  if (srcSum && hasSrc) { srcPane = el("div", "pv-src-pane"); add("src", "Sources", srcPane, srcSum, srcWarn); }
   if (rec.loop && rec.loop.passes?.length) { if (line.childElementCount) line.append(el("span", "pv-sum-dot", "\u00b7")); line.append(el("span", "pv-sum-k", `went back ${plural(rec.loop.passes.length, "lap")}`)); }
 
   // CHECKS
@@ -370,8 +371,16 @@ function inspectorEl(rec, pres, question, model, root, hasSrc) {
   const clips = () => [...root.querySelectorAll(".pv-src .pv-clip[data-tag]")];
   return {
     line, panel,
-    has: (key) => (key === "src" ? hasSrc : T.some((t) => t.key === key)),
+    has: (key) => (key === "src" ? srcPane != null : T.some((t) => t.key === key)),
     open: (key) => { if (T.some((t) => t.key === key)) select(key); },
+    // THE TAB WITHIN THE CHAT: click a grounded sentence (or the hover card's "Into the source") and the linked
+    // evidence for exactly that sentence becomes a tab in this answer's inspector — never a second popup.
+    intoSource: (items, { answer = "", rec = null } = {}) => {
+      if (!srcPane) return;
+      srcPane.replaceChildren();
+      srcPane.append(sourceExplorer(rec, items, answer, srcSearch));
+      if (panel.hidden || cur !== "src") select("src");
+    },
     hit: (tags, on) => { const set = new Set(tags); for (const c of clips()) c.classList.toggle("pv-hit", !!on && (c.dataset.tag.match(/S\d+/gi) || [c.dataset.tag]).some((t) => set.has(t.toUpperCase()))); },
   };
 }
@@ -458,7 +467,17 @@ function tripleRow(t, ref) {
   mk("s", "SUBJ", t.e1, ref && has(t.k1, [...ref.k1, ...ref.k2])); mk("v", "VERB", t.rel, ref && has(t.kr, ref.kr)); mk("o", "OBJ", t.e2, ref && has(t.k2, [...ref.k1, ...ref.k2]));
   return row;
 }
-function showPop(span, items, { answer = "", sheet = false, rec = null } = {}) {
+/** Group several quotations by the page they came from, keeping their order. */
+function quoteGroups(items) {
+  const groups = [];
+  for (const it of items) { const k = (it.url || it.domain || "") + "|" + it.kind; let g = groups.find((x) => x.k === k); if (!g) groups.push(g = { k, it, quotes: [] }); g.quotes.push(it.quote); }
+  return groups;
+}
+
+/** THE HOVER CARD, MINIMAL: one source, the one line it said, and a single way deeper. The chain of evidence itself —
+ *  the other quotes, the page's passages, everywhere the claim and its names turn up, the live web — lives in the
+ *  answer's Sources tab (intoSource → sourceExplorer), never in this floating card. */
+function showPop(span, items, { answer = "", sheet = false, rec = null, onInto = null } = {}) {
   clearTimeout(popTimer);
   if (!popEl) {
     popEl = el("div", "pv-pop"); popEl.setAttribute("role", "dialog"); popEl.setAttribute("aria-label", "Where this sentence comes from"); popEl.hidden = true; document.body.append(popEl);
@@ -471,39 +490,30 @@ function showPop(span, items, { answer = "", sheet = false, rec = null } = {}) {
   popPinned = false;
   popEl.replaceChildren();
   if (sheet) { const bar = el("div", "pv-pop-bar"); const x = el("button", "pv-pop-x", "\u00d7"); x.type = "button"; x.setAttribute("aria-label", "Close"); x.onclick = () => hidePop(true); bar.append(el("span", "grip"), x); popEl.append(bar); }
-  const at = answer ? tripleOf(answer) : null;
-  if (at) { const a = el("div", "pv-ev-ans"); a.append(el("div", "pv-ev-k", "this sentence"), tripleRow(at, null)); popEl.append(a); }
-  if (!items.length) { const n = el("div", "pv-pop-none"); n.append(el("b", "", "No source states this"), el("span", "", "nothing it read says this sentence")); popEl.append(n); }
-  // WHERE IT CAME FROM leads each card: the page's favicon, its domain, whether it says this or says otherwise, a link; then the sentence as the
-  // stage cuts it (who | does | what), then the verbatim words. Several quotes from one page sit under one header.
-  const groups = [];
-  for (const it of items) { const k = (it.url || it.domain || "") + "|" + it.kind; let g = groups.find((x) => x.k === k); if (!g) groups.push(g = { k, it, quotes: [] }); g.quotes.push(it.quote); }
-  groups.forEach(({ it, quotes }, gi) => {
+  const groups = quoteGroups(items);
+  if (!groups.length) { const n = el("div", "pv-pop-none"); n.append(el("b", "", "No source states this"), el("span", "", "nothing it read says this sentence")); popEl.append(n); }
+  else {
+    const { it, quotes } = groups[0];
+    const totalQuotes = groups.reduce((n, g) => n + g.quotes.length, 0);
     const dom = String(it.domain || "").replace(/^www\./, "");
     const ttl = String(it.title || "").replace(/^[^\u2014\u2013|]*\.(?:org|com|net|gov|edu|co\.uk|io)\s*[\u2014\u2013|-]\s*/i, "").trim();   // "en.wikipedia.org — History of the telephone" -> the page title alone
-    const row = el("div", "pv-pop-row" + (gi === 0 ? " first" : ""));
+    const card = el("div", "pv-pop-row first");
     const src = el("div", "pv-pop-src");
     src.append(fav(it.domain || "", it.title || dom), el("b", "", dom || "a page"));
     if (ttl && ttl !== dom) src.append(el("span", "t", ttl));
     src.append(el("span", "rel " + (it.kind === "contradicts" ? "bad" : "ok"), it.kind === "contradicts" ? "says otherwise" : "says this"));
     if (it.url && /^https?:\/\//i.test(it.url)) { const a = el("a", "o", "open \u2197"); a.href = it.url; a.target = "_blank"; a.rel = "noopener"; src.append(a); }
-    row.append(src);
-    let pageBox = null;
-    const more = el("button", "pv-ev-more", "Show the page"); more.type = "button"; more.setAttribute("aria-expanded", "false");
-    const toggle = () => {
-      if (pageBox) { pageBox.remove(); pageBox = null; more.textContent = "Show the page"; more.setAttribute("aria-expanded", "false"); return; }
-      pageBox = pageView(rec, it, quotes[0]); row.append(pageBox); more.textContent = "Hide the page"; more.setAttribute("aria-expanded", "true"); popPinned = true; clearTimeout(popTimer);
-      if (!popEl.classList.contains("sheet")) { const pr = popEl.getBoundingClientRect(); if (pr.bottom > innerHeight - 8) popEl.style.top = Math.max(8, innerHeight - 8 - pr.height) + "px"; }
-    };
-    more.onclick = toggle;
-    for (const q of quotes.slice(0, 2)) {
-      let tr = null; try { tr = tripleRow(tripleOf(q), at); } catch {}
-      if (tr) { for (const b of tr.querySelectorAll(".pv-ev-b")) { b.tabIndex = 0; b.setAttribute("role", "button"); b.title = "Show the page this is from"; b.onclick = toggle; b.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } }; } row.append(tr); }
-      row.append(el("q", it.kind === "contradicts" ? "bad" : "", q));
+    card.append(src);
+    card.append(el("q", it.kind === "contradicts" ? "bad" : "", quotes[0]));
+    if (totalQuotes > 1) card.append(el("span", "pv-pop-more", "+" + (totalQuotes - 1) + " more " + (groups.length > 1 ? "across " + plural(groups.length, "source") : "from this page")));
+    if (onInto) {
+      const foot = el("div", "pv-pop-into");
+      const into = el("button", "pv-into", "Into the source \u2192"); into.type = "button";
+      into.addEventListener("click", (e) => { e.stopPropagation(); hidePop(true); onInto(); });
+      foot.append(into); card.append(foot);
     }
-    row.append(more);
-    popEl.append(row);
-  });
+    popEl.append(card);
+  }
   popEl.hidden = false; popFor = span; if (scrimEl) scrimEl.hidden = !sheet;
   if (!sheet) {
     popEl.style.left = popEl.style.top = "0px";
@@ -514,8 +524,80 @@ function showPop(span, items, { answer = "", sheet = false, rec = null } = {}) {
   } else { popEl.style.left = popEl.style.top = ""; }
 }
 
-/** The evidence on the sentences: each answer sentence the record scored gets a span — backed (quiet; hover lights its
- *  passage, click opens Sources) or not (dotted; click opens Checks). Best effort: a sentence that crosses inline
+/** The linked source: one card per page the sentence rests on — the verbatim words, the page's kept passages to walk,
+ *  and the connections (Wikipedia, but the links leave the page): everywhere this claim turns up in the record, every
+ *  name in it on its own trail, and the claim carried out onto the live web. Every connection renders INTO the pane. */
+function foldOccurrences(rec, q) {
+  const key = String(q || "").replace(/\s+/g, " ").toLowerCase().trim();
+  if (!key || !rec) return [];
+  const rows = [];
+  const add = (text, url, title) => { const t = String(text || "").trim(); if (t.length < 24) return; if (!t.replace(/\s+/g, " ").toLowerCase().includes(key)) return; const U = normUrl(url); if (!rows.some((rr) => normUrl(rr.url) === U)) rows.push({ text: t, url, title }); };
+  for (const p of rec.passages || []) add(p.text || "", p.url || p.source, p.title || "");
+  for (const e of rec.tape || []) if (e && e.kind === "quick" && e.p) add(e.p.text || "", e.p.url || "", e.p.title || "");
+  for (const m of rec.material || []) if (m && m.text) add(m.text, m.url || m.source, m.title || "");
+  return rows.slice(0, 5);
+}
+function linkedChunk(btnLabel, build) {
+  const wrap = el("div", "pv-linkchunk");
+  const btn = el("button", "pv-linkb", btnLabel); btn.type = "button"; btn.setAttribute("aria-expanded", "false");
+  const res = el("div", "pv-linkres"); res.hidden = true;
+  let built = false, busy = false;
+  btn.onclick = async () => {
+    if (!res.hidden) { res.hidden = true; btn.setAttribute("aria-expanded", "false"); return; }
+    btn.setAttribute("aria-expanded", "true");
+    if (!built && !busy) { busy = true; res.append(el("span", "pv-linknone", "looking\u2026")); await build(res).catch(() => {}); busy = false; built = true; }
+    res.hidden = false;
+  };
+  wrap.append(btn, res);
+  return wrap;
+}
+function linkedRow(rec, quote, onSearch) {
+  const row = el("div", "pv-linkrow");
+  row.append(el("span", "pv-linkk", "Connected \u00b7"));
+  const occ = foldOccurrences(rec, quote);
+  if (occ.length) row.append(linkedChunk(plural(occ.length, "other place") + " in the record say this", (res) => {
+    for (const o of occ.slice(0, 5)) { const r = el("div", "pv-occ"); r.append(el("span", "pv-occ-t", clip(o.text, 150))); if (o.url && isHttp(o.url)) { const a = el("a", "o", "open \u2197"); a.href = o.url; a.target = "_blank"; a.rel = "noopener"; a.setAttribute("aria-label", "Open the page in a new tab"); r.append(a); } res.append(r); }
+  }));
+  for (const n of namesIn(quote).slice(0, 3)) { const nocc = foldOccurrences(rec, n); if (!nocc.length) continue; row.append(linkedChunk("\u2192 " + n, (res) => {
+    res.append(el("span", "pv-linknone", "everywhere \u201c" + n + "\u201d turns up in the kept reading"));
+    for (const o of nocc.slice(0, 4)) { const r = el("div", "pv-occ"); r.append(el("span", "pv-occ-t", clip(o.text, 130))); if (o.url && isHttp(o.url)) { const a = el("a", "o", "open \u2197"); a.href = o.url; a.target = "_blank"; a.rel = "noopener"; r.append(a); } res.append(r); }
+  })); }
+  if (onSearch) row.append(linkedChunk("this claim on the live web", async (res) => {
+    res.replaceChildren();
+    const w = await onSearch(String(quote || "").replace(/\s+/g, " ").trim().slice(0, 200)).catch(() => null);
+    const hits = (w && w.results) || [];
+    if (!hits.length) { res.append(el("span", "pv-linknone", "nothing came back")); return; }
+    for (const h of hits.slice(0, 5)) { let u = "", dom = ""; try { u = String(h.url || ""); dom = String(h.domain || (u ? new URL(u).hostname : "") || ""); } catch { dom = String(h.domain || ""); } const r = el("div", "pv-occ"); if (u) { const a = el("a", "l", h.title || dom || u); a.href = u; a.target = "_blank"; a.rel = "noopener"; r.append(a); } r.append(el("span", "pv-occ-d", dom || "")); res.append(r); }
+  }));
+  return row;
+}
+/** The Sources tab's content: the sentence being sourced, then each page that states it — quote, page walker, links. */
+function sourceExplorer(rec, items, answer, onSearch) {
+  const box = el("div", "pv-src-exp");
+  if (answer) { const tr = tripleOf(answer); if (tr) { const a = el("div", "pv-ev-ans"); a.append(el("div", "pv-ev-k", "this sentence"), tripleRow(tr, null)); box.append(a); } }
+  const groups = quoteGroups(items);
+  if (!groups.length) { const n = el("div", "pv-elsewhere n"); n.append(el("b", "", "No source states this"), el("span", "", "nothing it read says this sentence")); box.append(n); return box; }
+  for (const { it, quotes } of groups.slice(0, 6)) {
+    const card = el("div", "pv-src-card");
+    const dom = String(it.domain || "").replace(/^www\./, "");
+    const ttl = String(it.title || "").replace(/^[^\u2014\u2013|]*\.(?:org|com|net|gov|edu|co\.uk|io)\s*[\u2014\u2013|-]\s*/i, "").trim();
+    const head = el("div", "pv-src-card-h");
+    head.append(fav(it.domain || "", it.title || dom), el("b", "", dom || "a page"));
+    if (ttl && ttl !== dom) head.append(el("span", "t", ttl));
+    head.append(el("span", "rel " + (it.kind === "contradicts" ? "bad" : "ok"), it.kind === "contradicts" ? "says otherwise" : "says this"));
+    if (it.url && /^https?:\/\//i.test(it.url)) { const a = el("a", "o", "open \u2197"); a.href = it.url; a.target = "_blank"; a.rel = "noopener"; a.setAttribute("aria-label", "Open the page in a new tab"); head.append(a); }
+    card.append(head);
+    for (const q of quotes.slice(0, 2)) card.append(el("q", it.kind === "contradicts" ? "bad" : "", q));
+    card.append(pageView(rec, it, quotes[0]));
+    card.append(linkedRow(rec, quotes[0], onSearch));
+    box.append(card);
+  }
+  return box;
+}
+
+/** The evidence on the sentences: each answer sentence the record scored gets a span — backed (quiet; hover shows ONE
+ *  line and one way deeper, click opens the sentence's Sources tab) or not (dotted; click opens Checks). The deep
+ *  source lives in the chat's tabbed inspector, never in a floating card. Best effort: a sentence that crosses inline
  *  formatting is marked up to the first boundary. */
 function markSentences(root, rec, pres, insp) {
   const resp = pres.response || rec?.facing?.response;
@@ -538,12 +620,18 @@ function markSentences(root, rec, pres, insp) {
     const tags = (String(r.tag || "").match(/S\d+/gi) || []).map((s) => s.toUpperCase());
     const items = evidenceOf(rec, pres, idx, r);
     span.tabIndex = 0; span.setAttribute("role", "button"); span.setAttribute("aria-haspopup", "dialog");
-    const ctx = () => ({ answer: String(r.text || ""), sheet: sheetMode(), rec });
+    const into = insp.has("src") ? () => insp.intoSource(items, { answer: String(r.text || ""), rec }) : null;
+    const ctx = () => ({ answer: String(r.text || ""), sheet: sheetMode(), rec, onInto: into });
     span.addEventListener("mouseenter", () => { if (!sheetMode()) { showPop(span, items, ctx()); if (kind === "ok" && insp.has("src")) insp.hit(tags, true); } });
     span.addEventListener("mouseleave", () => { if (!sheetMode()) { hidePop(); insp.hit(tags, false); } });
     span.addEventListener("focus", () => { if (!sheetMode()) showPop(span, items, ctx()); });
     span.addEventListener("blur", () => { if (!sheetMode()) hidePop(); });
-    span.addEventListener("click", () => { if (sheetMode()) { popFor === span && popEl && !popEl.hidden ? hidePop(true) : showPop(span, items, ctx()); } else if (insp.has("chk") && kind !== "ok") insp.open("chk"); });
+    span.addEventListener("click", () => {
+      if (sheetMode()) { popFor === span && popEl && !popEl.hidden ? hidePop(true) : showPop(span, items, ctx()); return; }
+      if (into && kind === "ok") { into(); insp.hit(tags, false); return; }   // a grounded claim: go INTO the source
+      if (insp.has("chk") && kind !== "ok") insp.open("chk");                 // an unbacked claim: see why it failed
+    });
+    span.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); span.click(); } });
   });
 }
 

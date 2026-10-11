@@ -27,6 +27,9 @@ import * as web from "./fold-chat-web.js";
 import { falsifyAnswer, FAILING, claimSentences, routeOf, pickPassages, restateClaimMessages, replaceSentence, reImpress } from "./fold-chat-falsify-answer.js";
 // What this tab has already read, and which hosts turned it away: a follow-up about the same pages costs no fetch.
 const pageMemo = web.makeMemo();
+// The Sources tab's "this claim on the live web" link: the fold's own search, as it searches the record. Never a wedge —
+// a failed search renders "nothing came back" in the pane, it never throws the answer away.
+const srcSearch = async (q) => { try { return await web.searchWeb(q, { effort: "balanced", read: 2, memo: pageMemo }); } catch { return { results: [], passages: [], trace: [] }; } };
 import { classifyTurn, GENERATE_NUDGE, GENERATE_CREATIVE_NUDGE, checkable, recordable, skipsSearch, noClaimsLabel, KIND_PROMPT } from "./fold-chat-discourse.js";
 import { describeOutput, genVoidShape, voidsAfterSearch } from "./fold-chat-outputtype.js";   // what is asked to be PRODUCED: type, topic through the thread, needsSources, typed gaps (G1, 2026-10-07)
 import { evaluate as computeEvaluate, answerKeeps } from "./fold-chat-compute.js";
@@ -461,6 +464,8 @@ export function mount(root, opts = {}) {
   const E = {
     railToggle: $("railToggle"), railSearch: $("railSearch"), railEvidence: $("railEvidence"), railSettings: $("railSettings"),
     side: $("side"), models: $("models"), projects: $("projects"), chats: $("chats"), projAdd: $("projAdd"), projNewProject: $("projNewProject"),
+    sideNewChat: $("sideNewChat"), sideCollapse: $("sideCollapse"), chatSearch: $("chatSearch"), chatSearchClear: $("chatSearchClear"), sideSearch: $("sideSearch"),
+    sideEvidence: $("sideEvidence"), sideSettings: $("sideSettings"),
     composerMode: $("composerMode"), composerCwd: $("composerCwd"), composerTag: $("composerTag"),
     topNew: $("topNew"), topFocus: $("topFocus"), topMenu: $("topMenu"), scrim: $("scrim"), turnSlot: $("turnSlot"),
     welcome: $("welcome"), welcomeSub: $("welcomeSub"), thread: $("thread"), threadCol: $("threadCol"), stage: $("stage"), main: document.querySelector("main.main"),
@@ -897,52 +902,69 @@ export function mount(root, opts = {}) {
     s.named = true;
     save("fold-chat:sessions", sessions);
   }
+  function paintSearchUI() {
+    if (!E.chatSearch) return;
+    E.chatSearch.value = search;
+    E.sideSearch?.classList.toggle("has-q", !!search);
+  }
   function renderChats() {
     let iconDirty = false;
     for (const s of Object.values(sessions)) if (refreshIcon(s)) iconDirty = true;
     if (iconDirty) save("fold-chat:sessions", sessions);
     paintTopChat();
+    paintSearchUI();
     E.chats.innerHTML = "";
     let list = Object.values(sessions);
     if (filterProject) list = list.filter((s) => s.project === filterProject);
     if (search) list = list.filter((s) => (s.title || "").toLowerCase().includes(search.toLowerCase()));
     list.sort((a, b) => new Date(b.updated || b.createdAt || 0) - new Date(a.updated || a.createdAt || 0));
+    if (!list.length) { E.chats.append(el("div", "empty-hint", search ? "no chats match" : "no chats yet")); return; }
+    // Searching folds the list to ONE flat set — pinned first, then by recency —
+    // under a results label, instead of pretending the matches sit under Today.
+    if (search) {
+      const g = el("div", "group");
+      g.append(el("div", "group-label", "Results \u00b7 " + list.length));
+      for (const s of list.filter((s) => s.pinned)) g.append(chatRow(s));
+      for (const s of list.filter((s) => !s.pinned)) g.append(chatRow(s));
+      E.chats.append(g);
+      return;
+    }
     const pinned = list.filter((s) => s.pinned);
     const rest = list.filter((s) => !s.pinned);
     if (pinned.length) group("Pinned", pinned);
     const groups = { Today: [], Yesterday: [], "Previous 7 days": [], Older: [] };
     for (const s of rest) groups[timeGroup(s)].push(s);
     for (const [label, arr] of Object.entries(groups)) if (arr.length) group(label, arr);
-    if (!list.length) E.chats.append(el("div", "empty-hint", search ? "no chats match" : "no chats yet"));
+  }
+  function chatRow(s) {
+    const row = el("div", "chat" + (s.id === activeId ? " on" : ""));
+    // The chat's own Phosphor mark (regular weight, currentColor). Decorative:
+    // the title beside it is the accessible name.
+    const ic = el("span", "cicon glyph");
+    ic.setAttribute("aria-hidden", "true");
+    ic.append(phosphor(s.icon || topic.FALLBACK_ICON, 18));
+    const t = el("span", "ct", s.title || "New chat");
+    const menu = el("button", "menu", "⋯"); menu.type = "button"; menu.setAttribute("aria-label", "Chat actions"); menu.setAttribute("aria-haspopup", "menu");
+    menu.onclick = (ev) => { ev.stopPropagation(); chatMenu(s.id, menu); };
+    // A turn running in this chat shows a quiet spinner; a reply that landed
+    // while another chat was open leaves a small dot, cleared when it is opened.
+    // (Meaning is in the label too, never colour alone.)
+    const state = inflight.has(s.id) ? "running" : (s.unseen && s.id !== activeId ? "new" : null);
+    if (state) {
+      const dot = el("span", "cstate " + state);
+      dot.setAttribute("role", "img");
+      dot.setAttribute("aria-label", state === "running" ? "working" : "new reply");
+      dot.title = state === "running" ? "working…" : "new reply";
+      row.append(ic, t, dot, menu);
+    } else row.append(ic, t, menu);
+    row.onclick = () => open(s.id);
+    activatable(row); if (s.id === activeId) row.setAttribute("aria-current", "true");
+    return row;
   }
   function group(label, arr) {
     const g = el("div", "group");
     g.append(el("div", "group-label", label));
-    for (const s of arr) {
-      const row = el("div", "chat" + (s.id === activeId ? " on" : ""));
-      // The chat's own Phosphor mark (regular weight, currentColor). Decorative:
-      // the title beside it is the accessible name.
-      const ic = el("span", "cicon glyph");
-      ic.setAttribute("aria-hidden", "true");
-      ic.append(phosphor(s.icon || topic.FALLBACK_ICON, 18));
-      const t = el("span", "ct", s.title || "New chat");
-      const menu = el("button", "menu", "⋯"); menu.type = "button"; menu.setAttribute("aria-label", "Chat actions"); menu.setAttribute("aria-haspopup", "menu");
-      menu.onclick = (ev) => { ev.stopPropagation(); chatMenu(s.id, menu); };
-      // A turn running in this chat shows a quiet spinner; a reply that landed
-      // while another chat was open leaves a small dot, cleared when it is opened.
-      // (Meaning is in the label too, never colour alone.)
-      const state = inflight.has(s.id) ? "running" : (s.unseen && s.id !== activeId ? "new" : null);
-      if (state) {
-        const dot = el("span", "cstate " + state);
-        dot.setAttribute("role", "img");
-        dot.setAttribute("aria-label", state === "running" ? "working" : "new reply");
-        dot.title = state === "running" ? "working…" : "new reply";
-        row.append(ic, t, dot, menu);
-      } else row.append(ic, t, menu);
-      row.onclick = () => open(s.id);
-      activatable(row); if (s.id === activeId) row.setAttribute("aria-current", "true");
-      g.append(row);
-    }
+    for (const s of arr) g.append(chatRow(s));
     E.chats.append(g);
   }
   function chatMenu(id, anchor) {
@@ -1190,7 +1212,7 @@ export function mount(root, opts = {}) {
       const question = sess && meta.index != null ? String(askBefore(sess, meta.index) || "") : "";
       const pres = presentationOf(rec, { question });
       if (pres && pres.layout === "unsupported") pres.onSourcesOnly = () => { setAnswerMode("snips"); meta?.retry?.(); };
-      if (pres) { renderPresented(body, { rec, content, pres, mdHtml, question, senses: sensesEl(rec), model: [meta?.model, meta?.sealed ? "sealed-external" : client.isPageModel(meta?.model) ? "in this tab" : null].filter(Boolean).join(" \u00b7 ") || null }); return; }
+      if (pres) { renderPresented(body, { rec, content, pres, mdHtml, question, senses: sensesEl(rec), model: [meta?.model, meta?.sealed ? "sealed-external" : client.isPageModel(meta?.model) ? "in this tab" : null].filter(Boolean).join(" \u00b7 ") || null, search: srcSearch }); return; }
       if (Array.isArray(rec?.tape) && rec.tape.length) renderTapeStrip(body, rec, question);
     }
 
@@ -3562,7 +3584,6 @@ export function mount(root, opts = {}) {
     E.side.classList.toggle("hide"); markOn(E.railToggle, !E.side.classList.contains("hide"));
   };
   if (E.topNew) E.topNew.onclick = newChat;
-  { const chatsNew = $("chatsNew"); if (chatsNew) chatsNew.onclick = newChat; }   // the + beside the Chats header: the same handler (an empty current chat is reused)
   // FOLDS: the agent's artifact threads. A make-ask in the Agent engagement opens one; the rail and the sidebar list them.
   const folds = mountFolds({ main: E.main, list: $("folds"), newBtn: $("foldsNew"), railBtn: $("railFolds"), toast,
     getModelId: () => { const mm = selectedModel(); return mm && !mm.none ? mm.id : null; },
@@ -3575,7 +3596,7 @@ export function mount(root, opts = {}) {
     } });
   // SELF-TEST HOOK (2026-10-10) — AFTER the mount: the fold exposes its own API so a harness binds a worktree, and the app tells the harness about itself.
   try { window.__folds = folds; } catch {}
-  for (const id of ["chats", "projects", "topNew", "chatsNew"]) $(id)?.addEventListener("click", () => folds.isOpen() && folds.close(), true);
+  for (const id of ["chats", "projects", "topNew", "sideNewChat", "agStart"]) $(id)?.addEventListener("click", () => folds.isOpen() && folds.close(), true);
   // ADD A CODEBASE: choose a folder → the agent's workspace (fold-chat-workspace.js),
   // shown in the fold as a worktree with each file viewable as a projection or a log.
   { const btn = $("foldsCodebase"); if (btn) {
@@ -3590,13 +3611,25 @@ export function mount(root, opts = {}) {
     document.body.appendChild(inp);
     btn.onclick = () => inp.click();
   } }
-  E.railSearch.onclick = async () => {
-    const q = await askDialog({ title: "Search chats", value: search, placeholder: "Search titles", okLabel: "Search" });
-    if (q == null) return;
-    search = q.trim();
-    renderChats();
-  };
+  if (E.sideNewChat) E.sideNewChat.onclick = newChat;   // Claude's "+ New chat", pinned at the top of the panel
+  if (E.sideCollapse) E.sideCollapse.onclick = () => { E.side.classList.toggle("hide"); markOn(E.railToggle, !E.side.classList.contains("hide")); };
+  // Look up chats from the panel's own search pill: live filtering, no dialog.
+  // "/" jumps to it from anywhere the person is not typing; Escape clears it.
+  if (E.chatSearch) {
+    E.chatSearch.addEventListener("input", () => { search = E.chatSearch.value.trim(); renderChats(); });
+    E.chatSearch.addEventListener("keydown", (e) => { if (e.key === "Escape" && E.chatSearch.value) { e.preventDefault(); search = ""; E.chatSearch.value = ""; renderChats(); } });
+  }
+  if (E.chatSearchClear) E.chatSearchClear.onclick = () => { search = ""; E.chatSearch.value = ""; renderChats(); E.chatSearch.focus(); };
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+    const tag = (e.target && (e.target.tagName || "").toLowerCase());
+    if (tag && !["input", "textarea", "select"].includes(tag)) { e.preventDefault(); E.chatSearch?.focus(); }
+  });
+  // the rail's search button now just opens the panel's own field (one search, not two)
+  E.railSearch.onclick = () => { if (E.side.classList.contains("hide")) { E.side.classList.remove("hide"); markOn(E.railToggle, true); } E.sideSearch?.scrollIntoView?.({ block: "nearest" }); E.chatSearch?.focus(); };
   E.railEvidence.onclick = (e) => { e.preventDefault(); drawerOpener = e.currentTarget; toggleDrawer(); };
+  if (E.sideEvidence) E.sideEvidence.onclick = (e) => { e.preventDefault(); if (root.classList.contains("nav-open")) setNav(false); drawerOpener = e.currentTarget; toggleDrawer(); };
+  if (E.sideSettings) E.sideSettings.onclick = () => { if (root.classList.contains("nav-open")) setNav(false); openSettings(); };
   // A live window on every external call and how it was anonymized (its own module: its own button, panel and styles).
   if (!HIDE_EXTERNAL) mountMonitor({ outbound });
   E.topFocus.onclick = () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); };
