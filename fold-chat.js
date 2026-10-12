@@ -2276,32 +2276,6 @@ export function mount(root, opts = {}) {
     // watcher left (kept on the assistant message, apart from the discourse summary) and says so in the feed; POST below holds the turn to it and leaves the next baton.
     let watcherPre = null;
     try { watcherPre = watchPre({ ask: said, prior: askAt > 0 ? s.messages.slice(0, askAt) : [], opts: { referents: s.referents || null, rejected: rejectedSurfaces(s.minds), hints: hintsFor(lang0 === "unknown" ? "en" : lang0), lang: lang0 } }); } catch (e) { /* an aid, never a reason to lose a turn */ }
-    // THE TRAIL, IN PLAIN LANGUAGE (fold-chat-trail.js, user 2026-10-11): the discourse-aware thread is
-    // spoken the way the record speaks — no "relation · want · baton". It names the prior turn, its ask and
-    // what it held, and says plainly what THIS one inherits (continues it with the carried sources / a new
-    // ask that searches / a cold follow-up with nothing to carry). Built ONLY from the mechanical fold: the
-    // prior message's own record (line, coverage, sources) and this turn's plan. A misfire is seen where it
-    // happens — in plain words.
-    if (askAt > 0) {
-      try {
-        const priorMsg = [...s.messages].slice(0, askAt).reverse().find((x) => x.role === "assistant" && x.grounding) || null;
-        const prior = priorMsg ? {
-          turn: priorMsg.grounding.turn ?? null,
-          ask: follow.thread?.ask || null,
-          record: {
-            line: priorMsg.grounding.line || null,
-            addresses: Math.max(String(priorMsg.grounding.line || "").match(/(\d+) address/) ? Number(String(priorMsg.grounding.line).match(/(\d+) address/)[1]) : 0, (priorMsg.grounding.sources || []).length),
-            sources: priorMsg.grounding.sources || [],
-            grounded: priorMsg.grounding.coverage ? priorMsg.grounding.coverage.grounded === priorMsg.grounding.coverage.total : null,
-            unsupported: priorMsg.grounding.unsupported ? (priorMsg.grounding.unsupported.names || []).length + (priorMsg.grounding.unsupported.numbers || []).length : null,
-          },
-        } : null;
-        const carriedCount = Array.isArray(follow.carried) ? follow.carried.length : (threadTurn?.carried || 0);
-        const flat = watcherPre?.flags?.length ? watcherPre.flags.map((f) => f.flag) : [];
-        const trailText = trailOf({ now: String(said || ""), prior, follow, carriedCount, flags: flat });
-        if (trailText) feedPush(lineEvent(tt, "Trail", { tone: "info", note: trailText }));
-      } catch (e) {}
-    }
     let question = follow.retry || said;
     // THE FOLD HEALS ITSELF FIRST (a confirmed lesson — supervisor or the person — is applied at runtime:
     // "meam" -> "mean", "itnow" -> "it now"), so the murmur and the search BOTH read the healed wording.
@@ -2386,6 +2360,31 @@ export function mount(root, opts = {}) {
     const feedGate = { on: s.messages.filter((x) => x.role === "user").length > 1 };
     if (!feedGate.on) { try { feed.dispose(); feed.root.remove(); } catch (e) {} }
     const feedPush = (evs) => { for (const e of evs) { turnEvents.push(e); if (feedGate.on) { try { feed.push(e); } catch (err) { try { console.error("[fold-chat] feed:", err); } catch {} } } try { pvLive?.event(e); } catch {} } };
+    // THE TRAIL, IN PLAIN LANGUAGE (fold-chat-trail.js, user 2026-10-11): the discourse-aware thread spoken the
+    // way the record speaks — no "relation · want · baton". Names the prior turn, its ask and what it held, and
+    // says plainly what THIS one inherits (continues it with the carried sources / a new ask that searches / a
+    // cold follow-up with nothing to carry). Built ONLY from the mechanical fold: the prior message's own record
+    // and this turn's plan. A misfire is seen where it happens — in plain words.
+    if (askAt > 0) {
+      try {
+        const priorMsg = [...s.messages].slice(0, askAt).reverse().find((x) => x.role === "assistant" && x.grounding) || null;
+        const prior = priorMsg ? {
+          turn: priorMsg.grounding.turn ?? null,
+          ask: follow.thread?.ask || null,
+          record: {
+            line: priorMsg.grounding.line || null,
+            addresses: Math.max(String(priorMsg.grounding.line || "").match(/(\d+) address/) ? Number(String(priorMsg.grounding.line).match(/(\d+) address/)[1]) : 0, (priorMsg.grounding.sources || []).length),
+            sources: priorMsg.grounding.sources || [],
+            grounded: priorMsg.grounding.coverage ? priorMsg.grounding.coverage.grounded === priorMsg.grounding.coverage.total : null,
+            unsupported: priorMsg.grounding.unsupported ? (priorMsg.grounding.unsupported.names || []).length + (priorMsg.grounding.unsupported.numbers || []).length : null,
+          },
+        } : null;
+        const carriedCount = Array.isArray(follow.carried) ? follow.carried.length : (threadTurn?.carried || 0);
+        const flat = watcherPre?.flags?.length ? watcherPre.flags.map((f) => f.flag) : [];
+        const trailText = trailOf({ now: String(said || ""), prior, follow, carriedCount, flags: flat });
+        if (trailText) feedPush(lineEvent(tt, "Trail", { tone: "info", note: trailText }));
+      } catch (e) {}
+    }
     const ac = new AbortController();
     const flight = { ac, kind: "chat", label: "working…", startedAt: Date.now(), wrap: row.wrap, stage: "", stop: () => { ac.abort(); flight.stage = "stopping…"; if (isLive()) E.stage.textContent = "stopping…"; } };
     inflight.set(id, flight);
