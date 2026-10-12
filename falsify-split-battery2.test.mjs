@@ -167,11 +167,11 @@ test("FALSIFY G8: a question that STARTS or ENDS with a connector is not compoun
 test("FALSIFY G9: a forever-hanging fetch → too_slow handoff inside the box; a forever-429 fetch → handoff; no crash, no model", async () => {
   const parts = splitSlotParts("Who is the king of the UK and who is his wife?");
   const hang = await runSlotParts({ parts, lang: "en", webPassages: k(["monarchyUK", "camilla"]), searchQ: "x", now: NOW, fetchImpl: fakeWorld(["monarchyUK", "camilla"], { hang: true }).fetchImpl, timeBoxMs: 1200 });
-  assert.ok(hang.handoff || hang.parts.every((p) => p.gap), "a hung fetch must not hang the turn");
+  assert.ok(hang.handoff || (hang.parts && hang.parts.every((p) => p.gap)), "a hung fetch must not hang the turn");
   assert.equal(JSON.stringify(hang).includes("aborted"), false, "an internal timebox is never the person's stop");
   const badFetch = async (url, o = {}) => { if (o.signal?.aborted) { const e = new Error("aborted"); e.name = "AbortError"; throw e; } return json({}, 429); };
   const r2 = await runSlotParts({ parts, lang: "en", webPassages: k(["monarchyUK", "camilla"]), searchQ: "x", now: NOW, fetchImpl: badFetch, timeBoxMs: 2000 });
-  assert.ok(r2.parts.every((p) => p.gap), "429-everything still ends as typed gaps");
+  assert.ok(r2.handoff || (r2.parts && r2.parts.every((p) => p.gap)), "429-everything still ends as a handoff or typed gaps");
 });
 
 // ── G10: head-of-HEAD determinism — the committed state re-falsifies clean ──

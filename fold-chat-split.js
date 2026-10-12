@@ -148,6 +148,10 @@ export async function runSlotParts({ parts, lang, webPassages, searchQ = null, n
         const refs = prior.frame?.referents || [];
         const referent = refs[0]?.aliases?.[0] || refs[0]?.title || null;
         bound = bindPartAsk(part, { filler: prior.answer.filler?.text || "", referent, topic: topicOfAsk(parts[part.dependsOn].ask) }, typeof lang === "object" ? lang.code : lang);
+      } else if (prior?.gap && prior.gap.kind === "part_handoff") {
+        // the prior part never engaged the world: this part hands off WITH it (the wire's
+        // contract stays transitive, so an all-handoff compound can leave the usual path)
+        result = { gap: { kind: "part_handoff", english: `\u201c${part.ask}\u201d handed off with the earlier part (\u201c${parts[part.dependsOn].ask}\u201d)` } };
       } else { result = { gap: { kind: "dependent_unbound", english: `the earlier part \u201c${parts[part.dependsOn].ask}\u201d did not answer, so \u201c${part.ask}\u201d has nothing to bind` } }; }
     }
     if (!result && part.nonSlot) {
@@ -168,6 +172,12 @@ export async function runSlotParts({ parts, lang, webPassages, searchQ = null, n
     receipts.push(receipt);
   }
   receipts.sort((a, b) => a.index - b.index);
+  // THE WIRE'S CONTRACT, kept for compounds: if NO part of the question reached a real end state —
+  // every part handed off — the whole ask hands off too and the USUAL path runs (exactly as a single
+  // non-slot ask does). One part ending mechanically ends the turn; all parts handing off never traps it.
+  if (receipts.length && receipts.every((r) => r.gap && r.gap.kind === "part_handoff")) {
+    return { handoff: { kind: "compound_handoff", why: "no part of this question is a one-fact slot the fold can settle \u2014 the usual path runs" } };
+  }
   const answered = receipts.filter((r) => r.answer);
   const contests = receipts.filter((r) => r.contest);
   const gaps = receipts.filter((r) => r.gap);

@@ -130,6 +130,24 @@ test("a NON-SLOT part ('…and why is that?') is a typed gap, never a guess, nev
 });
 
 // ── the wire seams in run() (a re-ordered edit cannot unwire the slice) ─────
+test("THE WIRE'S CONTRACT holds for compounds too: if EVERY part hands off, the whole ask hands off and the usual path runs (never a trapped gap)", async () => {
+  const parts = splitSlotParts("Who is the zorbax of planet x and where was he risen?");
+  const w = fakeWorld([]);   // a world that resolves nothing: every part hands off
+  const res = await runSlotParts({ parts, lang: "en", webPassages: [], searchQ: "x", now: NOW, fetchImpl: w.fetchImpl, timeBoxMs: 4000 });
+  assert.ok(res.handoff && res.handoff.kind === "compound_handoff", JSON.stringify(res).slice(0, 140));
+});
+
+test("a PARTIAL compound carries its missing part as the composed gap's english (the fold notice under the answer)", async () => {
+  const parts = splitSlotParts("Who is the king of the UK and where was he born?");
+  const w = fakeWorld(["Monarchy of the United Kingdom"]);
+  const res = await runSlotParts({ parts, lang: "en", webPassages: ["monarchyUK"].map(asPassage), searchQ: "x", now: NOW, fetchImpl: w.fetchImpl });
+  assert.ok(res.answer, "the held part answers");
+  assert.ok(res.gap && /one fact is missing/.test(res.gap.english), "the missing part is named: " + JSON.stringify(res.gap));
+  const src = fs.readFileSync(new URL("./fold-chat.js", import.meta.url), "utf8");
+  assert.ok(/earlyNotices\.push\(\{ kind: "fold", text: String\(slotTurn\.gap\.english\)/.test(src), "run() draws it as a fold notice");
+  assert.ok(/const notices = \[\.\.\.earlyNotices\]/.test(src), "the notice rides the message's own channel");
+});
+
 test("fold-chat.js is wired: the compound runs before the single one shot, model-barred through the strand, drawn as stored parts", () => {
   const at = (re) => { const m = re.exec(CHAT_SRC); return m ? m.index : -1; };
   assert.ok(at(/splitSlotParts\(question\)/) > 0, "the splitter is called");

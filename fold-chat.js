@@ -2672,6 +2672,7 @@ export function mount(root, opts = {}) {
     // here (a gap is drawn, never said). A { handoff } (not a slot ask, a language with no grammar, names that match no page, too slow) leaves
     // today's path exactly as it was, and the feed says why.
     let slotTurn = null;
+    const earlyNotices = [];   // notices decided before the record/notices channel exists (the compound's missing part)
     if (slotTurnWanted({ kind, wantWeb, liveHit, answerMode, enabled: slotPipelineOn() })) {
       say(`turn \u00b7 ${kindWord} \u00b7 checking whether this has one fact for an answer\u2026`);
       const slotFetch = withSignal(outbound.auditedFetch("web search", runId), ac.signal);   // every outbound call of the slot turn is logged, and Stop cancels it
@@ -2687,6 +2688,9 @@ export function mount(root, opts = {}) {
       if (slotRes.aborted || ac.signal.aborted) throw abortError();   // Stop: no card, no answer — the same stopped turn as any other
       if (slotRes.handoff) feedPush(lineEvent(tt, "Handling this the usual way", { tone: "info", note: slotRes.handoff.why }));
       else if (endsTurn(slotRes)) { slotTurn = slotRes; feedPush(traceFeed(tt, slotRes, lineEvent)); }   // the app's own first-person reasoning, one row per line
+      // A PARTIAL COMPOUND draws its missing part as a fold notice under the answer (one fact is missing: …),
+      // so the chat shows what the join could not hold — never a silently-complete-looking answer.
+      if (slotTurn && Array.isArray(slotTurn.parts) && slotTurn.gap && slotTurn.gap.english) earlyNotices.push({ kind: "fold", text: String(slotTurn.gap.english).slice(0, 300) });
     }
     let originLate = null;
     // AN ENCYCLOPEDIA IS A POINTER, NEVER A CITATION (fold-chat-origin.js, user 2026-10-06): every encyclopedia page this turn read is followed — the
@@ -3008,7 +3012,7 @@ export function mount(root, opts = {}) {
       let text = slotTurn ? answerLine(slotTurn) : strand ? strandText(strand.snips) : ground.stripSelfCitations(out.text).text;
       // System notes about this turn ride their OWN channel (message.notices),
       // never `content`: `content` is only what the model wrote.
-      const notices = [];
+      const notices = [...earlyNotices];
       if (fellBack) notices.push(fellBack);
       // A BOOK FOLD is the fold's own reading of a whole book: say so, and offer the alternative — the person can always ask for
       // what people say online instead of what the book says.
