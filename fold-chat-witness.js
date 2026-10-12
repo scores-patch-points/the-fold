@@ -64,6 +64,8 @@ function mergeSpans(spans) {
   return out;
 }
 
+const ROLE_VERBS = new Set(["became", "become", "becomes", "succeeded", "succeeds", "assumed", "assumes", "took", "takes", "taken", "elected", "elects", "crowned", "crowns", "acceded", "accedes", "appointed", "appoints", "named", "won", "serves", "served", "holds", "held", "leads", "led"]);   // the declared role-verb set (2026-10-11; giver: the author)
+
 export function bindSentence(sentence, frame, { fw = null, lang = null, source = null, topic = null } = {}) {
   const L = frame?.lang || lang;
   const G = L ? GRAMMAR[L] : null;
@@ -88,7 +90,19 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   });
   const topicStems = topic ? tokensOf(String(topic)).map((t) => stemOf(t.fold, L)) : null;
   const carriedByTopic = (g) => !!topicStems && g.seqs.some((s) => containsSeq(topicStems, s));
-  if (!groups.every((g) => g.occ.length || carriedByTopic(g)) || !groups.some((g) => g.occ.length)) return null;
+  // DECLARED (2026-10-11, giver: the author — the real-web holder sentence):
+  // a ROLE page ("King Charles III …", "President of the United States")
+  // witnesses a person-role ask when the page's own title carries the ROLE
+  // (the frame predicate) and the sentence carries the subject name — that is
+  // how "Charles III became king on 8 September 2022" binds for "who is the
+  // king of the UK". Only for a person slot with a predicate: otherwise the
+  // referent group must still appear, exactly as before.
+  const predStems = (frame.predicate || []).map((p) => p.stem);
+  const roleInSentence = predStems.some((s) => toks.some((t) => t.stem === s));
+  const titleCarriesRole = !!topicStems && frame.slot === "person" && predStems.length > 0 && roleInSentence &&
+    predStems.every((s) => topicStems.includes(s));
+  if (!groups.every((g) => g.occ.length || carriedByTopic(g) || titleCarriesRole)) return null;
+  if (!groups.some((g) => g.occ.length) && !titleCarriesRole) return null;   // no anchor at all: only the declared role page may carry the whole group anaphorically
 
   // ── predicate stems ─────────────────────────────────────────────────────────────────────────────────────────────
   const predMatches = [];                                             // token indices that carry a predicate stem
@@ -110,13 +124,16 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // ── filler (T1 only) ────────────────────────────────────────────────────────────────────────────────────────────
   let filler = null, fillerCandidates = null;
   if (tier === "T1") {
-    if (frame.slot === "person" || frame.slot === "place" || frame.slot === "thing") filler = copulaSideFiller();
+    if (frame.slot === "person" || frame.slot === "place" || frame.slot === "thing") filler = copulaSideFiller() || subjectFiller();
     else if (frame.slot === "quantity") filler = nearestNumber();
     else if (frame.slot === "time") ({ filler, fillerCandidates } = years());
   }
 
   function copulaSideFiller() {
-    const ci = toks.findIndex((t, k) => G.copulas.includes(t.fold) && !inRef.has(k));
+    // "been" counts (L1 real-web shape, declared 2026-10-11: "Charles has been
+    // King since 8 September 2022"): the perfect copula is a copula for the
+    // filler; the auxiliary before it is trimmed off whatever side is read.
+    const ci = toks.findIndex((t, k) => (G.copulas.includes(t.fold) || t.fold === "been") && !inRef.has(k));
     if (ci < 0) return null;
     const carries = (a, b) => toks.some((t, k) => k >= a && k <= b && carry.has(t.stem));
     const holdsPredicate = (a, b) => predMatches.some((k) => k >= a && k <= b);
@@ -126,7 +143,10 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     if (cl) side = "right"; else if (cr) side = "left";
     else {                                                            // neither side names the referent (topic mode): the predicate's side is the subject
       const pl = holdsPredicate(0, ci - 1), pr = holdsPredicate(ci + 1, toks.length - 1);
-      if (pl && !pr) side = "right"; else if (pr && !pl) side = "left"; else return null;
+      // Both sides carrying the predicate happens when the role word is ALSO in
+      // the name ("King Charles III has been king since…"): the LEFT side is the
+      // sentence's subject — declared, and the aux-trim below cuts its "has".
+      if (pl && !pr) side = "right"; else if (pr && !pl) side = "left"; else if (pl && pr) side = "left"; else return null;
     }
     const from = side === "right" ? toks[ci].end : 0, to = side === "right" ? text.length : toks[ci].start;
     let cut = to;
@@ -136,6 +156,27 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     while (a < b && /[\s"“‘'(]/u.test(text[a])) a++;
     while (b > a && /[\s.,:;!?"”’')]/u.test(text[b - 1])) b--;
     if (b <= a) return null;
+    // AUXILIARY TRIM (the perfect copula, declared 2026-10-11): the left side of
+    // "has/have/had/will been" ends at the last auxiliary — "King Charles III
+    // has been king since …" yields the filler "King Charles III", never
+    // "King Charles III has". Right-side leading auxiliaries are already out of
+    // the filler's edge by the same rule read backwards.
+    {
+      const AUX = new Set(["has", "have", "had", "will", "shall", "was", "were", "is", "are", "am", "be"]);
+      let moved = true;
+      while (moved) {
+        moved = false;
+        for (const t of toks) {
+          if (t.start >= a && t.end <= b && AUX.has(t.fold)) {
+            if (side === "left" && t.end === b) { b = t.start; moved = true; }
+            else if (side === "right" && t.start === a) { a = t.end; moved = true; }
+          }
+        }
+      }
+      while (a < b && /[\s"“‘'(]/u.test(text[a])) a++;
+      while (b > a && /[\s.,:;!?"”’')]/u.test(text[b - 1])) b--;
+      if (b <= a) return null;
+    }
     // A PLACE filler must be the PLACE, not the phrase that leads to it
     // (2026-10-11; declared, not measured): "was born in Queens" → "Queens",
     // "is located in New York" → "New York". Only a LEADING run of prepositions
@@ -147,6 +188,24 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       while (k < toks.length && (PREP.has(toks[k].fold) || predMatches.includes(k) || ["born", "located", "lived", "found", "raised", "grew", "situated"].includes(toks[k].stem))) { lead.push(toks[k]); k++; }
       if (lead.length && k < toks.length) a = toks[k].start;
     }
+    const inside = toks.filter((t) => t.start >= a && t.end <= b);
+    if (!inside.length || inside.every((t) => closed(t.fold))) return null;
+    if (inside.some((t) => carry.has(t.stem))) return null;
+    return { text: text.slice(a, b), span: [a, b] };
+  }
+
+  // A SUBJECT-VERB filler for the real-web holder sentence (declared 2026-10-11,
+  // giver: the author): "Charles III became king on 8 September 2022" has no
+  // copula; the filler is the SUBJECT run before the role verb. A pronoun
+  // subject ("He became king") is closed class and yields nothing — never a
+  // guess; the title-resolution stage still vets whatever the run names.
+  function subjectFiller() {
+    const vi = toks.findIndex((t, k) => !inRef.has(k) && ROLE_VERBS.has(t.fold));
+    if (vi <= 0) return null;
+    let s = vi;
+    while (s - 1 >= 0 && !closed(toks[s - 1].fold) && !inRef.has(s - 1) && /^\s+$/.test(text.slice(toks[s - 1].end, toks[s].start))) s--;
+    if (s >= vi) return null;                                    // nothing but closed class before the verb: no subject to name
+    const a = toks[s].start, b = toks[vi - 1].end;
     const inside = toks.filter((t) => t.start >= a && t.end <= b);
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;
     if (inside.some((t) => carry.has(t.stem))) return null;

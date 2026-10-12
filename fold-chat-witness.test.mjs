@@ -262,3 +262,33 @@ test("the source object the caller passes rides on the row untouched", async () 
   const r = bindSentence({ text: "Charles III is the king of the United Kingdom.", start: 10, end: 57 }, frame, { fw: FW, lang: "en", source });
   assert.deepEqual(r.source, source); assert.deepEqual(r.span, [10, 57]);
 });
+
+// ── THE REAL-WEB HOLDER SENTENCE (declared 2026-10-11): subject-verb-role with a role-carrying topic ──
+test("subject-verb-role binds: 'Charles III became king on 8 September 2022.' witnesses 'who is the king of the UK?' from a role page", () => {
+  const frame = { ok: true, lang: "en", slot: "person", referents: [{ surface: "UK", title: "United Kingdom", aliases: ["UK", "United Kingdom"] }], predicate: [{ surface: "king", stem: "king" }] };
+  const fw = functionWordsOf("en");
+  const r = bindSentence({ text: "Charles III became king on 8 September 2022.", start: 0, end: 43 }, frame, { fw, lang: "en", topic: "Who is King Charles III? A look at his life — LBC" });
+  assert.equal(r.tier, "T1");
+  assert.equal(r.filler.text, "Charles III");
+});
+
+test("FALSIFIER: the role rule never guesses — a pronoun subject fills nothing, no topic is nothing, a title without the role is nothing", () => {
+  const frame = { ok: true, lang: "en", slot: "person", referents: [{ surface: "UK", title: "United Kingdom", aliases: ["UK", "United Kingdom"] }], predicate: [{ surface: "king", stem: "king" }] };
+  const fw = functionWordsOf("en");
+  const pronoun = bindSentence({ text: "He became king on 8 September 2022.", start: 0, end: 36 }, frame, { fw, lang: "en", topic: "Who is King Charles III? — LBC" });
+  assert.ok(!pronoun || !pronoun.filler, "a pronoun subject names no one");
+  const noTopic = bindSentence({ text: "Charles III became king on 8 September 2022.", start: 0, end: 43 }, frame, { fw, lang: "en", topic: null });
+  assert.equal(noTopic, null, "without a role-carrying topic the referent must appear, exactly as before");
+  const noRole = bindSentence({ text: "Charles III became king on 8 September 2022.", start: 0, end: 43 }, frame, { fw, lang: "en", topic: "Monarchy of the United Kingdom" });
+  assert.equal(noRole, null, "the topic must literally carry the role word");
+  const nonRoleVerb = bindSentence({ text: "King Charles III attended the summit.", start: 0, end: 34 }, frame, { fw, lang: "en", topic: "Who is King Charles III? — LBC" });
+  assert.ok(!nonRoleVerb || !nonRoleVerb.filler, "a sentence with no role verb and no copula fills nothing");
+});
+
+test("the perfect copula binds too: 'King Charles III has been king since 8 September 2022.' yields the subject 'King Charles III', never the auxiliary", () => {
+  const frame = { ok: true, lang: "en", slot: "person", referents: [{ surface: "UK", title: "United Kingdom", aliases: ["UK", "United Kingdom"] }], predicate: [{ surface: "king", stem: "king" }] };
+  const fw = functionWordsOf("en");
+  const r = bindSentence({ text: "King Charles III has been king since 8 September 2022.", start: 0, end: 55 }, frame, { fw, lang: "en", topic: "Who is King Charles III? — LBC" });
+  assert.equal(r.tier, "T1");
+  assert.equal(r.filler.text, "King Charles III");
+});
