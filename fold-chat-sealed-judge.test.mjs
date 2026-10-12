@@ -125,3 +125,13 @@ test("WIRING: the fold's in-browser judge lane exists — reachability reads sto
   assert.ok(/localStorage\.setItem\(JUDGE_KEY_STORE, key\)/.test(src), "the save path stores the browser lane");
   assert.ok(/Angelica\\u2019s sealed steering is on|Angelica’s sealed steering is on/.test(src) || /sealed steering is on/.test(src), "the status says what the key unlocks");
 });
+
+test("WIRING: the key is VISIBLE in the fold — populated (masked) on open, revealable, clearable, and the status previews it", () => {
+  const src = fs.readFileSync(new URL("./fold-chat.js", import.meta.url), "utf8");
+  const html = fs.readFileSync(new URL("./index.html", import.meta.url), "utf8");
+  assert.ok(/id="keyAnthropicReveal"/.test(html) && /id="keyAnthropicClear"/.test(html), "the reveal and clear controls exist");
+  assert.ok(/E\.keyAnthropic\.type === "text"/.test(src), "reveal toggles the field");
+  assert.ok(/localStorage\.removeItem\(JUDGE_KEY_STORE\)/.test(src), "clear removes this fold's key");
+  assert.ok(/if \(k && E\.keyAnthropic && !E\.keyAnthropic\.value\) E\.keyAnthropic\.value = k/.test(src), "opening Settings shows the stored key");
+  assert.ok(/The key in this fold: \$\{masked\}/.test(src), "the status previews the stored key, masked");
+});

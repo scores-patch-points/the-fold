@@ -3885,6 +3885,7 @@ export function mount(root, opts = {}) {
     if (E.setAgentRounds) E.setAgentRounds.value = String(agentRounds());
     if (E.setAgentEscalate) E.setAgentEscalate.checked = agentEscalates();
     paintTheme(); paintModeSetting(); paintTransparency(); paintDiscourseSetting();
+    try { const k = browserJudgeKey(localStorage); if (k && E.keyAnthropic && !E.keyAnthropic.value) E.keyAnthropic.value = k; } catch (e) {}
     refreshKeyStatus();
     E.settingsModal.hidden = false;
   }
@@ -3929,11 +3930,16 @@ export function mount(root, opts = {}) {
     if (!E.keyStatus) return;
     if (NO_HEIMDALL) {
       const has = browserJudgeKey(localStorage).length >= 20;
-      if (has) showKeyStatus({ tone: "ok", headline: "Angelica\u2019s sealed steering is on", lines: [
-        "Unlocked: Angelica, the sealed judge — consulted only on turns the machine is unsure of; she never overrides it, and every landed judgement becomes a lesson, so she is asked less and less.",
-        "Your Anthropic key is stored in this browser only, and it is used only for her. Answers still come only from the model in this tab.",
-        "Her sealed payload holds the ask and the machine\u2019s counts \u2014 never a passage or a page.",
-      ] });
+      if (has) {
+        const k = browserJudgeKey(localStorage);
+        const masked = k.length >= 8 ? k.slice(0, 7) + "\u2026" + k.slice(-4) : "(stored)";
+        showKeyStatus({ tone: "ok", headline: "Angelica\u2019s sealed steering is on", lines: [
+          `The key in this fold: ${masked} \u2014 press show above to read it, clear to remove it.`,
+          "Unlocked: Angelica, the sealed judge \u2014 consulted only on turns the machine is unsure of; she never overrides it, and every landed judgement becomes a lesson, so she is asked less and less.",
+          "The key lives in this fold (this browser) only, and it is used only for her. Answers still come only from the model in this tab.",
+          "Her sealed payload holds the ask and the machine\u2019s counts \u2014 never a passage or a page.",
+        ] });
+      }
       else showKeyStatus({ tone: "warn", headline: "", lines: ["This surface answers with the model in this tab. An Anthropic key here is used ONLY for Angelica\u2019s sealed steering \u2014 paste one above to let her help while the fold learns to not need her."] });
       return;
     }
@@ -4033,6 +4039,23 @@ export function mount(root, opts = {}) {
     if (input) input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); saveProviderKey(provider, input); } });
     if (input && btn) input.addEventListener("input", () => { btn.textContent = "Save"; btn.classList.remove("saved", "err", "warn"); });
   }
+  // THE FOLD'S OWN KEY (Angelica's lane, user 2026-10-11: the key lives IN the fold, visible here —
+  // no heimdall server): the field shows what is stored (masked), reveal reads it, clear removes it.
+  const paintStoredKey = () => { try { const k = browserJudgeKey(localStorage); if (k && E.keyAnthropic && !E.keyAnthropic.value) E.keyAnthropic.value = k; } catch (e) {} };
+  const revealKeyBtn = $("keyAnthropicReveal");
+  const clearKeyBtn = $("keyAnthropicClear");
+  if (revealKeyBtn && E.keyAnthropic) revealKeyBtn.onclick = () => {
+    const showing = E.keyAnthropic.type === "text";
+    E.keyAnthropic.type = showing ? "password" : "text";
+    revealKeyBtn.textContent = showing ? "show" : "hide";
+  };
+  if (clearKeyBtn && E.keyAnthropic) clearKeyBtn.onclick = () => {
+    try { localStorage.removeItem(JUDGE_KEY_STORE); } catch (e) {}
+    E.keyAnthropic.value = ""; E.keyAnthropic.type = "password";
+    if (revealKeyBtn) revealKeyBtn.textContent = "show";
+    toast("Anthropic key removed from this fold");
+    refreshKeyStatus();
+  };
   // each settings section remembers whether it was left open; General opens by default, the rest start collapsed
   for (const d of E.settingsModal.querySelectorAll("details.set")) {
     try { const v = localStorage.getItem("fold.set." + d.id); if (v != null) d.open = v === "1"; } catch { /* storage unavailable: the defaults stand */ }
