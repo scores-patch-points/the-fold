@@ -237,7 +237,12 @@ async function run({ question, lang, passages, now, deps }) {
   const finishTurn = (parts) => {
     const trace = traceOf(tv);
     const tree = tv.close();
-    return { ...bare({ slot: frame.slot, searched: uniq(searched), void: tree, trace, sources: sourcesSeen.slice() }), ...parts };
+    return { ...bare({ slot: frame.slot, searched: uniq(searched), void: tree, trace, sources: sourcesSeen.slice() }), ...parts,
+      // THE REAL FRAME rides the receipt (2026-10-11): the resolveTitles-backed referents and the
+      // predicate — what the compound one shot binds later parts against (omnilingual: a referent is
+      // whatever a TITLE resolved to, never a case rule).
+      frame: { slot: frame.slot, referents: frame.referents, predicate: frame.predicate },
+    };
   };
   const partial = () => finishTurn({ aborted: true });
 

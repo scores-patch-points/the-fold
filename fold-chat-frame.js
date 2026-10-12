@@ -79,6 +79,34 @@ export const GRAMMAR = Object.freeze({
 import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13)
 export const caseless = (s) => foldText(s);
 
+/** DECLARED ask-side abbreviations (2026-10-11; giver: the author's reading of English, declared not measured):
+ *  "us" is a function word in the closed-class prior, so "who is the US president" can never frame — the referent
+ *  is eaten before it resolves. A small table expands the country names in the ASK before the frame reads it.
+ *  REFUTED ONLY WHEN MISAPPLIED: "tell us who is the president" must NOT become "tell United States who…" —
+ *  an abbreviation is expanded only in a question whose previous token is a function word / preposition
+ *  ("the us", "of the us", "in the us", "is the us") — never after a verb. */
+export const ABBREVIATIONS = Object.freeze({
+  us: "United States", "u.s": "United States", "u.s.": "United States", usa: "United States",
+});
+const EXPAND_STOP = Object.freeze(new Set(["tell", "let", "ask", "give", "show", "teach", "help", "name", "summarize", "summarise", "read", "write"]));
+export function expandAskAbbreviations(question) {
+  const q = String(question ?? "").trim();
+  const asked = /[?¿]\s*$/u.test(q) || /^\s*(?:who|what|where|when|which|whose|why|how)\b/i.test(q);
+  if (!asked) return q;
+  const toks = tokensOf(q);
+  const out = []; let lastTok = null;
+  for (const t of toks) {
+    const fold = t.fold;
+    const prev = lastTok ? caseless(lastTok) : null;
+    const next = t.end < q.length ? q.slice(t.end).match(/\S/) ? null : null : null;
+    const repl = ABBREVIATIONS[fold];
+    const safe = repl && !(prev && EXPAND_STOP.has(prev));
+    out.push(safe ? repl : t.text);
+    lastTok = t.text;
+  }
+  return out.join(" ");
+}
+
 // Tokens with UTF-16 offsets. A token is letters/digits joined by . ' ’ , - (so "U.S.", "1,082", "air-breathing", "doesn't" stay whole);
 // a possessive or contracted tail ('s 're 'll 've 'd 'm) is cut off — it is a clitic, not a word — so "Australia's" is the token "Australia".
 const WORD = /[\p{L}\p{N}]+(?:[.'’,-][\p{L}\p{N}]+)*/gu;

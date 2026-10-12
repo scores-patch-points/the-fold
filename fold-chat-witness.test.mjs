@@ -221,12 +221,15 @@ test("time filler: the year in the sentence; SEVERAL years are reported as candi
   assert.equal(inRef.filler.text, "1972", "a year inside the referent is not the answer");
 });
 
-test("place and thing fillers use the same copula-side rule", () => {
+test("place and thing fillers use the copula-side rule; a PLACE filler is the PLACE itself — the leading phrase is cut (declared 2026-10-11, giver: the author: a place must bind a real place, so 'born in Queens' and 'located in Paris' yield the place, not the phrase)", () => {
   const thing = mk("thing", [["Australia", "Australia"]], ["capital"]);
   assert.equal(bind(thing, "Canberra is the capital city of Australia.").filler.text, "Canberra");
   assert.equal(bind(thing, "The capital city of Australia is Canberra.").filler.text, "Canberra");
   const place = mk("place", [["Eiffel Tower", "Eiffel Tower"]], ["located"]);
-  assert.equal(bind(place, "The Eiffel Tower is located in Paris, France.").filler.text, "located in Paris");
+  assert.equal(bind(place, "The Eiffel Tower is located in Paris, France.").filler.text, "Paris");
+  const birth = mk("place", [["Donald Trump", "Donald Trump"]], ["born"]);
+  assert.equal(bind(birth, "Donald Trump was born in Queens.").filler.text, "Queens");
+  assert.equal(bind(birth, "Donald Trump was born in Queens.").filler.span[0] > 0, true, "the filler is bytes of the sentence, the phrase cut, nothing invented");
 });
 
 test("emphasis: the filler and the matched referent and predicate words, as sentence offsets", async () => {

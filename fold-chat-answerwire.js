@@ -20,6 +20,7 @@ import { functionWordsOf } from "./fold-chat-snippets.js";
 import { resolveTitlesWikipedia } from "./fold-chat-titles.js";
 import { wikiLead, referentPassages } from "./fold-chat-web.js";
 import { originateTurn, ORIGIN } from "./fold-chat-origin.js";
+import { expandAskAbbreviations } from "./fold-chat-frame.js";
 
 import { answerSpan } from "./fold-chat-answerspan.js";
 /** Declared, not measured (Constitution II.11). Giver: the WIRE task of the answer-pipeline contract (2026-10-06). */
@@ -118,11 +119,15 @@ function bound(fetchImpl, signal) {
  *  → AnswerTurn@1 with aborted    the person pressed Stop: draw nothing (the chat treats it like any stopped turn) */
 export async function runSlotTurn({ question, lang, webPassages, searchQ = null, now = new Date(), fetchImpl, signal = null, memo = null, onStatus = null, timeBoxMs = WIRE.timeBoxMs } = {}) {
   const code = lang && typeof lang === "object" ? lang.code : lang;
+  // ASK-SIDE ABBREVIATIONS (fold-chat-frame.js, 2026-10-11): "the US president" frames as
+  // "the United States president" — the country the ask must name to resolve; guarded so
+  // "tell us who…" is never expanded.
+  const q = expandAskAbbreviations(question);
   const box = boxed(signal, timeBoxMs);
   try {
     const deps = slotDeps({ fetchImpl: bound(fetchImpl, box.signal), signal: box.signal, memo, lang: isStr(code) && code !== "unknown" ? code : "en", onStatus });
     const turn = await runAnswerTurn({
-      question,
+      question: q,
       lang: isStr(code) && code !== "unknown" ? { code, by: "function words" } : undefined,
       passages: passagesForTurn(webPassages, { query: searchQ }),
       now, deps,

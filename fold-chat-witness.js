@@ -136,6 +136,17 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     while (a < b && /[\s"“‘'(]/u.test(text[a])) a++;
     while (b > a && /[\s.,:;!?"”’')]/u.test(text[b - 1])) b--;
     if (b <= a) return null;
+    // A PLACE filler must be the PLACE, not the phrase that leads to it
+    // (2026-10-11; declared, not measured): "was born in Queens" → "Queens",
+    // "is located in New York" → "New York". Only a LEADING run of prepositions
+    // and predicate stems is cut — never a name, and never on any other slot.
+    if (frame.slot === "place") {
+      const PREP = new Set(["in", "at", "on", "near", "from", "around", "outside", "inside", "beside", "above", "below", "across"]);
+      let k = toks.findIndex((t) => t.start >= a);
+      const lead = [];
+      while (k < toks.length && (PREP.has(toks[k].fold) || predMatches.includes(k) || ["born", "located", "lived", "found", "raised", "grew", "situated"].includes(toks[k].stem))) { lead.push(toks[k]); k++; }
+      if (lead.length && k < toks.length) a = toks[k].start;
+    }
     const inside = toks.filter((t) => t.start >= a && t.end <= b);
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;
     if (inside.some((t) => carry.has(t.stem))) return null;
