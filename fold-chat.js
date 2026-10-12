@@ -65,6 +65,7 @@ import { functionWordsOf } from "./fold-chat-snippets.js";
 import { lookupWarranted } from "./fold-chat-self.js";
 import { sourceRecall } from "./fold-chat-sourceask.js";
 import { pre as watchPre, post as watchPost, wantLine, batonReply, inspectReply, keepOnTopic, withoutAppAnswered, challengeReply } from "./fold-chat-watch.js";
+import { trailOf } from "./fold-chat-trail.js";   // the trail in plain language: the mechanical fold of the prior turns, spoken like the record
 // WHERE THE ANSWER CAME FROM, said mechanically: a second model call POINTS at a source sentence; the app verifies it, snips it and narrates around it (docs/VOICE.md)
 import { provenanceFor, provenanceEnabled } from "./fold-chat-provenance.js";
 import { findPrimary, mergeProvenance } from "./fold-chat-primary.js";
@@ -491,6 +492,19 @@ export function mount(root, opts = {}) {
     try { localStorage.setItem("fold-chat:transparency", transparency ? "1" : "0"); } catch (e) {}
     if (activeId) open(activeId);
   }
+  // The conversation's DISCOURSE note (2026-10-11, temporary): what the system
+  // believes the conversation is about, mechanically generated each turn and
+  // disclosed at the top of the open thread. On by default while it is being
+  // watched; the panel's own hide button and the Settings toggle turn it off
+  // without removing the code. The disclosure is mechanical — the exchange
+  // topic/flow and the warrant store, never a model's paraphrase.
+  let discourseOn = (() => { try { return localStorage.getItem("fold-chat:discourse") !== "off"; } catch { return true; } })();
+  function setDiscourseOn(on) {
+    discourseOn = !!on;
+    try { localStorage.setItem("fold-chat:discourse", discourseOn ? "on" : "off"); } catch (e) {}
+    if (discourseOn) { const s = sessions[activeId]; if (s) renderDiscourse(s); }
+    else if (discoursePanel && discoursePanel.isConnected) { discoursePanel.remove(); discoursePanel = null; }
+  }
   // The composer's effort control: the DEFAULT for the next message, remembered
   // across reloads. It is read once, when a message is sent, and stamped on that
   // turn; moving it never touches a turn already sent. `effortMoved` is true
@@ -516,7 +530,7 @@ export function mount(root, opts = {}) {
     composerWrap: $("composerWrap"), composer: $("composer"), input: $("input"), send: $("send"), attach: $("attach"),
     footer: $("footer"), drawer: $("drawer"), toast: $("toast"),
     settingsModal: $("settingsModal"), settingsClose: $("settingsClose"), settingsCancel: $("settingsCancel"), settingsSave: $("settingsSave"),
-    setPreset: $("setPreset"), setAgentLane: $("setAgentLane"), setAgentRounds: $("setAgentRounds"), setAgentEscalate: $("setAgentEscalate"), setTheme: $("setTheme"), setMode: $("setMode"), setTransparency: $("setTransparency"),
+    setPreset: $("setPreset"), setAgentLane: $("setAgentLane"), setAgentRounds: $("setAgentRounds"), setAgentEscalate: $("setAgentEscalate"), setTheme: $("setTheme"), setMode: $("setMode"), setTransparency: $("setTransparency"), setDiscourse: $("setDiscourse"),
     keyAnthropic: $("keyAnthropic"), keyOpenai: $("keyOpenai"), keyStatus: $("keyStatus"),
   };
   // FOLLOW THE TURN: while something below is growing (a download's progress, the feed, the streamed answer), the thread
@@ -1227,6 +1241,58 @@ export function mount(root, opts = {}) {
   /* ---------------- open / render thread ---------------- */
   // The empty state is LibreChat's: the composer rides centered under the
   // welcome title. Once a thread exists, the composer docks above the footer.
+  // THE DISCOURSE PANEL (2026-10-11, temporary): the conversation's running
+  // discourse — exactly what fold.js's buildSummarySystemMessage /
+  // buildRecordSystemMessage put in front of the model on the next turn — is
+  // drawn at the top of the open thread, so the discourse-aware thread is
+  // visible while it is still misbehaving. It renders what the prompt builders
+  // actually emit, so the moment the discourse is fixed the panel shows the
+  // fixed text. The panel's hide button and Settings → Transparency's
+  // "Show the conversation's discourse" flip it off without removing it.
+  // Remove this panel (and its hooks) once the thread holds.
+  let discoursePanel = null;
+  function discourseMarkup(s) {
+    const sum = s?.summary;
+    if (!sum || (!sum.topic && !(sum.records || []).length && !(sum.folds || []).length)) {
+      const e0 = el("div", "discourse empty");
+      e0.append(el("span", "discourse-title", "Conversation, as the fold reads it"), el("span", "discourse-empty-txt", "no discourse yet — the first answered exchange generates it mechanically"));
+      return e0;
+    }
+    const wrap = el("div", "discourse");
+    const bar = el("div", "discourse-bar");
+    bar.append(el("span", "discourse-title", "Conversation, as the fold reads it"), el("span", "grow"));
+    const hide = el("button", "discourse-hide", "hide");
+    hide.type = "button";
+    hide.title = "Stop showing the discourse note — Settings › Transparency turns it back on";
+    hide.setAttribute("aria-label", "Hide the conversation discourse note");
+    hide.onclick = () => { setDiscourseOn(false); actionToast("Conversation discourse hidden", "Undo", () => setDiscourseOn(true)); };
+    bar.append(hide);
+    wrap.append(bar);
+    // The per-turn disclosure, mechanical: what the exchange says the
+    // conversation is about now, and how the flow got here.
+    const note = el("div", "discourse-topic");
+    note.append(el("span", "discourse-label", "This turn the fold reads the thread as:"));
+    note.append(el("strong", "discourse-now", sum.topic || "(no settled topic — ask the thread has not answered yet)"));
+    if (sum.flow) note.append(el("div", "discourse-flow", sum.flow));
+    wrap.append(note);
+    const det = el("details"); det.open = false;
+    det.append(el("summary", "What the next turn hears — PAST DISCOURSE · ON RECORD"));
+    const past = FOLD.buildSummarySystemMessage(sum);
+    if (past) { const pre = el("pre", "discourse-block"); pre.textContent = past; det.append(pre); }
+    else det.append(el("div", "discourse-miss", "PAST DISCOURSE is withheld this turn (no topic, or a gated topic change out of it)."));
+    const onRecord = FOLD.buildRecordSystemMessage(sum);
+    if (onRecord) { const pre = el("pre", "discourse-block"); pre.textContent = onRecord; det.append(pre); }
+    else det.append(el("div", "discourse-miss", "ON RECORD: no warrant records yet."));
+    det.append(el("div", "discourse-store", `${(sum.folds || []).length} fold line(s) · ${(sum.records || []).length} warrant record(s) · turns beyond the last ${FOLD.RECENCY_WINDOW} ride only as this block, never resent verbatim`));
+    wrap.append(det);
+    return wrap;
+  }
+  function renderDiscourse(s) {
+    if (!discourseOn) { if (discoursePanel && discoursePanel.isConnected) { discoursePanel.remove(); discoursePanel = null; } return; }
+    const panel = discourseMarkup(s);
+    if (discoursePanel && discoursePanel.isConnected) { discoursePanel.replaceWith(panel); discoursePanel = panel; return; }
+    if (E.thread && E.thread.style.display !== "none") { E.threadCol.prepend(panel); discoursePanel = panel; }
+  }
   function setView(empty) {
     // One thread always: the empty state only chooses whether the composer
     // rides under the welcome title. No mode owns a separate pane.
@@ -1252,6 +1318,7 @@ export function mount(root, opts = {}) {
     const msgs = s?.messages || [];
     setView(!msgs.length);
     for (let i = 0; i < msgs.length; i++) appendMsg(s, msgs[i].role, msgs[i].content, { sealed: msgs[i].sealed, index: i, grounding: msgs[i].grounding, notices: msgs[i].notices, void: msgs[i].void, murmur: msgs[i].murmur, followup: msgs[i].followup, model: s?.model, cwd: msgs[i].cwd, authored: msgs[i].authored, snips: msgs[i].snips, answerTurn: msgs[i].answerTurn, provenance: msgs[i].provenance });
+    renderDiscourse(s);
     // A turn still running in this chat: hang its live row back on the thread
     // (the row is the run's own node, so what it streamed while we were away is
     // still in it) and re-point the stage line at it.
@@ -1283,6 +1350,7 @@ export function mount(root, opts = {}) {
     setNav(false);
     E.threadCol.innerHTML = "";
     E.stage.textContent = "";
+    discoursePanel = null;
     setView(true);
     renderChats(); renderModels(); updateSeal(); refreshComposer(); paintCf();
   }
@@ -2208,24 +2276,30 @@ export function mount(root, opts = {}) {
     // watcher left (kept on the assistant message, apart from the discourse summary) and says so in the feed; POST below holds the turn to it and leaves the next baton.
     let watcherPre = null;
     try { watcherPre = watchPre({ ask: said, prior: askAt > 0 ? s.messages.slice(0, askAt) : [], opts: { referents: s.referents || null, rejected: rejectedSurfaces(s.minds), hints: hintsFor(lang0 === "unknown" ? "en" : lang0), lang: lang0 } }); } catch (e) { /* an aid, never a reason to lose a turn */ }
-    // THE DISCOURSE-AWARE THREAD, MADE VISIBLE (user, 2026-10-11 — "visible for now until it stops messing up"):
-    // every turn that follows earlier ones says, in the feed, exactly what the discourse layer read — the plan's
-    // mode (a follow-up to turn N / a new ask / a cold follow-up), the relation and want the watcher read, whether
-    // the anaphora gate carries the thread or stands it down, the carried sources, and any open baton. Nothing
-    // here changes the turn; it is the layer's own words, so a misfire is seen where it happens.
+    // THE TRAIL, IN PLAIN LANGUAGE (fold-chat-trail.js, user 2026-10-11): the discourse-aware thread is
+    // spoken the way the record speaks — no "relation · want · baton". It names the prior turn, its ask and
+    // what it held, and says plainly what THIS one inherits (continues it with the carried sources / a new
+    // ask that searches / a cold follow-up with nothing to carry). Built ONLY from the mechanical fold: the
+    // prior message's own record (line, coverage, sources) and this turn's plan. A misfire is seen where it
+    // happens — in plain words.
     if (askAt > 0) {
       try {
-        const bits = [];
-        if (follow.mode === "thread") bits.push(`follows turn ${follow.thread?.turn ?? "?"}${follow.thread?.ask ? ` (\u201c${String(follow.thread.ask).slice(0, 40)}\u201d)` : ""}`);
-        else if (follow.mode === "cold-gap") bits.push("cold follow-up \u2014 nothing earlier to follow");
-        else if (follow.mode === "web") bits.push("a new ask (searched)");
-        else bits.push(String(follow.mode || "no thread"));
-        if (watcherPre?.relation) bits.push(`read as ${watcherPre.relation}`);
-        if (watcherPre?.want && watcherPre.want !== "answer") bits.push(`want: ${watcherPre.want}`);
-        if (follow.gate) bits.push(continuesByAnaphora(follow) ? "gate: carries the thread" : "gate: a new topic \u2014 nothing carried");
-        if (Array.isArray(follow.carried) && follow.carried.length) bits.push(`${follow.carried.length} carried source(s)`);
-        if (watcherPre?.unmet) bits.push(`open baton: ${String(watcherPre.unmet.want || "?")}${watcherPre.unmet.tried?.length ? ` (tried ${watcherPre.unmet.tried.length} host(s))` : ""}`);
-        feedPush(lineEvent(tt, "Thread", { tone: "info", note: bits.join(" \u00b7 ") }));
+        const priorMsg = [...s.messages].slice(0, askAt).reverse().find((x) => x.role === "assistant" && x.grounding) || null;
+        const prior = priorMsg ? {
+          turn: priorMsg.grounding.turn ?? null,
+          ask: follow.thread?.ask || null,
+          record: {
+            line: priorMsg.grounding.line || null,
+            addresses: Math.max(String(priorMsg.grounding.line || "").match(/(\d+) address/) ? Number(String(priorMsg.grounding.line).match(/(\d+) address/)[1]) : 0, (priorMsg.grounding.sources || []).length),
+            sources: priorMsg.grounding.sources || [],
+            grounded: priorMsg.grounding.coverage ? priorMsg.grounding.coverage.grounded === priorMsg.grounding.coverage.total : null,
+            unsupported: priorMsg.grounding.unsupported ? (priorMsg.grounding.unsupported.names || []).length + (priorMsg.grounding.unsupported.numbers || []).length : null,
+          },
+        } : null;
+        const carriedCount = Array.isArray(follow.carried) ? follow.carried.length : (threadTurn?.carried || 0);
+        const flat = watcherPre?.flags?.length ? watcherPre.flags.map((f) => f.flag) : [];
+        const trailText = trailOf({ now: String(said || ""), prior, follow, carriedCount, flags: flat });
+        if (trailText) feedPush(lineEvent(tt, "Trail", { tone: "info", note: trailText }));
       } catch (e) {}
     }
     let question = follow.retry || said;
@@ -3205,12 +3279,10 @@ export function mount(root, opts = {}) {
         const best = tiers.includes("primary") ? "primary" : tiers.includes("origin") ? "origin" : tiers[0] || null;
         const aw = watchPost({ ask: said, prior: askAt > 0 ? s.messages.slice(0, askAt) : [], pre: watcherPre, reads: surfedUrls.length ? surfedUrls : webPassages.map((p) => String(p.url || p.source || "")).filter(Boolean), setAside: asideUrls, events: turnEvents, passages: webPassages, spoken: text, reached: !!((provenance && provenance.verified) || srcRecall), tier: best });
         discourseWatch = { relation: aw.relation, want: aw.want, flags: aw.flags.map((f) => f.flag), baton: aw.baton, ...(aw.detail ? { detail: aw.detail } : {}), ...(aw.appAnswered ? { appAnswered: true } : {}) };
-        // VISIBLE (same review as the Thread line above): the post half of the loop, every turn — what the turn
-        // DID against what PRE expected, and the baton it leaves. Warn tone only when it flags.
-        { const wbits = [`read as ${aw.relation}`, `want: ${aw.want}`];
-          if (aw.baton) wbits.push(`baton: ${aw.baton.want || "?"}${aw.baton.met === false ? " (unmet)" : ""}`);
-          if (aw.flags.length) wbits.push(`flags: ${aw.flags.map((f) => f.flag.replace(/_/g, " ")).join(", ")}`);
-          feedPush(lineEvent(tt, "Discourse", { tone: aw.flags.length ? "warn" : "info", note: wbits.join(" \u00b7 ") })); }
+        // PLAIN TAIL (the same review as the Trail line): only when something did not line up, and spoken
+        // as a person would, never as a flag code. The turn itself was not changed — this is the layer's
+        // own note about itself.
+        if (aw.flags.length) feedPush(lineEvent(tt, "Trail", { tone: "warn", note: `One thing did not line up as expected: ${aw.flags.map((f) => f.flag.replace(/_/g, " ")).join(", ")} — noted, not repaired.` }));
       } catch (e) { /* the watcher is an aid, never a reason to lose a turn */ }
       if (!provenance && srcRecall && srcRecall.provenance) provenance = srcRecall.provenance;   // the same source line, drawn again under this turn
       if (aloneBarred) { const at = follow.mode === "cold-gap" ? { notice: follow.missing ? missingAnswerNotice(follow.missing) : coldFollowUpNotice() } : recall ? { notice: { kind: "alone", text: recall.text } } : srcRecall ? { notice: { kind: "alone", text: srcRecall.text } } : primaryNotice ? { notice: { kind: "alone", text: primaryNotice } } : aloneTurn(noLookup ? "nolookup" : kind, genOt && !noLookup ? { outputType: genOt, hasMaterial: materialOf(s).length > 0, question } : undefined); if (at.void && !genGate) genGate = { ok: false, void: at.void, notice: { kind: "gen-void", text: at.notice?.text || at.void.note }, fallbackAllowed: false }; if (at.notice && !at.void) notices.push(at.notice); }
@@ -3434,6 +3506,7 @@ export function mount(root, opts = {}) {
       // are the record's own names in any script — replacing the first-clause topic / capitalised-run guess above. No model; it is
       // recomputed from the messages each turn and can only ADD (nothing resolving leaves the summary as it was).
       try { s.summary = applyExchange(applyCarry(s.summary, s), s); if (s.summary && (() => { try { return localStorage.getItem("fold-chat:minds") === "on"; } catch { return false; } })()) { const mc = mindsClause(s); if (mc && s.summary.flow) s.summary = { ...s.summary, flow: s.summary.flow + mc }; } save("fold-chat:sessions", sessions); } catch (e) { /* an aid, never a reason to lose a turn */ }   // the model is told the EXCHANGE (what was asked, what the fold said), not the carry's page-title flow
+      if (isLive()) renderDiscourse(s);
       // A reply that lands while another chat is open leaves a quiet mark on this
       // chat's row (cleared when it is opened) instead of drawing into that chat.
       if (!isLive()) s.unseen = true;
@@ -3760,9 +3833,11 @@ export function mount(root, opts = {}) {
   }
   function paintModeSetting() { for (const b of E.setMode.querySelectorAll("button")) markOn(b, b.dataset.mode === engagement); }
   function paintTransparency() { for (const b of E.setTransparency.querySelectorAll("button")) markOn(b, b.dataset.transparency === (transparency ? "1" : "0")); }
+  function paintDiscourseSetting() { if (E.setDiscourse) E.setDiscourse.checked = discourseOn; }
   E.setTheme.onclick = (e) => { const b = e.target.closest("button"); if (!b) return; applyTheme(b.dataset.theme); paintTheme(); };
   E.setMode.onclick = (e) => { const b = e.target.closest("button"); if (!b) return; setEngagement(b.dataset.mode); paintModeSetting(); };
   E.setTransparency.onclick = (e) => { const b = e.target.closest("button"); if (!b) return; setTransparency(b.dataset.transparency === "1"); paintTransparency(); };
+  E.setDiscourse?.addEventListener?.("change", (e) => { setDiscourseOn(e.target.checked); });
 
   function openSettings() {
     for (const [k, p] of Object.entries(PRESETS)) if (!E.setPreset.querySelector(`option[value="${k}"]`)) E.setPreset.append(new Option(p.label, k));
@@ -3770,7 +3845,7 @@ export function mount(root, opts = {}) {
     if (E.setAgentLane) E.setAgentLane.value = agentLane();
     if (E.setAgentRounds) E.setAgentRounds.value = String(agentRounds());
     if (E.setAgentEscalate) E.setAgentEscalate.checked = agentEscalates();
-    paintTheme(); paintModeSetting(); paintTransparency();
+    paintTheme(); paintModeSetting(); paintTransparency(); paintDiscourseSetting();
     refreshKeyStatus();
     E.settingsModal.hidden = false;
   }
