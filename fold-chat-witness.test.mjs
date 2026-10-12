@@ -292,3 +292,11 @@ test("the perfect copula binds too: 'King Charles III has been king since 8 Sept
   assert.equal(r.tier, "T1");
   assert.equal(r.filler.text, "King Charles III");
 });
+
+test("a PREDICATE-LESS role frame binds from the referent's own role word: 'who is the king of the UK' (referent 'king of the uk') + 'Charles III became king…' + a King-carrying title", () => {
+  const frame = { ok: true, lang: "en", slot: "person", referents: [{ surface: "king of the uk", title: "Monarchy of the United Kingdom", aliases: ["king of the uk", "Monarchy of the United Kingdom"] }], predicate: [] };
+  const fw = functionWordsOf("en");
+  const r = bindSentence({ text: "Charles III became king on September 8, 2022, following the death of Queen Elizabeth II.", start: 0, end: 93 }, frame, { fw, lang: "en", topic: "Who is Britain\u2019s King Charles III?" });
+  assert.equal(r.tier, "T1");
+  assert.equal(r.filler.text, "Charles III");
+});

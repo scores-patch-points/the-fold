@@ -99,8 +99,16 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // referent group must still appear, exactly as before.
   const predStems = (frame.predicate || []).map((p) => p.stem);
   const roleInSentence = predStems.some((s) => toks.some((t) => t.stem === s));
-  const titleCarriesRole = !!topicStems && frame.slot === "person" && predStems.length > 0 && roleInSentence &&
-    predStems.every((s) => topicStems.includes(s));
+  // PREDICATE-LESS ROLE FRAMES (real web, declared 2026-10-11): the ask "who is the king of the
+  // UK" can resolve "king of the uk" as ONE referent, leaving the predicate empty. The role word
+  // then lives in the referent's own surface — the title must literally carry ONE of the
+  // referent's content words and the sentence must hold it too (with a real predicate, every
+  // predicate stem must be carried, exactly as before).
+  const referentContent = predStems.length ? [] : [...new Set(groups.flatMap((g) => [...g.content]).filter((s) => s.length >= 3))];
+  const roleStems = predStems.length ? predStems : referentContent;
+  const roleCarriedByTopic = predStems.length ? roleStems.every((s) => topicStems?.includes(s)) : roleStems.some((s) => topicStems?.includes(s));
+  const roleInSentenceNow = predStems.length ? roleInSentence : roleStems.some((s) => toks.some((t) => t.stem === s));
+  const titleCarriesRole = !!topicStems && frame.slot === "person" && roleStems.length > 0 && roleInSentenceNow && roleCarriedByTopic;
   if (!groups.every((g) => g.occ.length || carriedByTopic(g) || titleCarriesRole)) return null;
   if (!groups.some((g) => g.occ.length) && !titleCarriesRole) return null;   // no anchor at all: only the declared role page may carry the whole group anaphorically
 
