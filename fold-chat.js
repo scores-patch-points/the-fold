@@ -53,7 +53,7 @@ import { healedCorrections, healQuestion } from "./fold-chat-heal.js";   // the 
 import { proposalsOf, lessonsPrompt, readAsLine } from "./fold-chat-lessons.js";   // the model is FED the perfected context + past lessons
 import { lintTurn } from "./fold-chat-reason-lint.js";   // the modelless Kelsen chain-lint: derive claims from the read, lint each inference, murmur the findings
 import { modelCallRule } from "./fold-chat-model-rule.js";   // THE RULE: the mouth speaks what the fold established — every barred turn names its rule on the record
-import { judgeReachable, decisionSignature, needsJudge, sealJudge, Angelica, lessonOf, judgeOn, judgeLessonsOf, addJudgeLesson } from "./fold-chat-sealed-judge.js";   // ANGELICA: the sealed judge — advisory, sealed, typed, and learned (the same signature stops consulting her)
+import { judgeReachable, decisionSignature, needsJudge, sealJudge, Angelica, lessonOf, judgeOn, judgeLessonsOf, addJudgeLesson, anthropicJudge, browserJudgeKey, judgeModelName, JUDGE_KEY_STORE } from "./fold-chat-sealed-judge.js";   // ANGELICA: the sealed judge — advisory, sealed, typed, and learned (the same signature stops consulting her)
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
 import { castOf } from "./fold-chat-casts.js";
 import { claimsOfTurn, appendClaims, pointerOf } from "./fold-chat-record.js";
@@ -2785,7 +2785,7 @@ export function mount(root, opts = {}) {
     // from the lesson next time — the system needs her less and less. No token, no sealed consult, no judge:
     // the turn is exactly what it was.
     let angelica = null;
-    if (modelRule.allowed && judgeOn() && judgeReachable({ models })) {
+    if (modelRule.allowed && judgeOn() && judgeReachable({ models, storage: (typeof localStorage !== "undefined" ? localStorage : null) })) {
       const sig = decisionSignature({ kind, question, gap: "topic-or-tool" });
       const judgeLessons = judgeLessonsOf(s);   // the lessons she has already steered by — fed back to her
       if (needsJudge({ signature: sig, gap: "topic-or-tool", lessons: judgeLessons })) {
@@ -2841,8 +2841,14 @@ export function mount(root, opts = {}) {
     // ANGELICA'S EXECUTOR: a sealed consult goes OUT over the same bridge as the mouth but as
     // sealed-external (a profile that never meets the thread's material), temperature 0, and the answer is
     // only ever the tight JSON the judge prompt asks for — parsed TIGHTLY by parseJudge, a gap if not.
-    const judgeBridge = (prompt, mm) =>
-      client.chat(mm?.id ?? m.id, [{ role: "user", content: prompt }], { base: bridge, temperature: 0, maxTokens: 400, privacy: "sealed-external", audit: { run: runId } });
+    const judgeBridge = (prompt, mm) => {
+      // ANGELICA'S DIRECT SEALED LANE (user, 2026-10-11): on the in-browser-only surface the consult goes
+      // straight to Anthropic with the key stored in this browser — sealed-external (the ask and the
+      // machine's counts, never a passage), temperature 0, the same tight JSON. The bridge lane stays for
+      // a heimdall surface. Either failure is typed and the machine's own decision stands.
+      if (NO_HEIMDALL) return anthropicJudge({ prompt, key: browserJudgeKey(localStorage), model: judgeModelName(localStorage) });
+      return client.chat(mm?.id ?? m.id, [{ role: "user", content: prompt }], { base: bridge, temperature: 0, maxTokens: 400, privacy: "sealed-external", audit: { run: runId } });
+    };
     // COMPUTE: the value comes from the evaluator, never the model (II.9); the model only phrases it.
     const computed = kind === "compute" ? computeEvaluate(question) : null;
     if (computed && computed.ok) sourceBlock = `The fold's evaluator computed: ${computed.text}\nThis is exact. State the result to the person in one short, natural sentence, using exactly this value and only the numbers they gave. Do not do any other arithmetic and do not show other figures or steps.`;
@@ -3921,7 +3927,16 @@ export function mount(root, opts = {}) {
   // terminal after heimdall started is stored but not loaded until heimdall reloads or restarts).
   async function refreshKeyStatus() {
     if (!E.keyStatus) return;
-    if (NO_HEIMDALL) { showKeyStatus({ tone: "warn", headline: "", lines: ["This surface answers with the model in this tab — there is no heimdall bridge, so provider keys are not used."] }); return; }
+    if (NO_HEIMDALL) {
+      const has = browserJudgeKey(localStorage).length >= 20;
+      if (has) showKeyStatus({ tone: "ok", headline: "Angelica\u2019s sealed steering is on", lines: [
+        "Unlocked: Angelica, the sealed judge — consulted only on turns the machine is unsure of; she never overrides it, and every landed judgement becomes a lesson, so she is asked less and less.",
+        "Your Anthropic key is stored in this browser only, and it is used only for her. Answers still come only from the model in this tab.",
+        "Her sealed payload holds the ask and the machine\u2019s counts \u2014 never a passage or a page.",
+      ] });
+      else showKeyStatus({ tone: "warn", headline: "", lines: ["This surface answers with the model in this tab. An Anthropic key here is used ONLY for Angelica\u2019s sealed steering \u2014 paste one above to let her help while the fold learns to not need her."] });
+      return;
+    }
     try {
       const j = await client.listProviderKeys({ base: bridge });
       const stored = j.providers || [];
@@ -3966,6 +3981,28 @@ export function mount(root, opts = {}) {
   async function saveProviderKey(provider, input) {
     const key = (input.value || "").trim();
     if (!key) { toast("enter a key first"); input.focus(); return; }
+    if (NO_HEIMDALL) {
+      // THE BROWSER LANE (Angelica only): on the in-browser surface the key never goes to a server. It is
+      // validated with ONE tiny sealed request (8 tokens), then stored in this browser and used only for her.
+      const btn0 = E.settingsModal.querySelector(`button[data-provider="${provider}"]`);
+      if (provider !== "anthropic") { showKeyStatus({ tone: "warn", headline: "", lines: ["On this surface only the Anthropic key is used \u2014 by Angelica\u2019s sealed steering. Answers stay in this tab."] }); return; }
+      if (btn0) { btn0.textContent = "Testing\u2026"; btn0.disabled = true; }
+      showKeyStatus({ tone: "warn", headline: "Testing the key\u2026", lines: ["One tiny sealed request to Anthropic to see whether it works. Nothing of yours is sent \u2014 the word \u201cping\u201d."] });
+      try {
+        await anthropicJudge({ prompt: "Reply with exactly {}", key, fetchImpl: fetch, maxTokens: 8, model: judgeModelName(localStorage) });
+        try { localStorage.setItem(JUDGE_KEY_STORE, key); } catch (e) { showKeyStatus({ tone: "bad", headline: "This browser refused to store the key", lines: [String((e && e.message) || e)] }); return; }
+        input.value = "";
+        if (btn0) { btn0.textContent = "\u2713 works"; btn0.classList.add("saved"); }
+        toast("Anthropic key stored \u2014 Angelica is on");
+        await refreshKeyStatus();
+      } catch (e) {
+        if (btn0) { btn0.textContent = e && e.status === 401 ? "\u2715 rejected" : "Save"; btn0.classList.add(e && e.status === 401 ? "err" : "warn"); }
+        // a network failure is not a rejection: store it anyway, unconfirmed, so an offline start still works
+        if (!(e && e.status === 401)) { try { localStorage.setItem(JUDGE_KEY_STORE, key); input.value = ""; } catch {} }
+        showKeyStatus({ tone: e && e.status === 401 ? "bad" : "warn", headline: e && e.status === 401 ? "Anthropic rejected this key" : "Could not confirm the key (network)", lines: [e && e.status === 401 ? "Nothing was stored. Check the key and paste it again." : "It is stored in this browser anyway; Angelica will work once the network is back."] });
+      } finally { if (btn0) btn0.disabled = false; }
+      return;
+    }
     const btn = E.settingsModal.querySelector(`button[data-provider="${provider}"]`);
     const row = btn?.closest(".keyrow");
     if (btn) { btn.classList.remove("saved", "err"); btn.textContent = "Testing…"; btn.disabled = true; }

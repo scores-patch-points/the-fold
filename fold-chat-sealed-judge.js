@@ -35,9 +35,49 @@ const signatureHash = (s) => fnv1a(s) + fnv1a([...s].reverse().join(""));
 /** In the browser fold the token lives server-side (heimdall), never in the page: an Anthropic model in
  *  the served model list IS the signal. In node the check is env/file. Either proves reach — that is the
  *  only thing the judge needs to know; the token itself is never touched by the page. */
-export function judgeReachable({ models = [], env = typeof process !== "undefined" ? process.env : {}, keyFile = null, read = null } = {}) {
+export function judgeReachable({ models = [], env = typeof process !== "undefined" ? process.env : {}, keyFile = null, read = null, storage = typeof localStorage !== "undefined" ? localStorage : null } = {}) {
   if (hasJudgeToken({ env, keyFile, read })) return true;
+  // THE BROWSER LANE (user, 2026-10-11: "wire in Angelica so i can put in an anthropic api key"):
+  // on the in-browser-only surface there is no served model list and no server-side key — the
+  // Anthropic key the person pasted into Settings is stored in THIS browser and is her reach.
+  if (browserJudgeKey(storage).length >= 20) return true;
   return Array.isArray(models) && models.some((m) => /^claude-|anthropic/i.test(String(m?.id || m?.name || "")));
+}
+
+/** The browser key lane: the Anthropic key stored in this browser (Settings → API keys).
+ *  It is used for ONE thing — Angelica's sealed consult — and never for answers. */
+export const JUDGE_KEY_STORE = "fold-chat:key:anthropic";
+export const JUDGE_MODEL_STORE = "fold-chat:judgemodel";
+export const JUDGE_MODEL_DEFAULT = "claude-sonnet-4-5";
+export function browserJudgeKey(storage = typeof localStorage !== "undefined" ? localStorage : null) {
+  try { return String(storage?.getItem?.(JUDGE_KEY_STORE) || "").trim(); } catch { return ""; }
+}
+export function judgeModelName(storage = typeof localStorage !== "undefined" ? localStorage : null) {
+  try { return String(storage?.getItem?.(JUDGE_MODEL_STORE) || "").trim() || JUDGE_MODEL_DEFAULT; } catch { return JUDGE_MODEL_DEFAULT; }
+}
+
+/** ANGELICA'S DIRECT SEALED LANE: one consult straight to Anthropic from this browser
+ *  (their CORS door), the sealed prompt and nothing else — temperature 0, tight JSON, the
+ *  same shape the bridge returned. A missing key and an HTTP failure are typed errors; the
+ *  turn falls back to the machine's own decision exactly as if no judge had been called. */
+export async function anthropicJudge({ prompt, key, fetchImpl = fetch, model = null, maxTokens = 400, signal = null } = {}) {
+  const token = String(key ?? "").trim();
+  if (token.length < 20) throw Object.assign(new Error("no Anthropic key is stored in this browser"), { status: 401, kind: "no-key" });
+  const r = await fetchImpl("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": token,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({ model: model || JUDGE_MODEL_DEFAULT, max_tokens: maxTokens, temperature: 0, messages: [{ role: "user", content: String(prompt ?? "") }] }),
+    ...(signal ? { signal } : {}),
+  });
+  if (!r.ok) throw Object.assign(new Error("Anthropic answered " + r.status), { status: r.status, kind: "http" });
+  const j = await r.json();
+  const text = (Array.isArray(j?.content) ? j.content : []).filter((c) => c && c.type === "text").map((c) => String(c.text || "")).join("\n");
+  return { text, model: j?.model || model || JUDGE_MODEL_DEFAULT, usage: j?.usage || null };
 }
 
 /** Does the machine hold an Anthropic token? env first; a key FILE only when the caller hands a reader

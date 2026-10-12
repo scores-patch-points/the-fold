@@ -80,3 +80,48 @@ test("the judge prompt itself carries the lessons (the judge steers the SAME way
   const behind = JSON.stringify(sealed);
   assert.ok(behind.includes('"lessons"') && behind.includes('"sig":"abcd"') && behind.includes('"a":"ok"'), "the compact lessons ride the sealed payload");
 });
+// ── THE BROWSER LANE (user, 2026-10-11: "wire in Angelica so i can put in an anthropic api key") ──
+import { judgeReachable, browserJudgeKey, judgeModelName, anthropicJudge, JUDGE_KEY_STORE, JUDGE_MODEL_DEFAULT } from "./fold-chat-sealed-judge.js";
+import fs from "node:fs";
+
+const store = (v) => ({ getItem: (k) => (k === JUDGE_KEY_STORE ? v : null) });
+
+test("BROWSER REACH: a key stored in this browser is Angelica's reach; a short or absent key is not", () => {
+  assert.equal(browserJudgeKey(store("sk-ant-" + "x".repeat(30))).length >= 20, true);
+  assert.equal(judgeReachable({ models: [], env: {}, storage: store("sk-ant-" + "x".repeat(30)) }), true);
+  assert.equal(judgeReachable({ models: [], env: {}, storage: store("short") }), false);
+  assert.equal(judgeReachable({ models: [], env: {}, storage: store(null) }), false);
+  assert.equal(judgeReachable({ models: [{ id: "webllm:gemma-2-2b" }], env: {}, storage: store(null) }), false, "in-tab models are not a judge");
+});
+
+test("DIRECT CONSULT: one sealed request to Anthropic — their CORS door, the tight JSON, nothing else", async () => {
+  const calls = [];
+  const fetchImpl = async (url, opts) => {
+    calls.push({ url, opts, body: JSON.parse(opts.body) });
+    return { ok: true, status: 200, json: async () => ({ model: "claude-sonnet-4-5", content: [{ type: "text", text: '{"topic":"on","confidence":0.8,"tool":null,"why":"fine"}' }], usage: { input_tokens: 50 } }) };
+  };
+  const out = await anthropicJudge({ prompt: '{"sealed":true}', key: "sk-ant-" + "k".repeat(30), fetchImpl });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://api.anthropic.com/v1/messages");
+  assert.equal(calls[0].opts.headers["anthropic-dangerous-direct-browser-access"], "true");
+  assert.equal(calls[0].opts.headers["anthropic-version"], "2023-06-01");
+  assert.equal(calls[0].opts.headers["x-api-key"], "sk-ant-" + "k".repeat(30));
+  assert.equal(calls[0].body.temperature, 0);
+  assert.equal(calls[0].body.model, JUDGE_MODEL_DEFAULT);
+  assert.deepEqual(calls[0].body.messages, [{ role: "user", content: '{"sealed":true}' }]);
+  assert.equal(out.text.includes("topic"), true);
+});
+
+test("FALSIFIERS: no key and an HTTP failure are typed — the machine's own decision stands either way", async () => {
+  await assert.rejects(() => anthropicJudge({ prompt: "x", key: "" }), (e) => e.status === 401 && e.kind === "no-key");
+  const bad = async () => ({ ok: false, status: 401, json: async () => ({}) });
+  await assert.rejects(() => anthropicJudge({ prompt: "x", key: "sk-ant-" + "k".repeat(30), fetchImpl: bad }), (e) => e.status === 401 && e.kind === "http");
+});
+
+test("WIRING: the fold's in-browser judge lane exists — reachability reads storage, the consult is direct, the key save stores this browser's lane", () => {
+  const src = fs.readFileSync(new URL("./fold-chat.js", import.meta.url), "utf8");
+  assert.ok(/judgeReachable\(\{ models, storage:/.test(src), "reachability reads the browser store");
+  assert.ok(/if \(NO_HEIMDALL\) return anthropicJudge\(\{ prompt, key: browserJudgeKey\(localStorage\)/.test(src), "the direct sealed lane");
+  assert.ok(/localStorage\.setItem\(JUDGE_KEY_STORE, key\)/.test(src), "the save path stores the browser lane");
+  assert.ok(/Angelica\\u2019s sealed steering is on|Angelica’s sealed steering is on/.test(src) || /sealed steering is on/.test(src), "the status says what the key unlocks");
+});
