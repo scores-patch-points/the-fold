@@ -93,12 +93,12 @@ test("the topic of an ask is its content tail, mechanically cut", () => {
 
 // ── the ask-side abbreviation expansion ──────────────────────────────────────
 test("'the US president' expands so the frame can bind the country ('us' is a function word)", () => {
-  assert.equal(expandAskAbbreviations("Who is the US president?"), "Who is the United States president");
+  assert.equal(expandAskAbbreviations("Who is the US president?"), "Who is the United States president?");
   assert.equal(expandAskAbbreviations("what is the capital of the us"), "what is the capital of the United States");
 });
 
 test("FALSIFIER: expansion never corrupts a non-ask, a verbed 'us', or a bare statement", () => {
-  assert.equal(expandAskAbbreviations("tell us who is the president?"), "tell us who is the president");
+  assert.equal(expandAskAbbreviations("tell us who is the president?"), "tell us who is the president?", "verb-guarded, byte-preserved");
   assert.equal(expandAskAbbreviations("The US is big."), "The US is big.");
   assert.equal(expandAskAbbreviations("us"), "us");
 });
