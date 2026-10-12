@@ -1326,8 +1326,9 @@
   .pv-sen.ok:hover { background: transparent !important; }
   .act.act-code { font-family: var(--mono); font-size: .88em; }
   [data-bare="1"] > .e-v, [data-bare="1"] .e-v { display: none; }
-  /* HIDDEN FOR NOW: the external-calls monitor / evidence drawer and the lock / sealed indicators (flag HIDE_EXTERNAL in fold-chat.js; UI only) */
-  html[data-hide-external] #railEvidence, html[data-hide-external] #drawer, html[data-hide-external] #setKeys,
+  /* HIDDEN FOR NOW: the external-calls monitor / evidence drawer and the lock / sealed indicators (flag HIDE_EXTERNAL in fold-chat.js; UI only).
+     The API keys section is NOT hidden: on this in-browser surface the Anthropic key lives in the fold and powers Angelica (2026-10-11). */
+  html[data-hide-external] #railEvidence, html[data-hide-external] #drawer,
   html[data-hide-external] .e-lock, html[data-hide-external] #setModelsSec .hint, html[data-hide-external] .cc-monitor, html[data-hide-external] [data-monitor] { display: none !important; }
   /* HIDDEN FOR NOW: Folds and Agent mode (flag HIDE_AGENT in fold-chat.js; it sets html[data-hide-agent]) */
   html[data-hide-agent] #railFolds, html[data-hide-agent] [data-sec="folds"], html[data-hide-agent] #setAgent,

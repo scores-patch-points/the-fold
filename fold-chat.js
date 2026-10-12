@@ -2812,17 +2812,9 @@ export function mount(root, opts = {}) {
     try { pvLive?.writing(modelBarred ? "mechanical" : "model"); } catch {}
     let doorRefusal = null;   // set when Gary refuses the composed turn below: the model is then not asked (the turn falls back like any refused call)
     // THE LATTICE (fold-chat-lattice.js, user 2026-10-11: "complex prompting with nested reasoning — it needs to
-    // actually think, climb the abstraction lattice"): on a turn the model may write, the model is told to climb
-    // the fold's lattice BEFORE speaking — L1 GROUND (the read sentences, quoted verbatim), L2 LENS (the ask's own
-    // words), L3 PARADIGM (the declared shape of the reply) — and every factual sentence must restate an L1 quote.
-    // The scaffold rides the model's doorway ONLY (below), never a barred or mechanical turn; it is built entirely
-    // from the turn's own computed reading, and its honesty is falsified (scaffoldWithoutInvention).
-    const latticeSentences = webPassages.length
-      ? [...new Set(webPassages.flatMap((p) => salientSentences(String(p.text || ""), searchQ, 3)))].slice(0, 6)
-      : [];
-    const latticePromptText = latticeSentences.length && modelRule.allowed
-      ? latticePrompt({ question, sentences: latticeSentences, cues: flowInfo?.cues || [], slot: slotTurn?.frame?.slot || null })
-      : null;
+    // actually think, climb the abstraction lattice") is computed BELOW, after the turn's flow is read — the
+    // scaffold consumes flowInfo?.cues, so it must run after `flowInfo` is assigned (a live TDZ failure,
+    // 2026-10-11: "Cannot access 'flowInfo' before initialization" — nothing may read it before its `let`).
     const callModel = (msgs, opts) => {
       if (modelBarred) throw new Error("the model is barred on this turn (it never speaks alone)");
       if (doorRefusal) throw doorRefusal;
@@ -2904,6 +2896,19 @@ export function mount(root, opts = {}) {
       messages = composed.messages;
       if (composed.refused.length) doorRefusal = Object.assign(new Error("the prompt was withheld before it reached the model (" + composed.refused.map((f) => f.rule).join(", ") + ") \u2014 nothing was sent"), { status: 422 });
     }
+    // THE LATTICE (fold-chat-lattice.js, user 2026-10-11: "complex prompting with nested reasoning — it needs to
+    // actually think, climb the abstraction lattice"): on a turn the model may write, the model is told to climb
+    // the fold's lattice BEFORE speaking — L1 GROUND (the read sentences, quoted verbatim), L2 LENS (the ask's own
+    // words), L3 PARADIGM (the declared reply shape) — and every factual sentence must restate an L1 quote.
+    // Computed HERE, after the turn's flow is read: the scaffold consumes flowInfo?.cues, and reading it before
+    // its `let` is a TDZ crash (found live 2026-10-11: "Cannot access 'flowInfo' before initialization").
+    // It rides the model's doorway ONLY (below), never a barred or mechanical turn.
+    const latticePromptText = (() => {
+      if (!modelRule.allowed || !webPassages.length) return null;
+      const sentences = [...new Set(webPassages.flatMap((p) => salientSentences(String(p.text || ""), searchQ, 3)))].slice(0, 6);
+      if (!sentences.length) return null;
+      return latticePrompt({ question, sentences, cues: flowInfo?.cues || [], slot: slotTurn?.frame?.slot || null });
+    })();
     try {
       let skipModel = modelBarred, fellBack = null;
       let out = { text: "", tokens: 0 };
