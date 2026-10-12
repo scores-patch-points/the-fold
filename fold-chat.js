@@ -406,16 +406,20 @@ export function mount(root, opts = {}) {
   // line just below: a `const` read before its declaration is a TDZ
   // ReferenceError that crashes mount() and the whole app (found live: nothing
   // could submit, in any mode).
-  const NO_HEIMDALL = false; // AUTO-LOAD THE LOCAL MODEL (2026-10-10): boot onto the machine's own embedded heimdall — the local ollama models (gemma2:2b, qwen2.5-coder:1.5b) are found automatically, autoPick selects one, zero downloads, zero confirm. The in-tab WebLLM path waits when NO_HEIMDALL is true.
+  const NO_HEIMDALL = true; // IN-BROWSER ONLY (user, 2026-10-11: "strip out it calling anything else — just the in-browser loaded llm"). No MODEL bridge of any kind: the models list is the in-tab WebLLM engine's own models, autoPick selects one, and every model call in the chat path (the mouth, the interpret step, a judge consult) rides client.chat with a page model — which never touches a network: chatPage runs the engine in this tab. No heimdall model probe, no embedded local ollama, no provider keys, no frontier/ledger/meter calls (each switch-guarded below); the judge is unreachable (its Anthropic-model signal is never in a page-models list). The web layer's SEARCH/READ relay is separate and stays (see webBridge below). This reverses the 2026-10-10 auto-load (local ollama via the embedded bridge), which made every non-mechanical turn wait on the machine's local server model before writing.
   // Where heimdall is. The stored override / opts.bridge is preferred (except an old stored standalone-bridge port, which never
   // shadows the embedded heimdall serving this very page); on boot the surface probes the same-origin /heimdall first, then the
   // legacy local port, so a fresh page finds a bridge the person never had to type in. A page with none still has its in-tab model.
-  let bridge = NO_HEIMDALL ? null : client.pickBridge(opts.bridge || localStorage.getItem("fold-chat:bridge"));
+  // THE READ LANE IS NOT A MODEL LANE (2026-10-11): fold-chat-web.js's setBridge is a search/read relay (/api/search + server-side
+  // page reads) — with NO_HEIMDALL it still gets the machine's own bridge, because without it reads fall to public CORS proxies that
+  // fail and the fold loses its material. No MODEL ever rides it: `bridge` below stays null, and every chat call is in-tab.
+  const webBridge = client.pickBridge(opts.bridge || localStorage.getItem("fold-chat:bridge"));
+  let bridge = NO_HEIMDALL ? null : webBridge;
   // FORAGE THROUGH THIS MACHINE'S OWN BRIDGE (2026-10-10): without this the web layer
   // skips the local bridge and falls to public CORS proxies that fail, so a make has NO
   // material to snip from and the mouth draws the whole page. setBridge points search/read
   // at the embedded heimdall (server-side fetch, no CORS wall).
-  try { web.setBridge(bridge); } catch { /* web layer not present in some embeds */ }
+  try { web.setBridge(webBridge); } catch { /* web layer not present in some embeds */ }
   let bridgeHello = null;
   const sessions = load("fold-chat:sessions", {});
   // Sessions stored before the channels were split carry the system-authored
@@ -968,7 +972,7 @@ export function mount(root, opts = {}) {
     const g = el("div", "mem-group");
     g.append(el("div", "mem-label", "Where you are"));
     const L = memStore.locale || {};
-    const consent = L.ipLookup !== false;   // the checkbox is the ONE consent affordance
+    const consent = L.ipLookup === true;   // OPT-IN (user, 2026-10-11): only an explicit tick consents — an untouched store calls nothing
     const line = locale.localeContext({ location: L.location, tz: L.tz, locale: L.locale, now: now() });
     g.append(el("div", "mem-note", line || (consent ? "not known yet — detect from your IP, or edit the place by hand" : "not known yet — edit the place by hand, or turn the IP guess on")));
     const acts = el("div", "mem-actions");

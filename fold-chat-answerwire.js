@@ -43,14 +43,17 @@ export function slotTurnWanted({ kind, wantWeb, liveHit = null, answerMode = "fa
   return enabled === true && !!wantWeb && !liveHit && WIRE.kinds.includes(kind) && (answerMode === "facing" || answerMode === "snips");
 }
 
-/** THE SWITCH. OFF unless the person (or a test) turns it on: localStorage "fold-chat:answerPipeline" === "on".
- *  Why off by default (2026-10-06): an adversarial verifier ran the pipeline on the REAL Monarchy-of-the-UK page and it returned a
- *  "the sources disagree" contest between "the British national anthem" and "Legislative power" instead of Charles III; the old path
- *  answered the same ask correctly. Its tests pass on hand-written pages; real pages are the unmet falsifier. It goes on by default
- *  only after the real-page corpus (eval/falsify/fixtures/tierB) stands. Never throws (storage may be blocked). */
+/** THE SWITCH. ON by default (2026-10-11, operator decision): a factual one-fact question is answered MECHANICALLY — the model is
+ *  only called when the pipeline truly hands off (not a slot ask, a language with no grammar, names that match no page, too slow).
+ *  The person can still turn it off with localStorage "fold-chat:answerPipeline" = "off" (anything else, a missing store or a
+ *  throwing store is ON: the no-model path is the safe default for a grounded surface). Why it was off by default (2026-10-06):
+ *  an adversarial verifier ran the pipeline on the REAL Monarchy-of-the-UK page and it returned a "the sources disagree" contest
+ *  between "the British national anthem" and "Legislative power" instead of Charles III; the old path answered the same ask
+ *  correctly. Its tests pass on hand-written pages; the real-page corpus (eval/falsify/fixtures/tierB) is the standing falsifier
+ *  that would flip it back off. Never throws (storage may be blocked). */
 export const SLOT_PIPELINE_KEY = "fold-chat:answerPipeline";
 export function slotPipelineOn(storage = (typeof localStorage !== "undefined" ? localStorage : null)) {
-  try { return storage?.getItem?.(SLOT_PIPELINE_KEY) === "on"; } catch { return false; }
+  try { return storage?.getItem?.(SLOT_PIPELINE_KEY) !== "off"; } catch { return true; }
 }
 
 const hostOf = (u) => { try { return new URL(String(u)).hostname.replace(/^www\./, ""); } catch { return ""; } };

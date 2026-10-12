@@ -29,7 +29,7 @@ export const MAX_ENTRIES = 200;       // bounded, so a runaway never bloats the 
 
 /** A fresh store: history on, nothing remembered, no locale yet. */
 export function emptyStore() {
-  return { version: STORE_VERSION, historyOn: true, entries: [], locale: { location: null, tz: null, locale: null, ipLookup: true } };
+  return { version: STORE_VERSION, historyOn: true, entries: [], locale: { location: null, tz: null, locale: null, ipLookup: false } };  // OPT-IN (user, 2026-10-11): the store consents to nothing until the tick
 }
 
 /** Coerce anything read from storage into a valid store (never throws). */
@@ -42,7 +42,7 @@ export function normalizeStore(raw) {
     location: L.location && typeof L.location === "object" ? L.location : (typeof L.location === "string" ? { label: L.location, source: "manual" } : null),
     tz: typeof L.tz === "string" ? L.tz : null,
     locale: typeof L.locale === "string" ? L.locale : null,
-    ipLookup: L.ipLookup !== false,
+    ipLookup: L.ipLookup === true,   // OPT-IN (user, 2026-10-11): only an explicit stored true consents
     at: typeof L.at === "string" ? L.at : null,
   };
   const seen = new Set();
