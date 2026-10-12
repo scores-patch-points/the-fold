@@ -89,22 +89,43 @@ export const ABBREVIATIONS = Object.freeze({
   us: "United States", "u.s": "United States", "u.s.": "United States", usa: "United States",
 });
 const EXPAND_STOP = Object.freeze(new Set(["tell", "let", "ask", "give", "show", "teach", "help", "name", "summarize", "summarise", "read", "write"]));
+// Where an abbreviation REALLY sits: after a determiner/preposition ("the us",
+// "of the us", "in the us") or directly before a NOUN-like word ("us
+// president"). NEVER after "for/to/with/and" (the pronoun "us": "for us to
+// agree", "you and us") and never before a verb/infinitive ("us to run").
+const EXPAND_AFTER = Object.freeze(new Set(["the", "of", "in", "at"]));
+const EXPAND_BEFORE_NOT = Object.freeze(new Set([
+  "to", "and", "or", "but", "is", "are", "am", "was", "were", "be", "been", "has", "have", "had",
+  "will", "would", "should", "can", "could", "may", "might", "do", "does", "did", "not", "it", "they", "we", "you",
+  "today", "news", "times", "magazine", "post", "weekly", "daily", "monthly",
+]));
 export function expandAskAbbreviations(question) {
   const q = String(question ?? "").trim();
   const asked = /[?¿]\s*$/u.test(q) || /^\s*(?:who|what|where|when|which|whose|why|how)\b/i.test(q);
   if (!asked) return q;
   const toks = tokensOf(q);
-  const out = []; let lastTok = null;
-  for (const t of toks) {
-    const fold = t.fold;
-    const prev = lastTok ? caseless(lastTok) : null;
-    const next = t.end < q.length ? q.slice(t.end).match(/\S/) ? null : null : null;
-    const repl = ABBREVIATIONS[fold];
-    const safe = repl && !(prev && EXPAND_STOP.has(prev));
-    out.push(safe ? repl : t.text);
-    lastTok = t.text;
+  const safeAt = (i) => {
+    const t = toks[i];
+    const repl = ABBREVIATIONS[t.fold];
+    if (!repl) return false;
+    const prevFold = i > 0 ? String(toks[i - 1].text).toLowerCase().replace(/[^\p{L}\p{N}']/gu, "") : null;
+    const nextFold = i + 1 < toks.length ? String(toks[i + 1].fold).toLowerCase() : null;
+    // the pronoun "us" ("for us to agree", "you and us") never expands: only a
+    // determiner/preposition before ("the US", "of the US") or a noun-like word
+    // after ("US president") licenses the abbreviation.
+    const after = prevFold ? EXPAND_AFTER.has(prevFold) : false;
+    const before = nextFold ? !EXPAND_BEFORE_NOT.has(nextFold) : false;
+    return !(prevFold && EXPAND_STOP.has(prevFold)) && (after || before);
+  };
+  // SPAN SUBSTITUTION: replace only the token's own bytes, so the question's
+  // punctuation and casing survive byte-for-byte ("USSR?", "the US —").
+  let out = q;
+  for (let i = toks.length - 1; i >= 0; i--) {
+    const t = toks[i];
+    if (!safeAt(i)) continue;
+    out = out.slice(0, t.start) + ABBREVIATIONS[t.fold] + out.slice(t.end);
   }
-  return out.join(" ");
+  return out;
 }
 
 // Tokens with UTF-16 offsets. A token is letters/digits joined by . ' ’ , - (so "U.S.", "1,082", "air-breathing", "doesn't" stay whole);

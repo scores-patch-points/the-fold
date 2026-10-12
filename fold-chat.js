@@ -19,6 +19,7 @@ import { mdHtml } from "./fold-chat-render.js";
 import * as memory from "./fold-chat-memory.js";
 import * as ground from "./fold-chat-ground.js";
 import { presentationOf, agreementOf, salientSentences } from "./fold-chat-present.js";
+import { latticePrompt } from "./fold-chat-lattice.js";
 import { renderPresented, mountLive, armTailReplay, renderTapeStrip } from "./fold-chat-presentview.js";
 import * as shelf from "./fold-chat-book.js";
 import * as bookfold from "./fold-chat-bookfold.js";   // the mechanical FOLD of a shelfed book (no model): the chapter-reduction rung the shelf lacked
@@ -2806,6 +2807,18 @@ export function mount(root, opts = {}) {
     // Sources-only / no-model turn, so the panel never claims a model wrote the sources' own words.
     try { pvLive?.writing(modelBarred ? "mechanical" : "model"); } catch {}
     let doorRefusal = null;   // set when Gary refuses the composed turn below: the model is then not asked (the turn falls back like any refused call)
+    // THE LATTICE (fold-chat-lattice.js, user 2026-10-11: "complex prompting with nested reasoning — it needs to
+    // actually think, climb the abstraction lattice"): on a turn the model may write, the model is told to climb
+    // the fold's lattice BEFORE speaking — L1 GROUND (the read sentences, quoted verbatim), L2 LENS (the ask's own
+    // words), L3 PARADIGM (the declared shape of the reply) — and every factual sentence must restate an L1 quote.
+    // The scaffold rides the model's doorway ONLY (below), never a barred or mechanical turn; it is built entirely
+    // from the turn's own computed reading, and its honesty is falsified (scaffoldWithoutInvention).
+    const latticeSentences = webPassages.length
+      ? [...new Set(webPassages.flatMap((p) => salientSentences(String(p.text || ""), searchQ, 3)))].slice(0, 6)
+      : [];
+    const latticePromptText = latticeSentences.length && modelRule.allowed
+      ? latticePrompt({ question, sentences: latticeSentences, cues: flowInfo?.cues || [], slot: slotTurn?.frame?.slot || null })
+      : null;
     const callModel = (msgs, opts) => {
       if (modelBarred) throw new Error("the model is barred on this turn (it never speaks alone)");
       if (doorRefusal) throw doorRefusal;
@@ -2814,6 +2827,10 @@ export function mount(root, opts = {}) {
       // the CURRENT task as the fold perfected it, not as the typos landed.
       if (perfected && Array.isArray(msgs) && msgs.length && msgs[0] && msgs[0].role === "system") {
         msgs = [{ ...msgs[0], content: String(msgs[0].content || "") + "\n\n" + perfected }, ...msgs.slice(1)];
+      }
+      // THE LATTICE rides LAST — the final word before the model writes is the reasoning scaffold.
+      if (latticePromptText && Array.isArray(msgs) && msgs.length && msgs[0] && msgs[0].role === "system") {
+        msgs = [{ ...msgs[0], content: String(msgs[0].content || "") + "\n\n" + latticePromptText }, ...msgs.slice(1)];
       }
       return client.chat(m.id, msgs, opts);
     };
