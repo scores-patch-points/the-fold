@@ -389,3 +389,16 @@ test("LIVE-37 the name after 'of' says where only after a declared place noun: '
   const r = bind(f, "The Taj Mahal is a marvel of engineering that was built as a mausoleum for the wife of Mughal emperor Shah Jahan.", { page: "Taj Mahal" });
   assert.ok(!r || !r.filler, JSON.stringify(r && r.filler));
 });
+
+test("LIVE-38 dominance needs FULL coverage: a false premise ('the first woman to walk on the Moon') is never crowned by the row that is merely less incomplete", async () => {
+  const { runAnswerTurn } = await import("./fold-chat-answerturn.js");
+  const titles = { moon: "Moon", "neil armstrong": "Neil Armstrong", "christina koch": "Christina Koch" };
+  const pages = {
+    A: "Neil Armstrong was the first man to walk on the moon.",
+    B: "Christina Koch is the first astronaut to fly around the moon since Apollo.",
+  };
+  const pass = Object.entries(pages).map(([title, text], i) => ({ ref: "S" + (i + 1), title, url: "https://en.wikipedia.org/wiki/" + title, host: "en.wikipedia.org", lang: "en", text }));
+  const deps = { fw: functionWordsOf, resolveTitles: door(titles), fetchLead: async () => null, searchPassages: async () => [] };
+  const t = await runAnswerTurn({ question: "Who was the first woman to walk on the Moon?", lang: "en", passages: pass, now: { year: 2026 }, deps });
+  assert.ok(!(t.answer && /Armstrong/.test(t.answer.filler.text)), "a man is not the first woman: " + JSON.stringify(t.answer && t.answer.filler));
+});

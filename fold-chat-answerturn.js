@@ -197,6 +197,9 @@ export function dominantRow(rows, frame, code, fw) {
   const cover = rows.map((r) => { const have = new Set(stemsOf(clauseOf(r))); return [...ask].filter((st) => have.has(st)); });
   for (let i = 0; i < rows.length; i++) {
     const mine = new Set(cover[i]);
+    // …and the dominant row must say EVERY scope word of the ask: a row that is merely less incomplete than another still does not
+    // answer the ask (the false premise "the first WOMAN to walk on the Moon": neither row says "woman" — no row is crowned)
+    if (mine.size < ask.size) continue;
     if (rows.every((_, j) => j === i || (cover[j].every((st) => mine.has(st)) && mine.size > cover[j].length))) return { row: rows[i], index: i, missing: rows.filter((_, j) => j !== i).map((r2, k) => ({ row: r2, words: [...mine].filter((st) => !new Set(cover[rows.indexOf(r2)]).has(st)) })) };
   }
   return null;
