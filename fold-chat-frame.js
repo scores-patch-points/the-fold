@@ -11,6 +11,7 @@ const tokens = (q) => String(q ?? "").match(/[\p{L}\p{N}'’.-]+|[^\p{L}\p{N}\s]
 
 /** Drop the leading run of function words (and the trailing '?'), keeping at least one content word. Returns the ask unchanged when
  *  there is no prior, nothing to cut, or cutting would leave nothing. `fw`: a Set of case-folded function words, or null. */
+import { salienceOf } from "./fold-chat-salience-infer.js";
 export function stripFrame(question, fw) {
   const q = String(question ?? "").trim();
   if (!q || !(fw instanceof Set) || !fw.size) return q;
@@ -218,6 +219,15 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
       runs.push({ i, j, surface: said.slice(rest[i].start, rest[j].end) });
     }
   }
+  // THE ASK'S RELATION IS NOT A REFERENT (battery 2026-10-12): "who WROTE Hamlet" and "the LARGEST planet" ask for a relation, and a
+  // title door that happens to resolve the bare verb or superlative ("Wrote", "Largest") used to swallow it into a referent, which
+  // emptied the predicate, so ANY sentence that mentioned Hamlet then "witnessed" a filler (Ophelia, Polonius, "silence"). The
+  // received POSPrior (UD English-EWT, via the salience prior: PROPN 9, NOUN 7, VERB 6, ADJ 4, ADV 1) says what a form usually IS.
+  // A single token that is usually a verb, adjective or adverb is never a referent on its own; a run that BEGINS with a
+  // verb-dominant token ("wrote Hamlet") is not one either. Multi-word names ("Prime Minister of Canada") are untouched.
+  const posRank = (t) => { const v = salienceOf(t.text); return v == null ? null : Math.round(v * 9); };
+  const eligible = (r) => (r.i === r.j ? !(posRank(rest[r.i]) != null && posRank(rest[r.i]) <= 6) : posRank(rest[r.i]) !== 6);
+  for (let k = runs.length - 1; k >= 0; k--) if (!eligible(runs[k])) runs.splice(k, 1);
   const candidates = [...new Set(runs.map((r) => r.surface))];
 
   // 3. ONE call; any failure is a gap, not a throw
@@ -246,7 +256,17 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
   rest.forEach((t, k) => {
     if (taken.has(k) || closed(t.fold)) return;
     const stem = stemOf(t.fold, lang);
-    if (!seen.has(stem)) { seen.add(stem); predicate.push({ surface: t.text, stem }); }
+    // `rel`: the received POSPrior says this form is usually a verb, adjective or adverb — the ask's RELATION ("wrote", "largest",
+    // "discovered", "current"), as opposed to a leftover noun ("solar", "system") that merely narrows a referent.
+    const rk = posRank(t);
+    if (!seen.has(stem)) { seen.add(stem); predicate.push({ surface: t.text, stem, ...(rk != null && rk <= 6 ? { rel: true } : {}) }); }
   });
-  return { ok: true, lang, said, slot, referents: chosen.map((c) => c.referent), predicate, gap: null };
+  // "how MANY legs …": the number must belong to the counted noun (the first content word after the interrogative), never to a
+  // neighbouring noun ("52,075 SPECIES") — the witness reads this (fold-chat-witness.js nearestNumber).
+  let counted = null;
+  if (slot === "quantity") {
+    const k0 = rest.findIndex((t) => !closed(t.fold));
+    if (k0 >= 0 && taken.has(k0)) counted = { stem: stemOf(rest[k0].fold, lang), surface: rest[k0].text };
+  }
+  return { ok: true, lang, said, slot, referents: chosen.map((c) => c.referent), predicate, counted, gap: null };
 }

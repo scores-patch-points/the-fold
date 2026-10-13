@@ -147,7 +147,7 @@ const UNITS = {
   speed: { base: "m/s", u: { "m/s": 1, mps: 1, "km/h": 1 / 3.6, kph: 1 / 3.6, kmh: 1 / 3.6, mph: 0.44704, "mi/h": 0.44704, knot: 0.5144444444444445, knots: 0.5144444444444445 } },
   time: { base: "s", u: { s: 1, sec: 1, second: 1, seconds: 1, min: 60, minute: 60, minutes: 60, h: 3600, hr: 3600, hour: 3600, hours: 3600, day: 86400, days: 86400, week: 604800, weeks: 604800 } },
 };
-const TEMP = { c: "C", celsius: "C", "°c": "C", f: "F", fahrenheit: "F", "°f": "F", k: "K", kelvin: "K" };
+const TEMP = { c: "C", celsius: "C", centigrade: "C", "°c": "C", f: "F", fahrenheit: "F", "°f": "F", k: "K", kelvin: "K" };
 const UNIT_LABEL = { feet: "ft", foot: "ft", inches: "in", inch: "in", miles: "mi", mile: "mi", meters: "m", metres: "m", meter: "m", metre: "m", kilometers: "km", kilometres: "km", kilometer: "km", kilometre: "km", pounds: "lb", pound: "lb", lbs: "lb", ounces: "oz", ounce: "oz", kilograms: "kg", kilogram: "kg", kilos: "kg", kilo: "kg", grams: "g", gram: "g", liters: "l", litres: "l", liter: "l", litre: "l", gallons: "gal", gallon: "gal", celsius: "°C", fahrenheit: "°F", kelvin: "K", c: "°C", f: "°F", k: "K", "°c": "°C", "°f": "°F", mph: "mph", kph: "km/h", kmh: "km/h", kilometre: "km" };
 const labelOf = (u) => UNIT_LABEL[u] || u;
 function unitKind(u) {
@@ -193,9 +193,34 @@ const clean = (q) => String(q ?? "").trim().replace(/[¿¡]/g, "").replace(/[?�
  *  the answer, mechanically. Never throws.
  *  { ok:true, kind:'arith'|'unit', expr, value, valueText, text, operands, unit? }
  *  | { ok:false, why } */
+// THE CALENDAR (battery 2026-10-12, compute#8): "how many days between 1 January 2026 and 1 March 2026" is arithmetic over a
+// closed, given table (the month names), never a search. Dates: "1 January 2026", "January 1, 2026", "1st of March 2026", 2026-03-01.
+const MONTHS = { january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2, april: 3, apr: 3, may: 4, june: 5, jun: 5, july: 6, jul: 6, august: 7, aug: 7, september: 8, sep: 8, sept: 8, october: 9, oct: 9, november: 10, nov: 10, december: 11, dec: 11 };
+const MON = Object.keys(MONTHS).sort((a, b) => b.length - a.length).join("|");
+const DATE_SRC = `(?:\\d{4}-\\d{2}-\\d{2}|\\d{1,2}(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:${MON})\\.?,?\\s+\\d{4}|(?:${MON})\\.?\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s+\\d{4})`;
+const DAYS_BETWEEN = new RegExp(`^(?:(?:how many )?days(?: are there| is it| are)?|the number of days|number of days)?\\s*(?:between|from)\\s+(${DATE_SRC})\\s+(?:and|to|until|till)\\s+(${DATE_SRC})$`, "iu");
+function parseDate(t) {
+  const x = String(t).toLowerCase().replace(/,/g, "").replace(/\s+/g, " ").trim();
+  let m;
+  if ((m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(x))) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+  if ((m = /^(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?([a-z]+)\.?\s+(\d{4})$/.exec(x)) && MONTHS[m[2]] != null) return Date.UTC(+m[3], MONTHS[m[2]], +m[1]);
+  if ((m = /^([a-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?\s+(\d{4})$/.exec(x)) && MONTHS[m[1]] != null) return Date.UTC(+m[3], MONTHS[m[1]], +m[2]);
+  return null;
+}
+function daysBetween(q) {
+  const m = DAYS_BETWEEN.exec(q.replace(/\s+/g, " ").trim());
+  if (!m) return null;
+  const a = parseDate(m[1]), b = parseDate(m[2]);
+  if (a == null || b == null || !Number.isFinite(a) || !Number.isFinite(b)) return null;
+  const n = Math.round(Math.abs(b - a) / 86400000);
+  const expr = `days between ${m[1].trim()} and ${m[2].trim()}`;
+  return { ok: true, kind: "date", expr, value: n, valueText: String(n), text: `${n} day${n === 1 ? "" : "s"} between ${m[1].trim()} and ${m[2].trim()}`, operands: [n] };
+}
+
 export function evaluate(question) {
   let q = clean(question);
   if (!q || q.length > 120) return { ok: false, why: "not a short closed question" };
+  { const dd = daysBetween(q); if (dd) return dd; }
   const hadStem = STEM_RE.test(q);
   let body = q;
   for (let n = 0; n < 3 && STEM_RE.test(body); n++) body = body.replace(STEM_RE, "").trim();
@@ -208,7 +233,8 @@ export function evaluate(question) {
   const plain = body.replace(/[$€£]/g, "");
   const currency = cur.length === 1 ? cur[0] : "";
   // 1) unit conversions
-  const lower = plain.toLowerCase().replace(/\s+/g, " ").trim();
+  // "72 degrees Fahrenheit" is "72 fahrenheit": the word 'degrees' carries no value (battery 2026-10-12, compute#6)
+  const lower = plain.toLowerCase().replace(/\b(?:degrees?|deg)\s+(?=(?:fahrenheit|celsius|centigrade|kelvin)\b)/g, "").replace(/\s+/g, " ").trim();
   let mm;
   if ((mm = CONV_A.exec(lower)) || (mm = CONV_C.exec(lower))) {
     const n = Number(mm[1].replace(/,/g, "")), r = convertUnits(n, mm[2], mm[3]);

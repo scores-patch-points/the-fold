@@ -37,6 +37,7 @@
 
 import { sentencesWithOffsets } from "./fold-chat-impression.js";
 import { GRAMMAR, tokensOf, stemOf, closedClassOf } from "./fold-chat-frame.js";
+import { salienceOf } from "./fold-chat-salience-infer.js";
 
 /** Sentences of a text with UTF-16 offsets (the repo's own splitter, fold-chat-impression.js sentencesWithOffsets). */
 export function sentencesOf(text) {
@@ -115,7 +116,12 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // ── predicate stems ─────────────────────────────────────────────────────────────────────────────────────────────
   const predMatches = [];                                             // token indices that carry a predicate stem
   for (const p of frame.predicate || []) toks.forEach((t, k) => { if (t.stem === p.stem && !predMatches.includes(k)) predMatches.push(k); });
-  const tier = !(frame.predicate || []).length || predMatches.length ? "T1" : "T2";
+  // A RELATION MUST MATCH (battery 2026-10-12): when the ask carries a relation word (verb/adjective/adverb by the received prior:
+  // "wrote", "largest"), a sentence is a witness only if IT says the relation. Leftover noun words of the ask ("solar", "system") that
+  // happen to occur must not stand in for it — they made Saturn's "second-largest" a rival to "largest".
+  const relStems = (frame.predicate || []).filter((p) => p.rel).map((p) => p.stem);
+  const relMatched = !relStems.length || predMatches.some((k) => relStems.includes(toks[k].stem));
+  const tier = !(frame.predicate || []).length || (predMatches.length && relMatched) ? "T1" : "T2";
 
   // ── polarity and tense: the sentence's own closed-class words ──────────────────────────────────────────────────
   const polarity = toks.some((t) => G.negation.includes(t.fold) || /n['’]t$/.test(t.fold)) ? "-" : "+";
@@ -236,6 +242,25 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   function nearestNumber() {
     const runs = numberRuns();
     if (!runs.length) return null;
+    // A COUNTED NOUN owns its number (battery 2026-10-12: "how many legs does a spider have" took 52,075, the SPECIES). When the
+    // ask counted a noun, the number must sit in that noun's own phrase: <number> (closed class | adjective)* <the noun>, with no
+    // clause break between them. Otherwise the sentence does not answer the count and yields no filler.
+    if (frame.counted && frame.counted.stem) {
+      const at = toks.map((t, k) => (t.stem === frame.counted.stem ? k : -1)).filter((k) => k >= 0);
+      let best = null;
+      for (const r of runs) for (const a of at) {
+        if (a <= r.to) continue;
+        let ok = true;
+        for (let k = r.to + 1; k < a && ok; k++) {
+          const rank = (() => { const v = salienceOf(toks[k].text); return v == null ? null : Math.round(v * 9); })();
+          ok = closed(toks[k].fold) || (rank != null && rank === 4);          // determiner/preposition or an adjective-dominant form
+        }
+        if (ok && /^[^,;.()!?]*$/.test(text.slice(toks[r.to].end, toks[a].start))) { if (!best || a - r.to < best.d) best = { r, d: a - r.to }; }
+      }
+      if (!best) return null;
+      const [a0, b0] = spanOf(best.r.from, best.r.to);
+      return { text: text.slice(a0, b0), span: [a0, b0] };
+    }
     const anchors = predMatches.length ? predMatches : [...inRef];
     if (!anchors.length) return null;
     let best = null;

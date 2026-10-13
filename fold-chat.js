@@ -1525,14 +1525,14 @@ export function mount(root, opts = {}) {
     // answer (Wikipedia's own distinct titles, never model prose); small, and dismissible.
     { const sn = sensesEl(rec); if (sn) respPage.append(sn); }
     if (String(content || "").trim()) respPage.append(md);
-    else if (gap && gapAnswerLine(gap)) { respPage.append(el("div", "face-empty", gapAnswerLine(gap))); respPage.append(renderGap(gap, { retry: meta?.retry })); }
-    else if (rec?.computed) {
+    else if (rec?.computed && rec.computed.value) {
       // the mechanical result card: the fold's own arithmetic, no model wording
       const card = el("div", "calc");
       card.setAttribute("role", "note");
       card.append(el("span", "calc-k", "computed by the fold \u2014 not written by a model"), el("span", "calc-expr", rec.computed.expr), el("span", "calc-val", "= " + rec.computed.value));
       respPage.append(card);
     }
+    else if (gap && gapAnswerLine(gap)) { respPage.append(el("div", "face-empty", gapAnswerLine(gap))); respPage.append(renderGap(gap, { retry: meta?.retry })); }
     else if (meta?.appAuthored) { /* the app's own note below IS the turn: no model was asked */ }
     else if (meta?.noticed) respPage.append(el("div", "face-empty", "the model wrote no answer text \u2014 see the note below"));
     else respPage.append(el("div", "face-empty", "nothing was written for this turn"));
@@ -2750,7 +2750,11 @@ export function mount(root, opts = {}) {
     // nothing readable) does NOT get a model answer: the model would answer the machine's own misreading
     // (ITNOW, for "it now"). The turn becomes a typed gap carrying the murmur's reading, so the person can
     // confirm it. (The model INTERPRET step — ask it only what the question MEANS, then re-search — is next.)
-    if (!plan && !strand && murmur && murmur.hard && !interpreted && !urlAskDetect) plan = unsourcedPlan(UNSOURCED_ANSWERS, { live: false });
+    // A COMPUTED ASK IS TERMINAL (battery 2026-10-12, compute#1/#9): "What is 15% of 240?" has numerals the murmur has "not met",
+    // so murmur.hard drew the typed gap over a value the evaluator had ALREADY computed (36). The evaluator is the source of a
+    // compute turn; an unreadable name does not void it.
+    const computedAlready = kind === "compute" ? computeEvaluate(question) : null;
+    if (!plan && !strand && murmur && murmur.hard && !interpreted && !urlAskDetect && !(computedAlready && computedAlready.ok)) plan = unsourcedPlan(UNSOURCED_ANSWERS, { live: false });
     // THE CLARIFICATION PATHWAY: a bare term that names several things ("president") is not answered and not
     // guessed — the machine ASKS WHICH, listing the senses as options the person can pick. No model writes it.
     let clarify = null, followup = null;
