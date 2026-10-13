@@ -17,7 +17,7 @@ import { detectLang } from "./fold-chat-lang.js";
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
 import { classifyTurn } from "./fold-chat-discourse.js";
 import { anaphoraOf } from "./fold-chat-anaphora.js";
-import { salienceOf } from "./fold-chat-salience-infer.js";
+import { salienceOf, closedFormsOf, hasPrior } from "./fold-chat-salience-infer.js";
 import { SALIENCE_PRIOR } from "./fold-chat-salience-prior.js";
 import { senseTerm } from "./fold-chat-senses.js";
 import { stemOf } from "./fold-chat-ground.js";
@@ -57,7 +57,9 @@ export function murmurOf({ question, carried = [], rejected = [], prior = null, 
   // 1. LISTEN — language
   const d = (() => { try { return detectLang(q, { prior }); } catch { return { lang: "unknown", confident: false }; } })();
   const lang = d.lang && d.lang !== "unknown" ? d.lang : "en";
-  const fw = new Set(FUNCTION_WORDS[lang] || FUNCTION_WORDS.en || []);
+  const fw = new Set(FUNCTION_WORDS[lang] || closedFormsOf(lang) || FUNCTION_WORDS.en || []);
+  // A language with a received prior of its own (es, fr, the creoles) is read through it; every other language, as before, through English.
+  const salLang = lang !== "en" && hasPrior(lang) ? lang : null;
   say("listen", "listening for what is being asked");
   say("language", `language: ${lang}` + (d.confident === false ? " (uncertain)" : ""), { lang });
 
@@ -68,7 +70,7 @@ export function murmurOf({ question, carried = [], rejected = [], prior = null, 
   for (const rt of (String(q).match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || [])) { const f = fold(rt); if (!cased.has(f)) cased.set(f, /^\p{Lu}/u.test(rt)); }
   const names = [], content = [], low = [], unknown = [];
   for (const t of [...new Set(toksOf(q))]) {
-    const s = salienceOf(t);
+    const s = salienceOf(t, salLang);
     if (s != null) { if (s >= 0.8) names.push([t, s]); else if (s >= 0.5) content.push([t, s]); else low.push([t, s]); continue; }
     if (fw.has(t)) continue;                                   // a function word: nothing to weigh
     let st = t; try { st = stemOf(t); } catch (e) { st = t; }

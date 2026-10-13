@@ -24,8 +24,19 @@ import { SALIENCE_PRIOR, SALIENCE_PRIOR_SCHEMA, SALIENCE_PRIOR_SOURCE } from "./
 // with no prior here measures nothing: every form is unmeasured (null), never read through the English prior.
 import { SALIENCE_PRIOR as SALIENCE_PRIOR_ES } from "./fold-chat-salience-prior-es.js";
 import { SALIENCE_PRIOR as SALIENCE_PRIOR_FR } from "./fold-chat-salience-prior-fr.js";
-const PRIORS = { en: SALIENCE_PRIOR, es: SALIENCE_PRIOR_ES, fr: SALIENCE_PRIOR_FR };
-const priorOf = (lang) => (lang == null ? SALIENCE_PRIOR : PRIORS[lang] || null);
+// Creoles (UD Naija-NSC train split, UD Haitian_Creole-Adolphe train split; janus/priors/pos-{pcm,hat}.json, built with --closed). The
+// salience table drops function words, so these modules also carry CLOSED_CLASS (≥ 5 tokens, ≥ 50 % closed-class UPOS — the rule of
+// scripts/build-function-words.mjs): without it a creole function word is "unmeasured", which the readers take for a candidate NAME.
+// Wiktionary packs (pap, kea) are NOT wired: eval/creole/SALIENCE-RESULTS.md.
+import { SALIENCE_PRIOR as SALIENCE_PRIOR_PCM, CLOSED_CLASS as CLOSED_PCM } from "./fold-chat-salience-prior-pcm.js";
+import { SALIENCE_PRIOR as SALIENCE_PRIOR_HAT, CLOSED_CLASS as CLOSED_HAT } from "./fold-chat-salience-prior-hat.js";
+const PRIORS = { en: SALIENCE_PRIOR, es: SALIENCE_PRIOR_ES, fr: SALIENCE_PRIOR_FR, pcm: SALIENCE_PRIOR_PCM, hat: SALIENCE_PRIOR_HAT };
+const CLOSED = { pcm: new Set(CLOSED_PCM), hat: new Set(CLOSED_HAT) };
+// The Haitian labels the detector emits today (the UDHR file names hatkreyol / hatpopular, and ISO 639-1 ht) are ONE module.
+const ALIAS = { ht: "hat", hatkreyol: "hat", hatpopular: "hat" };
+const own = (o, k) => (Object.hasOwn(o, k) ? o[k] : null);
+const modOf = (lang) => own(ALIAS, lang) || lang;
+const priorOf = (lang) => (lang == null ? SALIENCE_PRIOR : own(PRIORS, modOf(lang)));
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
 import { stemOf } from "./fold-chat-ground.js";
 // The fold's text folding, at the khora's declared scope (Latin vowel accents only). The old
@@ -54,6 +65,12 @@ export function alphabetOf(lang = null) {
   ALPHA.set(key, a);
   return a;
 }
+/** The language's CLOSED CLASS as a Set of folded forms, or null when the Fold holds none for it (es/fr/en use FUNCTION_WORDS). */
+export function closedFormsOf(lang = null) { return lang == null ? null : own(CLOSED, modOf(lang)); }
+/** Is the form closed-class in the language's received pack (a function word, never a name or content word)? */
+export function isClosedForm(form, lang = null) { const c = closedFormsOf(lang); return !!c && c.has(fold(form)); }
+/** Does the Fold hold a received salience prior for this language (English counts)? */
+export function hasPrior(lang = null) { return priorOf(lang) != null; }
 export function isName(form, lang = null) { const P = priorOf(lang); return !!P && (P[fold(form)] || 0) >= 8; }
 
 /**
