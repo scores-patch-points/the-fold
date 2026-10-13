@@ -130,7 +130,9 @@ export function bearsOn(claim, sentence, fw, titleText = "") {
   // polarity, verifier-strict (F4 P6 polarity): ANY asymmetry of negation is unverifiable — a claim
   // the sentence negates differently is not support. (Falsification uses the precise same-proposition
   // flip; verification refuses what it cannot resolve. Mutual negation passes through to the checks below.)
-  const hasNeg = (t) => /\b(?:not|no|never|neither|nor|none|without|cannot|n't|failed to|did not|does not|is not|was not)\b/i.test(String(t ?? "").replace(/\bnot\s+(?:only|just|merely|simply)\b|\bno\s+(?:doubt|question)\b/i, " "));
+  // ("without" is a PREPOSITION, not a clausal negator: "loves the people without partiality" does not deny that God rewards the virtuous —
+  // fold-chat-counsel.test.mjs pins it; it made the counsel tie gate refuse its own canon's sentences)
+  const hasNeg = (t) => /\b(?:not|no|never|neither|nor|none|cannot|n't|failed to|did not|does not|is not|was not)\b/i.test(String(t ?? "").replace(/\bnot\s+(?:only|just|merely|simply)\b|\bno\s+(?:doubt|question)\b/i, " "));
   if (hasNeg(claim) !== hasNeg(sentence)) return { ok: false, why: "polarity" };
   // entities (F4 P6 name/place/keyword-only + P1 true names): every name resolves in the sentence or,
   // for a shortened form, in the page title ("Eiffel Tower" via "The tower…" on its own page; the fold's
@@ -140,7 +142,8 @@ export function bearsOn(claim, sentence, fw, titleText = "") {
   // identifying — skipped both sides. A claim naming nobody needs nothing. Without a title (old callers:
   // unit tests, c8) the check is skipped entirely — exactly the old behavior, which had none.
   const capName = (n) => /\s/.test(n.trim()) || !/^[A-Z]{2,}$/.test(n.trim());
-  const cn = ground.namesIn(claim).filter(capName);
+  // a function word is never a name, whatever its case ("Does justice reward…": the sentence-initial "Does" is not a name to find)
+  const cn = ground.namesIn(claim).filter(capName).filter((n) => !(fw && n.split(/\s+/).every((w) => fw.has(w.toLowerCase()))));
   if (titleText && cn.length) {
     const low = String(sentence).toLowerCase(), titleLow = String(titleText ?? "").toLowerCase();
     const stemOf = (w) => { try { return ground.stemOf ? ground.stemOf(w) : w; } catch { return w; } };

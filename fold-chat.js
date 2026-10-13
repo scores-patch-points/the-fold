@@ -2308,6 +2308,46 @@ export function mount(root, opts = {}) {
     try {
       perfected = [lessonsPrompt(proposalsOf(localStorage)), readAsLine(murmur), healedRead && healedRead.healed ? `The ask was received with "${healedRead.from}" and is read as "${healedRead.to}".` : null].filter(Boolean).join("\n\n");
     } catch (e) { perfected = ""; }
+    // THE ONE MODEL LANE (STATIC GUARD, fold-chat-strand.test.mjs): every model call in run() leaves through
+    // callModel, so no call escapes the bar. It is declared HERE, before its first caller (the interpret
+    // reading below), and the judge lane is declared before Angelica calls it — the judge used to be a
+    // const declared after the await that called it, so every consult died "before initialization".
+    // The bar (modelBarred), Gary's refusal (doorRefusal) and the lattice are declared BELOW, once the turn
+    // is read, and read here only at CALL time. The interpret reading is the one lane that runs before the
+    // bar exists: it alone skips the bar and is never dressed, and it carries its own guard (a real bridge
+    // mouth, no plan, no strand). Only the MOUTH lane is dressed with the perfected context and the lattice.
+    const dressed = (msgs) => {
+      // THE MODEL IS FED THE PERFECTED CONTEXT every call (user, 2026-10-11): past lessons + the fold's own
+      // reading of the ask, appended to the system message through Gary/this door — so the mouth understands
+      // the CURRENT task as the fold perfected it, not as the typos landed.
+      if (perfected && Array.isArray(msgs) && msgs.length && msgs[0] && msgs[0].role === "system") {
+        msgs = [{ ...msgs[0], content: String(msgs[0].content || "") + "\n\n" + perfected }, ...msgs.slice(1)];
+      }
+      // THE LATTICE rides LAST — the final word before the model writes is the reasoning scaffold.
+      if (latticePromptText && Array.isArray(msgs) && msgs.length && msgs[0] && msgs[0].role === "system") {
+        msgs = [{ ...msgs[0], content: String(msgs[0].content || "") + "\n\n" + latticePromptText }, ...msgs.slice(1)];
+      }
+      return msgs;
+    };
+    const callModel = (msgs, opts, lane = "mouth", id = m.id) => {
+      if (lane !== "interpret") {
+        if (modelBarred) throw new Error("the model is barred on this turn (it never speaks alone)");
+        if (doorRefusal) throw doorRefusal;
+      }
+      return client.chat(id, lane === "mouth" ? dressed(msgs) : msgs, opts);
+    };
+    // ANGELICA'S EXECUTOR: a sealed consult goes OUT over the same bridge as the mouth but as
+    // sealed-external (a profile that never meets the thread's material), temperature 0, and the answer is
+    // only ever the tight JSON the judge prompt asks for — parsed TIGHTLY by parseJudge, a gap if not.
+    const judgeBridge = (prompt, mm) => {
+      // ANGELICA'S DIRECT SEALED LANE (user, 2026-10-11): on the in-browser-only surface the consult goes
+      // straight to Anthropic with the key stored in this browser — sealed-external (the ask and the
+      // machine's counts, never a passage), temperature 0, the same tight JSON. The bridge lane stays for
+      // a heimdall surface. Either failure is typed and the machine's own decision stands.
+      if (modelBarred) throw new Error("the model is barred on this turn (it never speaks alone)");
+      if (NO_HEIMDALL) return anthropicJudge({ prompt, key: browserJudgeKey(localStorage), model: judgeModelName(localStorage) });
+      return callModel([{ role: "user", content: prompt }], { base: bridge, temperature: 0, maxTokens: 400, privacy: "sealed-external", audit: { run: runId } }, "judge", mm?.id ?? m.id);
+    };
     // THE MOUTH INTERPRETS WHAT THE MACHINE CANNOT READ (the throughline fix, 2026-10-11): a HARD ask — a
     // fused token ("itnow"), or nothing readable — is NOT rejected. The mouth is asked ONCE what the question
     // MEANS, and that reading drives the search and the answer below. If there is no mouth, the typed gap
@@ -2318,7 +2358,7 @@ export function mount(root, opts = {}) {
       const canInterpret = !!m && !m.none && !!bridge && !client.isPageModel(m);   // a real bridge mouth only; an unloaded in-tab model would stall
       if (canInterpret && !plan && !strand && murmur && murmur.hard && !urlAskDetect) {
         const interp = await Promise.race([
-          client.chat(m.id, interpretPrompt(murmur), { base: bridge, temperature: 0, maxTokens: 180 }),
+          callModel(interpretPrompt(murmur), { base: bridge, temperature: 0, maxTokens: 180 }, "interpret"),
           new Promise((res) => setTimeout(() => res({ text: "" }), 12000)),
         ]);
         const txt = String((interp && interp.text) || "").trim();
@@ -2819,32 +2859,6 @@ export function mount(root, opts = {}) {
     // actually think, climb the abstraction lattice") is computed BELOW, after the turn's flow is read — the
     // scaffold consumes flowInfo?.cues, so it must run after `flowInfo` is assigned (a live TDZ failure,
     // 2026-10-11: "Cannot access 'flowInfo' before initialization" — nothing may read it before its `let`).
-    const callModel = (msgs, opts) => {
-      if (modelBarred) throw new Error("the model is barred on this turn (it never speaks alone)");
-      if (doorRefusal) throw doorRefusal;
-      // THE MODEL IS FED THE PERFECTED CONTEXT every call (user, 2026-10-11): past lessons + the fold's own
-      // reading of the ask, appended to the system message through Gary/this door — so the mouth understands
-      // the CURRENT task as the fold perfected it, not as the typos landed.
-      if (perfected && Array.isArray(msgs) && msgs.length && msgs[0] && msgs[0].role === "system") {
-        msgs = [{ ...msgs[0], content: String(msgs[0].content || "") + "\n\n" + perfected }, ...msgs.slice(1)];
-      }
-      // THE LATTICE rides LAST — the final word before the model writes is the reasoning scaffold.
-      if (latticePromptText && Array.isArray(msgs) && msgs.length && msgs[0] && msgs[0].role === "system") {
-        msgs = [{ ...msgs[0], content: String(msgs[0].content || "") + "\n\n" + latticePromptText }, ...msgs.slice(1)];
-      }
-      return client.chat(m.id, msgs, opts);
-    };
-    // ANGELICA'S EXECUTOR: a sealed consult goes OUT over the same bridge as the mouth but as
-    // sealed-external (a profile that never meets the thread's material), temperature 0, and the answer is
-    // only ever the tight JSON the judge prompt asks for — parsed TIGHTLY by parseJudge, a gap if not.
-    const judgeBridge = (prompt, mm) => {
-      // ANGELICA'S DIRECT SEALED LANE (user, 2026-10-11): on the in-browser-only surface the consult goes
-      // straight to Anthropic with the key stored in this browser — sealed-external (the ask and the
-      // machine's counts, never a passage), temperature 0, the same tight JSON. The bridge lane stays for
-      // a heimdall surface. Either failure is typed and the machine's own decision stands.
-      if (NO_HEIMDALL) return anthropicJudge({ prompt, key: browserJudgeKey(localStorage), model: judgeModelName(localStorage) });
-      return client.chat(mm?.id ?? m.id, [{ role: "user", content: prompt }], { base: bridge, temperature: 0, maxTokens: 400, privacy: "sealed-external", audit: { run: runId } });
-    };
     // COMPUTE: the value comes from the evaluator, never the model (II.9); the model only phrases it.
     const computed = kind === "compute" ? computeEvaluate(question) : null;
     if (computed && computed.ok) sourceBlock = `The fold's evaluator computed: ${computed.text}\nThis is exact. State the result to the person in one short, natural sentence, using exactly this value and only the numbers they gave. Do not do any other arithmetic and do not show other figures or steps.`;

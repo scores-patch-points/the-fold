@@ -298,7 +298,8 @@ export async function counselFor({ question, thinker, draft, point, fw = FWDEFAU
     [...sc.entries()].sort((x, y) => y[1] - x[1] || idx.sents[x[0]].stems.size - idx.sents[y[0]].stems.size || x[0] - y[0]).slice(0, L.shortlist).forEach(([id]) => add(idx.sents[id]));
     for (const m of material) add(m);
     let candidates = [...seen.values()].slice(0, L.maxCandidates).map((c, i) => ({ ...c, text: text ? text.slice(c.start, c.end) : c.text, n: i + 1, passageIndex: 0 }));   // with the canon in hand the candidate IS the canon's slice
-    const passages = [{ text: text ?? "", ref: thinker?.source?.path || thinker?.handle || "canon" }];
+    // the canon's title names its giver: "Mozi holds…" names the source's own author, which the source vouches for (a page title vouches for its subject)
+    const passages = [{ text: text ?? "", ref: thinker?.source?.path || thinker?.handle || "canon", title: `${work} (${giver})` }];
     let verdict = { tied: false, why: "no_candidates" };
     for (let attempt = 0; attempt < 2 && candidates.length; attempt++) {
       let r = "";
