@@ -79,7 +79,19 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const toks = tokensOf(text).map((t) => ({ ...t, stem: stemOf(t.fold, L) }));
   if (!toks.length) return null;
   const attrs = Array.isArray(frame.attributes) ? frame.attributes : [];
-  const attrSaid = attrs.every((a) => a.stems.every((st) => toks.some((t) => t.stem === st)));
+  // An ATTRIBUTE is said by an occurrence its own noun phrase does not ORDINAL-qualify: "the FOURTH and unofficial capital of Brazil is
+  // São Paulo" says a fourth capital, not the capital (the live "capital of Brazil" contest) — unless the ask itself says the ordinal
+  // ("the FIRST president"). The phrase is walked back from the attribute to the nearest copula, governing word, clause word or break.
+  const askOrdinals = new Set((frame.predicate || []).map((p) => p.stem));
+  const ordinalQualified = (k) => {
+    for (let j = k - 1; j >= 0; j--) {
+      const f = toks[j].fold;
+      if (G.copulas.includes(f) || (G.governs || []).includes(f) || G.clauseWords.includes(f) || /[,;:()]/u.test(text.slice(toks[j].end, toks[j + 1].start))) return false;
+      if ((G.ordinals || []).includes(f) && !askOrdinals.has(toks[j].stem)) return true;
+    }
+    return false;
+  };
+  const attrSaid = attrs.every((a) => a.stems.every((st) => toks.some((t, k) => t.stem === st && !(st === a.stems[a.stems.length - 1] && ordinalQualified(k)))));
 
   // ── referent groups: any alias, stem-folded; a group is present when one alias occurs contiguously ───────────────
   // A DERIVATIVE PAGE (the first live gate run, 2026-10-13: "who wrote Pride and Prejudice" committed a sentence about "Pride and
@@ -497,6 +509,17 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
           ok = closed(toks[k].fold) || (rank != null && rank === 4);          // determiner/preposition or an adjective-dominant form
         }
         if (ok && /^[^,;.()!?]*$/.test(text.slice(toks[r.to].end, toks[a].start))) { if (!best || a - r.to < best.d) best = { r, d: a - r.to }; }
+      }
+      // …or the copular form: "The number of bones in the adult human body IS 206" — the counted noun sits in the subject phrase and the
+      // number is the copula's complement (only closed-class words between the copula and the number, no clause break before it).
+      if (!best) {
+        for (const r of runs) {
+          let c = r.from - 1;
+          while (c >= 0 && closed(toks[c].fold) && !G.copulas.includes(toks[c].fold)) c--;
+          if (c < 0 || !(G.copulas.includes(toks[c].fold) || toks[c].fold === "been")) continue;
+          const a = at.find((k) => k < c && /^[^,;.()!?]*$/.test(text.slice(toks[k].end, toks[c].start)));
+          if (a != null && (!best || r.from - c < best.d)) best = { r, d: r.from - c };
+        }
       }
       if (!best) return null;
       const [a0, b0] = spanOf(best.r.from, best.r.to);

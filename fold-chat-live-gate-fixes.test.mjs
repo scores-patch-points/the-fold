@@ -267,3 +267,22 @@ test("LIVE-25 a filler that begins with a preposition or subordinator is an adve
   const p = bind(f, "Portuguese is the official language of Brazil.", { page: "Languages of Brazil" });
   assert.equal(p && p.filler && p.filler.text, "Portuguese");
 });
+
+test("LIVE-26 a count in its copular form: 'The number of bones in the adult human body is 206' (counted noun in the subject, number after the copula)", async () => {
+  const f = await frameOf("How many bones are in the adult human body?", { "human body": "Human body" });
+  const r = bind(f, "The most frequently cited number of bones in the adult human body is 206.", { page: "Human skeleton" });
+  assert.equal(r && r.filler && r.filler.text, "206");
+  const s = await frameOf("How many legs does a spider have?", { spider: "Spider" });
+  const n = bind(s, "The spider is a genus with 52,075 species and legs are many.", { page: "Spider" });
+  assert.ok(!n || !n.filler, "a number that is not the counted noun's count is not an answer");
+});
+
+test("LIVE-27 an attribute qualified by an ordinal the ask does not say is not the attribute: 'the fourth and unofficial capital of Brazil' is not 'the capital'", async () => {
+  const f = await frameOf("What is the capital of Brazil?", { brazil: "Brazil", capital: "Capital" });
+  const t = (x) => { const r = bind(f, x, { page: "What is the Capital of Brazil?" }); return r && r.tier === "T1" && r.filler ? r.filler.text : null; };
+  assert.equal(t("The fourth and unofficial capital of Brazil is São Paulo, which emerged as a major industrial city."), null);
+  assert.equal(t("The current capital of Brazil, since its construction in 1960, is Brasília."), "Brasília");
+  const g = await frameOf("Who was the first president of the United States?", { "united states": "United States", president: "President" });
+  const r = bind(g, "George Washington was the first president of the United States.", { page: "President of the United States" });
+  assert.equal(r && r.filler && r.filler.text, "George Washington", "the ask's own ordinal is kept");
+});
