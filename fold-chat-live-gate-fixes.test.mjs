@@ -259,3 +259,11 @@ test("LIVE-24 a relation-less PLACE ask takes the containment phrase of the copu
   assert.deepEqual(alts("The Taj Mahal is a famous monument."), [], "no containment phrase, no place");
   assert.deepEqual(alts("In 1983, the Taj Mahal was designated as a UNESCO World Heritage Site for being the jewel of Islamic art in India."), [], "a sentence about the designation does not say where it is");
 });
+
+test("LIVE-25 a filler that begins with a preposition or subordinator is an adverbial, not an entity ('Before the first Portuguese explorers arrived in 1500, …')", async () => {
+  const f = await frameOf("What language is spoken in Brazil?", { brazil: "Brazil" });
+  const r = bind(f, "Before the first Portuguese explorers arrived in 1500, what is now Brazil was inhabited by several Amerindian peoples that spoke many different languages.", { page: "Languages of Brazil" });
+  assert.ok(!r || !r.filler, "the leading clause is not the language: " + JSON.stringify(r && r.filler));
+  const p = bind(f, "Portuguese is the official language of Brazil.", { page: "Languages of Brazil" });
+  assert.equal(p && p.filler && p.filler.text, "Portuguese");
+});

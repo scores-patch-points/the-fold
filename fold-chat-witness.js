@@ -416,7 +416,16 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // a passive AGENT was already required to be somebody above (not digit-led, a name-like word inside); a description that carries
     // its name ("by the Scottish physician Alexander Fleming") is unpacked to the name by the title-door variants downstream
     if (frame.slot === "person" && !fromAgent && !personLike(inside)) return null;
+    if (startsAdverbial(inside)) return null;
     return { text: text.slice(a, b), span: [a, b] };
+  }
+  // A filler that BEGINS with a preposition or a subordinator is an adverbial, not an entity ("Before the first Portuguese explorers
+  // arrived in 1500, what is now Brazil was inhabited …" answered "what language is spoken in Brazil" with that clause). Table-driven:
+  // the language's own prepositions, agent-stop prepositions and subordinators; a place filler has its own lead rule above.
+  function startsAdverbial(run) {
+    if (frame.slot === "place" || !run.length) return false;
+    const lead = new Set([...(G.prepositions || []), ...(G.agentStops || []), ...(G.subordinators || [])]);
+    return lead.has(run[0].fold);
   }
   // A PERSON FILLER IS SOMEBODY, not a description and not a date (the first live gate run: "April 30", "March 22", "its leader", "the
   // chancellor"). Structural, from the language's own table: a run with a digit-led word ("April 30") is a date or a count; a run
@@ -454,6 +463,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;
     if (inside.some((t) => carry.has(t.stem))) return null;
     if (frame.slot === "person" && !personLike(inside)) return null;     // "its LEADER became known as the chancellor": a role, not a person
+    if (startsAdverbial(inside)) return null;
     return { text: text.slice(a, b), span: [a, b] };
   }
 
