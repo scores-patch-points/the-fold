@@ -70,3 +70,37 @@ Nothing was tuned to pass: the es/fr tables are byte-identical to the pre-regist
 the UD lemma column, not on disk) and a per-language decision that some diacritics are contrastive (French "né"/"ne", "où"/"ou"; Spanish
 "qué"/"que", "él"/"el") — a change to the fold the whole app shares, scoped by a table field so English is untouched.
 English is unchanged by every v2 change (full suite by test name: same 11 pre-existing failures).
+
+## Run 3 — contrastive accents (v3) and the possessor guard for every place ask
+A declared `contrastive` list keeps an accented form distinct only when it is WRITTEN with its accent (French "né" ≠ "ne"); a missing accent
+reads exactly as before, and a contrastive table word also answers to its plain fold. The French possessor case now holds: **15 of 16
+improvements are omnilingual** — only Spanish "descubrió"/"descubierta" (irregular participle; needs a lemma prior) remains.
+The first perturbation run then showed that an accentless French ask ("Ou est ne Mozart ?") COMMITTED the father's place ("Augsbourg"): the
+possessor guard ran only for asks with a relation word, and the unaccented "ne" had removed it. The guard now runs for every place ask.
+
+## Run 4 — the perturbation arms and the typing layer (v4)
+Positive cases only (an answer is expected; 9 per language). Before v4 nearly every typo/leet hold was vacuous (a broken ask gapping where no
+answer was expected).
+
+| arm (only the ask is perturbed) | en | es | fr |
+|---|---|---|---|
+| as written | 9/9 | 8/9 | 9/9 |
+| caps, no punctuation | 9/9 | 8/9 | 9/9 |
+| accents stripped | 9/9 | 6/9 | 5/9 |
+| one transposition in the longest content word | **8/9** | **7/9** | **5/9** |
+| leetspeak (4/3/1/0/5) | **9/9** | **7/9** | **5/9** |
+
+The typing layer (`fold-chat-typing.js`): leetspeak decoded by a declared per-script table in tokens that mix letters and digits; an
+out-of-lexicon word read as its UNIQUE one-edit neighbour in the language's received lexicon (UD POS-prior forms, function words, the table),
+transpositions asked first; a closed-class form and a name the title door resolved are never touched; the reading is used only when it
+changed something and its frame resolves; every change is disclosed in the turn's trace ("I read 'M0z4rt' as 'Mozart'."), and the person's
+words are never rewritten. Falsifiers: `fold-chat-typing.test.mjs` (a name no lexicon knows — "Zelda" — is never corrected).
+
+What still breaks, by cause:
+- **A misspelled NAME** ("Mzoart", "Ciare", "Mhaal", "pneicilina"): names are mostly absent from a POS lexicon and the title door matches exact
+  titles and redirects only. The fix lives at the door: ask the encyclopedia's own spelling suggestion when a run does not resolve.
+- **Accentless names** ("Espana", "Bresil", "futbol", "Prejuges"): the stub door holds only accented titles; production depends on the
+  encyclopedia's own accentless redirects (common, not universal) — unmeasured here.
+- **A typo that is another real word** ("prejuicio" → "perjuicio" is a Spanish word): no lexicon can tell; left as typed, as it must be.
+- **French leet/typo on words the fr prior lacks** ("terrain", "joueurs" decode fine; "capitale" with 1 → i|l ambiguity): partly the
+  ambiguity rule refusing to guess.

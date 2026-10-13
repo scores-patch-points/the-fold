@@ -122,7 +122,7 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
   // "Alexander Fleming" — and is then trimmed only from the RIGHT, never below two words of a multi-word name ("Alexander Fleming FRS"
   // is "Alexander Fleming"; "the retired plumber Jane Paris" is "Jane Paris" or nothing — never the city Paris).
   const variantsOf = (f) => {
-    const tk = tokensOf(f.text), out = [{ text: f.text, from: 0, to: f.text.length }];
+    const tk = tokensOf(f.text, frame.lang || null), out = [{ text: f.text, from: 0, to: f.text.length }];
     let h = 0;
     while (h < tk.length && (closedV(tk[h].fold) || ((r) => r != null && r < 8)(posRankOf(tk[h].text, frame.lang || null)))) h++;
     if (h >= tk.length) return out;
@@ -157,9 +157,9 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
 // ── choosing ─────────────────────────────────────────────────────────────────────────────────────────────────────
 function makeBearing(frame, code, fw) {
   const closed = closedClassOf(fw, code);
-  const stems = (s) => tokensOf(s).map((t) => stemOf(t.fold, code));
+  const stems = (s) => tokensOf(s, code).map((t) => stemOf(t.fold, code));
   const refSeqs = frame.referents.map((r) => asArr(r.aliases).length ? r.aliases.map(stems) : [stems(r.surface), stems(r.title)]);
-  const refContent = new Set(frame.referents.flatMap((r) => asArr(r.aliases).flatMap((a) => tokensOf(a).filter((t) => !closed(t.fold)).map((t) => stemOf(t.fold, code)))));
+  const refContent = new Set(frame.referents.flatMap((r) => asArr(r.aliases).flatMap((a) => tokensOf(a, code).filter((t) => !closed(t.fold)).map((t) => stemOf(t.fold, code)))));
   const contains = (hay, seq) => { for (let i = 0; i + seq.length <= hay.length; i++) if (seq.every((s, k) => hay[i + k] === s)) return true; return false; };
   return (entry) => {
     const hay = stems(entry.row.sentence);
@@ -175,7 +175,7 @@ function makeBearing(frame, code, fw) {
 export function dominantRow(rows, frame, code, fw) {
   if (!Array.isArray(rows) || rows.length < 2) return null;
   const closed = closedClassOf(fw, code);
-  const stemsOf = (t) => tokensOf(t).filter((x) => !closed(x.fold)).map((x) => stemOf(x.fold, code));
+  const stemsOf = (t) => tokensOf(t, code).filter((x) => !closed(x.fold)).map((x) => stemOf(x.fold, code));
   // only the ask's SCOPE words count — predicate, attribute and counted stems. A referent's own name is never a scope word: a row that
   // spells the same entity longer ("Wolfgang Amadeus Mozart" for "Mozart") says no more of what was asked (panel 4, second re-read).
   const ask = new Set([
@@ -223,7 +223,7 @@ const finish = (clause, row) => {
 function firstBoundary(text, from, G) {
   let at = -1;
   for (let i = Math.max(0, from); i < text.length; i++) if (",;:(（，；".includes(text[i])) { at = i; break; }
-  for (const t of tokensOf(text)) if (t.start >= from && G.clauseWords.includes(t.fold) && (at < 0 || t.start < at)) { at = t.start; break; }
+  for (const t of tokensOf(text, G.lang || null)) if (t.start >= from && G.clauseWords.includes(t.fold) && (at < 0 || t.start < at)) { at = t.start; break; }
   return at;
 }
 
@@ -254,7 +254,7 @@ export function realise(row, frame, { fw, lang }) {
       return finish(text.slice(0, end), row);
     }
     const closed = closedClassOf(fw, lang);
-    const toks = tokensOf(text);
+    const toks = tokensOf(text, lang);
     const gapless = (a, b) => /^\s+$/.test(text.slice(a.end, b.start));
     const fi = toks.findIndex((t) => t.start >= fa);
     if (fi <= 0) return text;
@@ -309,6 +309,8 @@ async function run({ question, lang, passages, now, deps }) {
   }
 
   const tv = createTurnVoid(frame);
+  // SURVIVE TYPING: a second reading of the ask was used — every word read differently is disclosed, never silent (fold-chat-typing.js)
+  if (Array.isArray(frame.readAs) && frame.readAs.length) tv.note("read-as", { changes: frame.readAs.map((c) => ({ typed: c.typed, read: c.read, how: c.how })) });
   const bearing = makeBearing(frame, code, fw);
   const searched = [];
   const sourcesSeen = [];

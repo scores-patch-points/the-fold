@@ -22,7 +22,7 @@
 //   verdict      { standing, filler?, survived:[…], unmeasured:[…], refuters:[…] }
 //   closed       — appended by close() only
 
-const KINDS = Object.freeze(["ask", "referents", "frame-gap", "read", "widen", "candidate", "no-witness", "past-only", "probes", "probe-result", "verdict"]);
+const KINDS = Object.freeze(["ask", "read-as", "referents", "frame-gap", "read", "widen", "candidate", "no-witness", "past-only", "probes", "probe-result", "verdict"]);
 const STANDINGS = Object.freeze(["survived", "contested", "refuted", "unmeasured"]);
 const LOCAL_KINDS = Object.freeze(["rival-holder", "negation", "later-date"]);
 
@@ -72,6 +72,9 @@ export const TRACE_TEMPLATES = Object.freeze({
     ? [{ say: `It looks like a question of fact: ${askPhrase(d)}.` }, { say: "I can't answer that from memory, so I'm reading sources." }]
     : [{ say: "I can't tell what single fact is being asked." }]),
   referents: () => [],
+  // SURVIVE TYPING (fold-chat-typing.js): a word read differently from how it was typed is said, in the app's own voice, never silent
+  "read-as": (d) => (Array.isArray(d.changes) && d.changes.length
+    ? [{ say: `I read ${andList(d.changes.map((c) => `${q(c.typed)} as ${q(c.read)}`))}.` }] : []),
   "frame-gap": (d) => [{ say: GAP_SAY[d.kind] || GAP_SAY.frame_unread }],
   read: (d) => (d.found === false && d.source
     ? [{ say: `I read ${d.source.title || "a page"}${site(d.source)}, but no sentence in it states the answer.` }] : []),

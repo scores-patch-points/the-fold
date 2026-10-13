@@ -96,6 +96,33 @@ export const CASES = [
 // the control: a language with function words but no table never guesses (bind and turn)
 export const CONTROL = { lang: "ru", ask: "Где родился Моцарт?", titles: { "моцарт": "Моцарт, Вольфганг Амадей" }, s: "Вольфганг Амадей Моцарт родился в Зальцбурге.", expect: "∅" };
 
+// PERTURBATION ARMS (PREREG.md §Version 3): only the person's ask is perturbed, never a source. Deterministic.
+const contentWords = (ask, lang) => { const fw = functionWordsOf(lang) || new Set(); return (ask.match(/[\p{L}\p{N}]+/gu) || []).filter((w) => w.length >= 3 && !fw.has(w.toLowerCase())); };
+export const ARMS = {
+  asWritten: (a) => a,
+  noAccent: (a) => a.normalize("NFD").replace(/\p{M}/gu, "").normalize("NFC"),
+  typo: (a, lang) => { const w = contentWords(a, lang).sort((x, y) => y.length - x.length)[0]; if (!w || w.length < 4) return a; const t = w[0] + w[2] + w[1] + w.slice(3); return a.replace(w, t); },
+  leet: (a, lang) => { const L = { a: "4", e: "3", i: "1", o: "0", s: "5" }; let out = a; for (const w of contentWords(a, lang)) out = out.replace(w, w.replace(/[aeios]/gi, (c) => L[c.toLowerCase()])); return out; },
+  caps: (a) => a.toUpperCase().replace(/[¿?¡!.,]/g, "").trim(),
+};
+export async function runArms() {
+  return withGrammars({ es: ES, fr: FR }, async () => {
+    const table = {};
+    for (const [arm, fn] of Object.entries(ARMS)) {
+      table[arm] = { en: [0, 0], es: [0, 0], fr: [0, 0], pos: { en: [0, 0], es: [0, 0], fr: [0, 0] }, falls: [] };
+      for (const c of CASES) for (const lang of ["en", "es", "fr"]) {
+        const k = c[lang]; if (!k) continue;
+        const kk = { ...k, ask: fn(k.ask, lang) };
+        let r; try { r = c.level === "turn" ? await turnCase(lang, kk) : await bindCase(lang, kk); } catch (e) { r = { verdict: "CRASH" }; }
+        const held = ok(r.verdict, k.expect);
+        table[arm][lang][1]++; if (held) table[arm][lang][0]++; else table[arm].falls.push(`${lang} ${c.id} :: ${kk.ask} → ${r.verdict}`);
+        if (k.expect !== "∅") { table[arm].pos[lang][1]++; if (held) table[arm].pos[lang][0]++; }      // positive cases: an answer is expected
+      }
+    }
+    return table;
+  });
+}
+
 export async function run() {
   return withGrammars({ es: ES, fr: FR }, async () => {
     const rows = [];
@@ -115,7 +142,11 @@ export async function run() {
   });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === `file://${process.argv[1]}` && process.argv.includes("--arms")) {
+  const t = await runArms();
+  for (const [arm, v] of Object.entries(t)) console.log(`${arm.padEnd(10)} all: en ${v.en[0]}/${v.en[1]}  es ${v.es[0]}/${v.es[1]}  fr ${v.fr[0]}/${v.fr[1]}   positive: en ${v.pos.en[0]}/${v.pos.en[1]}  es ${v.pos.es[0]}/${v.pos.es[1]}  fr ${v.pos.fr[0]}/${v.pos.fr[1]}`);
+  if (process.argv.includes("--falls")) for (const [arm, v] of Object.entries(t)) for (const f of v.falls) console.log(`  [${arm}] ${f}`);
+} else if (import.meta.url === `file://${process.argv[1]}`) {
   const { rows, control } = await run();
   if (process.argv.includes("--json")) { console.log(JSON.stringify({ rows, control }, null, 1)); }
   else {

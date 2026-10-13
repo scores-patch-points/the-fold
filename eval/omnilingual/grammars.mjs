@@ -5,9 +5,14 @@ const months = { es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "ju
   fr: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"] };
 // VERSION 2 (PREREG.md §Version 2): new declared fields only — a light suffix stemmer and euphonic letters; no version-1 entry changed.
 const ES_V2 = { minStem: 3, suffixes: ["aciones", "amiento", "imiento", "adoras", "adores", "ancias", "ación", "adora", "ador", "ancia", "mente", "ables", "ibles", "istas", "able", "ible", "ista", "osos", "osas", "oso", "osa", "ados", "adas", "idos", "idas", "ado", "ada", "ido", "ida", "ando", "iendo", "aron", "ieron", "ará", "erá", "irá", "ió", "ó", "as", "es", "os", "a", "e", "o", "s"] };
+// VERSION 3 (PREREG.md §Version 3): accented forms that would fold into a different closed-class word — kept only when written with the accent
+const ES_V3 = { contrastive: ["qué", "quién", "quiénes", "cuál", "cuáles", "dónde", "cuándo", "cuánto", "cuántos", "cuántas", "cómo", "él", "sí", "más", "tú", "mí", "sé", "dé"] };
+const FR_V3 = { contrastive: ["né", "née", "nés", "nées", "où", "à", "là", "dû"] };
+// VERSION 4 (PREREG.md §Version 4): the declared Latin-script leet table (same for es and fr; English carries its own in GRAMMAR.en)
+const LEET = { "4": ["a"], "3": ["e"], "1": ["i", "l"], "0": ["o"], "5": ["s"], "7": ["t"], "8": ["b"], "@": ["a"], "$": ["s"] };
 const FR_V2 = { minStem: 3, suffixes: ["issements", "issement", "ations", "ation", "euses", "euse", "ements", "ement", "ités", "ité", "ives", "ive", "ifs", "if", "ées", "ée", "és", "é", "es", "e", "s", "x"], euphonic: ["t"] };
 export const ES = Object.freeze({
-  ...ES_V2,
+  ...ES_V2, ...ES_V3, leet: LEET,
   giver: "the author's reading of Spanish closed classes (2026-10-13); declared, not measured",
   interrogatives: F([{ words: ["cuántos"], slot: "quantity" }, { words: ["cuántas"], slot: "quantity" }, { words: ["cuánto"], slot: "quantity" },
     { words: ["qué", "año"], slot: "time" }, { words: ["quién"], slot: "person" }, { words: ["quiénes"], slot: "person" },
@@ -38,7 +43,7 @@ export const ES = Object.freeze({
   year: Object.freeze({ minDigits: 3, maxDigits: 4 }), maxRun: 4,
 });
 export const FR = Object.freeze({
-  ...FR_V2,
+  ...FR_V2, ...FR_V3, leet: LEET,
   giver: "the author's reading of French closed classes (2026-10-13); declared, not measured",
   interrogatives: F([{ words: ["combien"], slot: "quantity" }, { words: ["quelle", "année"], slot: "time" }, { words: ["qui"], slot: "person" },
     { words: ["où"], slot: "place" }, { words: ["quand"], slot: "time" }, { words: ["quelle"], slot: "thing" }, { words: ["quel"], slot: "thing" }, { words: ["que"], slot: "thing" }]),

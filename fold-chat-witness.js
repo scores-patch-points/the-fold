@@ -78,7 +78,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   if (!Array.isArray(frame.referents) || !frame.referents.length) return null;
   const text = sentence.text;
   const closed = closedClassOf(fw, L);
-  const toks = tokensOf(text).map((t) => ({ ...t, stem: stemOf(t.fold, L) }));
+  const toks = tokensOf(text, L).map((t) => ({ ...t, stem: stemOf(t.fold, L) }));
   if (!toks.length) return null;
   const attrs = Array.isArray(frame.attributes) ? frame.attributes : [];
   // An ATTRIBUTE is said by an occurrence its own noun phrase does not ORDINAL-qualify: "the FOURTH and unofficial capital of Brazil is
@@ -99,18 +99,18 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // A DERIVATIVE PAGE (the first live gate run, 2026-10-13: "who wrote Pride and Prejudice" committed a sentence about "Pride and
   // Prejudice and Zombies"): when the page the sentence was read on has a title that CONTAINS the referent's name and EXTENDS it, and the
   // sentence continues the occurrence with the same extending words, the occurrence belongs to the longer entity, not to the referent.
-  const pageTokObjs = page ? tokensOf(String(page).replace(/\s*\([^)]*\)\s*$/u, "")) : null;
+  const pageTokObjs = page ? tokensOf(String(page).replace(/\s*\([^)]*\)\s*$/u, "", L)) : null;
   const pageToks = pageTokObjs ? pageTokObjs.map((t) => stemOf(t.fold, L)) : null;
   const sameStems = (x, y) => x.length === y.length && x.every((st, k) => st === y[k]);
   // the page IS the ask's own referent (its resolved title): its lead names it by the title, and that is no derivative of anything
-  const stemsOfTitle = (t) => tokensOf(String(t).replace(/\s*\([^)]*\)\s*$/u, "")).map((x) => stemOf(x.fold, L));
+  const stemsOfTitle = (t) => tokensOf(String(t).replace(/\s*\([^)]*\)\s*$/u, "", L)).map((x) => stemOf(x.fold, L));
   // the page IS a referent when its title equals a referent's resolved title, or RESOLVES to it (a redirect: "Microsoft Corporation")
   const pageIsReferent = !!pageToks && frame.referents.some((r) => r && r.title && (sameStems(stemsOfTitle(r.title), pageToks) || (pageEntity && sameStems(stemsOfTitle(r.title), stemsOfTitle(pageEntity)))));
   // the words of the ASK itself (its attribute and relation stems): a longer title made of them is the ask's own phrase, not another
   // entity ("Attack on Pearl Harbor" for "when was Pearl Harbor attacked", "President of France" for "who is the president of France")
   // …including every referent's own words: "Longest Rivers in Africa" is made of the ask's relation and BOTH its referents
   const askedStems = new Set([...(frame.attributes || []).flatMap((x) => x.stems || []), ...(frame.predicate || []).map((x) => x.stem),
-    ...frame.referents.flatMap((r) => [r.surface, r.title, ...((Array.isArray(r.aliases) ? r.aliases : []))].filter(Boolean).flatMap((n) => tokensOf(String(n)).map((t) => stemOf(t.fold, L))))]);
+    ...frame.referents.flatMap((r) => [r.surface, r.title, ...((Array.isArray(r.aliases) ? r.aliases : []))].filter(Boolean).flatMap((n) => tokensOf(String(n), L).map((t) => stemOf(t.fold, L))))]);
   const partOfLongerTitle = (o, seqs) => {
     if (!pageToks || pageToks.length < 2 || pageIsReferent) return false;
     for (const seq of seqs) {
@@ -133,16 +133,16 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     const seqs = [], content = new Set();
     for (const a0 of names) {
       const a = String(a0 ?? "").replace(/\s*\([^)]*\)\s*$/u, "");          // "Jaws (film)" is Jaws: the qualifier is the encyclopedia's, not the referent's (MF18)
-      const at = tokensOf(a);
+      const at = tokensOf(a, L);
       if (!at.length) continue;
       seqs.push(at.map((t) => stemOf(t.fold, L)));
       for (const t of at) if (!closed(t.fold)) content.add(stemOf(t.fold, L));
     }
     // `titleLen`: the referent's FULL resolved name in tokens — an occurrence shorter than it is a stem of the name, not the referent
-    const titleLen = tokensOf(String(r.title || r.surface || "").replace(/\s*\([^)]*\)\s*$/u, "")).length || 1;
+    const titleLen = tokensOf(String(r.title || r.surface || "").replace(/\s*\([^)]*\)\s*$/u, "", L)).length || 1;
     return { seqs, content, titleLen, occ: seqs.flatMap((s) => occurrences(toks, text, s)).filter((o) => !partOfLongerTitle(o, seqs)) };
   });
-  const topicStems = topic ? tokensOf(String(topic)).map((t) => stemOf(t.fold, L)) : null;
+  const topicStems = topic ? tokensOf(String(topic), L).map((t) => stemOf(t.fold, L)) : null;
   const carriedByTopic = (g) => !!topicStems && g.seqs.some((s) => containsSeq(topicStems, s));
   // DECLARED (2026-10-11, giver: the author — the real-web holder sentence):
   // a ROLE page ("King Charles III …", "President of the United States")
@@ -167,7 +167,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // Residual, disclosed: a page for another country's king titled only by his name is not caught here.
   const sentStems = new Set(toks.map((t) => t.stem));
   const refStemsAll = new Set(groups.flatMap((g) => [...g.content]));
-  const titleToks = topic ? tokensOf(String(topic)) : [];
+  const titleToks = topic ? tokensOf(String(topic), L) : [];
   const governsSet = new Set(G.governs || []);
   // "<role word> of X" with X not the referent's own: the text declares ANOTHER anchor for the same role
   const roleWords = new Set([...roleStems, ...attrs.flatMap((a) => a.stems)]);      // the role may be the ask's attribute ("king OF the UK")
@@ -193,7 +193,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   if (!groups.every((g) => g.occ.length || carriedByTopic(g) || titleCarriesRole)) return null;
   // An ATTRIBUTE said in the sentence anchors it when the page's own title carries the anchor (2026-10-12): "The current prime
   // minister is Andy Burnham" on the page "Prime Minister of the United Kingdom" — the role is said, the UK is the page.
-  const titleIsRolePage = !!topic && tokensOf(String(topic).replace(/\s*\([^)]*\)\s*$/u, "")).filter((t) => !closed(t.fold)).every((t) => { const st = stemOf(t.fold, L); return refStemsAll.has(st) || attrs.some((a) => a.stems.includes(st)) || predStems.includes(st); });
+  const titleIsRolePage = !!topic && tokensOf(String(topic).replace(/\s*\([^)]*\)\s*$/u, "", L)).filter((t) => !closed(t.fold)).every((t) => { const st = stemOf(t.fold, L); return refStemsAll.has(st) || attrs.some((a) => a.stems.includes(st)) || predStems.includes(st); });
   const attrAnchors = attrs.length > 0 && attrSaid && titleIsRolePage && groups.every((g) => g.occ.length || carriedByTopic(g));
   if (!groups.some((g) => g.occ.length) && !titleCarriesRole && !attrAnchors) return null;
   if (declaresOtherAnchor(toks, text)) return null;   // "the prime minister of Australia is …" for Canada — even beside a mention of Canada (MF12)
@@ -401,7 +401,9 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // Mozart was born in Augsburg", "Mozart, whose father was born in Augsburg, …"): for a place ask WITH a relation, when the anchor is
     // mentioned in the relation's clause only as a possessor ("X's N", "N of X") the clause is about N; a relative clause opened by
     // "whose" has its own subject, not the antecedent. HEAD answered all of these with the father's place.
-    if (frame.slot === "place" && relStems.length && !topic) {
+    // (every place ask, with or without a relation word: an ask whose relation was lost — "Ou est ne Mozart", "né" typed without its accent —
+    // must not take the father's place either; the omnilingual noAccent arm committed "Augsbourg")
+    if (frame.slot === "place" && !topic) {
       const own = [];
       groups.forEach((g) => g.occ.forEach((o) => { if (o.to < ci) own.push(o); }));
       const whoseClause = c0 > 0 && (G.possessiveRelatives || []).includes(toks[c0 - 1].fold);

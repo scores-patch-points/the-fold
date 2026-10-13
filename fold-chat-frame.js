@@ -65,14 +65,18 @@ const EXTRA_GRAMMARS = new Map();
 const FOLDED = new WeakMap();
 function foldTable(t) {
   if (FOLDED.has(t)) return FOLDED.get(t);
-  const RAW = new Set(["giver", "possessiveSuffix", "negationSuffix"]);
-  const f = (v) => (typeof v === "string" ? caseless(v) : v);
+  const RAW = new Set(["giver", "possessiveSuffix", "negationSuffix", "contrastive"]);
+  const keep = Array.isArray(t.contrastive) ? new Set(t.contrastive.map(lowerOnly)) : null;
+  const f = (v) => (typeof v === "string" ? (keep && keep.has(lowerOnly(v)) ? lowerOnly(v) : caseless(v)) : v);
+  const both = (arr) => [...new Set([...arr.map(f), ...arr.filter((w) => typeof w === "string" && keep && keep.has(lowerOnly(w))).map(caseless)])];
   const out = {};
   for (const [k, v] of Object.entries(t)) {
     if (RAW.has(k)) out[k] = v;
-    else if (k === "interrogatives") out[k] = Object.freeze(v.map((i) => Object.freeze({ ...i, words: i.words.map(f) })));
-    else if (Array.isArray(v)) out[k] = Object.freeze(v.map(f));
-    else if (v && typeof v === "object" && !Array.isArray(v)) out[k] = Object.freeze(Object.fromEntries(Object.entries(v).map(([a, b]) => [a, Array.isArray(b) ? b.map(f) : b])));
+    // a contrastive word also answers to its PLAIN fold (a missing accent is a typo, read as before); only the written accent is precise
+    else if (k === "interrogatives") out[k] = Object.freeze([...v.map((i) => Object.freeze({ ...i, words: i.words.map(f) })),
+      ...v.filter((i) => keep && i.words.some((w) => keep.has(lowerOnly(w)))).map((i) => Object.freeze({ ...i, words: i.words.map(caseless) }))]);
+    else if (Array.isArray(v)) out[k] = Object.freeze(both(v));
+    else if (v && typeof v === "object" && !Array.isArray(v)) out[k] = Object.freeze(Object.fromEntries(Object.entries(v).map(([a, b]) => [a, Array.isArray(b) ? both(b) : b])));
     else out[k] = typeof v === "string" ? f(v) : v;
   }
   const frozen = Object.freeze(out);
@@ -128,6 +132,8 @@ export const GRAMMAR = Object.freeze({
     // English-only forms the binder used to spell in code (moved 2026-10-13 for the omnilingual falsification): the month that is also a
     // modal ("May 1945" vs "might"), the number sign ("No. 1"), the perfect copula ("has BEEN king"), the possessive suffix ("Mozart'S
     // father"), the possessive relative ("WHOSE father"), the negating suffix ("didN'T")
+    // the Latin-script leet table (declared; "1" reads as i or l): only a token mixing letters and digits is decoded (fold-chat-typing.js)
+    leet: Object.freeze({ "4": ["a"], "3": ["e"], "1": ["i", "l"], "0": ["o"], "5": ["s"], "7": ["t"], "8": ["b"], "@": ["a"], "$": ["s"] }),
     modalMonths: Object.freeze(["may"]),
     numberSigns: Object.freeze(["no"]),
     perfectCopulas: Object.freeze(["been"]),
@@ -212,14 +218,21 @@ export function expandAskAbbreviations(question) {
 // a possessive or contracted tail ('s 're 'll 've 'd 'm) is cut off — it is a clitic, not a word — so "Australia's" is the token "Australia".
 const WORD = /[\p{L}\p{N}]+(?:[.'’,-][\p{L}\p{N}]+)*/gu;
 const CLITIC = /['’](?:s|re|ll|ve|d|m)$/iu;
-export function tokensOf(text) {
+// CONTRASTIVE ACCENTS (the omnilingual falsification, version 3): a language may declare accented forms that fold into a DIFFERENT
+// closed-class word (French "né" → "ne", "où" → "ou"; Spanish "qué" → "que"). Only a token written WITH that accent keeps it in its fold;
+// every other token folds as before, so a missing accent (a typo) reads exactly as it always did — this adds precision, never strictness.
+const lowerOnly = (t) => String(t ?? "").normalize("NFC").toLocaleLowerCase("und");
+const contrastiveOf = (lang) => { const t = lang ? (EXTRA_GRAMMARS.get(lang) || GRAMMAR[lang]) : null; return t && Array.isArray(t.contrastive) ? new Set(t.contrastive.map(lowerOnly)) : null; };
+export function foldIn(word, lang = null) { const keep = contrastiveOf(lang); const w = lowerOnly(word); return keep && keep.has(w) ? w : caseless(word); }
+export function tokensOf(text, lang = null) {
+  const keep = contrastiveOf(lang);
   const s = String(text ?? ""), out = [];
   let m; WORD.lastIndex = 0;
   while ((m = WORD.exec(s)) !== null) {
     let end = m.index + m[0].length, t = m[0];
     if (s[end] === "." && t.includes(".")) { end++; t += "."; }              // "U.S." keeps its closing dot; "end." does not
     else if (CLITIC.test(t) && t.length > 3) { t = t.replace(CLITIC, ""); end = m.index + t.length; }
-    out.push({ text: t, start: m.index, end, fold: caseless(t) });
+    out.push({ text: t, start: m.index, end, fold: keep && keep.has(lowerOnly(t)) ? lowerOnly(t) : caseless(t) });
   }
   return out;
 }
@@ -254,7 +267,8 @@ function dropE(w) {
 export function closedClassOf(fw, lang = "en") {
   const G = grammarOf(lang);
   // the table's auxiliaries, negators and EUPHONIC letters (French "t" of "a-t-il") are closed class; the negating suffix is the table's
-  const extra = new Set(G ? [...G.auxiliaries, ...G.negation, ...(G.euphonic || [])] : []);
+  const extra = new Set(G ? [...G.auxiliaries, ...G.negation, ...(G.euphonic || []),
+    ...(G.contrastive ? [...(G.clauseWords || []), ...(G.subordinators || []), ...(G.determiners || []), ...(G.prepositions || []), ...(G.coordinators || []), ...(G.governs || []), ...G.interrogatives.flatMap((i) => i.words)] : [])] : []);
   const set = fw instanceof Set ? fw : new Set();
   const negSuf = G && G.negationSuffix ? new RegExp(`${G.negationSuffix}$`, "u") : null;
   const one = (f) => set.has(f) || extra.has(f) || (!!negSuf && negSuf.test(f));
@@ -270,7 +284,7 @@ const gapFrame = (said, lang, slot, kind) => ({ ok: false, lang: lang ?? null, s
 function agrees(surfaceToks, res, closed, lang) {
   const content = surfaceToks.filter((t) => !closed(t.fold));
   if (content.length < 2) return true;
-  const have = new Set(tokensOf(res.title).map((t) => stemOf(t.fold, lang)));
+  const have = new Set(tokensOf(res.title, lang).map((t) => stemOf(t.fold, lang)));
   return content.some((t) => have.has(stemOf(t.fold, lang)));
 }
 
@@ -284,12 +298,28 @@ const aliasesOf = (surface, res) => {
 };
 
 /** Read the grammar of an ask. Never throws: every failure is a typed gap on the returned Frame. */
-export async function askFrame(question, { fw = null, lang = null, resolveTitles = null } = {}) {
+// SURVIVE TYPING (fold-chat-typing.js): the ask is framed as typed; when a SECOND READING of it (leetspeak decoded, an out-of-lexicon word
+// read as its unique one-edit neighbour, names the title door resolved never touched) changes something and its own frame resolves, that
+// frame is used and every change is disclosed (`readAs`). The person's words (`said`) are never rewritten. Additive: an ask that frames
+// cleanly as typed with nothing to read differently is returned exactly as before.
+export async function askFrame(question, opts = {}) {
+  const first = await askFrameOnce(question, opts);
+  const lang = opts.lang;
+  if (!lang || !grammarOf(lang) || !(opts.fw instanceof Set)) return first;
+  const { readingOf } = await import("./fold-chat-typing.js");
+  const protect = new Set((first && first.ok ? first.referents : []).flatMap((r) => tokensOf(r.surface, lang).map((t) => t.fold)));
+  const reading = readingOf(question, lang, { fw: opts.fw, protect });
+  if (!reading.changes.length) return first;
+  const second = await askFrameOnce(reading.text, opts);
+  if (!second || !second.ok) return first;
+  return { ...second, said: String(question ?? ""), readAs: reading.changes };
+}
+async function askFrameOnce(question, { fw = null, lang = null, resolveTitles = null } = {}) {
   const said = String(question ?? "");
   const G = lang ? grammarOf(lang) : null;
   if (!G || !(fw instanceof Set) || !fw.size) return gapFrame(said, lang, null, "no_grammar_for_language");
   const closed = closedClassOf(fw, lang);
-  const toks = tokensOf(said);
+  const toks = tokensOf(said, lang);
 
   // 1. the interrogative phrase, at the front (after at most one function word: "in what year")
   const phrases = [...G.interrogatives].sort((a, b) => b.words.length - a.words.length);

@@ -41,6 +41,19 @@ const EN_FW = new Set(FUNCTION_WORDS.en || []);
 export function salienceOf(form, lang = null) { const P = priorOf(lang); if (!P) return null; const d = P[fold(form)]; return d == null ? null : d / 9; }
 
 /** Is this form a NAME (proper noun) in the prior — the thing an ask is usually about? */
+/** Is a folded form in the language's received lexicon (its POS prior saw it as a content word)? */
+export function inLexicon(foldedForm, lang = null) { const P = priorOf(lang); return !!P && P[foldedForm] != null; }
+/** The letters the language's received lexicon is written in (for edit-distance readings), cached per language. */
+const ALPHA = new Map();
+export function alphabetOf(lang = null) {
+  const key = lang || "en";
+  if (ALPHA.has(key)) return ALPHA.get(key);
+  const P = priorOf(lang), set = new Set();
+  if (P) for (const k of Object.keys(P)) for (const c of k) if (/\p{L}/u.test(c)) set.add(c);
+  const a = [...set];
+  ALPHA.set(key, a);
+  return a;
+}
 export function isName(form, lang = null) { const P = priorOf(lang); return !!P && (P[fold(form)] || 0) >= 8; }
 
 /**
