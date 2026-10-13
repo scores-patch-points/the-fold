@@ -135,7 +135,7 @@ test("LIVE-12 OMNILINGUAL: every language fact is a GRAMMAR table; a language wi
   const s = "Wolfgang Amadeus Mozart was born on 27 January 1756 to Leopold Mozart, at Getreidegasse 9 in Salzburg.";
   assert.equal(bindSentence({ text: s, start: 0, end: s.length }, { ...f, lang: "xx" }, { fw, lang: "xx" }), null);
   // GRAMMAR is frozen, so the table-absent path is pinned structurally: the alternatives rule is gated on the table's own field
-  assert.ok(/frame\.slot === "place" && relStems\.length && G\.containment/.test(src), "place alternatives fire only where the language declares containment prepositions");
+  assert.ok(/frame\.slot === "place" && \(relStems\.length \|\| side === "right"\) && G\.containment/.test(src), "place alternatives fire only where the language declares containment prepositions");
 });
 
 test("LIVE-13 a described passive agent still names its person ('by the Scottish physician Alexander Fleming'); a bare description is still not one", async () => {
@@ -249,4 +249,13 @@ test("LIVE-23 one row says every word of the ask another says AND more: 'on the 
   assert.ok(!(t.contest && t.contest.length), "the narrower sentence is no rival: " + JSON.stringify(t.contest && t.contest.map((c) => c.filler && c.filler.text)));
   assert.ok(t.answer && /\b11\b/.test(t.answer.filler.text), JSON.stringify(t.answer && t.answer.filler));
   assert.ok(t.answer.unmeasured.some((u) => /53/.test(u)), "the dominated row is disclosed, not hidden: " + JSON.stringify(t.answer.unmeasured));
+});
+
+test("LIVE-24 a relation-less PLACE ask takes the containment phrase of the copula's complement: 'on the right bank of the Yamuna in … Agra'", async () => {
+  const f = await frameOf("Where is the Taj Mahal?", { "taj mahal": "Taj Mahal" });
+  const alts = (x) => { const r = bind(f, x, { page: "Taj Mahal" }); return r && r.filler ? (r.filler.alts || [r.filler]).map((a) => a.text) : []; };
+  assert.deepEqual(alts("The Taj Mahal is an ivory-white marble mausoleum on the right bank of the river Yamuna in the Indian city of Agra, Uttar Pradesh."), ["Indian city of Agra"]);
+  assert.deepEqual(alts("The Taj Mahal is located in Agra, Uttar Pradesh, India."), ["Agra"]);
+  assert.deepEqual(alts("The Taj Mahal is a famous monument."), [], "no containment phrase, no place");
+  assert.deepEqual(alts("In 1983, the Taj Mahal was designated as a UNESCO World Heritage Site for being the jewel of Islamic art in India."), [], "a sentence about the designation does not say where it is");
 });

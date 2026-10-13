@@ -356,8 +356,10 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // A candidate after an indefinite article ("a hospital", "a log cabin") is a common noun, one holding a digit (an address, a
     // year) is never sent to the title door, and one with no name-like word (the received prior: a name, or never seen) is dropped.
     // Every alternative is vetted by the title door downstream; with none, the leading-preposition cut below is the old behaviour.
-    if (frame.slot === "place" && relStems.length && G.containment) {
-      const relIn = toks.findIndex((t, k) => k > ci && relStems.includes(t.stem) && !ordinalBefore(k));
+    // A relation-less place ask ("where is the Taj Mahal") has the copula's complement as its region: "is an ivory-white mausoleum on the
+    // right bank of the Yamuna IN Agra" — the walk starts at the copula and takes the containment phrases of that clause.
+    if (frame.slot === "place" && (relStems.length || side === "right") && G.containment) {
+      const relIn = relStems.length ? toks.findIndex((t, k) => k > ci && relStems.includes(t.stem) && !ordinalBefore(k)) : ci;
       if (relIn >= 0 && !toks.slice(ci + 1, relIn).some((t) => G.clauseWords.includes(t.fold))) {
         const SUB = new Set(G.subordinators || []);
         const CONT = new Set(G.containment), INDEF = new Set(G.indefinites || []), dets = new Set(G.determiners || []), coord = new Set(G.coordinators || []);
