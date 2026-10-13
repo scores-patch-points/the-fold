@@ -74,6 +74,25 @@ const falsifiers = {
     const v = M.votesFromLinks([{ c: ["lumye"], a: ["light"] }], [[[0, 0]]], anchor);
     assert.deepEqual([...v.get("lumye").entries()].sort(), [["ADJ", 0.5], ["NOUN", 0.5]], "ambiguity is preserved, never resolved");
   },
+  heldoutScore(M) {
+    // a model trained on true pairs must score true held-out pairs above the same sentences with their translations deranged
+    const cv = new Map(), av = new Map(), id = (m, w) => { let x = m.get(w); if (x === undefined) { x = m.size + 1; m.set(w, x); } return x; };
+    const pairs = corpus(80).map((p) => ({ c: p.c.split(" "), a: p.a.split(" ") }));
+    const C = pairs.map((p) => Int32Array.from(p.c, (w) => id(cv, w))), A = pairs.map((p) => Int32Array.from(p.a, (w) => id(av, w)));
+    const n = 40, trainA = A.slice(0, n), trainC = C.slice(0, n), testA = A.slice(n), testC = C.slice(n);
+    const model = M.emDirection(trainA, trainC, cv.size, 4).model;
+    const der = M.derange(testA.length, M.rng(2)), shufA = der.map((i) => testA[i]);
+    assert.ok(M.scoreModel(model, testA, testC) > M.scoreModel(model, shufA, testC), "true held-out pairs must be likelier than deranged ones");
+  },
+  clauses(M) {
+    const out = M.pairClauses("Mwen pa vle sa. Li ale kay la; nou rete.", "I do not want that. He went home; we stayed.");
+    assert.equal(out.length, 3, "three clauses on each side pair one to one");
+    assert.equal(out[1].a, "He went home;");
+  },
+  bareElision(M) {
+    assert.deepEqual(M.tokenize("L'ekol n'ap", { bare: true }), ["l", "ekol", "n", "ap"]);
+    assert.deepEqual(M.tokenize("L'ekol", {}), ["l'", "ekol"]);
+  },
   script(M) {
     assert.equal(M.scriptClass("2026"), "NUM");
     assert.equal(M.scriptClass("--"), "PUNCT");
@@ -92,6 +111,9 @@ const MUTANTS = {
   null: [["if (v > (maxNull.get(f)?.get(u) ?? 0)) k.set(u, v); // GATE:null", "if (v >= (maxNull.get(f)?.get(u) ?? 0)) k.set(u, v); // GATE:null"]],
   gateNeverCreates: [["return r.size ? r : null; }; // GATE:gate-never-creates", "return r; }; // GATE:gate-never-creates"]],
   bursty: [["bursty = T < min; // GATE:bursty", "bursty = false; // GATE:bursty"]],
+  heldoutScore: [["ll += Math.log(d); // GATE:score", "ll += 0; // GATE:score"]],
+  clauses: [["  if (cs.length < 2 || as.length < 2) return [{ c, a }];", "  if (true) return [{ c, a }];"]],
+  bareElision: [["out.push(bare ? m[1] : `${m[1]}'`);", "out.push(`${m[1]}'`);"]],
   soft: [["for (const [u, n] of dist) m.set(u, (m.get(u) ?? 0) + (w * n) / tot);", "{ let bu = null, bn = -1; for (const [u, n] of dist) if (n > bn) { bn = n; bu = u; } m.set(bu, (m.get(bu) ?? 0) + w); }"]],
 };
 const src = fs.readFileSync(SRC, "utf8");

@@ -190,3 +190,15 @@ R1 hat row is the untouched one.
   are decided on C1 and C2 dev concatenated (one test, two conditions), the rest as in §4.
 - **Not done, on purpose:** the λ grid is NOT extended (a sharper prior is not evidence the alignments are better), no new
   tagger, no threshold. If R2 is not better than R1 on pcm test, R1 packs ship.
+
+## 12. After R2 (written after R2 calibration numbers; additions, no selection)
+
+- **R2 outcome.** S (clause-level UDHR) and L (held-out λ) were REJECTED on pcm dev by the §4 rule (paired deltas −66 and −99
+  correct tokens against max-T nulls of 42 and 47); M, G1 and I were re-adopted unchanged. R2 therefore equals R1 plus T; pcm
+  numbers are identical to two decimals and hat's too (the UDHR Haitian text has almost no elision). R1 stays the headline.
+- **D (descriptive, post hoc).** Forms that are closed-like by the §4 spread statistic but received no projected label are listed in
+  each pack as `provenance.closedLikeNoLabel`, and the detector "dominant label ∈ closed classes OR closed-like-unlabelled" is
+  scored on pcm test and hat as a function-vs-content detector (precision/recall on gold closed-class tokens;
+  `_work/closedlike-calibration.json`). This was added AFTER seeing that `ka` (gcf) and similar markers are never labelled; it is
+  reported, not tuned, and nothing about the packs' `forms` depends on it.
+- **pap, kea.** Agreement with the Wiktionary packs only (`_work/pap-kea-agreement.json`); no pack emitted (A6).

@@ -51,12 +51,15 @@ const RUN = /[\p{L}\p{M}\p{N}]+(?:['’\-][\p{L}\p{M}\p{N}]+)*/gu;
 const LETTERS = /^\p{L}+$/u;
 /** Held-out guard key: NFKC, lower-cased, letters and digits only. Two sentences with one key are the same sentence. */
 export const foldKey = (s) => String(s ?? "").normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, "");
-/** Folded word tokens. An apostrophe splits only when the left piece is 1–2 letters and the right piece ≥ 2 letters. */
-export function tokenize(s) {
+/**
+ * Folded word tokens. An apostrophe splits only when the left piece is 1–2 letters and the right piece ≥ 2 letters.
+ * `bare` (round 2, T): the left piece drops its apostrophe ("l'ekol" → "l" "ekol"), the shape UD Haitian's gold uses.
+ */
+export function tokenize(s, { bare = false } = {}) {
   const out = [];
   for (const raw of foldText(String(s ?? "")).match(RUN) ?? []) {
     const m = /^([\p{L}]{1,2})['’]([\p{L}\p{M}\p{N}]{2,}.*)$/u.exec(raw);
-    if (m) { out.push(`${m[1]}'`); out.push(m[2]); } else out.push(raw.replace(/’/g, "'"));
+    if (m) { out.push(bare ? m[1] : `${m[1]}'`); out.push(m[2]); } else out.push(raw.replace(/’/g, "'"));
   }
   return out;
 }
@@ -71,10 +74,11 @@ export function scriptClass(form) {
 
 // ── anchors ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 /** POSPrior@1 `forms` → Map folded form → Map UPOS → count (forms that fold together pool). */
-export function anchorIndex(forms) {
+export function anchorIndex(forms, { bare = false } = {}) {
   const idx = new Map();
   for (const [form, dist] of Object.entries(forms ?? {})) {
-    const k = foldText(form);
+    let k = foldText(form);
+    if (bare) { k = k.replace(/['’]+$/u, ""); if (!k) continue; }
     let m = idx.get(k); if (!m) idx.set(k, (m = new Map()));
     for (const [u, n] of Object.entries(dist)) m.set(u, (m.get(u) ?? 0) + n);
   }
@@ -125,20 +129,33 @@ export function galeChurch(srcLens, tgtLens) {
   while (i > 0 || j > 0) { const b = back[i][j]; if (!b) break; out.push([[b[0], i], [b[1], j]]); [i, j] = b; }
   return out.reverse();
 }
-/** Pair two paragraph lists: [{c, a}] — c from the creole side, a from the anchor side. */
-export function pairParagraphs(creoleParas, anchorParas) {
+const clausesOf = (p) => p.split(/(?<=[.;:!?])\s+/u).map((x) => x.trim()).filter(Boolean);
+/** Round 2, S: re-cut one matched paragraph pair at sentence/clause punctuation and align the clauses by the same DP. */
+export function pairClauses(c, a) {
+  const cs = clausesOf(c), as = clausesOf(a);
+  if (cs.length < 2 || as.length < 2) return [{ c, a }];
+  const out = [];
+  for (const [[c0, c1], [a0, a1]] of galeChurch(cs.map((x) => x.length), as.map((x) => x.length))) {
+    if (c1 === c0 || a1 === a0) continue;
+    out.push({ c: cs.slice(c0, c1).join(" "), a: as.slice(a0, a1).join(" ") });
+  }
+  return out.length ? out : [{ c, a }];
+}
+/** Pair two paragraph lists: [{c, a}] — c from the creole side, a from the anchor side. `clauses`: round-2 S. */
+export function pairParagraphs(creoleParas, anchorParas, { clauses = false } = {}) {
   const beads = galeChurch(creoleParas.map((p) => p.length), anchorParas.map((p) => p.length));
   const pairs = [];
   for (const [[c0, c1], [a0, a1]] of beads) {
     if (c1 === c0 || a1 === a0) continue;
-    pairs.push({ c: creoleParas.slice(c0, c1).join(" "), a: anchorParas.slice(a0, a1).join(" ") });
+    const pair = { c: creoleParas.slice(c0, c1).join(" "), a: anchorParas.slice(a0, a1).join(" ") };
+    if (clauses) pairs.push(...pairClauses(pair.c, pair.a)); else pairs.push(pair);
   }
   return pairs;
 }
 
 // ── alignment: IBM-1 with a diagonal prior, EM ───────────────────────────────────────────────────────────────────────
 /** One direction. src/tgt are arrays of Int32Array (ids ≥ 1; 0 is NULL). Returns argmax links tgt position → src position|-1. */
-function emDirection(src, tgt, Vt, lambda) {
+export function emDirection(src, tgt, Vt, lambda) {
   const K = src.length;
   // cells: for sentence k, (m+1)*n parameter indices; index 0 row = NULL
   const cellIndex = new Map();
@@ -200,11 +217,38 @@ function emDirection(src, tgt, Vt, lambda) {
     }
     links[k] = a;
   }
-  return { links, ll };
+  return { links, ll, model: { cellIndex, t, p0, lambda, Vt } };
 }
-function bestDirection(src, tgt, Vt, lambdas) {
+/** Log-likelihood of unseen sentences under a trained direction (unseen cells get the uniform floor 1/Vt). */
+export function scoreModel(model, src, tgt) {
+  const { cellIndex, t, p0, lambda, Vt } = model; const floor = 1 / Math.max(1, Vt);
+  let ll = 0;
+  for (let k = 0; k < src.length; k++) {
+    const s = src[k], tg = tgt[k], m = s.length, n = tg.length;
+    for (let j = 0; j < n; j++) {
+      let z = 0; const w = new Float64Array(m);
+      for (let i = 0; i < m; i++) { w[i] = lambda === 0 ? 1 : Math.exp(-lambda * Math.abs((i + 1) / m - (j + 1) / n)); z += w[i]; }
+      const look = (sid) => { const c = cellIndex.get(sid * (Vt + 1) + tg[j]); return c === undefined ? floor : t[c] || floor; };
+      let d = p0 * look(0);
+      for (let i = 0; i < m; i++) d += (1 - p0) * (w[i] / (z || 1)) * look(s[i]);
+      ll += Math.log(d); // GATE:score
+    }
+  }
+  return ll;
+}
+function bestDirection(src, tgt, Vt, lambdas, heldout = false) {
   let best = null;
-  for (const l of lambdas) { const r = emDirection(src, tgt, Vt, l); if (!best || r.ll > best.ll) best = { ...r, lambda: l }; }
+  for (const l of lambdas) {
+    let score;
+    if (heldout && src.length >= DECLARED.MIN_PAIRS * 2) { // round 2, L: 2-fold held-out likelihood
+      const half = (keep) => [src.filter((_, k) => k % 2 === keep), tgt.filter((_, k) => k % 2 === keep)];
+      const [sa, ta] = half(0), [sb, tb] = half(1);
+      score = scoreModel(emDirection(sa, ta, Vt, l).model, sb, tb) + scoreModel(emDirection(sb, tb, Vt, l).model, sa, ta); // GATE:heldout-ll
+    } else score = null;
+    const r = emDirection(src, tgt, Vt, l);
+    const key = score === null ? r.ll : score;
+    if (!best || key > best.key) best = { ...r, lambda: l, key };
+  }
   return best;
 }
 
@@ -212,14 +256,14 @@ function bestDirection(src, tgt, Vt, lambdas) {
  * Align a pair list. `pairs`: [{c: string[], a: string[]}] (tokens). Returns per pair the intersection links [[ci, ai], …]
  * and the λ each direction chose. `fixLambda` (a {fwd,rev}) skips the grid (used inside the null draws, prereg amendment A1).
  */
-export function alignPairs(pairs, fixLambda = null) {
+export function alignPairs(pairs, fixLambda = null, { heldout = false } = {}) {
   const cv = new Map(), av = new Map();
   const id = (m, w) => { let x = m.get(w); if (x === undefined) { x = m.size + 1; m.set(w, x); } return x; };
   const C = pairs.map((p) => Int32Array.from(p.c, (w) => id(cv, w)));
   const A = pairs.map((p) => Int32Array.from(p.a, (w) => id(av, w)));
   // forward: anchor → creole (each creole token picks an anchor token); reverse: creole → anchor
-  const fwd = fixLambda ? { ...emDirection(A, C, cv.size, fixLambda.fwd), lambda: fixLambda.fwd } : bestDirection(A, C, cv.size, DECLARED.LAMBDAS);
-  const rev = fixLambda ? { ...emDirection(C, A, av.size, fixLambda.rev), lambda: fixLambda.rev } : bestDirection(C, A, av.size, DECLARED.LAMBDAS);
+  const fwd = fixLambda ? { ...emDirection(A, C, cv.size, fixLambda.fwd), lambda: fixLambda.fwd } : bestDirection(A, C, cv.size, DECLARED.LAMBDAS, heldout);
+  const rev = fixLambda ? { ...emDirection(C, A, av.size, fixLambda.rev), lambda: fixLambda.rev } : bestDirection(C, A, av.size, DECLARED.LAMBDAS, heldout);
   const links = pairs.map((_, k) => intersectLinks(fwd.links[k], rev.links[k]));
   return { links, lambda: { fwd: fwd.lambda, rev: rev.lambda } };
 }
@@ -254,7 +298,7 @@ const sumInto = (into, from) => {
   for (const [f, m] of from) { let t = into.get(f); if (!t) into.set(f, (t = new Map())); for (const [u, n] of m) t.set(u, (t.get(u) ?? 0) + n); }
   return into;
 };
-const tokenPairs = (pairs) => pairs.map((p) => ({ c: tokenize(p.c), a: tokenize(p.a) })).filter((p) => p.c.length && p.a.length);
+const tokenPairs = (pairs, conv) => pairs.map((p) => ({ c: tokenize(p.c, conv), a: tokenize(p.a, conv) })).filter((p) => p.c.length && p.a.length);
 
 /** A (form, class) vote survives iff it STRICTLY exceeds the largest vote any shuffled-pairing run gave it. */
 export function keepAgainstNull(real, maxNull) {
@@ -340,8 +384,9 @@ export function applyGates(kept, flags, { gateClosed = false, gateOpen = false }
 export function projectBase(sources, opts = {}) {
   const rand = rng(opts.seed ?? DECLARED.SEED);
   const B = opts.B ?? DECLARED.B;
-  const prepared = sources.map((s) => ({ ...s, tp: tokenPairs(s.pairs) })).filter((s) => s.tp.length >= DECLARED.MIN_PAIRS);
-  const aligned = prepared.map((s) => alignPairs(s.tp));
+  const conv = { bare: !!opts.bare };
+  const prepared = sources.map((s) => ({ ...s, tp: tokenPairs(s.pairs, conv) })).filter((s) => s.tp.length >= DECLARED.MIN_PAIRS);
+  const aligned = prepared.map((s) => alignPairs(s.tp, null, { heldout: !!opts.heldoutLambda }));
   const real = new Map();
   prepared.forEach((s, i) => sumInto(real, votesFromLinks(s.tp, aligned[i].links, s.anchor)));
   // shuffled-pairing nulls: derange each source's anchor side, re-run the pipeline at the real fit's λ (amendment A1)

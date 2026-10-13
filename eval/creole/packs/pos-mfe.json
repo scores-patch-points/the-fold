@@ -1,0 +1,1612 @@
+{
+ "schema": "POSPrior@1",
+ "language": "mfe",
+ "provenance": {
+  "giver": "POS projection (annotation transfer) — word alignment by IBM Model 1 with a diagonal prior, both directions, intersection links; each link adds the anchor form's own UD UPOS distribution (soft vote, ambiguity kept); a (form, class) vote kept only if it strictly exceeds all 199 shuffled-pairing runs of the same pipeline. Anchor taggers: pos-eng (Universal Dependencies — https://raw.githubusercontent.com/UniversalDependencies/UD_English-EWT/master/en_ewt-ud-train.conllu (train split), human-annotated gold treebank); pos-fra (Universal Dependencies — https://github.com/UniversalDependencies/UD_French-GSD (train split), human-annotated gold treebank); pos-spa (Universal Dependencies — https://github.com/UniversalDependencies/UD_Spanish-AnCora (CC BY-SA 4.0) (train split), human-annotated gold treebank). Parallel text: morisienmt-en-cr(train_sample) [498 pairs, MIT (KreolMorisienMT, prajdabre/KreolMorisienMT)]; udhr-mfe~eng [77 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]; udhr-mfe~fra [76 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]; udhr-mfe~spa [77 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]. Builder: eval/creole/pos-projection-run.mjs (pre-registered in eval/creole/POS-PROJECTION-PREREG.md).",
+  "license": "CC BY-SA 4.0 (projection; anchors UD CC BY-SA 4.0; parallel sources as listed — MIT / CC BY 2.0 FR / public domain)",
+  "method": "eval/creole/pos-projection.mjs",
+  "adoptedArms": {
+   "multi": true,
+   "fine": false,
+   "heldoutLambda": false,
+   "gateClosed": true,
+   "gateOpen": false,
+   "identity": true
+  },
+  "round": 2,
+  "parallel": [
+   {
+    "name": "morisienmt-en-cr(train_sample)",
+    "kind": "bitext",
+    "pairs": 498,
+    "licence": "MIT (KreolMorisienMT, prajdabre/KreolMorisienMT)",
+    "anchor": "eng"
+   },
+   {
+    "name": "udhr-mfe~eng",
+    "kind": "udhr",
+    "pairs": 77,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "eng"
+   },
+   {
+    "name": "udhr-mfe~fra",
+    "kind": "udhr",
+    "pairs": 76,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "fra"
+   },
+   {
+    "name": "udhr-mfe~spa",
+    "kind": "udhr",
+    "pairs": 77,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "spa"
+   }
+  ],
+  "heldOutGuard": {
+   "rule": "a training sentence is dropped when its letters+digits key equals any creole sentence of any held-out file",
+   "log": [
+    {
+     "source": "mt_kreolmorisien/en-cr_train_sample",
+     "offered": 498,
+     "droppedHeldOut": 0,
+     "kept": 498
+    }
+   ]
+  },
+  "trainingSize": {
+   "pairs": 728,
+   "creoleTokens": 8132,
+   "forms": 377,
+   "rawForms": 1034
+  },
+  "chance": {
+   "realKeptVotes": 315,
+   "bestShuffledRunKeptVotes": 71,
+   "beatsChance": true
+  },
+  "heldOutCoverage": {
+   "text": "creole side of the language-ID held-out file, read-only, never used to build",
+   "wordTokens": 16001,
+   "covered": 10366,
+   "coverage": 0.648,
+   "commonestMissing": [
+    "avek×75",
+    "dimoun×51",
+    "twa×49",
+    "disip×46",
+    "pran×40",
+    "lesiel×40",
+    "lakaz×33",
+    "letan×32",
+    "devan×31",
+    "ziska×29",
+    "kone×29",
+    "lezot×29",
+    "kote×27",
+    "rant×26",
+    "apel×24",
+    "pu×24",
+    "tann×23",
+    "anvi×22",
+    "lalwa×21",
+    "ankor×21",
+    "fini×20",
+    "kontan×20",
+    "lerwa×20",
+    "pwason×20",
+    "serviter×19"
+   ]
+  },
+  "calibration": {
+   "note": "Per-UPOS precision/recall of the SAME method on languages with gold, at the nearest data size. This is the method's error bar, not a measurement of this language; domain shift is not calibrated. Abstentions count against recall. 95% bootstrap intervals are in packs/CALIBRATION.json.",
+   "condition": "C2",
+   "row": "pcm bitext 189 pairs (pack has 498: beyond the largest calibrated row)",
+   "pcm_ud_naija_test": {
+    "withIdentityFillAccuracyAllTokens": 0.474,
+    "withoutIdentityFill": {
+     "accuracyAll": 0.34,
+     "macroF1": 0.418,
+     "coverage": 0.516
+    },
+    "baselines": {
+     "B0_majorityClass_accuracy": 0.157,
+     "B1_identityLookupOnly": {
+      "accuracyAll": 0.436,
+      "coverage": 0.66,
+      "macroF1": 0.426
+     }
+    },
+    "nonTrivialTokens": 1055,
+    "coverage": 0.747,
+    "accuracyOnCovered": 0.635,
+    "macroF1": 0.449,
+    "macroF1CI95": [
+     0.421,
+     0.495
+    ],
+    "fitPairs": 451,
+    "fitCreoleTokens": 11066,
+    "perUPOS": {
+     "ADJ": {
+      "nGold": 37,
+      "precision": 0.73,
+      "recall": 0.51
+     },
+     "ADP": {
+      "nGold": 72,
+      "precision": 0.72,
+      "recall": 0.76
+     },
+     "ADV": {
+      "nGold": 94,
+      "precision": 0.68,
+      "recall": 0.73
+     },
+     "AUX": {
+      "nGold": 155,
+      "precision": 0.38,
+      "recall": 0.15
+     },
+     "CCONJ": {
+      "nGold": 13,
+      "precision": 1,
+      "recall": 1
+     },
+     "DET": {
+      "nGold": 33,
+      "precision": 0.46,
+      "recall": 0.85
+     },
+     "INTJ": {
+      "nGold": 34,
+      "precision": 1,
+      "recall": 0.44
+     },
+     "NOUN": {
+      "nGold": 142,
+      "precision": 0.37,
+      "recall": 0.33
+     },
+     "NUM": {
+      "nGold": 22,
+      "precision": 0.83,
+      "recall": 0.23
+     },
+     "PART": {
+      "nGold": 12,
+      "precision": 0,
+      "recall": 0
+     },
+     "PRON": {
+      "nGold": 189,
+      "precision": 0.94,
+      "recall": 0.79
+     },
+     "PROPN": {
+      "nGold": 1,
+      "precision": 0.04,
+      "recall": 1
+     },
+     "PUNCT": {
+      "nGold": 31,
+      "precision": null,
+      "recall": 0
+     },
+     "SCONJ": {
+      "nGold": 33,
+      "precision": 0.83,
+      "recall": 0.45
+     },
+     "VERB": {
+      "nGold": 178,
+      "precision": 0.79,
+      "recall": 0.34
+     },
+     "X": {
+      "nGold": 9,
+      "precision": 0,
+      "recall": 0
+     }
+    }
+   },
+   "hat_vs_pos_hat_lexicon": {
+    "withIdentityFillAccuracyAllTokens": 0.226,
+    "withoutIdentityFill": {
+     "accuracyAll": 0.192,
+     "macroF1": 0.188,
+     "coverage": 0.452
+    },
+    "baselines": {
+     "B0_majorityClass_accuracy": 0.168,
+     "B1_identityLookupOnly": {
+      "accuracyAll": 0.098,
+      "coverage": 0.447,
+      "macroF1": 0.097
+     }
+    },
+    "nonTrivialTokens": 50100,
+    "coverage": 0.637,
+    "accuracyOnCovered": 0.355,
+    "macroF1": 0.212,
+    "macroF1CI95": [
+     0.141,
+     0.261
+    ],
+    "fitPairs": 692,
+    "fitCreoleTokens": 14213,
+    "perUPOS": {
+     "ADJ": {
+      "nGold": 2383,
+      "precision": 0.45,
+      "recall": 0.17
+     },
+     "ADP": {
+      "nGold": 3960,
+      "precision": 0.27,
+      "recall": 0.55
+     },
+     "ADV": {
+      "nGold": 3012,
+      "precision": 0.04,
+      "recall": 0.02
+     },
+     "AUX": {
+      "nGold": 3763,
+      "precision": 0.74,
+      "recall": 0.46
+     },
+     "CCONJ": {
+      "nGold": 1215,
+      "precision": 0.5,
+      "recall": 0.55
+     },
+     "DET": {
+      "nGold": 3953,
+      "precision": 0.72,
+      "recall": 0.72
+     },
+     "INTJ": {
+      "nGold": 51,
+      "precision": 0,
+      "recall": 0
+     },
+     "NOUN": {
+      "nGold": 9012,
+      "precision": 0.5,
+      "recall": 0.18
+     },
+     "NUM": {
+      "nGold": 59,
+      "precision": 0,
+      "recall": 0
+     },
+     "PART": {
+      "nGold": 138,
+      "precision": 0,
+      "recall": 0
+     },
+     "PRON": {
+      "nGold": 9408,
+      "precision": 0.2,
+      "recall": 0.05
+     },
+     "PROPN": {
+      "nGold": 2465,
+      "precision": 0.01,
+      "recall": 0.01
+     },
+     "SCONJ": {
+      "nGold": 1752,
+      "precision": 0.57,
+      "recall": 0.1
+     },
+     "VERB": {
+      "nGold": 8923,
+      "precision": 0.55,
+      "recall": 0.13
+     },
+     "X": {
+      "nGold": 6,
+      "precision": 0,
+      "recall": 0
+     }
+    }
+   }
+  },
+  "closedLikeNoLabel": {
+   "note": "forms that behave like closed-class words (not bursty against a shuffled-text null, within the top-frequency mass of the lexifier's closed-class share) but have no projected UPOS — typically tense/aspect markers with no lexifier-side counterpart. Evidence of 'function word', not of which one.",
+   "forms": [
+    "avek×26"
+   ],
+   "calibration": {
+    "pcm_test_C1": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 507,
+     "packOnly": {
+      "precision": 0.8897338403041825,
+      "recall": 0.46153846153846156
+     },
+     "packPlusFlag": {
+      "precision": 0.8897338403041825,
+      "recall": 0.46153846153846156
+     }
+    },
+    "pcm_test_C2": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 507,
+     "packOnly": {
+      "precision": 0.8784119106699751,
+      "recall": 0.6982248520710059
+     },
+     "packPlusFlag": {
+      "precision": 0.8784119106699751,
+      "recall": 0.6982248520710059
+     }
+    },
+    "hat_C1": {
+     "unlabelledClosedLike": 1,
+     "goldClosedTokens": 24189,
+     "packOnly": {
+      "precision": 0.7663956937273426,
+      "recall": 0.5768324444995659
+     },
+     "packPlusFlag": {
+      "precision": 0.7824844340104113,
+      "recall": 0.6338418289305056
+     }
+    },
+    "hat_C2": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 24189,
+     "packOnly": {
+      "precision": 0.8262953786491436,
+      "recall": 0.6342138988796561
+     },
+     "packPlusFlag": {
+      "precision": 0.8262953786491436,
+      "recall": 0.6342138988796561
+     }
+    }
+   }
+  },
+  "trust": "type-level lexicon only; a form absent here is a typed gap, not a negative; closed-class forms projected from an English/French aux/ADP/PRON are the most reliable, open-class recall is low"
+ },
+ "forms": {
+  "pou": {
+   "ADP": 20.39,
+   "AUX": 42.61,
+   "PART": 11.44
+  },
+  "ek": {
+   "CCONJ": 199.76
+  },
+  "e": {
+   "CCONJ": 42.9
+  },
+  "enn": {
+   "ADP": 28.55,
+   "DET": 42.29,
+   "SYM": 0.05
+  },
+  "finn": {
+   "AUX": 11.34
+  },
+  "dan": {
+   "ADP": 69.59
+  },
+  "si": {
+   "SCONJ": 8.99
+  },
+  "oter": {
+   "NOUN": 3.6
+  },
+  "ena": {
+   "AUX": 8.8,
+   "VERB": 21.38
+  },
+  "touzour": {
+   "ADV": 2
+  },
+  "boukou": {
+   "ADJ": 2.97
+  },
+  "ki": {
+   "PRON": 30.44,
+   "SCONJ": 18.3
+  },
+  "avan": {
+   "ADP": 1.9,
+   "SCONJ": 3.08
+  },
+  "nou": {
+   "PRON": 19.05
+  },
+  "kapav": {
+   "AUX": 9.7
+  },
+  "lor": {
+   "ADP": 10.84
+  },
+  "me": {
+   "CCONJ": 20.55
+  },
+  "donn": {
+   "VERB": 7.62
+  },
+  "amenn": {
+   "VERB": 3.95
+  },
+  "laba": {
+   "PRON": 2.58
+  },
+  "leker": {
+   "NOUN": 5.6
+  },
+  "dimann": {
+   "VERB": 5.83
+  },
+  "mem": {
+   "ADJ": 4.18
+  },
+  "li": {
+   "PRON": 71.93
+  },
+  "get": {
+   "VERB": 3.12
+  },
+  "ou": {
+   "CCONJ": 26.12
+  },
+  "pli": {
+   "ADJ": 3.78
+  },
+  "lot": {
+   "DET": 3.58
+  },
+  "inklir": {
+   "VERB": 4.01
+  },
+  "ti": {
+   "AUX": 12.9
+  },
+  "apre": {
+   "ADP": 1.81,
+   "ADV": 2.98
+  },
+  "alors": {
+   "ADV": 6.95
+  },
+  "zot": {
+   "PRON": 124.95
+  },
+  "hamburg": {
+   "PROPN": 2
+  },
+  "gran": {
+   "ADJ": 6.97
+  },
+  "david": {
+   "PROPN": 4
+  },
+  "pa": {
+   "PART": 7
+  },
+  "koz": {
+   "VERB": 6.84
+  },
+  "al": {
+   "VERB": 6.81
+  },
+  "mo": {
+   "PRON": 26.97
+  },
+  "panse": {
+   "VERB": 4.66
+  },
+  "bann": {
+   "DET": 80.12
+  },
+  "nesans": {
+   "NOUN": 4
+  },
+  "zezi": {
+   "PROPN": 67.96
+  },
+  "sa": {
+   "DET": 10.62,
+   "PRON": 7.79
+  },
+  "so": {
+   "PRON": 27.98
+  },
+  "depi": {
+   "ADP": 6.63
+  },
+  "ansam": {
+   "ADV": 1.78
+  },
+  "reponn": {
+   "VERB": 7.99
+  },
+  "profet": {
+   "PROPN": 5
+  },
+  "ekrir": {
+   "VERB": 3.95
+  },
+  "to": {
+   "PRON": 31.07
+  },
+  "lavil": {
+   "NOUN": 6
+  },
+  "san": {
+   "ADP": 2.97
+  },
+  "kan": {
+   "ADV": 7
+  },
+  "trouv": {
+   "VERB": 6.76
+  },
+  "fer": {
+   "AUX": 5.17
+  },
+  "mwa": {
+   "PRON": 14.9
+  },
+  "ale": {
+   "VERB": 4.77
+  },
+  "lezip": {
+   "PROPN": 2
+  },
+  "lamor": {
+   "NOUN": 4.97
+  },
+  "zanfan": {
+   "NOUN": 8.76
+  },
+  "leve": {
+   "ADP": 2.32
+  },
+  "pe": {
+   "ADV": 4
+  },
+  "mor": {
+   "ADJ": 2
+  },
+  "izrael": {
+   "PROPN": 3
+  },
+  "mesaz": {
+   "NOUN": 2
+  },
+  "zan": {
+   "PROPN": 6
+  },
+  "dezer": {
+   "VERB": 3
+  },
+  "lesegner": {
+   "PROPN": 3
+  },
+  "dir": {
+   "VERB": 37.8
+  },
+  "kifer": {
+   "ADV": 8
+  },
+  "vinn": {
+   "VERB": 7
+  },
+  "alor": {
+   "ADV": 3.96
+  },
+  "bizin": {
+   "AUX": 8.93
+  },
+  "tou": {
+   "DET": 30.84,
+   "PRON": 30.96
+  },
+  "bondie": {
+   "PROPN": 12.49
+  },
+  "osi": {
+   "ADV": 3
+  },
+  "tousel": {
+   "ADV": 2.55
+  },
+  "servi": {
+   "VERB": 4.8
+  },
+  "koumans": {
+   "VERB": 6
+  },
+  "travay": {
+   "VERB": 5.12
+  },
+  "ekoute": {
+   "VERB": 3
+  },
+  "lerla": {
+   "ADV": 13.63
+  },
+  "retorn": {
+   "X": 0.01
+  },
+  "rwayom": {
+   "PROPN": 3
+  },
+  "aprose": {
+   "ADV": 1.99
+  },
+  "premie": {
+   "ADJ": 1.25
+  },
+  "de": {
+   "NUM": 5
+  },
+  "kalite": {
+   "NOUN": 7.56
+  },
+  "gagn": {
+   "ADP": 6.9,
+   "PART": 6.36
+  },
+  "dimounn": {
+   "AUX": 12.74,
+   "NOUN": 40.55
+  },
+  "akoz": {
+   "ADP": 3.77
+  },
+  "dibien": {
+   "INTJ": 0.04
+  },
+  "kouma": {
+   "ADV": 4.23
+  },
+  "lalanp": {
+   "NOUN": 2
+  },
+  "tande": {
+   "VERB": 3.91
+  },
+  "samem": {
+   "AUX": 3.78
+  },
+  "palto": {
+   "INTJ": 0.2
+  },
+  "papa": {
+   "NOUN": 6.65
+  },
+  "sekre": {
+   "X": 0.18
+  },
+  "laverite": {
+   "NOUN": 2.35
+  },
+  "priye": {
+   "VERB": 3.91
+  },
+  "an": {
+   "ADP": 9.57
+  },
+  "dipin": {
+   "NOUN": 5
+  },
+  "pese": {
+   "PROPN": 2
+  },
+  "les": {
+   "VERB": 3.98
+  },
+  "kont": {
+   "ADP": 12.95
+  },
+  "seve": {
+   "NOUN": 1.92
+  },
+  "kot": {
+   "ADV": 3.77,
+   "PART": 2.54
+  },
+  "lizie": {
+   "NOUN": 4
+  },
+  "oubien": {
+   "CCONJ": 2
+  },
+  "lavi": {
+   "NOUN": 9.36
+  },
+  "manze": {
+   "NOUN": 4.97
+  },
+  "plis": {
+   "ADJ": 2.2
+  },
+  "eski": {
+   "AUX": 7.94
+  },
+  "seki": {
+   "PRON": 7.96,
+   "SCONJ": 4.99
+  },
+  "dimande": {
+   "VERB": 2.96
+  },
+  "rode": {
+   "NOUN": 2.3
+  },
+  "laport": {
+   "NOUN": 4
+  },
+  "trouve": {
+   "VERB": 4.98
+  },
+  "par": {
+   "ADP": 9.66
+  },
+  "bien": {
+   "ADJ": 2.78,
+   "INTJ": 0.26
+  },
+  "atansion": {
+   "ADP": 3.09
+  },
+  "zour": {
+   "ADP": 1.81
+  },
+  "zizman": {
+   "X": 0.02
+  },
+  "segner": {
+   "PROPN": 4
+  },
+  "lapli": {
+   "NOUN": 2
+  },
+  "linondasion": {
+   "PROPN": 2
+  },
+  "vini": {
+   "VERB": 9
+  },
+  "deswit": {
+   "ADP": 1.97
+  },
+  "zis": {
+   "ADV": 3.79
+  },
+  "lord": {
+   "NOUN": 4.39
+  },
+  "aster": {
+   "ADV": 2
+  },
+  "lafwa": {
+   "NOUN": 6
+  },
+  "arive": {
+   "VERB": 3
+  },
+  "lame": {
+   "NOUN": 3.87
+  },
+  "ler": {
+   "ADV": 4.03
+  },
+  "per": {
+   "ADJ": 3.76
+  },
+  "paralize": {
+   "NOUN": 2.96
+  },
+  "vie": {
+   "ADJ": 2.92
+  },
+  "perdi": {
+   "VERB": 4.94
+  },
+  "silteple": {
+   "INTJ": 0.99
+  },
+  "riy": {
+   "ADP": 0.99
+  },
+  "aveg": {
+   "ADJ": 3
+  },
+  "wi": {
+   "INTJ": 1.97
+  },
+  "koze": {
+   "VERB": 2.8
+  },
+  "lafoul": {
+   "NOUN": 7
+  },
+  "douz": {
+   "NUM": 2
+  },
+  "pier": {
+   "PROPN": 4.29,
+   "X": 0.71
+  },
+  "garson": {
+   "NOUN": 7.56
+  },
+  "sertennman": {
+   "AUX": 0.97
+  },
+  "repoz": {
+   "CCONJ": 1
+  },
+  "volonte": {
+   "NOUN": 4.54
+  },
+  "limanite": {
+   "NOUN": 3.8
+  },
+  "lazistis": {
+   "NOUN": 4.42,
+   "X": 0.08
+  },
+  "pep": {
+   "NOUN": 8.35
+  },
+  "rod": {
+   "VERB": 3
+  },
+  "parski": {
+   "SCONJ": 2.4
+  },
+  "parabol": {
+   "NOUN": 8.76
+  },
+  "konpran": {
+   "VERB": 5
+  },
+  "nanye": {
+   "PRON": 2.78
+  },
+  "toulede": {
+   "CCONJ": 0.46
+  },
+  "gard": {
+   "AUX": 1.99
+  },
+  "debark": {
+   "X": 0.01
+  },
+  "onor": {
+   "X": 0.11
+  },
+  "imin": {
+   "ADJ": 10.35,
+   "NOUN": 10.03
+  },
+  "rann": {
+   "VERB": 3
+  },
+  "bor": {
+   "ADP": 1.3
+  },
+  "lak": {
+   "PROPN": 1
+  },
+  "kolinn": {
+   "X": 0.33
+  },
+  "ant": {
+   "ADP": 2.56
+  },
+  "pena": {
+   "INTJ": 0.25
+  },
+  "bouze": {
+   "AUX": 1
+  },
+  "deklarasion": {
+   "ADJ": 3
+  },
+  "iniversel": {
+   "ADJ": 4.8,
+   "PROPN": 1.18
+  },
+  "konsideran": {
+   "SCONJ": 5.25,
+   "VERB": 14
+  },
+  "egal": {
+   "ADJ": 3.25
+  },
+  "liberte": {
+   "NOUN": 16.41
+  },
+  "exers": {
+   "AUX": 1
+  },
+  "krwayans": {
+   "NOUN": 4.89
+  },
+  "lamizer": {
+   "AUX": 0.97
+  },
+  "esansiel": {
+   "ADJ": 2.63
+  },
+  "drwa": {
+   "ADJ": 6.47,
+   "ADV": 6.74,
+   "INTJ": 0.56,
+   "NOUN": 28.04
+  },
+  "promouvwar": {
+   "VERB": 3
+  },
+  "nasion": {
+   "NOUN": 4.84,
+   "PROPN": 2.16
+  },
+  "nasion-zini": {
+   "PROPN": 4.6
+  },
+  "reafirm": {
+   "PROPN": 1.24
+  },
+  "sosial": {
+   "ADJ": 17
+  },
+  "nivo": {
+   "ADV": 1.23
+  },
+  "eta-manb": {
+   "NOUN": 3.12,
+   "PROPN": 0.88
+  },
+  "reisi": {
+   "X": 0.56
+  },
+  "fondamantal": {
+   "ADJ": 8
+  },
+  "konsekans": {
+   "ADV": 1.52
+  },
+  "lasanble": {
+   "DET": 1.98,
+   "PART": 0.01
+  },
+  "zeneral": {
+   "ADJ": 3.25,
+   "PROPN": 1.4
+  },
+  "nasional": {
+   "ADJ": 3.73,
+   "PROPN": 1.27
+  },
+  "internasional": {
+   "ADJ": 5.25,
+   "PROPN": 1.71
+  },
+  "lartik": {
+   "NOUN": 63.89
+  },
+  "konsians": {
+   "NOUN": 7.85
+  },
+  "deklarasion-la": {
+   "PROPN": 1.19
+  },
+  "baze": {
+   "NOUN": 4.67
+  },
+  "stati": {
+   "NOUN": 4.96
+  },
+  "aryer": {
+   "ADV": 2.99
+  },
+  "pei-la": {
+   "INTJ": 0.09,
+   "SCONJ": 0.82
+  },
+  "non-otonom": {
+   "X": 0.5
+  },
+  "lobze": {
+   "ADP": 2.3
+  },
+  "plan": {
+   "NOUN": 3
+  },
+  "sekirite": {
+   "NOUN": 4.47
+  },
+  "alinteryer": {
+   "PRON": 1
+  },
+  "frontier": {
+   "PROPN": 1.21
+  },
+  "inklian": {
+   "AUX": 1.9
+  },
+  "prinsip": {
+   "AUX": 0.97
+  },
+  "priv": {
+   "VERB": 4.71
+  },
+  "sanz": {
+   "VERB": 2.51
+  },
+  "form": {
+   "VERB": 4.28
+  },
+  "maryaz": {
+   "PART": 0.01
+  },
+  "inikman": {
+   "ADV": 2.07
+  },
+  "total": {
+   "CCONJ": 2.85
+  },
+  "fitir": {
+   "VERB": 2.44
+  },
+  "propriete": {
+   "NUM": 0.73
+  },
+  "manifeste": {
+   "ADV": 1.23
+  },
+  "piblik": {
+   "ADJ": 5.15
+  },
+  "observasion": {
+   "NOUN": 2.67
+  },
+  "expresion": {
+   "NOUN": 3
+  },
+  "okenn": {
+   "DET": 5.6
+  },
+  "obliz": {
+   "AUX": 2.68
+  },
+  "asosiasion": {
+   "PROPN": 2.22,
+   "X": 0.18
+  },
+  "reprezantan": {
+   "ADV": 2.04,
+   "NUM": 0.31
+  },
+  "akse": {
+   "X": 0.19
+  },
+  "exprime": {
+   "NOUN": 2.44
+  },
+  "fiab": {
+   "AUX": 0.99,
+   "SCONJ": 0.01
+  },
+  "zefor": {
+   "NOUN": 3
+  },
+  "korperasion": {
+   "X": 0.5
+  },
+  "mwayin": {
+   "DET": 1.99
+  },
+  "kiltirel": {
+   "ADJ": 3.94
+  },
+  "devlopman": {
+   "NOUN": 4.25
+  },
+  "kondision": {
+   "NOUN": 5
+  },
+  "proteksion": {
+   "NOUN": 13.46,
+   "PROPN": 1.54
+  },
+  "diskriminasion": {
+   "PART": 0.01
+  },
+  "neseser": {
+   "ADJ": 4.75
+  },
+  "lintere": {
+   "NOUN": 5
+  },
+  "lwazir": {
+   "NOUN": 2.85
+  },
+  "limit": {
+   "NOUN": 3
+  },
+  "adekwa": {
+   "ADJ": 2
+  },
+  "bien-et": {
+   "ADV": 2.68,
+   "INTJ": 0.21
+  },
+  "sirkonstans": {
+   "NOUN": 3
+  },
+  "ledikasion": {
+   "NOUN": 8.71,
+   "PROPN": 1.25
+  },
+  "gratwi": {
+   "ADV": 1.99
+  },
+  "elemanter": {
+   "ADJ": 3
+  },
+  "siperyer": {
+   "NUM": 0.01
+  },
+  "ranforsman": {
+   "NOUN": 3
+  },
+  "mintenir": {
+   "NOUN": 3
+  },
+  "partisip": {
+   "VERB": 5
+  },
+  "benelis": {
+   "VERB": 1.13
+  },
+  "moral": {
+   "PROPN": 0.91
+  },
+  "literer": {
+   "ADJ": 3
+  },
+  "atann": {
+   "PART": 0.01,
+   "SYM": 0.01
+  },
+  "aplike": {
+   "AUX": 0.99,
+   "VERB": 2
+  },
+  "devwar": {
+   "NOUN": 3
+  },
+  "lib": {
+   "SYM": 0.01
+  },
+  "lexersis": {
+   "NOUN": 2.5,
+   "PROPN": 0.5
+  },
+  "respekte": {
+   "VERB": 2.14
+  },
+  "demokratik": {
+   "ADJ": 2.36
+  },
+  "tel": {
+   "VERB": 2.06
+  },
+  "dignite": {
+   "NOUN": 6.46
+  },
+  "kominote": {
+   "PROPN": 0.91
+  },
+  "pouvwar": {
+   "NOUN": 1.99
+  },
+  "fondmantal": {
+   "ADJ": 2
+  },
+  "tolerans": {
+   "X": 1
+  },
+  "laspe": {
+   "X": 0.07
+  },
+  "mansione": {
+   "AUX": 1.35
+  },
+  "profesionel": {
+   "AUX": 0.08
+  },
+  "nasa": {
+   "PROPN": 1
+  },
+  "ed": {
+   "NOUN": 0.13,
+   "PROPN": 0.87
+  },
+  "problem": {
+   "NOUN": 0.99,
+   "PROPN": 0.01
+  },
+  "ar": {
+   "AUX": 0.67,
+   "NOUN": 0.33
+  },
+  "et": {
+   "NOUN": 0.33,
+   "PROPN": 0.33,
+   "X": 0.33
+  },
+  "rapid": {
+   "ADJ": 1
+  },
+  "uk": {
+   "PROPN": 1
+  },
+  "daily": {
+   "ADJ": 0.69,
+   "ADV": 0.19,
+   "NOUN": 0.08,
+   "PROPN": 0.04
+  },
+  "mail": {
+   "NOUN": 0.68,
+   "VERB": 0.16,
+   "X": 0.16
+  },
+  "halibut": {
+   "NOUN": 1
+  },
+  "la": {
+   "PROPN": 0.89,
+   "X": 0.11
+  },
+  "bat": {
+   "NOUN": 1
+  },
+  "lake": {
+   "PROPN": 1
+  },
+  "facebook": {
+   "PROPN": 1
+  },
+  "fishing": {
+   "NOUN": 1
+  },
+  "tour": {
+   "NOUN": 0.81,
+   "PROPN": 0.13,
+   "VERB": 0.06
+  },
+  "angle": {
+   "NOUN": 1
+  },
+  "ala": {
+   "ADP": 1
+  },
+  "later": {
+   "ADJ": 0.08,
+   "ADV": 0.9,
+   "NOUN": 0.02
+  },
+  "napa": {
+   "PROPN": 1
+  },
+  "dat": {
+   "DET": 1
+  },
+  "pale": {
+   "VERB": 1
+  },
+  "met": {
+   "VERB": 1
+  },
+  "a": {
+   "ADP": 0.01,
+   "ADV": 0.01,
+   "AUX": 0.01,
+   "CCONJ": 0.01,
+   "DET": 0.99,
+   "NOUN": 0.01,
+   "NUM": 0.01,
+   "PART": 0.01,
+   "PROPN": 0.01,
+   "SYM": 0.01,
+   "X": 0.01
+  },
+  "sin": {
+   "PROPN": 1
+  },
+  "file": {
+   "NOUN": 0.91,
+   "VERB": 0.09
+  },
+  "bake": {
+   "VERB": 1
+  },
+  "merit": {
+   "NOUN": 1
+  },
+  "air": {
+   "NOUN": 0.66,
+   "PROPN": 0.34
+  },
+  "tax": {
+   "NOUN": 0.93,
+   "PROPN": 0.07
+  },
+  "long": {
+   "ADJ": 0.56,
+   "ADV": 0.43,
+   "NOUN": 0.01
+  },
+  "tom": {
+   "NOUN": 0.08,
+   "PROPN": 0.92
+  },
+  "mins": {
+   "NOUN": 1
+  },
+  "dime": {
+   "NOUN": 1
+  },
+  "tap": {
+   "NOUN": 1
+  },
+  "tape": {
+   "NOUN": 1
+  },
+  "prefer": {
+   "VERB": 1
+  },
+  "fri": {
+   "PROPN": 1
+  },
+  "pie": {
+   "NOUN": 1
+  },
+  "trap": {
+   "NOUN": 1
+  },
+  "feb": {
+   "PROPN": 1
+  },
+  "isi": {
+   "PROPN": 1
+  },
+  "move": {
+   "NOUN": 0.3,
+   "VERB": 0.7
+  },
+  "madam": {
+   "NOUN": 1
+  },
+  "se": {
+   "AUX": 0.5,
+   "PROPN": 0.5
+  },
+  "satan": {
+   "PROPN": 1
+  },
+  "brin": {
+   "PROPN": 1
+  },
+  "prop": {
+   "VERB": 1
+  },
+  "size": {
+   "NOUN": 1
+  },
+  "sign": {
+   "NOUN": 0.44,
+   "VERB": 0.56
+  },
+  "p": {
+   "NOUN": 0.88,
+   "PROPN": 0.13
+  },
+  "mama": {
+   "NOUN": 0.83,
+   "PROPN": 0.17
+  },
+  "marie": {
+   "PROPN": 1
+  },
+  "sink": {
+   "NOUN": 0.22,
+   "VERB": 0.78
+  },
+  "mars": {
+   "PROPN": 1
+  },
+  "fam": {
+   "NOUN": 1
+  },
+  "extra": {
+   "ADJ": 0.94,
+   "NOUN": 0.06
+  },
+  "pre": {
+   "ADV": 0.33,
+   "NOUN": 0.33,
+   "X": 0.33
+  },
+  "set": {
+   "ADJ": 0.2,
+   "NOUN": 0.15,
+   "VERB": 0.65
+  },
+  "bout": {
+   "NOUN": 0.2,
+   "PROPN": 0.8
+  },
+  "interpret": {
+   "VERB": 1
+  },
+  "done": {
+   "ADJ": 0.13,
+   "VERB": 0.87
+  },
+  "nam": {
+   "NOUN": 0.5,
+   "X": 0.5
+  },
+  "ot": {
+   "PART": 1
+  },
+  "determine": {
+   "VERB": 1
+  },
+  "sex": {
+   "NOUN": 1
+  },
+  "non": {
+   "ADV": 0.33,
+   "NOUN": 0.17,
+   "X": 0.5
+  },
+  "l": {
+   "PROPN": 0.86,
+   "SYM": 0.14
+  },
+  "ami": {
+   "PROPN": 1
+  },
+  "posed": {
+   "VERB": 1
+  },
+  "media": {
+   "NOUN": 1
+  },
+  "group": {
+   "NOUN": 0.84,
+   "PROPN": 0.16
+  },
+  "parti": {
+   "NOUN": 0.86,
+   "VERB": 0.14
+  },
+  "liber": {
+   "PROPN": 0.67,
+   "X": 0.33
+  },
+  "santi": {
+   "X": 1
+  },
+  "revolte": {
+   "NOUN": 0.85,
+   "VERB": 0.15
+  },
+  "egalite": {
+   "NOUN": 1
+  },
+  "meyer": {
+   "PROPN": 1
+  },
+  "parmi": {
+   "ADP": 1
+  },
+  "ne": {
+   "ADV": 0.74,
+   "VERB": 0.26
+  },
+  "fraternite": {
+   "NOUN": 1
+  },
+  "ras": {
+   "ADJ": 0.33,
+   "PROPN": 0.67
+  },
+  "sorti": {
+   "VERB": 1
+  },
+  "sou": {
+   "NOUN": 1
+  },
+  "degre": {
+   "NOUN": 1
+  },
+  "personel": {
+   "NOUN": 1
+  },
+  "prive": {
+   "ADJ": 0.58,
+   "NOUN": 0.21,
+   "VERB": 0.21
+  },
+  "ni": {
+   "CCONJ": 1
+  },
+  "kit": {
+   "NOUN": 1
+  },
+  "pris": {
+   "VERB": 1
+  },
+  "rit": {
+   "VERB": 1
+  },
+  "servis": {
+   "ADJ": 0.14,
+   "VERB": 0.86
+  },
+  "vot": {
+   "PROPN": 1
+  },
+  "las": {
+   "PROPN": 0.17,
+   "X": 0.83
+  },
+  "invalidite": {
+   "NOUN": 1
+  },
+  "bon": {
+   "ADJ": 0.91,
+   "NOUN": 0.02,
+   "PROPN": 0.06
+  },
+  "regne": {
+   "NOUN": 0.62,
+   "VERB": 0.38
+  },
+  "limite": {
+   "ADJ": 0.12,
+   "NOUN": 0.6,
+   "VERB": 0.28
+  },
+  "existe": {
+   "VERB": 1
+  },
+  "interprete": {
+   "NOUN": 0.19,
+   "VERB": 0.81
+  },
+  "opresion": {
+   "NOUN": 1
+  },
+  "valer": {
+   "VERB": 1
+  },
+  "kapital": {
+   "PROPN": 1
+  },
+  "paran": {
+   "VERB": 1
+  }
+ }
+}

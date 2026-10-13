@@ -1,6 +1,7 @@
 {
+ "round": 2,
  "B": 199,
- "protocol": "prereg §4; pcm dev; max-T over sign flips",
+ "protocol": "prereg §4 (+§11 in round 2); pcm dev; max-T over sign flips",
  "decisions": [
   {
    "factor": "M multi-anchor (C1)",
@@ -22,6 +23,82 @@
     "accuracyCovered": 0.2766990291262136,
     "accuracyAll": 0.05035335689045936,
     "macroF1": 0.08090999803703461
+   }
+  },
+  {
+   "factor": "S clause-level UDHR (C1+C2)",
+   "delta": -66,
+   "maxNull": 42,
+   "adopt": false,
+   "withC1": {
+    "correct": 63,
+    "tokens": 1132,
+    "coverage": 0.19876325088339222,
+    "accuracyCovered": 0.28,
+    "accuracyAll": 0.05565371024734982,
+    "macroF1": 0.11277336016630295
+   },
+   "withoutC1": {
+    "correct": 115,
+    "tokens": 1132,
+    "coverage": 0.3224381625441696,
+    "accuracyCovered": 0.3150684931506849,
+    "accuracyAll": 0.10159010600706714,
+    "macroF1": 0.14966454210670221
+   },
+   "withC2": {
+    "correct": 436,
+    "tokens": 1132,
+    "coverage": 0.5653710247349824,
+    "accuracyCovered": 0.68125,
+    "accuracyAll": 0.38515901060070673,
+    "macroF1": 0.38537114803732875
+   },
+   "withoutC2": {
+    "correct": 450,
+    "tokens": 1132,
+    "coverage": 0.5918727915194346,
+    "accuracyCovered": 0.6716417910447762,
+    "accuracyAll": 0.39752650176678445,
+    "macroF1": 0.3935231776264413
+   }
+  },
+  {
+   "factor": "L held-out lambda (C1+C2)",
+   "delta": -99,
+   "maxNull": 47,
+   "adopt": false,
+   "withC1": {
+    "correct": 36,
+    "tokens": 1132,
+    "coverage": 0.08833922261484099,
+    "accuracyCovered": 0.36,
+    "accuracyAll": 0.03180212014134275,
+    "macroF1": 0.07438712034748057
+   },
+   "withoutC1": {
+    "correct": 115,
+    "tokens": 1132,
+    "coverage": 0.3224381625441696,
+    "accuracyCovered": 0.3150684931506849,
+    "accuracyAll": 0.10159010600706714,
+    "macroF1": 0.14966454210670221
+   },
+   "withC2": {
+    "correct": 430,
+    "tokens": 1132,
+    "coverage": 0.5300353356890459,
+    "accuracyCovered": 0.7166666666666667,
+    "accuracyAll": 0.37985865724381623,
+    "macroF1": 0.3640201557319777
+   },
+   "withoutC2": {
+    "correct": 450,
+    "tokens": 1132,
+    "coverage": 0.5918727915194346,
+    "accuracyCovered": 0.6716417910447762,
+    "accuracyAll": 0.39752650176678445,
+    "macroF1": 0.3935231776264413
    }
   },
   {
@@ -93,6 +170,8 @@
  ],
  "adopted": {
   "multi": true,
+  "fine": false,
+  "heldoutLambda": false,
   "gateClosed": true,
   "gateOpen": false,
   "identity": true

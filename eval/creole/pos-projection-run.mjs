@@ -20,6 +20,10 @@ const OUT = path.join(HERE, "packs"), WORK = path.join(OUT, "_work");
 const args = process.argv.slice(2);
 const stage = args[0];
 const B = Number(args[args.indexOf("--B") + 1]) || P.DECLARED.B;
+const ROUND = Number(args[args.indexOf("--round") + 1]) || 2; // 1 = as pre-registered; 2 = repair arms (prereg §11)
+const CONV = { bare: ROUND === 2 };
+const CAL_FILE = ROUND === 1 ? "CALIBRATION-R1.json" : "CALIBRATION.json";
+const SEL_FILE = ROUND === 1 ? "selection-R1.json" : "selection.json";
 
 const writeSafe = (f, text) => {
   const abs = path.resolve(f);
@@ -34,7 +38,7 @@ const uniq = (pairs) => { const seen = new Set(), out = []; for (const p of pair
 // ── anchors ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 const anchorPacks = {};
 for (const l of ["eng", "fra", "spa"]) anchorPacks[l] = JSON.parse(fs.readFileSync(`${PRIORS}/pos-${l}.json`, "utf8"));
-const anchors = Object.fromEntries(Object.entries(anchorPacks).map(([l, p]) => [l, P.anchorIndex(p.forms)]));
+const anchors = Object.fromEntries(Object.entries(anchorPacks).map(([l, p]) => [l, P.anchorIndex(p.forms, CONV)]));
 
 // ── held-out ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 function conllu(f) {
@@ -71,9 +75,9 @@ function guarded(pairs, held, label, log) {
 
 // ── parallel sources ─────────────────────────────────────────────────────────────────────────────────────────────────
 const paras = (f) => lines(f).slice(4).join("\n").split(/\n\s*\n/).map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean);
-function udhrSources(code, anchorLangs, name = code) {
+function udhrSources(code, anchorLangs, name = code, fine = false) {
   const creole = paras(`${UDHR}/udhr-${code}.txt`);
-  return anchorLangs.map((a) => ({ name: `udhr-${name}~${a}`, group: `udhr-${name}`, anchor: anchors[a], anchorLang: a, kind: "udhr", licence: "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr", pairs: P.pairParagraphs(creole, paras(`${UDHR}/udhr-${a === "eng" ? "eng" : a}.txt`)) }));
+  return anchorLangs.map((a) => ({ name: `udhr-${name}~${a}`, group: `udhr-${name}`, anchor: anchors[a], anchorLang: a, kind: "udhr", licence: "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr", pairs: P.pairParagraphs(creole, paras(`${UDHR}/udhr-${a}.txt`), { clauses: fine }) }));
 }
 const jsonlPairs = (f, cKey, aKey) => lines(f).filter(Boolean).map((l) => { const j = JSON.parse(l); return { c: j[cKey], a: j[aKey] }; });
 const LANGS = {
@@ -120,28 +124,39 @@ function bitextPcm(fold, nSub) {
 }
 const udhrAnchors = (multi) => (multi ? ["eng", "fra", "spa"] : ["eng"]);
 const optsOf = (c) => ({ gateClosed: !!c.gateClosed, gateOpen: !!c.gateOpen, identity: !!c.identity });
+const projOpts = (c) => ({ B, bare: CONV.bare, heldoutLambda: !!c.heldoutLambda });
 const logOnly = [];
 
 async function select() {
-  const out = { B, protocol: "prereg §4; pcm dev; max-T over sign flips", decisions: [] };
+  const out = { round: ROUND, B, protocol: "prereg §4 (+§11 in round 2); pcm dev; max-T over sign flips", decisions: [] };
   const devGold = goldPcm(PCM.dev);
-  const pcmUdhr = (multi) => udhrSources("pcm", udhrAnchors(multi));
-  let cfg = { multi: false, gateClosed: false, gateOpen: false, identity: false };
+  const udhr = (c) => udhrSources("pcm", udhrAnchors(c.multi), "pcm", c.fine);
+  const c1 = (c) => P.projectBase(udhr(c), projOpts(c));
+  const c2 = (c) => P.projectBase([...bitextPcm("dev"), ...udhr(c)], projOpts(c));
+  let cfg = { multi: false, fine: false, heldoutLambda: false, gateClosed: false, gateOpen: false, identity: false };
+  const flat = (c, b) => P.finalizePack(b, optsOf(c)).forms;
   // M — decided in C1 (UDHR only)
   {
-    const A = P.projectBase(pcmUdhr(true), { B }), S = P.projectBase(pcmUdhr(false), { B });
-    const fa = P.finalizePack(A).forms, fs_ = P.finalizePack(S).forms;
-    const va = correctVector(fa, devGold), vb = correctVector(fs_, devGold);
-    const t = P.pairedMaxT(va, vb, P.rng(11));
-    out.decisions.push({ factor: "M multi-anchor (C1)", ...t, a: nontrivialAcc(fa, devGold), b: nontrivialAcc(fs_, devGold) });
+    const A = flat({ ...cfg, multi: true }, c1({ ...cfg, multi: true })), S = flat(cfg, c1(cfg));
+    const t = P.pairedMaxT(correctVector(A, devGold), correctVector(S, devGold), P.rng(11));
+    out.decisions.push({ factor: "M multi-anchor (C1)", ...t, a: nontrivialAcc(A, devGold), b: nontrivialAcc(S, devGold) });
     cfg.multi = t.adopt;
   }
+  // S, L — round 2 only; decided on C1 and C2 dev together (one test over both conditions' per-sentence vectors)
+  if (ROUND === 2) {
+    for (const [label, key] of [["S clause-level UDHR", "fine"], ["L held-out lambda", "heldoutLambda"]]) {
+      const trial = { ...cfg, [key]: true };
+      const cur = [flat(cfg, c1(cfg)), flat(cfg, c2(cfg))], nxt = [flat(trial, c1(trial)), flat(trial, c2(trial))];
+      const vec = (fs_) => fs_.flatMap((f) => correctVector(f, devGold));
+      const t = P.pairedMaxT(vec(nxt), vec(cur), P.rng(12));
+      out.decisions.push({ factor: `${label} (C1+C2)`, ...t, withC1: nontrivialAcc(nxt[0], devGold), withoutC1: nontrivialAcc(cur[0], devGold), withC2: nontrivialAcc(nxt[1], devGold), withoutC2: nontrivialAcc(cur[1], devGold) });
+      if (t.adopt) cfg = trial;
+    }
+  }
   // G1, G2, I — decided in C2 (pcm cross-fit, dev)
-  const srcC2 = [...bitextPcm("dev"), ...pcmUdhr(cfg.multi)];
-  const base = P.projectBase(srcC2, { B });
-  const arms = [["G1 closed gate", "gateClosed"], ["G2 open gate", "gateOpen"], ["I identity fill", "identity"]];
+  const base = c2(cfg);
   let cur = P.finalizePack(base, optsOf(cfg)).forms;
-  for (const [label, key] of arms) {
+  for (const [label, key] of [["G1 closed gate", "gateClosed"], ["G2 open gate", "gateOpen"], ["I identity fill", "identity"]]) {
     const trial = { ...cfg, [key]: true };
     const nxt = P.finalizePack(base, optsOf(trial)).forms;
     const t = P.pairedMaxT(correctVector(nxt, devGold), correctVector(cur, devGold), P.rng(13));
@@ -149,15 +164,15 @@ async function select() {
     if (t.adopt) { cfg = trial; cur = nxt; }
   }
   out.adopted = cfg;
-  writeSafe(path.join(WORK, "selection.json"), JSON.stringify(out, null, 1));
-  console.log(JSON.stringify(out, null, 1));
+  writeSafe(path.join(WORK, SEL_FILE), JSON.stringify(out, null, 1));
+  console.log(JSON.stringify(out.decisions.map((d) => ({ factor: d.factor, delta: d.delta, maxNull: d.maxNull, adopt: d.adopt })), null, 1), JSON.stringify(cfg));
 }
 
-const loadCfg = () => JSON.parse(fs.readFileSync(path.join(WORK, "selection.json"), "utf8")).adopted;
+const loadCfg = () => JSON.parse(fs.readFileSync(path.join(WORK, SEL_FILE), "utf8")).adopted;
 
 async function calibrate() {
   const cfg = loadCfg(), o = optsOf(cfg), M = cfg.multi;
-  const rec = { B, adopted: cfg, built: "see git", conditions: {}, curves: {}, baselines: {}, falsifiers: {}, factorDeltas: {} };
+  const rec = { round: ROUND, B, adopted: cfg, built: "see git", conditions: {}, curves: {}, baselines: {}, falsifiers: {}, factorDeltas: {} };
   const hatGold = goldHat();
   const baselineFor = (forms0, gold) => { // B0 majority class, B1 identity-only lexicon
     const cnt = {}; for (const s of gold) for (const t of s) if (!P.scriptClass(t.form)) cnt[t.upos] = (cnt[t.upos] ?? 0) + 1;
@@ -166,7 +181,7 @@ async function calibrate() {
   };
   const run = (label, sources, gold, seed, extra = {}) => {
     const t0 = Date.now();
-    const base = P.projectBase(sources, { B });
+    const base = P.projectBase(sources, projOpts(cfg));
     const pack = P.finalizePack(base, o);
     const rep = report(pack.forms, gold, seed);
     const chance = P.chanceDiscoveries(base);
@@ -193,15 +208,15 @@ async function calibrate() {
   };
   // pcm test (reporting fold): C1, C2, learning curve
   const testGold = goldPcm(PCM.test), devGold = goldPcm(PCM.dev);
-  rec.conditions.pcm_test_C1 = run("pcm test C1 (UDHR only)", udhrSources("pcm", udhrAnchors(M)), testGold, 101);
-  rec.conditions.pcm_test_C2 = run("pcm test C2 (bitext+UDHR)", [...bitextPcm("test"), ...udhrSources("pcm", udhrAnchors(M))], testGold, 102);
-  rec.conditions.pcm_dev_C1 = run("pcm dev C1 (selection fold, for reference)", udhrSources("pcm", udhrAnchors(M)), devGold, 103);
-  rec.conditions.pcm_dev_C2 = run("pcm dev C2 (selection fold, for reference)", [...bitextPcm("dev"), ...udhrSources("pcm", udhrAnchors(M))], devGold, 104);
+  rec.conditions.pcm_test_C1 = run("pcm test C1 (UDHR only)", udhrSources("pcm", udhrAnchors(M), "pcm", cfg.fine), testGold, 101);
+  rec.conditions.pcm_test_C2 = run("pcm test C2 (bitext+UDHR)", [...bitextPcm("test"), ...udhrSources("pcm", udhrAnchors(M), "pcm", cfg.fine)], testGold, 102);
+  rec.conditions.pcm_dev_C1 = run("pcm dev C1 (selection fold, for reference)", udhrSources("pcm", udhrAnchors(M), "pcm", cfg.fine), devGold, 103);
+  rec.conditions.pcm_dev_C2 = run("pcm dev C2 (selection fold, for reference)", [...bitextPcm("dev"), ...udhrSources("pcm", udhrAnchors(M), "pcm", cfg.fine)], devGold, 104);
   // learning curve on test fold: bitext subset sizes (UDHR kept)
   rec.curves.pcm_test_C2 = [];
-  for (const n of [25, 50, 100]) rec.curves.pcm_test_C2.push(run(`pcm test C2 n=${n}`, [...bitextPcm("test", n), ...udhrSources("pcm", udhrAnchors(M))], testGold, 110 + n, { bitextPairs: n }));
+  for (const n of [25, 50, 100]) rec.curves.pcm_test_C2.push(run(`pcm test C2 n=${n}`, [...bitextPcm("test", n), ...udhrSources("pcm", udhrAnchors(M), "pcm", cfg.fine)], testGold, 110 + n, { bitextPairs: n }));
   // hat: C1 (both UDHR versions), C2 (+ kreyol-mt hat-eng, guarded), S-large (calibration only)
-  const hatU = [...udhrSources("hat_kreyol", udhrAnchors(M), "hat_kreyol"), ...udhrSources("hat_popular", udhrAnchors(M), "hat_popular")];
+  const hatU = [...udhrSources("hat_kreyol", udhrAnchors(M), "hat_kreyol", cfg.fine), ...udhrSources("hat_popular", udhrAnchors(M), "hat_popular", cfg.fine)];
   rec.conditions.hat_C1 = run("hat C1 (UDHR only)", hatU, hatGold, 201);
   const hatLog = [];
   const hatKmt = { name: "kreyol-mt-hat-eng", group: "kmt-hat", anchor: anchors.eng, anchorLang: "eng", kind: "bitext", licence: "CC BY 2.0 FR (Tatoeba exports, via kreyol-mt staging)", pairs: guarded(tsvRows(`${KMT}/hat-eng/hat-eng.tsv`).map((r) => ({ c: r[1], a: r[3] })), HELD_NOPCM, "kreyol-mt/hat-eng", hatLog) };
@@ -211,8 +226,8 @@ async function calibrate() {
   const sLarge = { name: "CALIBRATION-ONLY ht-fr (held-out)", group: "mit-haiti-fr", anchor: anchors.fra, anchorLang: "fra", kind: "calibration-only", licence: "n/a (never shipped)", pairs: frPairs };
   rec.conditions.hat_Slarge = run("hat S-large (calibration only; held-out text)", [sLarge, hatKmt, ...hatU], hatGold, 203, { calibrationOnly: true, note: "reads held-out creole text; nothing shipped; not used for selection" });
   rec.guardLog = { hat: hatLog };
-  writeSafe(path.join(OUT, "CALIBRATION.json"), JSON.stringify(rec, null, 1));
-  console.error("wrote CALIBRATION.json");
+  writeSafe(path.join(OUT, CAL_FILE), JSON.stringify(rec, null, 1));
+  console.error(`wrote ${CAL_FILE}`);
 }
 
 // ── packs ────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -234,18 +249,19 @@ function nearestRow(cal, hasBitext, nPairs) {
   const pick = ok.length ? ok[ok.length - 1] : rows[0];
   return { cond: "C2", pcm: pick.r, hat: cal.conditions.hat_C2, row: `pcm bitext ${pick.n} pairs${nPairs > rows[rows.length - 1].n ? ` (pack has ${nPairs}: beyond the largest calibrated row)` : ""}` };
 }
-const brief = (c) => ({ nonTrivialTokens: c.report.tokens, coverage: +c.report.coverage.toFixed(3), accuracyOnCovered: c.report.accuracyCovered === null ? null : +c.report.accuracyCovered.toFixed(3), macroF1: +c.report.macroF1.toFixed(3), macroF1CI95: c.report.macroF1CI?.map((x) => +x.toFixed(3)), fitPairs: c.fit.pairs, fitCreoleTokens: c.fit.creoleTokens, perUPOS: Object.fromEntries(Object.entries(c.report.perClass).map(([u, v]) => [u, { nGold: v.nGold, precision: v.precision === null ? null : +v.precision.toFixed(2), recall: +v.recall.toFixed(2) }])) });
+const withoutIdentity = (c) => { const d = c.factorDeltas?.["identity=false"]; return d ? { accuracyAll: +(c.report.accuracyAll + d.accuracyAll).toFixed(3), macroF1: +(c.report.macroF1 + d.macroF1).toFixed(3), coverage: +(c.report.coverage + d.coverage).toFixed(3) } : null; };
+const brief = (c) => ({ withIdentityFillAccuracyAllTokens: +c.report.accuracyAll.toFixed(3), withoutIdentityFill: withoutIdentity(c), baselines: { B0_majorityClass_accuracy: +c.baselines.B0.accuracyAll.toFixed(3), B1_identityLookupOnly: { accuracyAll: +c.baselines.B1.accuracyAll.toFixed(3), coverage: +c.baselines.B1.coverage.toFixed(3), macroF1: +c.baselines.B1.macroF1.toFixed(3) } }, nonTrivialTokens: c.report.tokens, coverage: +c.report.coverage.toFixed(3), accuracyOnCovered: c.report.accuracyCovered === null ? null : +c.report.accuracyCovered.toFixed(3), macroF1: +c.report.macroF1.toFixed(3), macroF1CI95: c.report.macroF1CI?.map((x) => +x.toFixed(3)), fitPairs: c.fit.pairs, fitCreoleTokens: c.fit.creoleTokens, perUPOS: Object.fromEntries(Object.entries(c.report.perClass).map(([u, v]) => [u, { nGold: v.nGold, precision: v.precision === null ? null : +v.precision.toFixed(2), recall: +v.recall.toFixed(2) }])) });
 
 async function build(codes) {
-  const cal = JSON.parse(fs.readFileSync(path.join(OUT, "CALIBRATION.json"), "utf8"));
+  const cal = JSON.parse(fs.readFileSync(path.join(OUT, CAL_FILE), "utf8"));
   const cfg = cal.adopted, o = optsOf(cfg);
   const summary = {};
   for (const code of codes) {
     const L = LANGS[code]; if (!L) { console.error(`no recipe for ${code}`); continue; }
     const log = [];
-    const sources = [...L.bitext(HELD_ALL, log), ...L.udhr.flatMap((u) => udhrSources(u, udhrAnchors(cfg.multi), code))];
+    const sources = [...L.bitext(HELD_ALL, log), ...L.udhr.flatMap((u) => udhrSources(u, udhrAnchors(cfg.multi), code, cfg.fine))];
     if (!sources.length) { console.error(`${code}: no source`); continue; }
-    const base = P.projectBase(sources, { B });
+    const base = P.projectBase(sources, projOpts(cfg));
     const chance = P.chanceDiscoveries(base);
     const pack = P.finalizePack(base, o);
     const nPairs = pack.stats.sources.reduce((n, s) => n + s.pairs, 0), nTok = pack.stats.sources.reduce((n, s) => n + s.creoleTokens, 0);
@@ -261,28 +277,116 @@ async function build(codes) {
       license: "CC BY-SA 4.0 (projection; anchors UD CC BY-SA 4.0; parallel sources as listed — MIT / CC BY 2.0 FR / public domain)",
       method: "eval/creole/pos-projection.mjs",
       adoptedArms: cfg,
+      round: ROUND,
       parallel: sources.map((s) => ({ name: s.name, kind: s.kind, pairs: s.pairs.length, licence: s.licence, anchor: s.anchorLang })),
       heldOutGuard: { rule: "a training sentence is dropped when its letters+digits key equals any creole sentence of any held-out file", log },
       trainingSize: { pairs: nPairs, creoleTokens: nTok, forms: pack.stats.forms, rawForms: pack.stats.rawForms },
       chance: { realKeptVotes: chance.real, bestShuffledRunKeptVotes: chance.nullMax, beatsChance: f1ok },
       heldOutCoverage: { text: "creole side of the language-ID held-out file, read-only, never used to build", wordTokens: tt, covered: hit, coverage: tt ? +(hit / tt).toFixed(3) : null, commonestMissing: [...miss].sort((a, b) => b[1] - a[1]).slice(0, 25).map(([w, n]) => `${w}×${n}`) },
       calibration: {
-        note: "Per-UPOS precision/recall of the SAME method on languages with gold, at the nearest data size. This is the method's error bar, not a measurement of this language; domain shift is not calibrated. Abstentions count against recall. 95% bootstrap intervals are in packs/CALIBRATION.json.",
+        note: `Per-UPOS precision/recall of the SAME method on languages with gold, at the nearest data size. This is the method's error bar, not a measurement of this language; domain shift is not calibrated. Abstentions count against recall. 95% bootstrap intervals are in packs/${CAL_FILE}.`,
         condition: near.cond, row: near.row,
         pcm_ud_naija_test: brief(near.pcm),
         hat_vs_pos_hat_lexicon: brief(near.hat),
       },
+      closedLikeNoLabel: { note: "forms that behave like closed-class words (not bursty against a shuffled-text null, within the top-frequency mass of the lexifier's closed-class share) but have no projected UPOS — typically tense/aspect markers with no lexifier-side counterpart. Evidence of 'function word', not of which one.", forms: [...pack.flags].filter(([f, v]) => v.closedlike && !Object.hasOwn(pack.forms, f)).sort((a, b) => b[1].tf - a[1].tf).slice(0, 60).map(([f, v]) => `${f}×${v.tf}`), calibration: fs.existsSync(path.join(WORK, "closedlike-calibration.json")) ? JSON.parse(fs.readFileSync(path.join(WORK, "closedlike-calibration.json"), "utf8")) : null },
       trust: "type-level lexicon only; a form absent here is a typed gap, not a negative; closed-class forms projected from an English/French aux/ADP/PRON are the most reliable, open-class recall is low",
     };
     summary[code] = { pairs: nPairs, tokens: nTok, forms: pack.stats.forms, heldOutCoverage: provenance.heldOutCoverage.coverage, beatsChance: f1ok, near: near.row };
     if (!f1ok) { console.error(`${code}: F1 chance falsifier FIRED (${chance.real} kept votes vs ${chance.nullMax} from a shuffled run) — pack not written`); continue; }
-    writeSafe(path.join(OUT, `pos-${code}.json`), JSON.stringify(P.packShape(code, pack.forms, provenance), null, 1));
+    writeSafe(path.join(OUT, ROUND === 1 ? `_work/R1-pos-${code}.json` : `pos-${code}.json`), JSON.stringify(P.packShape(code, pack.forms, provenance), null, 1));
     console.error(`${code}: ${JSON.stringify(summary[code])}`);
   }
-  writeSafe(path.join(WORK, "build-summary.json"), JSON.stringify(summary, null, 1));
+  writeSafe(path.join(WORK, ROUND === 1 ? "build-summary-R1.json" : "build-summary.json"), JSON.stringify(summary, null, 1));
 }
 
-if (stage === "select") await select();
+function render() {
+  const rounds = [["R1 (as pre-registered)", "CALIBRATION-R1.json"], ["R2 (adds T: bare-clitic tokenisation; S and L rejected on dev)", "CALIBRATION.json"]];
+  const f = (x, d = 2) => (x === null || x === undefined ? "—" : x.toFixed(d));
+  const ci = (a) => (a ? `[${f(a[0])}–${f(a[1])}]` : "");
+  let md = "# Calibration — the SAME projection method run where gold exists\n\n"
+    + "Non-trivial tokens only (PUNCT and NUM are typed by script, identically everywhere). Abstention counts against recall and against\n"
+    + "accuracy-over-all-tokens. Intervals: 95% bootstrap (sentences for pcm; forms-with-their-tokens for hat) — a report, not a gate.\n"
+    + "Gold: pcm = UD Naija-NSC dev/test samples (test is the reporting fold, dev the selection fold); hat = `pos-hat.json` read as a\n"
+    + "token-weighted lexicon (the method never opens it). C1 = UDHR only (the condition sag/jam live in); C2 = small bitext + UDHR.\n\n";
+  for (const [label, file] of rounds) {
+    const fp = path.join(OUT, file); if (!fs.existsSync(fp)) continue;
+    const cal = JSON.parse(fs.readFileSync(fp, "utf8"));
+    md += `## ${label}\n\nadopted: \`${JSON.stringify(cal.adopted)}\` · B=${cal.B}\n\n`;
+    md += "| condition | fit pairs / creole tokens | N gold | coverage | acc on covered | acc all tokens [CI] | macro-F1 [CI] | acc w/o identity fill | B0 acc | B1 acc (cov) | F1 chance | beats B0/B1 |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n";
+    for (const [k, c] of Object.entries(cal.conditions)) {
+      const r = c.report, d = c.factorDeltas?.["identity=false"], wi = d ? r.accuracyAll + d.accuracyAll : null;
+      md += `| ${k}${c.calibrationOnly ? " ⚠ calibration-only (held-out text)" : ""} | ${c.fit.pairs} / ${c.fit.creoleTokens} | ${r.tokens} | ${f(r.coverage)} | ${f(r.accuracyCovered)} | ${f(r.accuracyAll)} ${ci(r.accuracyAllCI)} | ${f(r.macroF1)} ${ci(r.macroF1CI)} | ${f(wi)} | ${f(c.baselines.B0.accuracyAll)} | ${f(c.baselines.B1.accuracyAll)} (${f(c.baselines.B1.coverage)}) | ${c.falsifiers.F1.holds} (${c.falsifiers.F1.real} vs ${c.falsifiers.F1.nullMax}) | ${c.falsifiers.F5.beatsB0}/${c.falsifiers.F5.beatsB1} |\n`;
+    }
+    md += "\n### learning curve (pcm test, C2: bitext pairs added to UDHR)\n\n| bitext pairs | acc all | coverage | macro-F1 |\n|---|---|---|---|\n";
+    for (const c of cal.curves.pcm_test_C2) md += `| ${c.bitextPairs} | ${f(c.report.accuracyAll)} | ${f(c.report.coverage)} | ${f(c.report.macroF1)} |\n`;
+    const full = cal.conditions.pcm_test_C2; md += `| ${full.fit.sources[0].pairs} (all) | ${f(full.report.accuracyAll)} | ${f(full.report.coverage)} | ${f(full.report.macroF1)} |\n`;
+    for (const k of ["pcm_test_C1", "pcm_test_C2", "hat_C1", "hat_C2"]) {
+      const c = cal.conditions[k]; if (!c) continue;
+      md += `\n### per-UPOS — ${k} (N non-trivial = ${c.report.tokens})\n\n| UPOS | N gold | N pred | precision [CI] | recall [CI] |\n|---|---|---|---|---|\n`;
+      for (const [u, v] of Object.entries(c.report.perClass)) md += `| ${u} | ${v.nGold} | ${v.nPred} | ${f(v.precision)} ${ci(v.precisionCI)} | ${f(v.recall)} ${ci(v.recallCI)} |\n`;
+    }
+    md += "\n";
+  }
+  writeSafe(path.join(OUT, "CALIBRATION.md"), md);
+  console.error("wrote CALIBRATION.md");
+}
+// function-word detector (prereg §4 G1 flags): forms closed-like by spread but with NO projected label. Scored on gold as a
+// function-vs-content detector, because "function words read as names of things to look up" was the original harm.
+async function closedlike() {
+  const cfg = loadCfg(), M = cfg.multi, out = {};
+  const isClosed = (u) => P.CLOSED.includes(u);
+  const run = (key, sources, gold) => {
+    const base = P.projectBase(sources, projOpts(cfg));
+    const pack = P.finalizePack(base, optsOf(cfg));
+    const unl = new Set([...pack.flags].filter(([f, v]) => v.closedlike && !Object.hasOwn(pack.forms, f)).map(([f]) => f));
+    let tp = 0, pred = 0, goldClosed = 0, tpP = 0, predP = 0;
+    for (const sent of gold) for (const { form, upos } of sent) {
+      if (P.scriptClass(form)) continue;
+      const k = foldText(String(form).trim());
+      const isG = isClosed(upos); if (isG) goldClosed += 1;
+      const lab = Object.hasOwn(pack.forms, k) ? P.dominant(new Map(Object.entries(pack.forms[k]))) : null;
+      const byPack = lab !== null && isClosed(lab);
+      const byFlag = unl.has(k);
+      if (byPack) { predP += 1; if (isG) tpP += 1; }
+      if (byPack || byFlag) { pred += 1; if (isG) tp += 1; }
+    }
+    out[key] = { unlabelledClosedLike: unl.size, goldClosedTokens: goldClosed, packOnly: { precision: predP ? tpP / predP : null, recall: goldClosed ? tpP / goldClosed : null }, packPlusFlag: { precision: pred ? tp / pred : null, recall: goldClosed ? tp / goldClosed : null } };
+    console.error(key, JSON.stringify(out[key]));
+  };
+  const hatGold = goldHat();
+  const u = (code, name) => udhrSources(code, udhrAnchors(M), name, cfg.fine);
+  run("pcm_test_C1", u("pcm", "pcm"), goldPcm(PCM.test));
+  run("pcm_test_C2", [...bitextPcm("test"), ...u("pcm", "pcm")], goldPcm(PCM.test));
+  const hatU = [...u("hat_kreyol", "hat_kreyol"), ...u("hat_popular", "hat_popular")];
+  run("hat_C1", hatU, hatGold);
+  const log = [];
+  run("hat_C2", [{ name: "kreyol-mt-hat-eng", group: "kmt-hat", anchor: anchors.eng, anchorLang: "eng", kind: "bitext", pairs: guarded(tsvRows(`${KMT}/hat-eng/hat-eng.tsv`).map((r) => ({ c: r[1], a: r[3] })), HELD_NOPCM, "kreyol-mt/hat-eng", log) }, ...hatU], hatGold);
+  writeSafe(path.join(WORK, "closedlike-calibration.json"), JSON.stringify(out, null, 1));
+}
+// pap, kea (A6): no gold on disk, so only type-level agreement with the Wiktionary packs, never accuracy; nothing is emitted
+async function wikt(codes) {
+  const cfg = loadCfg(), out = {};
+  for (const code of codes) {
+    const w = JSON.parse(fs.readFileSync(`${PRIORS}/pos-${code}.json`, "utf8")).forms;
+    const wf = new Map(Object.entries(w).map(([f, d]) => [foldText(f), P.dominant(new Map(Object.entries(d)))]));
+    const base = P.projectBase(udhrSources(code, udhrAnchors(cfg.multi), code, cfg.fine), projOpts(cfg));
+    const pack = P.finalizePack(base, optsOf(cfg));
+    let both = 0, agree = 0, onlyProj = 0, closedOnlyProj = 0; const dis = [];
+    for (const [f, d] of Object.entries(pack.forms)) {
+      const top = P.dominant(new Map(Object.entries(d)));
+      if (wf.has(f)) { both += 1; if (wf.get(f) === top) agree += 1; else if (dis.length < 12) dis.push(`${f}: proj ${top} / wikt ${wf.get(f)}`); }
+      else { onlyProj += 1; if (P.CLOSED.includes(top)) closedOnlyProj += 1; }
+    }
+    out[code] = { udhrPairs: pack.stats.sources.map((x) => x.pairs), projectedForms: Object.keys(pack.forms).length, wiktionaryForms: wf.size, shared: both, agreeOnShared: both ? +(agree / both).toFixed(3) : null, projectedOnly: onlyProj, projectedOnlyClosedClass: closedOnlyProj, disagreements: dis, note: "no gold exists on disk for this language: agreement with a dictionary is not accuracy, and the 'beats Wiktionary on a held-out slice' condition cannot be tested" };
+    console.error(code, JSON.stringify(out[code]));
+  }
+  writeSafe(path.join(WORK, "pap-kea-agreement.json"), JSON.stringify(out, null, 1));
+}
+if (stage === "closedlike") await closedlike();
+else if (stage === "wikt") await wikt(["pap", "kea"]);
+else if (stage === "render") render();
+else if (stage === "select") await select();
 else if (stage === "report") await calibrate();
 else if (stage === "build") await build(args.slice(1).filter((a) => /^[a-z]{3}$/.test(a)).length ? args.slice(1).filter((a) => /^[a-z]{3}$/.test(a)) : ["mfe", "tpi", "sag", "jam", "gcf"]);
 else { console.error("usage: select | report | build [codes…]  [--B n]"); process.exit(2); }
