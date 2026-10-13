@@ -92,7 +92,9 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const pageIsReferent = !!pageToks && frame.referents.some((r) => r && r.title && sameStems(tokensOf(String(r.title).replace(/\s*\([^)]*\)\s*$/u, "")).map((t) => stemOf(t.fold, L)), pageToks));
   // the words of the ASK itself (its attribute and relation stems): a longer title made of them is the ask's own phrase, not another
   // entity ("Attack on Pearl Harbor" for "when was Pearl Harbor attacked", "President of France" for "who is the president of France")
-  const askedStems = new Set([...(frame.attributes || []).flatMap((x) => x.stems || []), ...(frame.predicate || []).map((x) => x.stem)]);
+  // …including every referent's own words: "Longest Rivers in Africa" is made of the ask's relation and BOTH its referents
+  const askedStems = new Set([...(frame.attributes || []).flatMap((x) => x.stems || []), ...(frame.predicate || []).map((x) => x.stem),
+    ...frame.referents.flatMap((r) => [r.surface, r.title, ...((Array.isArray(r.aliases) ? r.aliases : []))].filter(Boolean).flatMap((n) => tokensOf(String(n)).map((t) => stemOf(t.fold, L))))]);
   const partOfLongerTitle = (o, seqs) => {
     if (!pageToks || pageToks.length < 2 || pageIsReferent) return false;
     for (const seq of seqs) {
@@ -244,10 +246,20 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // filler; the auxiliary before it is trimmed off whatever side is read.
     const ci = toks.findIndex((t, k) => (G.copulas.includes(t.fold) || t.fold === "been") && !inRef.has(k));
     let fromAgent = false;
+    const typeStems = new Set();      // stems of a TYPE WORD that recurs inside the answer's own name (below)
     if (ci < 0) return null;
     const carries = (a, b) => toks.some((t, k) => k >= a && k <= b && (carry.has(t.stem) || attrDescIdx.has(k)));
     const holdsPredicate = (a, b) => predMatches.some((k) => k >= a && k <= b);
-    const cl = carries(0, ci - 1), cr = carries(ci + 1, toks.length - 1);
+    let cl = carries(0, ci - 1), cr = carries(ci + 1, toks.length - 1);
+    // A TYPE WORD recurs inside the answer's own name: "The Nile RIVER is the longest RIVER in Africa" names the referent "river" on both
+    // sides, but the left names nothing the right does not and the right names an ANCHOR the left lacks (Africa): the left is the
+    // answer. Decided by referent GROUPS (whole names), never by shared stems — "Leopold Mozart … his son Wolfgang Amadeus Mozart" is
+    // one group on both sides and stays a refusal.
+    if (cl && cr) {
+      const here = (g, a, b) => g.occ.some((o) => o.from >= a && o.to <= b);
+      const onL = groups.filter((g) => here(g, 0, ci - 1)), onR = groups.filter((g) => here(g, ci + 1, toks.length - 1));
+      if (onL.length && onL.every((g) => onR.includes(g)) && onR.some((g) => !onL.includes(g))) { cl = false; for (const g of onL) for (const st of g.content) typeStems.add(st); }
+    }
     let side;
     // Both sides carry the anchor's word ("Wolfgang Amadeus Mozart was born … to Leopold Mozart …"): for a PLACE ask with a relation
     // the anchor is the subject on the LEFT and the right side is the relation's complement — the place alternatives below decide
@@ -387,7 +399,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     }
     const inside = toks.filter((t) => t.start >= a && t.end <= b);
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;
-    if (inside.some((t) => carry.has(t.stem))) return null;
+    if (inside.some((t) => carry.has(t.stem) && !typeStems.has(t.stem))) return null;
     // a passive AGENT was already required to be somebody above (not digit-led, a name-like word inside); a description that carries
     // its name ("by the Scottish physician Alexander Fleming") is unpacked to the name by the title-door variants downstream
     if (frame.slot === "person" && !fromAgent && !personLike(inside)) return null;

@@ -193,3 +193,18 @@ test("LIVE-17 a PLACE is introduced: 'located in the Coral Sea' answers 'Coral S
   const r = bind(g, "The Taj Mahal is situated in Agra, Uttar Pradesh, India.", { page: "Taj Mahal" });
   assert.equal(r && r.filler && r.filler.text, "Agra", "'situated' and 'lived' and 'raised' lead into a place (declared place verbs are compared as stems)");
 });
+
+test("LIVE-18 a page whose title is made only of the ask's own words (relation + referents) is the ask's page, never a derivative: 'Longest Rivers in Africa'", async () => {
+  const f = await frameOf("What is the longest river in Africa?", { africa: "Africa", river: "River" });
+  const r = bind(f, "The Nile is the longest river in Africa.", { page: "Longest Rivers in Africa" });
+  assert.ok(r && r.tier === "T1" && r.filler && /Nile/.test(r.filler.text), JSON.stringify(r && r.filler));
+});
+
+test("LIVE-19 a type word recurs inside the answer's name: 'The Nile River is the longest river in Africa' answers 'The Nile River'; two Mozarts still do not", async () => {
+  const f = await frameOf("What is the longest river in Africa?", { africa: "Africa", river: "River" });
+  const r = bind(f, "The Nile River is not only the longest river in Africa but also in the world.", { page: "Longest Rivers in Africa" });
+  assert.ok(r && r.filler && /Nile/.test(r.filler.text), JSON.stringify(r && r.filler));
+  const m = await frameOf("Where was Mozart born?", { mozart: "Wolfgang Amadeus Mozart" });
+  const x = bind(m, "Leopold Mozart was born in Augsburg, and his son Wolfgang Amadeus Mozart was born in Salzburg.");
+  assert.ok(!x || !x.filler, "both sides carry the same name and neither has an anchor the other lacks: no filler");
+});
