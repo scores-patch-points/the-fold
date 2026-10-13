@@ -208,3 +208,17 @@ test("LIVE-19 a type word recurs inside the answer's name: 'The Nile River is th
   const x = bind(m, "Leopold Mozart was born in Augsburg, and his son Wolfgang Amadeus Mozart was born in Salzburg.");
   assert.ok(!x || !x.filler, "both sides carry the same name and neither has an anchor the other lacks: no filler");
 });
+
+test("LIVE-20 'No. 1' is a number sign, not a negation: a sentence that names another work's number is still a positive witness", async () => {
+  const f = await frameOf("Who composed the Moonlight Sonata?", { "moonlight sonata": "Piano Sonata No. 14 (Beethoven)" });
+  const r = bind(f, 'Beethoven composed the "Moonlight Sonata" during a particularly productive period of his life, a time when he was also working on his "Symphony No. 1".');
+  assert.ok(r && r.polarity === "+" && r.filler && r.filler.text === "Beethoven", JSON.stringify(r && { p: r.polarity, f: r.filler }));
+  const n = bind(f, "Mozart did not compose the Moonlight Sonata.");
+  assert.equal(n && n.polarity, "-", "a real negation is still a negation");
+});
+
+test("LIVE-21 the referent's WHOLE name on one side decides the copula's side, not a stem the other side shares ('theory' of 'theory of general relativity')", async () => {
+  const f = await frameOf("Who developed the theory of general relativity?", { "theory of general relativity": "General relativity", "general relativity": "General relativity" });
+  const r = bind(f, "General relativity is a theory of gravitation developed by Einstein in the years 1907–1915.", { page: "Theory of relativity" });
+  assert.equal(r && r.filler && r.filler.text, "Einstein");
+});

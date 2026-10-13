@@ -204,7 +204,10 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // "may" is the month when a number or a preposition is beside it ("in May 1945", "8 May"), the modal otherwise
   const isMonthMay = (k) => toks[k].fold === "may" && ((toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text)) || (toks[k - 1] && (/^\p{Nd}/u.test(toks[k - 1].text) || (G.agentStops || []).includes(toks[k - 1].fold))));
   const hedged = toks.some((t, k) => (G.hedges || []).includes(t.fold) && !isMonthMay(k)) || /\?\s*["”’')\]]*\s*$/u.test(text);
-  const polarity = hedged ? "?" : toks.some((t) => G.negation.includes(t.fold) || /n['’]t$/.test(t.fold)) ? "-" : "+";
+  // a negation word directly before a NUMBER is the abbreviation "No. 1" / "no. 14" ("Symphony No. 1"), not a denial: the live
+  // "Moonlight Sonata" sentence was read as negative because its subordinate clause named another work's number
+  const numberSign = (k) => toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text) && /^\s*\.?\s*$/u.test(text.slice(toks[k].end, toks[k + 1].start));
+  const polarity = hedged ? "?" : toks.some((t, k) => (G.negation.includes(t.fold) && !numberSign(k)) || /n['’]t$/.test(t.fold)) ? "-" : "+";
   let tense = "unknown";
   for (const t of toks) {
     const hit = ["present", "past", "future"].find((k) => G.tense[k].includes(t.fold));
@@ -251,6 +254,14 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     const carries = (a, b) => toks.some((t, k) => k >= a && k <= b && (carry.has(t.stem) || attrDescIdx.has(k)));
     const holdsPredicate = (a, b) => predMatches.some((k) => k >= a && k <= b);
     let cl = carries(0, ci - 1), cr = carries(ci + 1, toks.length - 1);
+    // The referent's WHOLE name is on exactly one side: that side is the subject's, whatever stems of the ask's alias ("theory" of
+    // "theory of general relativity") the other side happens to share — a stem is not the referent (the live "who developed the theory
+    // of general relativity": "General relativity is a theory of gravitation developed by Einstein" carried 'theory' on both sides).
+    {
+      const nameIn = (a, b) => groups.some((g) => g.occ.some((o) => o.from >= a && o.to <= b));
+      const gl = nameIn(0, ci - 1), gr = nameIn(ci + 1, toks.length - 1);
+      if (gl !== gr && (gl || gr)) { cl = gl; cr = gr; }
+    }
     // A TYPE WORD recurs inside the answer's own name: "The Nile RIVER is the longest RIVER in Africa" names the referent "river" on both
     // sides, but the left names nothing the right does not and the right names an ANCHOR the left lacks (Africa): the left is the
     // answer. Decided by referent GROUPS (whole names), never by shared stems — "Leopold Mozart … his son Wolfgang Amadeus Mozart" is
