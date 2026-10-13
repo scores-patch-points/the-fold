@@ -12,6 +12,7 @@ const tokens = (q) => String(q ?? "").match(/[\p{L}\p{N}'’.-]+|[^\p{L}\p{N}\s]
 /** Drop the leading run of function words (and the trailing '?'), keeping at least one content word. Returns the ask unchanged when
  *  there is no prior, nothing to cut, or cutting would leave nothing. `fw`: a Set of case-folded function words, or null. */
 import { salienceOf } from "./fold-chat-salience-infer.js";
+import { PLACE_NOUNS_EN } from "./fold-chat-grammar-places.js";
 /** The received POSPrior's rank of a form (UD English-EWT via the salience prior: PROPN 9, NOUN 7, VERB 6, ADJ 4, ADV 1), or null when
  *  the prior has not seen it. One door for every module that reads a form's usual part of speech. */
 export function posRankOf(form) { const v = salienceOf(form); return v == null ? null : Math.round(v * 9); }
@@ -93,6 +94,7 @@ export const GRAMMAR = Object.freeze({
     subordinators: Object.freeze(["when", "where", "while", "whereas", "because", "although", "though", "after", "before", "until", "as"]),
     // calendar words: a month or a weekday is a TIME, never where ("in July", "born in January in Salzburg"); declared, not measured
     temporal: Object.freeze(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "spring", "summer", "autumn", "fall", "winter"]),
+    placeNouns: PLACE_NOUNS_EN,       // nouns that name a KIND OF PLACE (fold-chat-grammar-places.js)
     indefinites: Object.freeze(["a", "an"]),
     containment: Object.freeze(["in", "at", "within", "inside"]),
     // a passive AGENT ("was discovered by the physician Alexander Fleming at St Mary's") runs from "by" to the first of these

@@ -280,13 +280,15 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       // Commonwealth realms, the reigning monarch since 1952" is one noun phrase's coordination, not a second clause
       const dets = new Set(G.determiners || []);
       const opens = (k) => { const nx = toks[k + 1]; return !!nx && ((closed(nx.fold) && !dets.has(nx.fold)) || (posRankOf(nx.text) === 6 && !(G.auxiliaries || []).includes(nx.fold))); };
-      const brkB = (k) => (toks[k] && (G.coordinators || []).includes(toks[k].fold) && opens(k)) || (k > 0 && /;/.test(text.slice(toks[k - 1].end, toks[k].start)));
+      const subsB = new Set(G.subordinators || []);
+      const brkB = (k) => (toks[k] && (((G.coordinators || []).includes(toks[k].fold) && opens(k)) || subsB.has(toks[k].fold))) || (k > 0 && /;/.test(text.slice(toks[k - 1].end, toks[k].start)));
       for (let k = ci - 1; k >= 0; k--) if (brkB(k)) { c0b = k + 1; break; }
       for (let k = ci + 1; k < toks.length; k++) if (brkB(k)) { c1b = k - 1; break; }
       if (!attrs.every((a) => a.stems.every(inClause))) return null;
     }
     // the copula's OWN clause: back/forward to a semicolon, a coordinator or a relative word
-    const brk = (k) => (toks[k] && ((G.coordinators || []).includes(toks[k].fold) || G.clauseWords.includes(toks[k].fold)))
+    const SUBS = new Set(G.subordinators || []);
+    const brk = (k) => (toks[k] && ((G.coordinators || []).includes(toks[k].fold) || G.clauseWords.includes(toks[k].fold) || SUBS.has(toks[k].fold)))
       || (k > 0 && /;/.test(text.slice(toks[k - 1].end, toks[k].start)));
     let c0 = 0, c1 = toks.length - 1;
     for (let k = ci - 1; k >= 0; k--) if (brk(k)) { c0 = k + 1; break; }
@@ -305,12 +307,13 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // of general relativity": "General relativity is a theory of gravitation developed by Einstein" carried 'theory' on both sides).
     // an occurrence must BEGIN the subject: no content word gaplessly before it ("LOUIS Napoleon was born in Paris" is another Napoleon,
     // whose one-word name matches a one-word alias)
-    const beginsSubject = (o) => !(o.from > 0 && !closed(toks[o.from - 1].fold) && gapless(text, toks[o.from - 1], toks[o.from]));
+    const beginsSubject = (o) => !(o.from > 0 && !closed(toks[o.from - 1].fold) && gapless(text, toks[o.from - 1], toks[o.from]))
+      && !/^['’]s\b/u.test(text.slice(toks[o.to].end, toks[o.to].end + 3));      // "Mozart's father": a possessor, not the subject
     {
       // an alias occurrence that BEGINS its noun phrase (on the left: the subject) — "Mozart" of "Leopold Mozart" does not
       const nameIn = (a, b, subj) => groups.some((g) => g.occ.some((o) => o.from >= a && o.to <= b && (!subj || beginsSubject(o))));
       // a left clause that is a RELATIVE clause ("Chlorine, which reacts with sodium, is …") is about its antecedent, not the subject
-      const relativeLeft = c0 > 0 && G.clauseWords.includes(toks[c0 - 1].fold);
+      const relativeLeft = c0 > 0 && (G.clauseWords.includes(toks[c0 - 1].fold) || SUBS.has(toks[c0 - 1].fold));
       const gl = nameIn(c0, ci - 1, true), gr = nameIn(ci + 1, c1, false);
       if (!relativeLeft && gl !== gr && (gl || gr)) { cl = gl; cr = gr; }
     }
@@ -400,10 +403,13 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // right bank of the Yamuna IN Agra" — the walk starts at the copula and takes the containment phrases of that clause.
     if (frame.slot === "place" && (relStems.length || side === "right") && G.containment) {
       const relIn = relStems.length ? toks.findIndex((t, k) => k > ci && relStems.includes(t.stem) && !ordinalBefore(k)) : ci;
-      if (relIn >= 0 && !toks.slice(ci + 1, relIn).some((t) => G.clauseWords.includes(t.fold))) {
+      const subjRegionStart = (c0 > 0 && (G.clauseWords.includes(toks[c0 - 1].fold) || SUBS.has(toks[c0 - 1].fold))) ? 0 : c0;      // a relative clause's subject is its antecedent
+      const subjectIsAnchor = groups.some((g) => g.occ.some((o) => o.from >= subjRegionStart && o.to < ci && beginsSubject(o)));
+      if (relIn >= 0 && subjectIsAnchor && !toks.slice(ci + 1, relIn).some((t) => G.clauseWords.includes(t.fold))) {
         const SUB = new Set(G.subordinators || []);
         const CONT = new Set(G.containment), INDEF = new Set(G.indefinites || []), dets = new Set(G.determiners || []), coord = new Set(G.coordinators || []);
-        const isVerb = (k) => posRankOf(toks[k].text) === 6 && !closed(toks[k].fold) && !(G.auxiliaries || []).includes(toks[k].fold);
+        const isVerb = (k) => posRankOf(toks[k].text) === 6 && !closed(toks[k].fold) && !(G.auxiliaries || []).includes(toks[k].fold)
+          && !(k > 0 && dets.has(toks[k - 1].fold));      // "a DESERT in Africa": directly after a determiner a word is a noun
         let end = toks.length;
         for (let k = relIn + 1; k < toks.length; k++) {
           const t = toks[k];
@@ -419,6 +425,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
           let s2 = k + 1, indef = false;
           while (s2 < end && dets.has(toks[s2].fold)) { if (INDEF.has(toks[s2].fold)) indef = true; s2++; }
           if (indef) continue;
+          const ledByDet = s2 > k + 1;
           let e2 = s2;
           const PREPS = new Set([...(G.prepositions || []), ...(G.agentStops || [])].filter((w) => !(G.governs || []).includes(w)));
           while (e2 < end && !CONT.has(toks[e2].fold) && !PREPS.has(toks[e2].fold) && !G.clauseWords.includes(toks[e2].fold) && !coord.has(toks[e2].fold) && !/[,;:()]/u.test(text.slice(toks[e2 - 1].end, toks[e2].start))) e2++;
@@ -427,13 +434,17 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
           k = Math.max(k, e2 - 1);
           if (!run.length || run.some((t) => /\p{Nd}/u.test(t.text) || (G.temporal || []).includes(t.fold))) continue;
           if (!run.some((t) => !closed(t.fold) && (salienceOf(t.text) == null || isName(t.text)))) continue;
-          alts.push({ text: text.slice(toks[s2].start, toks[e2 - 1].end), span: [toks[s2].start, toks[e2 - 1].end] });
+          alts.push({ text: text.slice(toks[s2].start, toks[e2 - 1].end), span: [toks[s2].start, toks[e2 - 1].end], det: ledByDet });
         }
         // inside ONE unbroken chain ("at the hospital IN Honolulu", "in the shadow of the Archbishop IN Salzburg", "in January IN Salzburg") the
         // phrase the others sit inside — the LAST — is tried first; the earlier ones are the fallback when the door does not know it. A
         // wider region after a comma ("in Salzburg, in the Holy Roman Empire") never joins the chain (it ends it).
-        alts.reverse();
-        if (alts.length) return { ...alts[0], alts };
+        // …and a phrase that took a DEFINITE ARTICLE ("in the novels", "in the shadow of the Archbishop", "at the hospital") is tried only
+        // after the bare ones: place names are bare far more often than the common nouns and descriptions that take "the".
+        if (!relStems.length) alts.reverse();       // a relation-less copula complement: "a landmark in jeopardy IN Paris"; with a relation the first phrase IS the complement ("born in Ulm in Germany")
+        alts.sort((x, y) => (x.det ? 1 : 0) - (y.det ? 1 : 0));
+        const outAlts = alts.map(({ det, ...a }) => a);
+        if (outAlts.length) return { ...outAlts[0], alts: outAlts };
       }
     }
     // A PLACE filler must be the PLACE, not the phrase that leads to it
@@ -451,10 +462,13 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       while (k < toks.length && (PREP.has(toks[k].fold) || predMatches.includes(k) || PLACE_STEMS.has(toks[k].stem))) { lead.push(toks[k]); k++; }
       // a PLACE is introduced: by a preposition or a place verb ("in Agra", "located in the Coral Sea", "born at …"). A complement with
       // neither is a description of the subject ("a biodiversity hotspot", "endemic"), never where it is: no filler, a typed gap upstream.
-      if (!lead.length) {
+      if (!lead.length && attrs.length) {
+        // an ATTRIBUTE-valued place ask ("where is the capital of France"): the answer is the attribute's value, a name — no locative cue
+      } else if (!lead.length) {
         // "Cairo is the capital OF Egypt", "the Eiffel Tower is a landmark OF Paris": no locative preposition, but a noun governing a
         // name says where — the run after the governing word, when it holds a word the prior calls a name or has never seen
-        const gk = toks.findIndex((t, j) => t.start >= a && t.end <= b && (G.governs || []).includes(t.fold) && j > 0);
+        const PLACE_NOUNS = new Set(G.placeNouns || []);
+        const gk = toks.findIndex((t, j) => t.start >= a && t.end <= b && (G.governs || []).includes(t.fold) && j > 0 && PLACE_NOUNS.has(toks[j - 1].fold));
         if (gk < 0) return null;
         let m = gk + 1; while (m < toks.length && dets.has(toks[m].fold)) m++;
         let e = m; while (e < toks.length && toks[e].end <= b && !closed(toks[e].fold)) e++;

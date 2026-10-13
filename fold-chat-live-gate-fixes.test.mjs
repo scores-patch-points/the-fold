@@ -347,3 +347,39 @@ test("LIVE-33 a page whose title RESOLVES to the referent (a redirect) is the re
   const without = bind(f, s, { page: "Microsoft Corporation" });
   assert.ok(!without || !without.filler, "with no door the string test stands (a different entity until a redirect says otherwise)");
 });
+
+test("LIVE-34 a chain phrase that took 'the' is tried after the bare ones: 'in Scotland in the Harry Potter novels' → Scotland, never 'novels'", async () => {
+  const f = await frameOf("Where is Hogwarts?", { hogwarts: "Hogwarts" });
+  const alts = (x) => { const r = bind(f, x, { page: "Hogwarts" }); return r && r.filler && r.filler.alts ? r.filler.alts.map((a) => a.text) : []; };
+  assert.equal(alts("Hogwarts is a fictional school in Scotland in the Harry Potter novels.")[0], "Scotland");
+  assert.equal(alts("Hogwarts is a fictional school in Scotland in the novels.")[0], "Scotland");
+  assert.equal(alts("Barack Obama was born at the hospital in Honolulu.")[0] || "Honolulu", "Honolulu");
+});
+
+test("LIVE-35 third-pass: a relation takes the FIRST phrase ('born in Ulm in Germany'), a determiner-led one is tried last, 'a desert' is a noun, 'birthplace of X' is no place, a subordinator ends the clause", async () => {
+  const alts0 = async (q, T, x, page) => { const f = await frameOf(q, T); const r = bind(f, x, { page }); return r && r.filler && r.filler.alts ? r.filler.alts.map((a) => a.text)[0] : null; };
+  assert.equal(await alts0("Where was Einstein born?", { einstein: "Albert Einstein" }, "Albert Einstein was born in Ulm in Germany.", "Albert Einstein"), "Ulm");
+  assert.equal(await alts0("Where is the Sahara?", { sahara: "Sahara" }, "The Sahara is a desert in Africa.", "Sahara"), "Africa");
+  const c = await frameOf("Where is Cairo?", { cairo: "Cairo" });
+  assert.equal(bind(c, "Cairo is the birthplace of Naguib Mahfouz.", { page: "Cairo" }) && bind(c, "Cairo is the birthplace of Naguib Mahfouz.", { page: "Cairo" }).filler, null);
+  assert.equal(bind(c, "Cairo is the capital of Egypt.", { page: "Cairo" }).filler.text, "Egypt");
+  const a = await frameOf("What is the capital of Australia?", { australia: "Australia", capital: "Capital" });
+  for (const x of ["The capital Wellington is small while Australia is large.", "The capital Wellington is small although Australia is large.", "The capital Wellington is quiet, whereas Australia is large."]) {
+    const r = bind(a, x); assert.ok(!r || !r.filler || r.filler.text !== "Wellington", x);
+  }
+  const m = await frameOf("Where was Mozart born?", { mozart: "Wolfgang Amadeus Mozart" });
+  const aug = bind(m, "Augsburg, where Wolfgang Amadeus Mozart's father was born, is a city in Bavaria.");
+  assert.ok(!aug || !aug.filler || !(aug.filler.alts || [aug.filler]).some((x) => /Bavaria/.test(x.text)), "a possessor is not the subject: " + JSON.stringify(aug && aug.filler));
+  const fp = await frameOf("Where is the capital of France?", { france: "France", capital: "Capital" });
+  assert.equal(bind(fp, "Paris is the capital of France.", { page: "France" }).filler.text, "Paris");
+});
+
+test("LIVE-36 dominance reads the clause that holds the filler: 'Voltaire wrote Emma, a novel, as a joke' does not say 'novel' of Voltaire's Emma", async () => {
+  const { runAnswerTurn } = await import("./fold-chat-answerturn.js");
+  const titles = { emma: "Emma (novel)" };
+  const pages = { A: "Jane Austen wrote Emma.", B: "Voltaire wrote Emma, a novel, as a joke in a satirical anecdote." };
+  const pass = Object.entries(pages).map(([title, text], i) => ({ ref: "S" + (i + 1), title, url: "https://en.wikipedia.org/wiki/" + title, host: "en.wikipedia.org", lang: "en", text }));
+  const deps = { fw: functionWordsOf, resolveTitles: door(titles), fetchLead: async () => null, searchPassages: async () => [] };
+  const t = await runAnswerTurn({ question: "Who wrote the novel Emma?", lang: "en", passages: pass, now: { year: 2026 }, deps });
+  assert.ok(!(t.answer && /Voltaire/.test(t.answer.filler.text)), "no crowning by an appositive: " + JSON.stringify(t.answer && t.answer.filler));
+});

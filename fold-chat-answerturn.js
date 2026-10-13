@@ -184,7 +184,17 @@ export function dominantRow(rows, frame, code, fw) {
     ...asArr(frame.counted && frame.counted.stems),
   ].filter(Boolean));
   if (!ask.size) return null;
-  const cover = rows.map((r) => { const have = new Set(stemsOf(String(r.sentence || ""))); return [...ask].filter((st) => have.has(st)); });
+  // the words said in the CLAUSE that holds the filler (commas and semicolons bound it): "Voltaire wrote Emma, a novel, as a joke" says
+  // "novel" in an appositive, not of what Voltaire wrote
+  const clauseOf = (r) => {
+    const t = String(r.sentence || ""), f = r.filler && Array.isArray(r.filler.span) ? r.filler.span : null;
+    if (!f) return t;
+    let a = 0, b = t.length;
+    for (let i = f[0] - 1; i >= 0; i--) if (",;:()".includes(t[i])) { a = i + 1; break; }
+    for (let i = f[1]; i < t.length; i++) if (",;:()".includes(t[i])) { b = i; break; }
+    return t.slice(a, b);
+  };
+  const cover = rows.map((r) => { const have = new Set(stemsOf(clauseOf(r))); return [...ask].filter((st) => have.has(st)); });
   for (let i = 0; i < rows.length; i++) {
     const mine = new Set(cover[i]);
     if (rows.every((_, j) => j === i || (cover[j].every((st) => mine.has(st)) && mine.size > cover[j].length))) return { row: rows[i], index: i, missing: rows.filter((_, j) => j !== i).map((r2, k) => ({ row: r2, words: [...mine].filter((st) => !new Set(cover[rows.indexOf(r2)]).has(st)) })) };
