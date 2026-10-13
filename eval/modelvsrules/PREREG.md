@@ -121,6 +121,30 @@ So one further arm is added, **declared exploratory, and not part of the verdict
 ask level. It is post-hoc, uses the loose gold regex at ask level, and is **not** part of any verdict. Its result is reported as inconclusive
 if it commits on too few asks to say anything (it did).
 
+## Experiment 3 — a treebank-derived irregular-form table for the binder — pre-registered 2026-10-13, BEFORE it was built
+
+**Why:** Experiments 1–2 located the rules' weakness in *reading* (morphology and syntax), not in *licensing*. The binder's light stemmer
+cannot make "wrote/written" meet "write" or "sank" meet "sink" (its own header calls that "a limit, not a bug"). The alternative to a
+model is **received data**: a form→lemma table mined from a UD treebank, hand-written nowhere.
+
+**The change (frozen here):** `scripts/build-lemma-table.mjs` mines `en_pud-ud-test.conllu` (English PUD, on disk, 21,180 tokens, CC BY-SA 4.0)
+into `fold-chat-lemmas-en.js`; `stemOf` consults it first. A form enters only if (a) its lemma is not already unified by the light stemmer,
+(b) every attestation gives the SAME lemma (unanimous, no threshold), (c) it is a verb/auxiliary there, and (d) the English POS pack
+(UD EWT) has never seen it as a noun, proper noun or adjective — so "saw" (a tool) never becomes "see". Nothing else changes.
+
+**Instruments (all fixed by Experiments 1–2):** the 162 pairs; the independent second labeler's STATES (20) / NOT (142) labels; the G3 corpora;
+the whole test suite.
+
+**What is predicted, now:** a small gain, **0 to 2** more correct on the 20 STATES sentences, because PUD's 21k tokens do not contain "sank"
+and "is a novel by" is syntax, not morphology; and **no harm**.
+
+**What would falsify "this change is safe and helps":** 
+1. *harm* — any increase in false commits on the 142 NOT sentences (one-sided Fisher p < 0.05 for "more") or in wrong answers on the STATES
+   sentences, OR any change in the G3 corpora's carried-right / wrong / leak counts, OR any new failing test by name; → **rejected, reverted**.
+2. *no help* — fewer than 1 additional correct on STATES → **kept only if it harms nothing AND a binder-level test shows a plain
+   statement the old stemmer could not read now binds** (otherwise reverted as dead weight).
+A larger source (UniMorph English, an 18 MB download that needs the user's explicit yes) is the obvious next step and is NOT used here.
+
 ## Not tested here, and why
 
 Discourse (who "he" is) is Experiment 2 above and has its own verdict. Nothing in Experiment 1 is evidence about it.

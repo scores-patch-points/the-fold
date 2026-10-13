@@ -88,6 +88,38 @@ Per ask, over the sampled pairs (`pooled.mjs`):
 It commits on too few asks (the pairs are a sample, a few sentences per page) to say anything. **No claim is made.** To test the
 design properly it must run on the whole retrieved pool of a live turn, not on sampled pairs — that is the experiment worth running next.
 
+## Experiment 3 — a treebank-derived irregular-form table for the binder (pre-registered before it was built)
+
+Built: `scripts/build-lemma-table.mjs` → `fold-chat-lemmas-en.js`: **140** forms mined from English PUD (21,180 tokens, 1,000 sentences, CC BY-SA 4.0),
+dropped by the frozen rules: 1,217 already unified by the light stemmer, 58 ambiguous, 52 not verb-only, 30 also a noun/adjective in the POS pack.
+It contains irregulars (wrote/written→write, took, began, went, brought, built, born→bear, came, chose…) and regular forms the light stemmer
+cannot unify (denied→deny, dropped→drop, admitted→admit).
+
+**Result, paired (same 162 pairs, same title-door cache, one process; table-on checkout vs a frozen checkout of the commit before it):**
+
+| | STATES (20): correct / wrong | NOT (142): false commit |
+|---|---|---|
+| R before the table | 5 / 0 | 3 |
+| R with the table | 5 / 0 | 3 |
+
+**Answers changed by the table: 0 of 162.** McNemar gained 0 / lost 0. No harm: false commits and wrong answers not more (p(more) = 0.66 and 1.0); the G3
+corpora are unchanged (dev 44/45, held-out 18/22, 0 wrong, 0 leaks); the suite has no new failure by name (2415 pass, 1 fail — the Champollion
+manifest, plus 2 `todo` documented gaps).
+
+A trap worth keeping: the *unpaired* first run (R before from `rows.jsonl`, R after fresh) showed "+1 correct, 2 fewer false commits". That was the
+**title door**: that run had 41 door failures against 16 in the stored run, and a failed door silences a filler. The paired run — same cache, same
+process — shows 0 changed. Never compare a stored run with a fresh one against a rate-limited service.
+
+**Applying the pre-registered rule:** "no help" (fewer than 1 additional correct) → *kept only if it harms nothing AND a binder-level test shows a
+plain statement the old stemmer could not read now binds.* Both hold: no harm, and `fold-chat-lemmas.test.mjs` pins that "Pride and Prejudice was
+written by English author Jane Austen" binds (at the commit before, the same sentence returned a T2 row with no filler). **Kept; no benefit shown on
+this sample.**
+
+Why the sample cannot show it: the 162 pairs hold essentially no sentence whose relation is an irregular form PUD attests ("sank" — three Titanic
+STATES sentences — is not in PUD at all). The concrete, falsifiable next prediction, **not yet run**: with a complete English paradigm source
+(UniMorph English, an 18 MB download needing the user's explicit yes), "sank→sink" binds and the three Titanic sentences move from silent to
+correct (+3 of the 16 silent STATES sentences), with no change in false commits.
+
 ## Experiment 2 — discourse (who is "he"?) — PRIMARY ARMS, recorded before Amendment A1 was run
 
 G3 corpora (`eval/ants/g3/corpus.mjs` 113 sequences + `corpus2.mjs` 56), en/es/fr. Prompt md5 `dbb96e55552fed7d149c679175c8e600`.

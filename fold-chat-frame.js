@@ -13,6 +13,7 @@ const tokens = (q) => String(q ?? "").match(/[\p{L}\p{N}'’.-]+|[^\p{L}\p{N}\s]
  *  there is no prior, nothing to cut, or cutting would leave nothing. `fw`: a Set of case-folded function words, or null. */
 import { salienceOf } from "./fold-chat-salience-infer.js";
 import { PLACE_NOUNS_EN, NAME_KINDS_EN } from "./fold-chat-grammar-places.js";
+import { LEMMAS_EN } from "./fold-chat-lemmas-en.js";
 /** The received POSPrior's rank of a form (UD English-EWT via the salience prior: PROPN 9, NOUN 7, VERB 6, ADJ 4, ADV 1), or null when
  *  the prior has not seen it. One door for every module that reads a form's usual part of speech. */
 export function posRankOf(form, lang = null) { const v = salienceOf(form, lang); return v == null ? null : Math.round(v * 9); }
@@ -241,7 +242,14 @@ export function tokensOf(text, lang = null) {
 // A light English stemmer, DECLARED (giver: the author's reading of English inflection): -ies→-y, -ing, -ed, -s (not -ss/-us/-is) with a
 // floor on what is left. It only has to make "ended/ends/ending" meet "end" and "legs" meet "leg"; irregular forms ("began") do not
 // meet their root, which is a limit, not a bug. Applied to BOTH sides of every comparison, so a collision is symmetric.
+// LEMMAS (Experiment 3, eval/modelvsrules/PREREG.md): an irregular English form meets its lemma through a table MINED from a UD treebank by
+// scripts/build-lemma-table.mjs — never hand-edited. A word absent from the table stems exactly as the light stemmer below says.
 export function stemOf(fold, lang = "en") {
+  if (lang === "en") { const lm = LEMMAS_EN[String(fold ?? "")]; if (lm) return lightStemOf(lm, "en"); }
+  return lightStemOf(fold, lang);
+}
+/** The light stemmer alone (no lemma table): what `stemOf` was before Experiment 3, and what the table builder measures a form against. */
+export function lightStemOf(fold, lang = "en") {
   const w = String(fold ?? "");
   if (/\p{N}/u.test(w)) return w;
   if (lang !== "en") {
