@@ -57,18 +57,24 @@ async function runJob(browser, job) {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
   const page = await ctx.newPage();
   const calls = [];
+  // C8/C9 instrument: every request the context makes (page, frames, workers it reports), counted by host. It measures; the
+  // declared host list lives elsewhere and is signed off by the user, never inferred from a run.
+  const reqs = [];
+  ctx.on("request", (r) => { let h = "?"; try { const u = new URL(r.url()); h = u.protocol === "data:" || u.protocol === "blob:" ? u.protocol : u.host; } catch {} reqs.push(h); });
+  const hostsOf = (a) => a.reduce((o, h) => ((o[h] = (o[h] || 0) + 1), o), {});
   if (WORLD === "stub") await installWorld(page);
   await page.route("**/v1/chat/completions", (route) => { calls.push(route.request().url()); return route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: { message: "no model in this test" } }) }); });
   const rec = { cat: job.cat, idx: job.idx, turns: [], error: null };
   try {
     await page.goto(URL_, { waitUntil: "networkidle", timeout: 90000 });
     await page.waitForFunction(() => { const i = document.getElementById("input"); return i && !i.disabled; }, undefined, { timeout: 90000 });
+    rec.load = { requests: reqs.length, hosts: hostsOf(reqs) };
     for (const ask of job.turns) {
-      const t0 = Date.now(), c0 = calls.length;
+      const t0 = Date.now(), c0 = calls.length, r0 = reqs.length;
       await page.fill("#input", ask); await page.click("#send");
       let settled = true;
       try { await settle(page); } catch { settled = false; }
-      rec.turns.push({ ask, ms: Date.now() - t0, settled, modelCalls: calls.length - c0, ...(await snap(page)) });
+      rec.turns.push({ ask, ms: Date.now() - t0, settled, modelCalls: calls.length - c0, requests: reqs.length - r0, hosts: hostsOf(reqs.slice(r0)), ...(await snap(page)) });
     }
   } catch (e) { rec.error = String(e).slice(0, 300); }
   finally { await ctx.close(); }
