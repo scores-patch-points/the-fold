@@ -139,3 +139,26 @@ auxiliary is labelled AUX, which UD may call PART or AUX).
 
 `eval/creole/packs/pos-<code>.json` (POSPrior@1) for each language whose F1–F5 hold; `packs/CALIBRATION.json`;
 `POS-PROJECTION-RESULTS.md`; `packs/CANDIDATES.md` (what is not on disk, as a request).
+
+## 10. Pre-run amendments (2026-10-13, written after the module + falsifiers exist and before ANY calibration or pack run)
+
+- **A1 (compute).** Inside the 199 shuffled-pairing draws the diagonal sharpness λ is fixed at the value the REAL fit chose, not
+  re-selected per draw. Selecting λ by grid inside every draw multiplies the null's cost twelvefold; the grid selection stays in
+  the real run. Direction of bias unknown; reported.
+- **A2 (F1 as implemented).** The chance falsifier compares the real pack's count of correct non-trivial tokens (abstention =
+  wrong) with the same count for the RAW vote lexicon of each of the 199 shuffled-pairing draws (argmax per form, no filter).
+  The real pack must exceed the maximum over draws. (Re-fitting the full filtered pack under 199 shuffles would need 199² runs.)
+- **A3 (units).** Creole sentences are deduplicated by key, first occurrence wins (kreyol-mt gcf lists several French renderings
+  per creole sentence). A source with fewer than 2 pairs is dropped (it cannot be shuffled, so it cannot be filtered). For the
+  spread statistic one creole text is read per group (UDHR paired with three anchors is one document) and consecutive repeated
+  sentences are collapsed.
+- **A4 (hat gold).** `pos-hat.json` is a lexicon, so its tokens are resampled as clusters: each form with all its gold tokens is
+  one unit. This bootstraps type-level uncertainty and is wider than a sentence bootstrap would be.
+- **A5 (guard superset).** The held-out key set is a SUPERSET of the BASELINE list: every `source_sent` column of every tatoeba
+  file (hat-eng, cbk, gcf-eng included), `ht-en.trg`, `ht-fr.trg`, `ht-es.trg`, `en-cr_{dev,test}`, and for pcm both `# text` and
+  `# text_ortho` of dev and test — except that the pcm dev/test creole text is, by the prereg §5, read for calibration alignment
+  in the cross-fit (never for any shipped pack).
+- **A6 (pap, kea).** No gold for either exists on disk, so the "beats Wiktionary on a held-out slice" condition cannot be tested
+  and no pap/kea pack is emitted. The projection is run and reported only as type-level agreement with the Wiktionary packs and
+  as the count of closed-class forms the Wiktionary packs lack.
+- **A7 (S-large).** Calibration-only run on hat with the held-out ht-fr creole sentences is reported separately and feeds nothing.
