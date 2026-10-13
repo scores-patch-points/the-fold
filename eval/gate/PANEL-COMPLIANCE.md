@@ -86,3 +86,22 @@ Still disclosed after this round (each reproduced, none a new wrong commit versu
 6. Dominance is a containment test over the ask's scope words, disclosed in the answer ("another source says X but does not say …").
 7. `isVerb` is `posRankOf(...) === 6` — the received prior's tag, English only; a language without that prior has no verb test.
 8. Digit-led names ("50 Cent", "21 Savage", "Louis 16") read as dates and gap.
+
+## Third re-read (bdf17b1) and what it changed (e6328b2, ed08dac)
+Verdicts: SHIP-WITH-DISCLOSURE ×4 (panels 1, 5, 8, 9), HOLD ×5 — again each HOLD was a reproduced regression versus 4c5050a introduced by the
+previous round's fixes, narrower each time. Fixed with falsifiers LIVE-34…LIVE-38:
+- container-first made "born in Ulm in Germany" answer Germany → a relation takes the FIRST containment phrase; only a relation-less copula
+  complement is container-first; a determiner-led phrase is tried after the bare ones (the demotion flag was computed after the cursor moved —
+  found by its falsifier);
+- a subordinator (while/although/whereas/because …) now bounds the copula's clause; a possessor ("Mozart's father") is not a subject; the place
+  walk needs the anchor to be the relation clause's subject (a relative clause's subject is its antecedent);
+- "a DESERT in Africa": a word directly after a determiner is a noun, never a second predicate;
+- the name after "of" says where only after a declared place noun (fold-chat-grammar-places.js); attribute-valued place asks need no cue;
+- dominance reads the clause holding the filler AND needs full coverage of the ask's scope words — the clean live run crowned "Neil Armstrong" for
+  "the first woman to walk on the Moon" (a C2 violation) and the guard + a falsifier that fails without it close it.
+
+Disclosed after this round (each reproduced): a non-calendar temporal page ("Lent", "Ramadan", "Easter") is admitted as a place when the true
+place does not resolve; an article-less common noun ("born in hospital in Honolulu") takes the first phrase under a relation; "50 Cent" /
+"The Rock" gap; the possessor-of-the-subject case "Leopold Mozart, father of Wolfgang Amadeus Mozart, was born in Augsburg" (unchanged from
+HEAD); "Jeff Williams is the COO of Apple Inc. and Tim Cook is the CEO" answers by first copula (unchanged from HEAD); a title that begins with a
+function word whose later word the prior ranks a verb ("After the Gold Rush") reads as a clause and gaps.
