@@ -116,3 +116,16 @@ Compound 0/4 and follow-up 0/4 are unchanged — the discourse-audit session's g
 - the clean run caught one real C2 violation the earlier runs did not (the Armstrong false premise), now closed and pinned (LIVE-38).
 C1 on slot + holder + compute: 16/37 = 43% (bar 60%; the oracle ceiling over what retrieval handed the fold was 78%). C2 held on this set
 (0 confident-wrong outside the disputed row). One run, live variance about ±15 points.
+
+## Fourth re-read (ed08dac → 4ecf750, a8884ca) and the omnilingual falsification
+Fourth pass: SHIP-WITH-DISCLOSURE ×5, HOLD ×4 (three on shapes HEAD also got wrong — the father's birthplace class). Fixed in 4ecf750 with
+falsifiers LIVE-39…41: a determiner-led phrase keeps its place when its head is a declared place noun ("the city of Ulm"); a word inside a
+noun phrase or after a preposition is a noun ("a hot desert in Africa", "in West Africa"); a possessor or kinsman is not the anchor of a place
+relation; holidays/periods are times. The clean live run on ed08dac then caught a second false-premise crowning (Kathryn Sullivan, a row carried
+by its page title) — closed in a8884ca (a crowned row must name the anchor; a kind noun after a relation word must be said; LIVE-42).
+
+Omnilingual falsification (operator: "falsify all improvement omnilingually"): see eval/omnilingual/RESULTS.md. 11 of 16 improvements hold in
+Spanish and French with only a declared table; 5 fall, each with a named cause (3 English-only received priors — stemmer, POS prior; 2 RULE
+causes — the diacritic fold makes French "né" the function word "ne", and the tokenizer splits "a-t-il"). The falsification also found that
+every accented table word had been silently unmatched (now folded like tokens), moved the last English literals out of the code into the table,
+and fixed two English-shaped rules that were wrong in English too (a compound tense hid the subject; a place ask needed a copula).

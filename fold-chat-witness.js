@@ -36,7 +36,7 @@
 // No capital letter is read: matching is stem-folded and caseless (toLocaleLowerCase("und")), the filler is shown as the page wrote it.
 
 import { sentencesWithOffsets } from "./fold-chat-impression.js";
-import { GRAMMAR, tokensOf, stemOf, closedClassOf, posRankOf } from "./fold-chat-frame.js";
+import { grammarOf, tokensOf, stemOf, closedClassOf, posRankOf } from "./fold-chat-frame.js";
 import { salienceOf, isName } from "./fold-chat-salience-infer.js";
 
 /** Sentences of a text with UTF-16 offsets (the repo's own splitter, fold-chat-impression.js sentencesWithOffsets). */
@@ -68,11 +68,13 @@ function mergeSpans(spans) {
 
 export function bindSentence(sentence, frame, { fw = null, lang = null, source = null, topic = null, page = null, pageEntity = null } = {}) {
   const L = frame?.lang || lang;
-  const G = L ? GRAMMAR[L] : null;
+  const G = L ? grammarOf(L) : null;
   if (!sentence || typeof sentence.text !== "string" || !frame || !frame.ok || !G) return null;
   // every language fact below is read from the language's GRAMMAR table; a table that does not declare a field simply never fires
   // that rule (the rule's absence is the old behaviour), so a language is added by writing a table, never by touching this file
   const ROLE_VERBS = new Set(G.roleVerbs || []);
+  const POSS = G.possessiveSuffix ? new RegExp(`^${G.possessiveSuffix}\\b`, "u") : null;
+  const NEG_SUFFIX = G.negationSuffix ? new RegExp(`${G.negationSuffix}$`, "u") : null;
   if (!Array.isArray(frame.referents) || !frame.referents.length) return null;
   const text = sentence.text;
   const closed = closedClassOf(fw, L);
@@ -219,12 +221,12 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // STANCE (the archon panel, MF2): a sentence that only might, if, allegedly or by legend says so, or that ASKS, is neither a witness
   // nor a denial — its polarity is "?" and nothing downstream counts it as either.
   // "may" is the month when a number or a preposition is beside it ("in May 1945", "8 May"), the modal otherwise
-  const isMonthMay = (k) => toks[k].fold === "may" && ((toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text)) || (toks[k - 1] && (/^\p{Nd}/u.test(toks[k - 1].text) || (G.agentStops || []).includes(toks[k - 1].fold))));
+  const isMonthMay = (k) => (G.modalMonths || []).includes(toks[k].fold) && ((toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text)) || (toks[k - 1] && (/^\p{Nd}/u.test(toks[k - 1].text) || (G.agentStops || []).includes(toks[k - 1].fold))));
   const hedged = toks.some((t, k) => (G.hedges || []).includes(t.fold) && !isMonthMay(k)) || /\?\s*["”’')\]]*\s*$/u.test(text);
   // a negation word directly before a NUMBER is the abbreviation "No. 1" / "no. 14" ("Symphony No. 1"), not a denial: the live
   // "Moonlight Sonata" sentence was read as negative because its subordinate clause named another work's number
-  const numberSign = (k) => toks[k].fold === "no" && toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text) && /^\s*\.\s*$/u.test(text.slice(toks[k].end, toks[k + 1].start));      // "No. 1" — with its period; "no 6 legs" is a denial
-  const polarity = hedged ? "?" : toks.some((t, k) => (G.negation.includes(t.fold) && !numberSign(k)) || /n['’]t$/.test(t.fold)) ? "-" : "+";
+  const numberSign = (k) => (G.numberSigns || []).includes(toks[k].fold) && toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text) && /^\s*\.\s*$/u.test(text.slice(toks[k].end, toks[k + 1].start));      // "No. 1" — with its period; "no 6 legs" is a denial
+  const polarity = hedged ? "?" : toks.some((t, k) => (G.negation.includes(t.fold) && !numberSign(k)) || (NEG_SUFFIX && NEG_SUFFIX.test(t.fold))) ? "-" : "+";
   let tense = "unknown";
   for (const t of toks) {
     const hit = ["present", "past", "future"].find((k) => G.tense[k].includes(t.fold));
@@ -264,9 +266,12 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // "been" counts (L1 real-web shape, declared 2026-10-11: "Charles has been
     // King since 8 September 2022"): the perfect copula is a copula for the
     // filler; the auxiliary before it is trimmed off whatever side is read.
-    const ci = toks.findIndex((t, k) => (G.copulas.includes(t.fold) || t.fold === "been") && !inRef.has(k));
+    let ci = toks.findIndex((t, k) => (G.copulas.includes(t.fold) || (G.perfectCopulas || []).includes(t.fold)) && !inRef.has(k));
     let fromAgent = false;
     const typeStems = new Set();      // stems of a TYPE WORD that recurs inside the answer's own name (below)
+    // a language whose relation is ONE verb with no copula ("Mozart nació en Salzburgo", the omnilingual falsification) pivots a place ask
+    // on the relation word itself: its left is the subject, its right the complement
+    if (ci < 0 && frame.slot === "place" && relStems.length) ci = toks.findIndex((t, k) => relStems.includes(t.stem) && !inRef.has(k));
     if (ci < 0) return null;
     const carries = (a, b) => toks.some((t, k) => k >= a && k <= b && (carry.has(t.stem) || attrDescIdx.has(k)));
     const holdsPredicate = (a, b) => predMatches.some((k) => k >= a && k <= b);
@@ -309,7 +314,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // an occurrence must BEGIN the subject: no content word gaplessly before it ("LOUIS Napoleon was born in Paris" is another Napoleon,
     // whose one-word name matches a one-word alias)
     const beginsSubject = (o) => !(o.from > 0 && !closed(toks[o.from - 1].fold) && gapless(text, toks[o.from - 1], toks[o.from]))
-      && !/^['’]s\b/u.test(text.slice(toks[o.to].end, toks[o.to].end + 3));      // "Mozart's father": a possessor, not the subject
+      && !(POSS && POSS.test(text.slice(toks[o.to].end, toks[o.to].end + 3)));      // "Mozart's father": a possessor, not the subject
     {
       // an alias occurrence that BEGINS its noun phrase (on the left: the subject) — "Mozart" of "Leopold Mozart" does not
       const nameIn = (a, b, subj) => groups.some((g) => g.occ.some((o) => o.from >= a && o.to <= b && (!subj || beginsSubject(o))));
@@ -399,9 +404,9 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     if (frame.slot === "place" && relStems.length && !topic) {
       const own = [];
       groups.forEach((g) => g.occ.forEach((o) => { if (o.to < ci) own.push(o); }));
-      const whoseClause = c0 > 0 && toks[c0 - 1].fold === "whose";
+      const whoseClause = c0 > 0 && (G.possessiveRelatives || []).includes(toks[c0 - 1].fold);
       const region = (c0 > 0 && !whoseClause && (G.clauseWords.includes(toks[c0 - 1].fold) || SUBS.has(toks[c0 - 1].fold))) ? own : own.filter((o) => o.from >= c0);
-      const isPossessor = (o) => /^['’]s\b/u.test(text.slice(toks[o.to].end, toks[o.to].end + 3))
+      const isPossessor = (o) => (POSS && POSS.test(text.slice(toks[o.to].end, toks[o.to].end + 3)))
         || (o.from >= 2 && (G.governs || []).includes(toks[o.from - 1].fold) && !closed(toks[o.from - 2].fold) && !askedStems.has(toks[o.from - 2].stem));
       if ((region.length && region.every(isPossessor)) || (whoseClause && !region.length)) return null;
     }
@@ -416,7 +421,8 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // A relation-less place ask ("where is the Taj Mahal") has the copula's complement as its region: "is an ivory-white mausoleum on the
     // right bank of the Yamuna IN Agra" — the walk starts at the copula and takes the containment phrases of that clause.
     if (frame.slot === "place" && (relStems.length || side === "right") && G.containment) {
-      const relIn = relStems.length ? toks.findIndex((t, k) => k > ci && relStems.includes(t.stem) && !ordinalBefore(k)) : ci;
+      // (when the clause pivoted on the relation word itself — no copula — the walk starts there)
+      const relIn = relStems.length ? (relStems.includes(toks[ci].stem) ? ci : toks.findIndex((t, k) => k > ci && relStems.includes(t.stem) && !ordinalBefore(k))) : ci;
       const subjRegionStart = (c0 > 0 && (G.clauseWords.includes(toks[c0 - 1].fold) || SUBS.has(toks[c0 - 1].fold))) ? 0 : c0;      // a relative clause's subject is its antecedent
       const subjectIsAnchor = groups.some((g) => g.occ.some((o) => o.from >= subjRegionStart && o.to < ci && beginsSubject(o)));
       void subjectIsAnchor;
@@ -500,6 +506,8 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         a = toks[m].start; b = toks[e - 1].end;
       } else {
         while (k < toks.length && dets.has(toks[k].fold)) k++;
+        // a number after the lead is a date or a count, never the place ("born in 1756 and died in Vienna", "nació en 1756 y murió …")
+        if (k < toks.length && /^\p{Nd}/u.test(toks[k].text)) return null;
         if (k < toks.length) a = toks[k].start;
       }
     }
@@ -550,10 +558,14 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     const objectAfter = (k) => groups.some((g) => g.occ.some((o) => o.from > k && toks.slice(k + 1, o.from).every((t) => dets.has(t.fold))));   // never "wrote ABOUT Hamlet" (MF1)
     const vi = toks.findIndex((t, k) => !inRef.has(k) && (ROLE_VERBS.has(t.fold) || (relStems.includes(t.stem) && objectAfter(k))));
     if (vi <= 0) return null;
-    let s = vi;
+    // a compound tense puts the language's AUXILIARIES between the subject and the verb ("Jane Austen HAS written", "Jane Austen A écrit"):
+    // the subject ends before them (found by the omnilingual falsification; the same in English)
+    let ve = vi;
+    while (ve - 1 >= 0 && (G.auxiliaries || []).includes(toks[ve - 1].fold) && /^\s+$/.test(text.slice(toks[ve - 1].end, toks[ve].start))) ve--;
+    let s = ve;
     while (s - 1 >= 0 && !closed(toks[s - 1].fold) && !inRef.has(s - 1) && /^\s+$/.test(text.slice(toks[s - 1].end, toks[s].start))) s--;
-    if (s >= vi) return null;                                    // nothing but closed class before the verb: no subject to name
-    const a = toks[s].start, b = toks[vi - 1].end;
+    if (s >= ve) return null;                                    // nothing but closed class before the verb: no subject to name
+    const a = toks[s].start, b = toks[ve - 1].end;
     const inside = toks.filter((t) => t.start >= a && t.end <= b);
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;
     if (inside.some((t) => carry.has(t.stem))) return null;
@@ -599,7 +611,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         for (const r of runs) {
           let c = r.from - 1;
           while (c >= 0 && closed(toks[c].fold) && !G.copulas.includes(toks[c].fold)) c--;
-          if (c < 0 || !(G.copulas.includes(toks[c].fold) || toks[c].fold === "been")) continue;
+          if (c < 0 || !(G.copulas.includes(toks[c].fold) || (G.perfectCopulas || []).includes(toks[c].fold))) continue;
           const heads = new Set(G.countHeads || []);
           const a = at.find((k) => k < c && /^[^,;.()!?]*$/.test(text.slice(toks[k].end, toks[c].start))
             && toks.slice(0, k).some((t, j) => heads.has(t.fold) && toks[j + 1] && (G.governs || []).includes(toks[j + 1].fold)));      // "the NUMBER OF bones"

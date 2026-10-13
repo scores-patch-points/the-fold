@@ -56,6 +56,36 @@ export function stripFrame(question, fw) {
 // DECLARED, not measured (Constitution II.11) — the giver of every table below is the AUTHOR's reading of English (2026-10-06), written
 // before any measurement; the integrator may reverse any entry. Only English has a table today. Adding a language is adding a
 // table here with its own named giver; a language without one gets a typed gap, not a fall-through to English.
+/** The language's table: a production table from GRAMMAR, or one registered for a falsification run (withGrammars). One door, so a
+ *  language is added by writing a table and every rule reads it the same way. */
+const EXTRA_GRAMMARS = new Map();
+// Tokens are compared by their FOLD (caseless: lower case, diacritics stripped — "quién" is "quien", "né" is "ne"), so every word a table
+// declares is folded the same way before any lookup; a table is written in the language's own spelling (the omnilingual falsification
+// found every accented Spanish/French table word silently unmatched).
+const FOLDED = new WeakMap();
+function foldTable(t) {
+  if (FOLDED.has(t)) return FOLDED.get(t);
+  const RAW = new Set(["giver", "possessiveSuffix", "negationSuffix"]);
+  const f = (v) => (typeof v === "string" ? caseless(v) : v);
+  const out = {};
+  for (const [k, v] of Object.entries(t)) {
+    if (RAW.has(k)) out[k] = v;
+    else if (k === "interrogatives") out[k] = Object.freeze(v.map((i) => Object.freeze({ ...i, words: i.words.map(f) })));
+    else if (Array.isArray(v)) out[k] = Object.freeze(v.map(f));
+    else if (v && typeof v === "object" && !Array.isArray(v)) out[k] = Object.freeze(Object.fromEntries(Object.entries(v).map(([a, b]) => [a, Array.isArray(b) ? b.map(f) : b])));
+    else out[k] = typeof v === "string" ? f(v) : v;
+  }
+  const frozen = Object.freeze(out);
+  FOLDED.set(t, frozen);
+  return frozen;
+}
+export function grammarOf(lang) { const t = (lang && (EXTRA_GRAMMARS.get(lang) || GRAMMAR[lang])) || null; return t ? foldTable(t) : null; }
+/** Run `fn` with extra language tables in force (a falsification battery's declared tables); never touches the production GRAMMAR. */
+export async function withGrammars(tables, fn) {
+  const keys = Object.keys(tables || {});
+  for (const k of keys) EXTRA_GRAMMARS.set(k, Object.freeze({ ...tables[k] }));
+  try { return await fn(); } finally { for (const k of keys) EXTRA_GRAMMARS.delete(k); }
+}
 export const GRAMMAR = Object.freeze({
   en: Object.freeze({
     giver: "the author's reading of English wh-words, 'how many/much', 'what year/date/time', copulas, auxiliaries, negators and cardinal numerals (2026-10-06); declared, not measured",
@@ -95,6 +125,15 @@ export const GRAMMAR = Object.freeze({
     // calendar words: a month or a weekday is a TIME, never where ("in July", "born in January in Salzburg"); declared, not measured
     temporal: Object.freeze(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "spring", "summer", "autumn", "fall", "winter", "lent", "easter", "christmas", "ramadan", "advent", "passover", "hanukkah", "diwali", "eid", "wartime", "peacetime", "childhood", "infancy", "adulthood"]),
     placeNouns: PLACE_NOUNS_EN,       // nouns that name a KIND OF PLACE (fold-chat-grammar-places.js)
+    // English-only forms the binder used to spell in code (moved 2026-10-13 for the omnilingual falsification): the month that is also a
+    // modal ("May 1945" vs "might"), the number sign ("No. 1"), the perfect copula ("has BEEN king"), the possessive suffix ("Mozart'S
+    // father"), the possessive relative ("WHOSE father"), the negating suffix ("didN'T")
+    modalMonths: Object.freeze(["may"]),
+    numberSigns: Object.freeze(["no"]),
+    perfectCopulas: Object.freeze(["been"]),
+    possessiveSuffix: "['’]s",
+    possessiveRelatives: Object.freeze(["whose"]),
+    negationSuffix: "n['’]t",
     indefinites: Object.freeze(["a", "an"]),
     containment: Object.freeze(["in", "at", "within", "inside"]),
     // a passive AGENT ("was discovered by the physician Alexander Fleming at St Mary's") runs from "by" to the first of these
@@ -205,7 +244,7 @@ function dropE(w) {
 
 /** The closed-class test for a language: the khora's function words, plus the declared auxiliaries, negators and any "n't" token. */
 export function closedClassOf(fw, lang = "en") {
-  const G = GRAMMAR[lang];
+  const G = grammarOf(lang);
   const extra = new Set(G ? [...G.auxiliaries, ...G.negation] : []);
   const set = fw instanceof Set ? fw : new Set();
   return (fold) => set.has(fold) || extra.has(fold) || /n['’]t$/.test(fold);
@@ -234,7 +273,7 @@ const aliasesOf = (surface, res) => {
 /** Read the grammar of an ask. Never throws: every failure is a typed gap on the returned Frame. */
 export async function askFrame(question, { fw = null, lang = null, resolveTitles = null } = {}) {
   const said = String(question ?? "");
-  const G = lang ? GRAMMAR[lang] : null;
+  const G = lang ? grammarOf(lang) : null;
   if (!G || !(fw instanceof Set) || !fw.size) return gapFrame(said, lang, null, "no_grammar_for_language");
   const closed = closedClassOf(fw, lang);
   const toks = tokensOf(said);
@@ -331,7 +370,8 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
   const governs = new Set(G.governs || []);
   const headGoverns = new Set(G.governsAtHead || []);
   const possessorEnds = new Set();
-  rest.forEach((t, k) => { if (/^['’]s\b/u.test(said.slice(t.end, t.end + 3))) possessorEnds.add(k); });
+  const possRe = G.possessiveSuffix ? new RegExp(`^${G.possessiveSuffix}\\b`, "u") : null;
+  rest.forEach((t, k) => { if (possRe && possRe.test(said.slice(t.end, t.end + 3))) possessorEnds.add(k); });
   const k0 = rest.findIndex((t) => !closed(t.fold));
   const isAttr = (c, n) => {
     const after = rest[c.to + 1];

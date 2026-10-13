@@ -441,3 +441,13 @@ test("LIVE-42 a crowned row must NAME the anchor in its clause: a title-carried 
   const t = await runAnswerTurn({ question: "Who was the first woman to walk on the Moon?", lang: "en", passages: pass, now: { year: 2026 }, deps });
   assert.ok(!(t.answer && /Sullivan|Armstrong/.test(t.answer.filler.text)), "a false premise is never answered: " + JSON.stringify(t.answer && t.answer.filler));
 });
+
+test("LIVE-43 a compound tense hides no subject ('Jane Austen has written …'); a place after its lead that is a number is no place", async () => {
+  // (a regular verb: "wrote"/"written" is an irregular pair the English stemmer cannot meet — the disclosed lemma-prior gap)
+  const f = await frameOf("Who painted the Mona Lisa?", { "mona lisa": "Mona Lisa" });
+  const r = bind(f, "Leonardo da Vinci had painted the Mona Lisa by 1506.", { page: "Mona Lisa" });
+  assert.match(r && r.filler ? r.filler.text : "", /Leonardo da Vinci/);
+  const m = await frameOf("Where was Mozart born?", { mozart: "Wolfgang Amadeus Mozart" });
+  const x = bind(m, "Mozart was born in 1756 and died in Vienna.");
+  assert.ok(!x || !x.filler, "a year is not where: " + JSON.stringify(x && x.filler));
+});
