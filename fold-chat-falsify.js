@@ -107,6 +107,10 @@ export function askTense(frame, opts = {}) {
   const w = words.map((x) => x.replace(/’/g, "'"));
   if (w.some((x) => t.past.includes(x))) return "past";
   if (w.some((x) => t.present.includes(x))) return "present";
+  // no copula (the archon panel, MF17): "who LEADS the United Nations?" — a third-person -s verb right after the wh-word is present;
+  // "does/do" are present, "did" is past
+  if (w.includes("did")) return "past";
+  if (w.includes("does") || w.includes("do") || (w.length > 1 && /^(who|what|which)$/.test(w[0]) && w[1].length > 3 && /[^s]s$/.test(w[1]))) return "present";
   return "unknown";
 }
 

@@ -77,6 +77,15 @@ export const GRAMMAR = Object.freeze({
     // a passive AGENT ("was discovered by the physician Alexander Fleming at St Mary's") runs from "by" to the first of these
     agentBy: "by",
     agentStops: Object.freeze(["in", "on", "at", "during", "between", "from", "since", "until", "around", "about", "for", "with", "after", "before", "under", "near"]),
+    // THE ARCHON PANEL (2026-10-13; giver: the author's reading of English closed classes, declared, not measured):
+    // determiners — the ONLY words that may stand between a relation verb and its object ("painted THE Mona Lisa"; never "wrote ABOUT")
+    determiners: Object.freeze(["the", "a", "an", "this", "that", "these", "those", "his", "her", "its", "their", "our", "my", "your"]),
+    // stance — a sentence that only MIGHT, IF, ALLEGEDLY or by LEGEND says so is not a witness (Roberts, Scheherazade, Wigmore: MF2)
+    hedges: Object.freeze(["might", "may", "could", "would", "if", "unless", "whether", "perhaps", "possibly", "reportedly", "allegedly", "supposedly", "rumoured", "rumored", "legend", "myth", "claimed", "claims", "believed"]),
+    // ordinals — "the SECOND largest" is not the largest (Shizhen: MF16)
+    ordinals: Object.freeze(["second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth", "next"]),
+    // coordinators — an agent run ends at the first of these ("by Alexander Fleming AND Howard Florey": MF3/MF4)
+    coordinators: Object.freeze(["and", "or", "nor", "but"]),
     numerals: Object.freeze(["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety", "hundred", "thousand", "million", "billion", "trillion"]),
     magnitudes: Object.freeze(["hundred", "thousand", "million", "billion", "trillion"]),
     year: Object.freeze({ minDigits: 3, maxDigits: 4 }),                   // a "year" is a bare run of 3–4 digits ("2 September" is a day)
@@ -162,8 +171,13 @@ export function stemOf(fold, lang = "en") {
   if (w.length > 4 && w.endsWith("ies")) return w.slice(0, -3) + "y";
   if (w.length >= 6 && w.endsWith("ing")) return w.slice(0, -3);
   if (w.length >= 5 && w.endsWith("ed")) return w.slice(0, -2);
-  if (w.length >= 4 && w.endsWith("s") && !/(?:ss|us|is)$/.test(w)) return w.slice(0, -1);
-  return w;
+  if (w.length >= 4 && w.endsWith("s") && !/(?:ss|us|is)$/.test(w)) return dropE(w.slice(0, -1));
+  return dropE(w);
+}
+// the base of an -e verb meets its -ed/-ing forms (the archon panel, MF10): "compose" ~ "composed" ~ "composing" are all "compos"; only
+// past four letters, so "rose", "made", "rate" keep their e
+function dropE(w) {
+  return w.length > 4 && w.endsWith("e") && !w.endsWith("ee") ? w.slice(0, -1) : w;
 }
 
 /** The closed-class test for a language: the khora's function words, plus the declared auxiliaries, negators and any "n't" token. */
@@ -234,8 +248,35 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
   // A single token that is usually a verb, adjective or adverb is never a referent on its own; a run that BEGINS with a
   // verb-dominant token ("wrote Hamlet") is not one either. Multi-word names ("Prime Minister of Canada") are untouched.
   const posRank = (t) => { const v = salienceOf(t.text); return v == null ? null : Math.round(v * 9); };
-  const eligible = (r) => (r.i === r.j ? !(posRank(rest[r.i]) != null && posRank(rest[r.i]) <= 6) : posRank(rest[r.i]) !== 6);
+  // POSITION DECIDES, THE PRIOR ONLY BREAKS TIES (the archon panel, 2026-10-13: MF6, MF7). A token is the ask's RELATION when it sits
+  // where English puts the verb of a wh-question — the first content word after the wh-phrase with no copula before it ("who WROTE
+  // Hamlet", "who PENNED Hamlet", whatever the prior knows of it). A token in ARGUMENT position — after a copula ("where is NICE",
+  // "who is HOPE Solo", "where are the COOK Islands") or after the relation verb ("who directed UP") — is never vetoed: there a name
+  // is a name. Everywhere else the received prior decides as before: a lone verb/adjective/adverb that modifies a following word
+  // ("the LARGEST planet") is not an entity.
+  const copulaAt = rest.findIndex((t) => G.copulas.includes(t.fold));
+  const firstContent = rest.findIndex((t) => !closed(t.fold));
+  // where the relation sits: "who WROTE Hamlet" (wh + verb) — the first content word; "when DID the Titanic SINK", "what year did World
+  // War 2 END" (do-support) — the LAST content word, the subject between is an argument; "how many LEGS does a spider have" — the first
+  // content word is the counted noun, not a relation; after a copula there is no relation position.
+  const DO = new Set(["do", "does", "did"]);
+  const lastContent = (() => { for (let k = rest.length - 1; k >= 0; k--) if (!closed(rest[k].fold)) return k; return -1; })();
+  const relPos = slot === "quantity" || firstContent < 0 || (copulaAt >= 0 && copulaAt < firstContent) ? -1
+    : rest.slice(0, firstContent).some((t) => DO.has(t.fold)) ? (lastContent > firstContent ? lastContent : -1)
+    : firstContent;
+  const afterCopula = (k) => copulaAt >= 0 && k > copulaAt && rest.slice(copulaAt + 1, k).every((t) => closed(t.fold));
+  const doSupport = relPos >= 0 && rest.slice(0, firstContent).some((t) => DO.has(t.fold));
+  const afterRelation = (k) => relPos >= 0 && (doSupport ? k < relPos && k >= firstContent : k > relPos);
+  const nextContent = (k) => rest.slice(k + 1).some((t) => !closed(t.fold));
+  const argument = (r) => afterRelation(r.i) || (afterCopula(r.i) && (r.i !== r.j || !nextContent(r.i)));
+  const eligible = (r) => {
+    if (r.i === relPos) return false;                                         // the relation itself, never an entity
+    if (argument(r)) return true;                                             // a name in argument position stays a name
+    return r.i === r.j ? !(posRank(rest[r.i]) != null && posRank(rest[r.i]) <= 6) : posRank(rest[r.i]) !== 6;
+  };
   for (let k = runs.length - 1; k >= 0; k--) if (!eligible(runs[k])) runs.splice(k, 1);
+  // Disclosed (MF6, "who directed UP?"): a title made only of function words is never a referent — the declared doctrine pinned by
+  // fold-chat-frame.test.mjs ("a function word is never a referent and never a predicate") outranks the panel's case.
   const candidates = [...new Set(runs.map((r) => r.surface))];
 
   // 3. ONE call; any failure is a gap, not a throw
@@ -290,12 +331,17 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
     const stem = stemOf(t.fold, lang);
     // `rel`: the received POSPrior says this form is usually a verb, adjective or adverb — the ask's RELATION ("wrote", "largest",
     // "discovered", "current"), as opposed to a leftover noun ("solar", "system") that merely narrows a referent.
+    // `name`: a leftover the prior ranks as a name or does not know, in argument position — an unresolved NAME of the ask ("Zelda" in
+    // "where was Zelda born"), which a witness must say; dropping it let any "X was born in France" answer (the archon panel, MF20).
     const rk = posRank(t);
-    if (!seen.has(stem)) { seen.add(stem); predicate.push({ surface: t.text, stem, ...(rk != null && rk <= 6 ? { rel: true } : {}) }); }
+    const isRel = k === relPos || (rk != null && rk <= 6) || (rk == null && nextContent(k) && !afterRelation(k) && !afterCopula(k));
+    const isName = !isRel && (rk == null || rk >= 8);
+    if (!seen.has(stem)) { seen.add(stem); predicate.push({ surface: t.text, stem, ...(isRel ? { rel: true } : {}), ...(isName ? { name: true } : {}) }); }
   });
   // "how MANY legs …": the number must belong to the counted noun (the first content word after the interrogative), never to a
   // neighbouring noun ("52,075 SPECIES") — the witness reads this (fold-chat-witness.js nearestNumber).
   let counted = null;
-  if (slot === "quantity" && k0 >= 0 && taken.has(k0)) counted = { stem: stemOf(rest[k0].fold, lang), surface: rest[k0].text };
+  // whether or not the counted noun resolves as a page (the archon panel, MF15: "how many WINGS does a bee have")
+  if (slot === "quantity" && k0 >= 0) counted = { stem: stemOf(rest[k0].fold, lang), surface: rest[k0].text };
   return { ok: true, lang, said, slot, referents: anchorsChosen.map((c) => c.referent), attributes, predicate, counted, gap: null };
 }

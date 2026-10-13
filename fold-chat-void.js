@@ -162,7 +162,12 @@ export function hasEvidence(ev) {
 const clone = (x) => (x === undefined ? undefined : JSON.parse(JSON.stringify(x)));
 const deepFreeze = (o) => { if (o && typeof o === "object" && !Object.isFrozen(o)) { Object.freeze(o); for (const k of Object.keys(o)) deepFreeze(o[k]); } return o; };
 
-const roleOf = (frame) => (frame && Array.isArray(frame.predicate) ? frame.predicate.map((p) => p.surface || p.stem).filter(Boolean).join(" ") : "");
+const roleOf = (frame) => {
+  if (!frame) return "";
+  const attrs = Array.isArray(frame.attributes) ? frame.attributes.map((a) => a.surface).filter(Boolean) : [];   // "king" of "king of the UK" (MF21)
+  const pred = Array.isArray(frame.predicate) ? frame.predicate.map((p) => p.surface || p.stem).filter(Boolean) : [];
+  return [...attrs, ...pred].join(" ");
+};
 
 /** Open the turn's record for a Frame. events[0] is the 'ask'; the referents (and a frame gap) follow, from the frame's own fields. */
 export function createTurnVoid(frame) {

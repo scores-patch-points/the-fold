@@ -102,12 +102,19 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
   // the longest tail of it that the title door resolves, starting at a name-like word (the received POSPrior ranks it PROPN, or does not
   // know it). Every variant rides the SAME one title call; the full phrase is always tried first.
   const closedV = closedClassOf(fw, frame.lang || "en");
+  // THE NAME KEEPS ITS HEAD (the archon panel, MF5): from a descriptive phrase the name starts at its first name-like word (the prior
+  // ranks it PROPN or does not know it) once the leading descriptors are dropped — "the Scottish physician Alexander Fleming" is
+  // "Alexander Fleming" — and is then trimmed only from the RIGHT, never below two words of a multi-word name ("Alexander Fleming FRS"
+  // is "Alexander Fleming"; "the retired plumber Jane Paris" is "Jane Paris" or nothing — never the city Paris).
   const variantsOf = (f) => {
-    const tk = tokensOf(f.text), out = [{ text: f.text, from: 0 }];
-    for (let i = 1; i < tk.length; i++) {
-      if (closedV(tk[i].fold)) continue;
-      const rank = posRankOf(tk[i].text);
-      if (rank == null || rank >= 8) out.push({ text: f.text.slice(tk[i].start), from: tk[i].start });
+    const tk = tokensOf(f.text), out = [{ text: f.text, from: 0, to: f.text.length }];
+    let h = 0;
+    while (h < tk.length && (closedV(tk[h].fold) || ((r) => r != null && r < 8)(posRankOf(tk[h].text)))) h++;
+    if (h >= tk.length) return out;
+    for (let e = tk.length; e > h; e--) {
+      if (e - h < 2 && tk.length - h >= 2) break;
+      const v = { text: f.text.slice(tk[h].start, tk[e - 1].end), from: tk[h].start, to: tk[e - 1].end };
+      if (!out.some((x) => x.text === v.text)) out.push(v);
     }
     return out;
   };
@@ -122,7 +129,7 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
     const f = e.row.filler;
     const hit = variantsOf(f).find((v) => isNamed(table.get(v.text)));
     if (!hit) { e.row = { ...e.row, filler: null }; continue; }
-    if (hit.from > 0) e.row = { ...e.row, filler: { text: hit.text, span: [f.span[0] + hit.from, f.span[1]] } };
+    if (hit.from > 0 || hit.to < f.text.length) e.row = { ...e.row, filler: { text: hit.text, span: [f.span[0] + hit.from, f.span[0] + hit.to] } };
   }
   return { unverified: !ok };
 }
@@ -257,7 +264,7 @@ async function run({ question, lang, passages, now, deps }) {
       // THE REAL FRAME rides the receipt (2026-10-11): the resolveTitles-backed referents and the
       // predicate — what the compound one shot binds later parts against (omnilingual: a referent is
       // whatever a TITLE resolved to, never a case rule).
-      frame: { slot: frame.slot, referents: frame.referents, predicate: frame.predicate },
+      frame: { slot: frame.slot, referents: frame.referents, predicate: frame.predicate, attributes: frame.attributes || [], counted: frame.counted || null },
     };
   };
   const partial = () => finishTurn({ aborted: true });

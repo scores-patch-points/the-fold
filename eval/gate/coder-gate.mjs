@@ -81,7 +81,17 @@ if (mode === "run") {
     const before = sh(t.testCommand, dir, 90000);
     const t0 = Date.now();
     let door_ = null, err = null;
-    try {
+    if (args.includes("--direct")) {
+      // IN-PROCESS: the same runCodeLoop the proxy's POST /v1/code runs, imported from the khora checkout the proxy serves, with the
+      // generation door OFF (its default port is held by an unrelated app on this box) so drafts go to the local model channel.
+      try {
+        process.env.ER7_GENERATION_DOOR = "off";
+        const { runCodeLoop } = await import(`${ROOT}/khora/native/the-fold/code-loop.js`);
+        const ac = new AbortController(); const timer = setTimeout(() => ac.abort(), 15 * 60 * 1000);
+        door_ = await runCodeLoop({ sessionId: "mvp-gate", model: opt("model", "qwen2.5-coder:1.5b"), task: t.subject, workspace: dir, testCommand: t.testCommand, maxRounds: 3, signal: ac.signal });
+        clearTimeout(timer);
+      } catch (e) { err = String(e && e.message || e).slice(0, 300); }
+    } else try {
       const r = await fetch(door + "/v1/code", { method: "POST", headers: { "content-type": "application/json", "x-er7-session": "mvp-gate" }, body: JSON.stringify({ task: t.subject, workspace: dir, testCommand: t.testCommand, maxRounds: 3, ground: true }), signal: AbortSignal.timeout(15 * 60 * 1000) });
       door_ = await r.json().catch(() => ({ status: r.status }));
     } catch (e) { err = String(e).slice(0, 300); }

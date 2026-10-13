@@ -83,7 +83,8 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const groups = frame.referents.map((r) => {
     const names = Array.isArray(r.aliases) && r.aliases.length ? r.aliases : [r.surface, r.title];
     const seqs = [], content = new Set();
-    for (const a of names) {
+    for (const a0 of names) {
+      const a = String(a0 ?? "").replace(/\s*\([^)]*\)\s*$/u, "");          // "Jaws (film)" is Jaws: the qualifier is the encyclopedia's, not the referent's (MF18)
       const at = tokensOf(a);
       if (!at.length) continue;
       seqs.push(at.map((t) => stemOf(t.fold, L)));
@@ -122,7 +123,16 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const roleWords = new Set([...roleStems, ...attrs.flatMap((a) => a.stems)]);      // the role may be the ask's attribute ("king OF the UK")
   const declaresOtherAnchor = (tk, src) => tk.some((t, k) => {
     if (!roleWords.has(stemOf(t.fold, L)) || !governsSet.has(tk[k + 1]?.fold)) return false;
-    const after = []; for (let m = k + 2; m < tk.length && !/[|:;,.()–—]/u.test(String(src).slice(tk[m - 1].end, tk[m].start)); m++) after.push(tk[m]);
+    // X is the noun phrase right after "of": determiners and content words, up to a coordinator, a clause word, another preposition or a
+    // break — "king of the United Kingdom AND the other Commonwealth realms" declares the United Kingdom, nothing more
+    const detsX = new Set(G.determiners || []), coordX = new Set(G.coordinators || []);
+    const after = [];
+    for (let m = k + 2; m < tk.length && !/[|:;,.()–—]/u.test(String(src).slice(tk[m - 1].end, tk[m].start)); m++) {
+      const f = tk[m].fold;
+      const rkX = posRankOf(tk[m].text);
+      if (coordX.has(f) || G.clauseWords.includes(f) || (closed(f) && !detsX.has(f)) || (!closed(f) && rkX != null && rkX <= 6)) break;   // "… of the United Kingdom NOW": an adverb ends the phrase
+      after.push(tk[m]);
+    }
     const content = after.filter((x) => !closed(x.fold));
     return content.length > 0 && content.some((x) => !refStemsAll.has(stemOf(x.fold, L)));
   });
@@ -133,9 +143,10 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   if (!groups.every((g) => g.occ.length || carriedByTopic(g) || titleCarriesRole)) return null;
   // An ATTRIBUTE said in the sentence anchors it when the page's own title carries the anchor (2026-10-12): "The current prime
   // minister is Andy Burnham" on the page "Prime Minister of the United Kingdom" — the role is said, the UK is the page.
-  const attrAnchors = attrs.length > 0 && attrSaid && groups.every((g) => g.occ.length || carriedByTopic(g));
+  const titleIsRolePage = !!topic && tokensOf(String(topic).replace(/\s*\([^)]*\)\s*$/u, "")).filter((t) => !closed(t.fold)).every((t) => { const st = stemOf(t.fold, L); return refStemsAll.has(st) || attrs.some((a) => a.stems.includes(st)) || predStems.includes(st); });
+  const attrAnchors = attrs.length > 0 && attrSaid && titleIsRolePage && groups.every((g) => g.occ.length || carriedByTopic(g));
   if (!groups.some((g) => g.occ.length) && !titleCarriesRole && !attrAnchors) return null;
-  if (!groups.every((g) => g.occ.length) && declaresOtherAnchor(toks, text)) return null;   // "the prime minister of Australia is …" for Canada
+  if (declaresOtherAnchor(toks, text)) return null;   // "the prime minister of Australia is …" for Canada — even beside a mention of Canada (MF12)
   // An attribute is part of what the ask is ABOUT: a sentence that never says it ("The United Kingdom is a country" for "who is the
   // king of the UK") is about something else — no row, not even a closest one (the same standing the attribute had as a referent).
   if (attrs.length && !attrSaid) return null;   // no anchor at all: only the declared role page may carry the whole group anaphorically
@@ -149,11 +160,19 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // Not for a COUNT: "how many kilometres does the Quillon run" is pinned by the counted noun's own number, and "flows for 640
   // kilometres" says the same count in other words (the Pivot's rung 2 relies on exactly that).
   const relStems = frame.slot === "quantity" ? [] : (frame.predicate || []).filter((p) => p.rel).map((p) => p.stem);
-  const relMatched = !relStems.length || predMatches.some((k) => relStems.includes(toks[k].stem));
-  const tier = attrSaid && (!(frame.predicate || []).length || (predMatches.length && relMatched)) ? "T1" : "T2";
+  const ordinalBefore = (k) => k > 0 && ((G.ordinals || []).includes(toks[k - 1].fold) || /^\d+(?:st|nd|rd|th)$/iu.test(toks[k - 1].text));
+  const relMatched = !relStems.length || predMatches.some((k) => relStems.includes(toks[k].stem) && !ordinalBefore(k));   // "the SECOND largest" is not the largest (MF16)
+  const nameStems = (frame.predicate || []).filter((p) => p.name).map((p) => p.stem);
+  const namesSaid = nameStems.every((st) => toks.some((t) => t.stem === st));                                        // "where was ZELDA born" needs Zelda (MF20)
+  const tier = attrSaid && namesSaid && (!(frame.predicate || []).length || (predMatches.length && relMatched)) ? "T1" : "T2";
 
   // ── polarity and tense: the sentence's own closed-class words ──────────────────────────────────────────────────
-  const polarity = toks.some((t) => G.negation.includes(t.fold) || /n['’]t$/.test(t.fold)) ? "-" : "+";
+  // STANCE (the archon panel, MF2): a sentence that only might, if, allegedly or by legend says so, or that ASKS, is neither a witness
+  // nor a denial — its polarity is "?" and nothing downstream counts it as either.
+  // "may" is the month when a number or a preposition is beside it ("in May 1945", "8 May"), the modal otherwise
+  const isMonthMay = (k) => toks[k].fold === "may" && ((toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text)) || (toks[k - 1] && (/^\p{Nd}/u.test(toks[k - 1].text) || (G.agentStops || []).includes(toks[k - 1].fold))));
+  const hedged = toks.some((t, k) => (G.hedges || []).includes(t.fold) && !isMonthMay(k)) || /\?\s*["”’')\]]*\s*$/u.test(text);
+  const polarity = hedged ? "?" : toks.some((t) => G.negation.includes(t.fold) || /n['’]t$/.test(t.fold)) ? "-" : "+";
   let tense = "unknown";
   for (const t of toks) {
     const hit = ["present", "past", "future"].find((k) => G.tense[k].includes(t.fold));
@@ -247,10 +266,21 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       if (relK >= 0) {
         const byK = toks.findIndex((t, k) => k > relK && inSide(t) && t.fold === G.agentBy);
         if (byK < 0 || byK + 1 >= toks.length || !inSide(toks[byK + 1])) return null;
+        // the agent of THIS verb in THIS clause (the archon panel, MF3): between the verb and "by" there is no coordinator, no clause
+        // break and no second verb ("discovered in 1928 and later DEVELOPED by Howard Florey" is Florey's development, not his discovery)
+        const coord = new Set(G.coordinators || []);
+        for (let k = relK + 1; k < byK; k++) {
+          const rk = posRankOf(toks[k].text);
+          if (coord.has(toks[k].fold) || (rk === 6 && !G.auxiliaries.includes(toks[k].fold))) return null;
+        }
+        if (/[,;:()]/u.test(text.slice(toks[relK].end, toks[byK].start))) return null;
         const stops = new Set(G.agentStops || []);
         let e = byK + 1;
-        while (e < toks.length && inSide(toks[e]) && !stops.has(toks[e].fold) && !G.clauseWords.includes(toks[e].fold)) e++;
+        while (e < toks.length && inSide(toks[e]) && !stops.has(toks[e].fold) && !coord.has(toks[e].fold) && !G.clauseWords.includes(toks[e].fold) && !/[,;:()]/u.test(text.slice(toks[e - 1].end, toks[e].start))) e++;
         if (e <= byK + 1) return null;
+        // an agent is somebody: a number ("by 1930") or a common noun alone ("by accident") is manner or time, not a person (MF3)
+        const run = toks.slice(byK + 1, e);
+        if (/^\p{Nd}/u.test(run[0].text) || !run.some((t) => !closed(t.fold) && !/^\p{Nd}/u.test(t.text) && (posRankOf(t.text) == null || posRankOf(t.text) >= 8))) return null;
         a = toks[byK + 1].start; b = toks[e - 1].end;
       }
     }
@@ -280,7 +310,8 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // the ask's own RELATION verb counts too (2026-10-12), but only when an ANCHOR is its direct object — nothing but closed class
     // between the verb and the anchor ("discovered penicillin", "painted the Mona Lisa"), so "Voltaire wrote a negative review OF
     // Hamlet" never makes Voltaire the author
-    const objectAfter = (k) => groups.some((g) => g.occ.some((o) => o.from > k && toks.slice(k + 1, o.from).every((t) => closed(t.fold))));
+    const dets = new Set(G.determiners || []);
+    const objectAfter = (k) => groups.some((g) => g.occ.some((o) => o.from > k && toks.slice(k + 1, o.from).every((t) => dets.has(t.fold))));   // never "wrote ABOUT Hamlet" (MF1)
     const vi = toks.findIndex((t, k) => !inRef.has(k) && (ROLE_VERBS.has(t.fold) || (relStems.includes(t.stem) && objectAfter(k))));
     if (vi <= 0) return null;
     let s = vi;

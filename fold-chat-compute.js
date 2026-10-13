@@ -199,12 +199,22 @@ const MONTHS = { january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2, apri
 const MON = Object.keys(MONTHS).sort((a, b) => b.length - a.length).join("|");
 const DATE_SRC = `(?:\\d{4}-\\d{2}-\\d{2}|\\d{1,2}(?:st|nd|rd|th)?\\s+(?:of\\s+)?(?:${MON})\\.?,?\\s+\\d{4}|(?:${MON})\\.?\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s+\\d{4})`;
 const DAYS_BETWEEN = new RegExp(`^(?:(?:how many )?days(?: are there| is it| are)?|the number of days|number of days)?\\s*(?:between|from)\\s+(${DATE_SRC})\\s+(?:and|to|until|till)\\s+(${DATE_SRC})$`, "iu");
+// A DATE THAT DOES NOT EXIST IS REFUSED (the archon panel, MF8): Date.UTC rolls 30 February into March and reads years 0-99 as 19xx;
+// a calendar answer is only computed from a real day of a real month of a four-digit year.
+function realDay(y, mo, d) {
+  if (!(y >= 1000 && y <= 9999) || !(mo >= 0 && mo <= 11) || !(d >= 1)) return null;
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const dim = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mo];
+  if (d > dim) return null;
+  const t = new Date(0); t.setUTCFullYear(y, mo, d); t.setUTCHours(0, 0, 0, 0);
+  return t.getTime();
+}
 function parseDate(t) {
   const x = String(t).toLowerCase().replace(/,/g, "").replace(/\s+/g, " ").trim();
   let m;
-  if ((m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(x))) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
-  if ((m = /^(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?([a-z]+)\.?\s+(\d{4})$/.exec(x)) && MONTHS[m[2]] != null) return Date.UTC(+m[3], MONTHS[m[2]], +m[1]);
-  if ((m = /^([a-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?\s+(\d{4})$/.exec(x)) && MONTHS[m[1]] != null) return Date.UTC(+m[3], MONTHS[m[1]], +m[2]);
+  if ((m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(x))) return realDay(+m[1], +m[2] - 1, +m[3]);
+  if ((m = /^(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?([a-z]+)\.?\s+(\d{4})$/.exec(x)) && MONTHS[m[2]] != null) return realDay(+m[3], MONTHS[m[2]], +m[1]);
+  if ((m = /^([a-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?\s+(\d{4})$/.exec(x)) && MONTHS[m[1]] != null) return realDay(+m[3], MONTHS[m[1]], +m[2]);
   return null;
 }
 function daysBetween(q) {
@@ -214,7 +224,9 @@ function daysBetween(q) {
   if (a == null || b == null || !Number.isFinite(a) || !Number.isFinite(b)) return null;
   const n = Math.round(Math.abs(b - a) / 86400000);
   const expr = `days between ${m[1].trim()} and ${m[2].trim()}`;
-  return { ok: true, kind: "date", expr, value: n, valueText: String(n), text: `${n} day${n === 1 ? "" : "s"} between ${m[1].trim()} and ${m[2].trim()}`, operands: [n] };
+  // the derivation's operands are the dates' OWN numbers and the result (MF9): an answer that restates "1 January 2026" adds nothing
+  const own = [...`${m[1]} ${m[2]}`.matchAll(/\d+/g)].map((x) => Number(x[0]));
+  return { ok: true, kind: "date", expr, value: n, valueText: String(n), text: `${n} day${n === 1 ? "" : "s"} between ${m[1].trim()} and ${m[2].trim()}`, operands: [...own, n] };
 }
 
 export function evaluate(question) {
