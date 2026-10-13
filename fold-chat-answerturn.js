@@ -81,9 +81,9 @@ function bindPassages(passages, frame, { fw, code, from = 0 }) {
     const source = { ref: isStr(p.ref) ? p.ref : "S" + (from + i + 1), title: p.title || "", url: p.url || "", host: p.host || hostOf(p.url), lang: p.lang || code };
     read.push(source);
     sentencesOf(p.text).forEach((s, k) => {
-      let row = bindSentence(s, frame, { fw, lang: code, source }), viaTitle = false;
+      let row = bindSentence(s, frame, { fw, lang: code, source, page: p.title || null }), viaTitle = false;
       if (!row && isStr(p.title)) {
-        const r2 = bindSentence(s, frame, { fw, lang: code, source, topic: p.title });
+        const r2 = bindSentence(s, frame, { fw, lang: code, source, topic: p.title, page: p.title });
         if (r2 && r2.filler) { row = r2; viaTitle = true; }
       }
       if (row) out.push({ row, viaTitle, page: source, order: (from + i) * 10000 + k });
@@ -118,7 +118,10 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
     }
     return out;
   };
-  const texts = [...new Set(withFiller.flatMap((e) => variantsOf(e.row.filler).map((v) => v.text)))];
+  // a filler may carry ALTERNATIVES (a place phrase after each locative preposition, left to right): every alternative and each of
+  // its head-keeping variants rides the SAME single title call, and the first that is a page wins
+  const candidatesOf = (f) => (Array.isArray(f.alts) && f.alts.length ? f.alts : [f]).flatMap((alt) => variantsOf(alt).map((v) => ({ ...v, base: alt })));
+  const texts = [...new Set(withFiller.flatMap((e) => candidatesOf(e.row.filler).map((v) => v.text)))];
   let table = null;
   try { table = typeof resolveTitles === "function" ? await resolveTitles(texts.slice()) : null; } catch { table = null; }
   const ok = table instanceof Map;
@@ -127,9 +130,11 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
     e.checked = true;
     if (!ok) { if (e.viaTitle) e.row = { ...e.row, filler: null }; continue; }
     const f = e.row.filler;
-    const hit = variantsOf(f).find((v) => isNamed(table.get(v.text)));
+    const hit = candidatesOf(f).find((v) => isNamed(table.get(v.text)));
     if (!hit) { e.row = { ...e.row, filler: null }; continue; }
-    if (hit.from > 0 || hit.to < f.text.length) e.row = { ...e.row, filler: { text: hit.text, span: [f.span[0] + hit.from, f.span[0] + hit.to] } };
+    const title = table.get(hit.text).title;                       // what the name IS: contest candidates that are one page are one entity
+    const b0 = hit.base.span[0];
+    e.row = { ...e.row, filler: { text: hit.text, span: [b0 + hit.from, b0 + hit.to], title } };
   }
   return { unverified: !ok };
 }
@@ -321,8 +326,9 @@ async function run({ question, lang, passages, now, deps }) {
   // 5 ── choose: distinct fillers in order of their best row's bearing
   const groups = [];
   for (const e of usable) {
-    const g = groups.find((x) => sameFiller(x.name, e.row.filler.text));
-    if (g) g.entries.push(e); else groups.push({ name: e.row.filler.text, entries: [e] });
+    const t = e.row.filler.title || null;
+    const g = groups.find((x) => sameFiller(x.name, e.row.filler.text) || (t && x.title && x.title === t));
+    if (g) { g.entries.push(e); if (!g.title && t) g.title = t; } else groups.push({ name: e.row.filler.text, title: t, entries: [e] });
   }
 
   // 6 ── falsify: the best candidate first. A refuted one is set aside (its rows leave the pool: a dead holder is not a rival) and the

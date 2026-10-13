@@ -230,7 +230,12 @@ function localCheck(probe, c, pool, nowYear) {
   const nSources = new Set(others.map(sourceKey).filter((k) => k && k !== mine)).size;
   const scope = nSources > 0 ? SAY.scopeOther(nSources) : SAY.scopePage;
   const witnessing = others.filter((r) => r.tier !== "T2");
-  const rivals = witnessing.filter((r) => r.polarity !== "-" && fillerText(r.filler) && !sameFiller(fillerText(r.filler), c.name)
+  // the SAME ENTITY by the title door is one claimant however it is written ("Leo Tolstoy" / "Count Tolstoy", "Wien" / "Vienna"): a
+  // row whose filler resolved to the claim's own page is no rival, and a negation of that page is a negation of the claim
+  const titleOf = (r) => (r && r.filler && typeof r.filler.title === "string" ? r.filler.title.trim().toLowerCase() : null);
+  const claimTitle = titleOf(c.row);
+  const sameClaim = (r) => sameFiller(fillerText(r.filler), c.name) || (!!claimTitle && titleOf(r) === claimTitle);
+  const rivals = witnessing.filter((r) => r.polarity !== "-" && fillerText(r.filler) && !sameClaim(r)
     && (!probe.current || r.tense === "present" || r.tense === "unknown" || r.tense == null));
   if (probe.kind === "rival-holder") {
     if (!rivals.length) return { probe, outcome: "none", scope, text: SAY.noRival(scope) };
@@ -241,7 +246,7 @@ function localCheck(probe, c, pool, nowYear) {
     // a negation only contradicts a claim of the SAME tense: "France has had no king since 1848" does not refute "Louis XVI was the last king"
     const known = (t) => t === "present" || t === "past" || t === "future";
     const sameTime = (r) => !(c.row && known(c.row.tense) && known(r.tense) && c.row.tense !== r.tense);
-    const negs = witnessing.filter((r) => r.polarity === "-" && sameTime(r) && (!fillerText(r.filler) || sameFiller(fillerText(r.filler), c.name)));
+    const negs = witnessing.filter((r) => r.polarity === "-" && sameTime(r) && (!fillerText(r.filler) || sameClaim(r)));
     if (!negs.length) return { probe, outcome: "none", scope, text: SAY.noNegation(scope) };
     return { probe, outcome: "found", scope, found: "a source saying otherwise", rows: negs,
       refuters: negs.map((r) => ({ probe, passage: passageOf(r), why: SAY.negationWhy(r.source && r.source.title), row: r })) };

@@ -37,7 +37,7 @@
 
 import { sentencesWithOffsets } from "./fold-chat-impression.js";
 import { GRAMMAR, tokensOf, stemOf, closedClassOf, posRankOf } from "./fold-chat-frame.js";
-import { salienceOf } from "./fold-chat-salience-infer.js";
+import { salienceOf, isName } from "./fold-chat-salience-infer.js";
 
 /** Sentences of a text with UTF-16 offsets (the repo's own splitter, fold-chat-impression.js sentencesWithOffsets). */
 export function sentencesOf(text) {
@@ -65,12 +65,14 @@ function mergeSpans(spans) {
   return out;
 }
 
-const ROLE_VERBS = new Set(["became", "become", "becomes", "succeeded", "succeeds", "assumed", "assumes", "took", "takes", "taken", "elected", "elects", "crowned", "crowns", "acceded", "accedes", "appointed", "appoints", "named", "won", "serves", "served", "holds", "held", "leads", "led"]);   // the declared role-verb set (2026-10-11; giver: the author)
 
-export function bindSentence(sentence, frame, { fw = null, lang = null, source = null, topic = null } = {}) {
+export function bindSentence(sentence, frame, { fw = null, lang = null, source = null, topic = null, page = null } = {}) {
   const L = frame?.lang || lang;
   const G = L ? GRAMMAR[L] : null;
   if (!sentence || typeof sentence.text !== "string" || !frame || !frame.ok || !G) return null;
+  // every language fact below is read from the language's GRAMMAR table; a table that does not declare a field simply never fires
+  // that rule (the rule's absence is the old behaviour), so a language is added by writing a table, never by touching this file
+  const ROLE_VERBS = new Set(G.roleVerbs || []);
   if (!Array.isArray(frame.referents) || !frame.referents.length) return null;
   const text = sentence.text;
   const closed = closedClassOf(fw, L);
@@ -80,6 +82,34 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const attrSaid = attrs.every((a) => a.stems.every((st) => toks.some((t) => t.stem === st)));
 
   // ── referent groups: any alias, stem-folded; a group is present when one alias occurs contiguously ───────────────
+  // A DERIVATIVE PAGE (the first live gate run, 2026-10-13: "who wrote Pride and Prejudice" committed a sentence about "Pride and
+  // Prejudice and Zombies"): when the page the sentence was read on has a title that CONTAINS the referent's name and EXTENDS it, and the
+  // sentence continues the occurrence with the same extending words, the occurrence belongs to the longer entity, not to the referent.
+  const pageTokObjs = page ? tokensOf(String(page).replace(/\s*\([^)]*\)\s*$/u, "")) : null;
+  const pageToks = pageTokObjs ? pageTokObjs.map((t) => stemOf(t.fold, L)) : null;
+  const sameStems = (x, y) => x.length === y.length && x.every((st, k) => st === y[k]);
+  // the page IS the ask's own referent (its resolved title): its lead names it by the title, and that is no derivative of anything
+  const pageIsReferent = !!pageToks && frame.referents.some((r) => r && r.title && sameStems(tokensOf(String(r.title).replace(/\s*\([^)]*\)\s*$/u, "")).map((t) => stemOf(t.fold, L)), pageToks));
+  // the words of the ASK itself (its attribute and relation stems): a longer title made of them is the ask's own phrase, not another
+  // entity ("Attack on Pearl Harbor" for "when was Pearl Harbor attacked", "President of France" for "who is the president of France")
+  const askedStems = new Set([...(frame.attributes || []).flatMap((x) => x.stems || []), ...(frame.predicate || []).map((x) => x.stem)]);
+  const partOfLongerTitle = (o, seqs) => {
+    if (!pageToks || pageToks.length < 2 || pageIsReferent) return false;
+    for (const seq of seqs) {
+      if (seq.length >= pageToks.length) continue;
+      for (let i = 0; i + seq.length <= pageToks.length; i++) {
+        if (!seq.every((st, k) => pageToks[i + k] === st)) continue;
+        const left = pageToks.slice(0, i), right = pageToks.slice(i + seq.length);
+        if (!left.length && !right.length) continue;
+        const extra = [...left.map((st, k) => [st, pageTokObjs[k]]), ...right.map((st, k) => [st, pageTokObjs[i + seq.length + k]])];
+        if (extra.every(([st, t]) => askedStems.has(st) || closed(t.fold))) continue;      // the extension is the ask's own words
+        const lOk = left.every((st, k) => toks[o.from - left.length + k] && toks[o.from - left.length + k].stem === st);
+        const rOk = right.every((st, k) => toks[o.to + 1 + k] && toks[o.to + 1 + k].stem === st);
+        if (lOk && rOk) return true;
+      }
+    }
+    return false;
+  };
   const groups = frame.referents.map((r) => {
     const names = Array.isArray(r.aliases) && r.aliases.length ? r.aliases : [r.surface, r.title];
     const seqs = [], content = new Set();
@@ -90,7 +120,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       seqs.push(at.map((t) => stemOf(t.fold, L)));
       for (const t of at) if (!closed(t.fold)) content.add(stemOf(t.fold, L));
     }
-    return { seqs, content, occ: seqs.flatMap((s) => occurrences(toks, text, s)) };
+    return { seqs, content, occ: seqs.flatMap((s) => occurrences(toks, text, s)).filter((o) => !partOfLongerTitle(o, seqs)) };
   });
   const topicStems = topic ? tokensOf(String(topic)).map((t) => stemOf(t.fold, L)) : null;
   const carriedByTopic = (g) => !!topicStems && g.seqs.some((s) => containsSeq(topicStems, s));
@@ -213,13 +243,23 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // King since 8 September 2022"): the perfect copula is a copula for the
     // filler; the auxiliary before it is trimmed off whatever side is read.
     const ci = toks.findIndex((t, k) => (G.copulas.includes(t.fold) || t.fold === "been") && !inRef.has(k));
+    let fromAgent = false;
     if (ci < 0) return null;
     const carries = (a, b) => toks.some((t, k) => k >= a && k <= b && (carry.has(t.stem) || attrDescIdx.has(k)));
     const holdsPredicate = (a, b) => predMatches.some((k) => k >= a && k <= b);
     const cl = carries(0, ci - 1), cr = carries(ci + 1, toks.length - 1);
     let side;
-    if (cl && cr) return null;
-    if (cl) side = "right"; else if (cr) side = "left";
+    // Both sides carry the anchor's word ("Wolfgang Amadeus Mozart was born … to Leopold Mozart …"): for a PLACE ask with a relation
+    // the anchor is the subject on the LEFT and the right side is the relation's complement — the place alternatives below decide
+    // what on it is the place (a person's surname there is another person, never the filler)
+    // "Leopold Mozart was born in Augsburg, and his son Wolfgang Amadeus Mozart …" carries the surname on the left too, but it is
+    // the father: the left side must hold the anchor's FULL name (its longest alias), not a stem of it
+    // …and that occurrence must BEGIN the subject: no content word gaplessly before it ("LOUIS Napoleon was born in Paris" is another
+    // Napoleon, whose one-word name matches a one-word alias)
+    const beginsSubject = (o) => !(o.from > 0 && !closed(toks[o.from - 1].fold) && gapless(text, toks[o.from - 1], toks[o.from]));
+    const fullLeft = groups.some((g) => { const L0 = Math.max(0, ...g.seqs.map((q) => q.length)); return g.occ.some((o) => o.to < ci && o.to - o.from + 1 >= L0 && beginsSubject(o)); });
+    if (cl && cr) { if (frame.slot === "place" && relStems.length && fullLeft) side = "right"; else return null; }
+    else if (cl) side = "right"; else if (cr) side = "left";
     else {                                                            // neither side names the referent (topic mode): the predicate's side is the subject
       const pl = holdsPredicate(0, ci - 1), pr = holdsPredicate(ci + 1, toks.length - 1);
       // Both sides carrying the predicate happens when the role word is ALSO in
@@ -241,7 +281,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // "King Charles III has". Right-side leading auxiliaries are already out of
     // the filler's edge by the same rule read backwards.
     {
-      const AUX = new Set(["has", "have", "had", "will", "shall", "was", "were", "is", "are", "am", "be"]);
+      const AUX = new Set([...(G.auxiliaries || []), ...(G.copulas || [])]);
       let moved = true;
       while (moved) {
         moved = false;
@@ -282,6 +322,48 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         const run = toks.slice(byK + 1, e);
         if (/^\p{Nd}/u.test(run[0].text) || !run.some((t) => !closed(t.fold) && !/^\p{Nd}/u.test(t.text) && (posRankOf(t.text) == null || posRankOf(t.text) >= 8))) return null;
         a = toks[byK + 1].start; b = toks[e - 1].end;
+        fromAgent = true;
+      }
+    }
+    // PLACE ALTERNATIVES (the first live gate run: "where was Mozart born" had the right sentence and no filler): the cut above stops at
+    // the first comma, which in "born on 27 January 1756 to Leopold and Anna Maria, née Pertl, at Getreidegasse 9 in Salzburg" is
+    // before the place. The candidates are the phrases after a CONTAINMENT preposition inside the RELATION'S OWN CLAUSE: the walk starts
+    // at the relation word, which must belong to the anchor's clause (no relative word between the copula and it), and ends at the
+    // first relative word, semicolon, coordinator that opens a new clause (a verb or a pronoun follows it) or second predicate.
+    // A candidate after an indefinite article ("a hospital", "a log cabin") is a common noun, one holding a digit (an address, a
+    // year) is never sent to the title door, and one with no name-like word (the received prior: a name, or never seen) is dropped.
+    // Every alternative is vetted by the title door downstream; with none, the leading-preposition cut below is the old behaviour.
+    if (frame.slot === "place" && relStems.length && G.containment) {
+      const relIn = toks.findIndex((t, k) => k > ci && relStems.includes(t.stem) && !ordinalBefore(k));
+      if (relIn >= 0 && !toks.slice(ci + 1, relIn).some((t) => G.clauseWords.includes(t.fold))) {
+        const SUB = new Set(G.subordinators || []);
+        const CONT = new Set(G.containment), INDEF = new Set(G.indefinites || []), dets = new Set(G.determiners || []), coord = new Set(G.coordinators || []);
+        const isVerb = (k) => posRankOf(toks[k].text) === 6 && !closed(toks[k].fold) && !(G.auxiliaries || []).includes(toks[k].fold);
+        let end = toks.length;
+        for (let k = relIn + 1; k < toks.length; k++) {
+          const t = toks[k];
+          if (G.clauseWords.includes(t.fold) || SUB.has(t.fold) || /;/.test(text.slice(toks[k - 1].end, t.start))) { end = k; break; }
+          if (coord.has(t.fold)) { const nx = toks[k + 1]; if (nx && ((closed(nx.fold) && !dets.has(nx.fold)) || isVerb(k + 1))) { end = k; break; } }
+          else if (isVerb(k)) { end = k; break; }
+        }
+        const alts = [];
+        let chainEnd = -1;          // where the previous candidate (kept or not) ended: a later one must continue its phrase without punctuation
+        for (let k = relIn + 1; k < end - 1; k++) {
+          if (!CONT.has(toks[k].fold)) continue;
+          if (chainEnd >= 0 && /[,;:()]/u.test(text.slice(chainEnd, toks[k].start))) break;     // "in Salzburg, in the Holy Roman Empire": a wider phrase, not the place
+          let s2 = k + 1, indef = false;
+          while (s2 < end && dets.has(toks[s2].fold)) { if (INDEF.has(toks[s2].fold)) indef = true; s2++; }
+          if (indef) continue;
+          let e2 = s2;
+          while (e2 < end && !CONT.has(toks[e2].fold) && !G.clauseWords.includes(toks[e2].fold) && !coord.has(toks[e2].fold) && !/[,;:()]/u.test(text.slice(toks[e2 - 1].end, toks[e2].start))) e2++;
+          const run = toks.slice(s2, e2);
+          if (run.length) chainEnd = toks[e2 - 1].end;
+          k = Math.max(k, e2 - 1);
+          if (!run.length || run.some((t) => /\p{Nd}/u.test(t.text))) continue;
+          if (!run.some((t) => !closed(t.fold) && (salienceOf(t.text) == null || isName(t.text)))) continue;
+          alts.push({ text: text.slice(toks[s2].start, toks[e2 - 1].end), span: [toks[s2].start, toks[e2 - 1].end] });
+        }
+        if (alts.length) return { ...alts[0], alts };
       }
     }
     // A PLACE filler must be the PLACE, not the phrase that leads to it
@@ -289,16 +371,34 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // "is located in New York" → "New York". Only a LEADING run of prepositions
     // and predicate stems is cut — never a name, and never on any other slot.
     if (frame.slot === "place") {
-      const PREP = new Set(["in", "at", "on", "near", "from", "around", "outside", "inside", "beside", "above", "below", "across"]);
+      const PREP = new Set(G.prepositions || []);
+      const PLACE_VERBS = G.placeVerbs || [];
       let k = toks.findIndex((t) => t.start >= a);
       const lead = [];
-      while (k < toks.length && (PREP.has(toks[k].fold) || predMatches.includes(k) || ["born", "located", "lived", "found", "raised", "grew", "situated"].includes(toks[k].stem))) { lead.push(toks[k]); k++; }
+      while (k < toks.length && (PREP.has(toks[k].fold) || predMatches.includes(k) || PLACE_VERBS.includes(toks[k].stem))) { lead.push(toks[k]); k++; }
       if (lead.length && k < toks.length) a = toks[k].start;
     }
     const inside = toks.filter((t) => t.start >= a && t.end <= b);
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;
     if (inside.some((t) => carry.has(t.stem))) return null;
+    // a passive AGENT was already required to be somebody above (not digit-led, a name-like word inside); a description that carries
+    // its name ("by the Scottish physician Alexander Fleming") is unpacked to the name by the title-door variants downstream
+    if (frame.slot === "person" && !fromAgent && !personLike(inside)) return null;
     return { text: text.slice(a, b), span: [a, b] };
+  }
+  // A PERSON FILLER IS SOMEBODY, not a description and not a date (the first live gate run: "April 30", "March 22", "its leader", "the
+  // chancellor"). Structural, from the language's own table: a run with a digit-led word ("April 30") is a date or a count; a run
+  // LED BY a determiner or possessive ("the leader", "a former banker", "its leader") is a description UNLESS it holds a word the
+  // received prior ranks a name or has never seen ("the Scottish physician Alexander Fleming", "The Beatles" keep their names; the
+  // title door unpacks them downstream). A run with no determiner is a name, whatever its words are ("Cary Grant", "Jobs", "Hope Solo").
+  function personLike(run) {
+    const dets = new Set(G.determiners || []);
+    const content = run.filter((t) => !closed(t.fold));
+    if (!content.length || content.some((t) => /^\p{Nd}/u.test(t.text))) return false;
+    const first = toks.indexOf(run[0]);
+    const led = dets.has(run[0].fold) || (first > 0 && dets.has(toks[first - 1].fold) && gapless(text, toks[first - 1], run[0]));
+    if (!led) return true;
+    return content.some((t) => salienceOf(t.text) == null || isName(t.text));
   }
 
   // A SUBJECT-VERB filler for the real-web holder sentence (declared 2026-10-11,
@@ -321,6 +421,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     const inside = toks.filter((t) => t.start >= a && t.end <= b);
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;
     if (inside.some((t) => carry.has(t.stem))) return null;
+    if (frame.slot === "person" && !personLike(inside)) return null;     // "its LEADER became known as the chancellor": a role, not a person
     return { text: text.slice(a, b), span: [a, b] };
   }
 

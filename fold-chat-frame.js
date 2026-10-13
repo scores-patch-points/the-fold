@@ -74,6 +74,23 @@ export const GRAMMAR = Object.freeze({
     clauseWords: Object.freeze(["who", "which", "since", "that", "having"]),
     // ROLES (2026-10-12): "the capital OF Australia" — X of Y makes X an ATTRIBUTE of the anchor Y; "Australia's capital" likewise.
     governs: Object.freeze(["of"]),
+    // "the chemical symbol FOR sodium", "the word FOR dog" (panel-fixes, 2026-10-13; declared, not measured): "for" governs an attribute
+    // only when the governed noun is the FIRST content run of the ask ("what is the X for Y"). Anywhere else "for" is a purpose or a
+    // beneficiary ("won the Nobel Prize in Chemistry for the discovery of radium") and governs nothing.
+    governsAtHead: Object.freeze(["for"]),
+    // INDEFINITE ARTICLES and CONTAINMENT PREPOSITIONS (the archon compliance read, 2026-10-13; giver: the author's reading of English
+    // closed classes, declared, not measured): "a hospital", "a log cabin" introduce a non-specific noun, never a name; "in/at/within/
+    // inside" name the place a thing is IN ("near/outside/beside" name a neighbour, which is not where it was born)
+    // the role verbs of a holder sentence ("Charles III BECAME king"), the verbs that lead into a place ("was BORN in"), and the
+    // prepositions that lead into one — moved out of fold-chat-witness.js (2026-10-13) so a language is a table, never a code path
+    roleVerbs: Object.freeze(["became", "become", "becomes", "succeeded", "succeeds", "assumed", "assumes", "took", "takes", "taken", "elected", "elects", "crowned", "crowns", "acceded", "accedes", "appointed", "appoints", "named", "won", "serves", "served", "holds", "held", "leads", "led"]),
+    placeVerbs: Object.freeze(["born", "located", "lived", "found", "raised", "grew", "situated"]),
+    prepositions: Object.freeze(["in", "at", "on", "near", "from", "around", "outside", "inside", "beside", "above", "below", "across"]),
+    // subordinators that open a clause the relation does not govern ("a day WHEN Leopold was away in Augsburg"); only the place
+    // alternatives' walk ends at them (clauseWords also cut fillers elsewhere, so this is a separate declared field)
+    subordinators: Object.freeze(["when", "where", "while", "whereas", "because", "although", "though", "after", "before", "until", "as"]),
+    indefinites: Object.freeze(["a", "an"]),
+    containment: Object.freeze(["in", "at", "within", "inside"]),
     // a passive AGENT ("was discovered by the physician Alexander Fleming at St Mary's") runs from "by" to the first of these
     agentBy: "by",
     agentStops: Object.freeze(["in", "on", "at", "during", "between", "from", "since", "until", "around", "about", "for", "with", "after", "before", "under", "near"]),
@@ -306,17 +323,37 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
   //        is never read as a page, never an alias, and never carried to a follow-up as a thing. Structural, from the ask's own
   //        connectors (GRAMMAR.governs, the possessive clitic, the counted noun) — never a list of attribute words.
   const governs = new Set(G.governs || []);
+  const headGoverns = new Set(G.governsAtHead || []);
   const possessorEnds = new Set();
   rest.forEach((t, k) => { if (/^['’]s\b/u.test(said.slice(t.end, t.end + 3))) possessorEnds.add(k); });
   const k0 = rest.findIndex((t) => !closed(t.fold));
   const isAttr = (c, n) => {
     const after = rest[c.to + 1];
+    if (after && headGoverns.has(after.fold) && c.at === k0 && chosen.some((d, m) => m !== n && d.at === c.to + 2)) return true;
     if (after && governs.has(after.fold) && chosen.some((d, m) => m !== n && d.at > c.to + 1 && rest.slice(c.to + 2, d.at).every((t) => closed(t.fold)))) return true;
     if (chosen.some((d, m) => m !== n && possessorEnds.has(d.to) && c.at === d.to + 1)) return true;
     if (slot === "quantity" && c.at === k0 && chosen.length > 1) return true;
     return false;
   };
   const attrIdx = new Set(chosen.map((c, n) => (isAttr(c, n) ? n : -1)).filter((n) => n >= 0));
+  // "CEO of TESLA" with Tesla unresolved (a disambiguation page): the role resolves, its governed anchor does not. Reading the role as
+  // the anchor answered about the role's own page — the first live gate run committed a product sentence ("the Tesla Semi"). When a
+  // chosen run is governed by "of" and the words after "of" are content words NO chosen run covers, the ask's anchor is unresolved:
+  // a typed gap, never the role as anchor.
+  {
+    const covered = new Set(); chosen.forEach((c) => { for (let k = c.at; k <= c.to; k++) covered.add(k); });
+    for (const c of chosen) {
+      // a run INSIDE an earlier governor's tail ("United States" in "president of the United States of America") is part of that
+      // anchor's own name: its trailing "of" governs nothing the ask left unresolved
+      if (chosen.some((e) => e !== c && e.to < c.at && rest[e.to + 1] && governs.has(rest[e.to + 1].fold) && c.at > e.to + 1)) continue;
+      const after = rest[c.to + 1];
+      if (!after || !governs.has(after.fold)) continue;
+      // the anchor is unresolved only when NO content word after the governing word lies in any chosen run: "capital of western
+      // Australia", "of the state of Texas", "of ancient Egypt" have an anchor in the tail (a modifier before it is not the anchor)
+      const tailIdx = rest.map((t, k) => k).filter((k) => k > c.to + 1 && !closed(rest[k].fold));
+      if (tailIdx.length && !tailIdx.some((k) => covered.has(k))) return gapFrame(said, lang, slot, "referents_unresolved");
+    }
+  }
   if (attrIdx.size === chosen.length) attrIdx.clear();            // nothing left to be about: the ask has no anchor, keep today's reading
   const attributes = chosen.filter((c, n) => attrIdx.has(n)).map((c) => {
     const toksA = rest.slice(c.at, c.to + 1).filter((t) => !closed(t.fold));

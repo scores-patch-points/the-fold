@@ -177,7 +177,10 @@ test("person filler: the COPULA-SIDE rule — the side that does not carry the r
   assert.equal(f("The king of the United Kingdom is Charles III (born 1948)."), "Charles III");
   assert.equal(f("The king of the United Kingdom is Charles III; he acceded in 2022."), "Charles III");
   assert.equal(f("The king of the United Kingdom is Charles III having acceded in 2022."), "Charles III");
-  assert.equal(f("The king of the United Kingdom is the one that acceded."), "the one");
+  assert.equal(f("The king of the United Kingdom is Charles III that acceded."), "Charles III");     // trimmed at the relative clause
+  // a PERSON filler is somebody (panel-fixes, 2026-10-13): "the one" is a pronoun-like run (POSPrior rank 1), not a name — it was a
+  // filler here before the person-like guard; the clause-boundary trim above is pinned on a name instead
+  assert.equal(f("The king of the United Kingdom is the one that acceded."), null);
   assert.equal(f("Charles III, born in 1948, is the king of the United Kingdom."), "Charles III");
   assert.equal(f("Charles III is the king of the United Kingdom, having acceded in 2022."), "Charles III");
 });
