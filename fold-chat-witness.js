@@ -563,7 +563,10 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // a compound tense puts the language's AUXILIARIES between the subject and the verb ("Jane Austen HAS written", "Jane Austen A écrit"):
     // the subject ends before them (found by the omnilingual falsification; the same in English)
     let ve = vi;
-    while (ve - 1 >= 0 && (G.auxiliaries || []).includes(toks[ve - 1].fold) && /^\s+$/.test(text.slice(toks[ve - 1].end, toks[ve].start))) ve--;
+    // …and so do ADVERBS the language's own prior ranks as one (rank 1): "George Washington was UNANIMOUSLY elected the first president" has
+    // the subject before "was unanimously", not the adverb (the live held-out gate bound "unanimously" and left John Hanson the only name)
+    const advLike = (k) => !closed(toks[k].fold) && posRankOf(toks[k].text, L) === 1;
+    while (ve - 1 >= 0 && ((G.auxiliaries || []).includes(toks[ve - 1].fold) || advLike(ve - 1)) && /^\s+$/.test(text.slice(toks[ve - 1].end, toks[ve].start))) ve--;
     let s = ve;
     while (s - 1 >= 0 && !closed(toks[s - 1].fold) && !inRef.has(s - 1) && /^\s+$/.test(text.slice(toks[s - 1].end, toks[s].start))) s--;
     if (s >= ve) return null;                                    // nothing but closed class before the verb: no subject to name

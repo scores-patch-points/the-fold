@@ -169,6 +169,49 @@ function makeBearing(frame, code, fw) {
     return [covered, pred, titleAgree, -entry.order];
   };
 }
+/** LICENCE (the live English held-out gate, 2026-10-13: "what is the capital of Kenya" contested by the word "city", "what currency is
+ *  used in Japan" by "These"): a SINGLE-token filler that cannot be an answer is not a candidate and not a rival. Per the language's own
+ *  tables — never a word list: a closed-class word ("these", "it"); a bare numeral on a name slot ("4" cut from "4,700 km"); a word the
+ *  language's POS prior ranks an adverb ("unanimously"); on a place ask, a declared kind-of-place noun ("city", "country").
+ *  A quantity ask keeps "no", "none" and numerals ("Venus has no moons"). Multi-token fillers are never touched: "The Who" is a name.
+ *  → the reason ("closed" | "numeral" | "adverb" | "kind") or null. */
+export function makeLicense(frame, code, fw) {
+  const closed = closedClassOf(fw, code);
+  const G = grammarOf(code) || {};
+  const kinds = new Set(asArr(G.placeNouns).map((w) => { const t = tokensOf(String(w), code); return t.length === 1 ? t[0].fold : null; }).filter(Boolean));
+  const slot = frame && frame.slot;
+  // a PLACE is asked for when the slot says so, or when the ask's own relation word is a kind of place ("the CAPITAL of Kenya": slot thing)
+  const asked = [...asArr(frame && frame.predicate).map((p) => p && p.surface), ...asArr(frame && frame.attributes).map((a) => a && a.surface)].filter(Boolean);
+  const placeAsk = slot === "place" || asked.some((w) => { const t = tokensOf(String(w), code); return t.length === 1 && kinds.has(t[0].fold); });
+  return (text) => {
+    if (slot === "quantity") return null;
+    const toks = tokensOf(String(text == null ? "" : text), code);
+    if (toks.length !== 1) return null;
+    const w = toks[0].fold;
+    if (closed(w)) return "closed";
+    if (slot !== "time" && /^\p{N}[\p{N}.,]*$/u.test(toks[0].text)) return "numeral";
+    if (posRankOf(toks[0].text, code) === 1) return "adverb";
+    if (placeAsk && kinds.has(w)) return "kind";
+    return null;
+  };
+}
+
+/** Set the junk fillers aside — but ONLY when a row at least as strong survives. A junk-filler row that out-bears every survivor is the
+ *  real answer wearing a mis-bound filler ("Washington was unanimously elected the first president" bound "unanimously"): dropping it
+ *  would leave a weaker, wrong row to be committed (John Hanson), so then nothing changes. Evidence is the first three bearing terms
+ *  (referents covered, predicate covered, title agreement); page order is not evidence. */
+export function setAsideJunk(entries, isJunk) {
+  const junk = [], keep = [];
+  for (const e of entries) (e.row && e.row.filler && isJunk(e.row.filler.text) ? junk : keep).push(e);
+  const none = { applied: false, kept: entries, set: [] };
+  if (!junk.length || !keep.length) return none;
+  const ev = (e) => (e.b || []).slice(0, 3);
+  const cmp = (a, b) => { for (let i = 0; i < 3; i++) if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) - (b[i] || 0); return 0; };
+  const best = (xs) => xs.map(ev).sort((a, b) => cmp(b, a))[0];
+  if (cmp(best(junk), best(keep)) > 0) return none;      // the junk row is STRICTLY stronger than every survivor
+  return { applied: true, kept: keep, set: junk };
+}
+
 /** DOMINANCE (the live held-out "how many players does a football team have on the field": 53 vs 11): one row says every word of the
  *  ask that another row says AND more ("on the field"), so the other row speaks to a narrower or different question — it is not a
  *  rival. No threshold: a strict superset of the ask's own content stems, over each of the others. → the dominant row, or null. */
@@ -357,7 +400,20 @@ async function run({ question, lang, passages, now, deps }) {
   }
 
   const readTitles = sourcesSeen.map((s) => s.title || s.host || s.url).filter(isStr);
-  const scored = entries.map((e) => ({ ...e, b: bearing(e) })).sort(byBearing);
+  let scored = entries.map((e) => ({ ...e, b: bearing(e) })).sort(byBearing);
+  // 3b ── LICENCE: a filler that cannot be an answer is no candidate and no rival (set aside, said in the trace, only if a row at least as
+  //       strong survives — see setAsideJunk)
+  {
+    const license = makeLicense(frame, code, fw);
+    const live = scored.filter((e) => e.row.tier === "T1" && e.row.filler && e.row.polarity === "+");
+    const sa = setAsideJunk(live, (t) => !!license(t));
+    if (sa.applied) {
+      const gone = new Set(sa.set.map((e) => e.row));
+      tv.note("set-aside", { fillers: sa.set.map((e) => ({ text: e.row.filler.text, why: license(e.row.filler.text) })) });
+      scored = scored.filter((e) => !gone.has(e.row));
+      entries = entries.filter((e) => !gone.has(e.row));
+    }
+  }
   const closestOf = (list) => (list.length ? list[0].row : null);
 
   // 4 ── the CURRENT-ness rule
@@ -397,12 +453,22 @@ async function run({ question, lang, passages, now, deps }) {
     ? (query, o) => { if (!memo.has(query)) memo.set(query, (async () => deps.fetchLead(query, o))()); return memo.get(query); }
     : null;
   const refutedRows = [], evaluated = [];
+  // a filler-less NEGATION row denies the claim only if it says what the ask is about (its attribute: "currency", "king")
+  // the ask's NOUN-like words, by the language's own prior (rank 7+: "currency", "king"; a verb such as "used" is rank 6 and is not scope);
+  // a language with no prior ranks nothing, so no scope is applied and the check is as it was
+  const attrStems = [
+    ...asArr(frame.predicate).filter((p) => p && p.surface && (posRankOf(p.surface, code) || 0) >= 7).map((p) => p.stem),
+    ...asArr(frame.attributes).flatMap((a) => asArr(a && a.stems)),
+  ].filter(Boolean);
+  const negationScope = attrStems.length
+    ? (row) => { const have = new Set(tokensOf(String((row && row.sentence) || ""), code).map((t) => stemOf(t.fold, code))); return attrStems.every((s) => have.has(s)); }
+    : null;
   let firstRefuted = null, budget = DECLARED.maxCandidates;
   const evaluate = async (g) => {
     const cand = g.entries[0].row;
     tv.note("candidate", { row: cand });
     const pool = poolAll.filter((r) => !refutedRows.includes(r));
-    const run = await runFalsify({ candidate: { filler: cand.filler, row: cand }, frame, rows: pool, now, fetchLead, signal });
+    const run = await runFalsify({ candidate: { filler: cand.filler, row: cand }, frame, rows: pool, now, fetchLead, signal, negationScope });
     for (const qy of run.queries) searched.push(qy);
     noteFalsification(tv, run, cand.filler.text);
     const outcome = { run, cand, group: g };

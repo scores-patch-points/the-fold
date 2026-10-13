@@ -22,7 +22,7 @@
 //   verdict      { standing, filler?, survived:[…], unmeasured:[…], refuters:[…] }
 //   closed       — appended by close() only
 
-const KINDS = Object.freeze(["ask", "read-as", "referents", "frame-gap", "read", "widen", "candidate", "no-witness", "past-only", "probes", "probe-result", "verdict"]);
+const KINDS = Object.freeze(["ask", "read-as", "set-aside", "referents", "frame-gap", "read", "widen", "candidate", "no-witness", "past-only", "probes", "probe-result", "verdict"]);
 const STANDINGS = Object.freeze(["survived", "contested", "refuted", "unmeasured"]);
 const LOCAL_KINDS = Object.freeze(["rival-holder", "negation", "later-date"]);
 
@@ -66,6 +66,8 @@ const GAP_SAY = Object.freeze({
   referents_unresolved: "I couldn't match the names in the question to pages, so I'm not guessing.",
 });
 
+const SET_ASIDE_WHY = Object.freeze({ closed: "it is a function word, not a name", numeral: "it is a bare number, not a name", adverb: "it is an adverb, not a name", kind: "it names a kind of place, not a place" });
+
 /** The trace templates, keyed by event kind. (data, state) -> [{ say, detail?, probe?, result? }]. English; replace to translate. */
 export const TRACE_TEMPLATES = Object.freeze({
   ask: (d) => (d.slot
@@ -75,6 +77,9 @@ export const TRACE_TEMPLATES = Object.freeze({
   // SURVIVE TYPING (fold-chat-typing.js): a word read differently from how it was typed is said, in the app's own voice, never silent
   "read-as": (d) => (Array.isArray(d.changes) && d.changes.length
     ? [{ say: `I read ${andList(d.changes.map((c) => `${q(c.typed)} as ${q(c.read)}`))}.` }] : []),
+  // a filler that could not be an answer (a function word, a bare number, an adverb, a kind of place) is set aside and SAID, never silent
+  "set-aside": (d) => (Array.isArray(d.fillers) && d.fillers.length
+    ? d.fillers.map((f) => ({ say: `I set aside ${q(f.text)} as an answer: ${SET_ASIDE_WHY[f.why] || SET_ASIDE_WHY.closed}.` })) : []),
   "frame-gap": (d) => [{ say: GAP_SAY[d.kind] || GAP_SAY.frame_unread }],
   read: (d) => (d.found === false && d.source
     ? [{ say: `I read ${d.source.title || "a page"}${site(d.source)}, but no sentence in it states the answer.` }] : []),

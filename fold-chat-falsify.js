@@ -222,7 +222,7 @@ const yearOfRow = (row, nowYear) => {
 
 const passageOf = (row) => ({ text: row.sentence, url: (row.source && row.source.url) || null, title: (row.source && row.source.title) || null });
 
-function localCheck(probe, c, pool, nowYear) {
+function localCheck(probe, c, pool, nowYear, negationScope = null) {
   const un = (reason) => ({ probe, outcome: "unmeasured", reason, text: null });
   const others = (Array.isArray(pool) ? pool : []).filter((r) => r && typeof r.sentence === "string" && !sameRow(r, c.row));
   if (!others.length) return un(SAY.noOther);
@@ -248,7 +248,10 @@ function localCheck(probe, c, pool, nowYear) {
     // a negation only contradicts a claim of the SAME tense: "France has had no king since 1848" does not refute "Louis XVI was the last king"
     const known = (t) => t === "present" || t === "past" || t === "future";
     const sameTime = (r) => !(c.row && known(c.row.tense) && known(r.tense) && c.row.tense !== r.tense);
-    const negs = witnessing.filter((r) => r.polarity === "-" && sameTime(r) && (!fillerText(r.filler) || sameClaim(r)));
+    // a negation with NO filler denies the claim only if it says what was asked about (the live Japan gate: "These … cannot be used inside
+    // Japan" says no word of 'currency' — it is about something else). Given a scope, the row must cover it; without one, as before.
+    const aboutIt = (r) => !!fillerText(r.filler) || typeof negationScope !== "function" || negationScope(r);
+    const negs = witnessing.filter((r) => r.polarity === "-" && sameTime(r) && (!fillerText(r.filler) || sameClaim(r)) && aboutIt(r));
     if (!negs.length) return { probe, outcome: "none", scope, text: SAY.noNegation(scope) };
     return { probe, outcome: "found", scope, found: "a source saying otherwise", rows: negs,
       refuters: negs.map((r) => ({ probe, passage: passageOf(r), why: SAY.negationWhy(r.source && r.source.title), row: r })) };
@@ -267,7 +270,7 @@ function localCheck(probe, c, pool, nowYear) {
 
 /** Interpret what the probes saw. results: [{ probe, lead? | pool? | status?: 'unmeasured', reason?, error? }] (as runFalsify gathers them).
  *  -> { standing, survived: string[], unmeasured: string[], refuters, contest: Row[], checks } */
-export function judge(candidate, results, { now } = {}) {
+export function judge(candidate, results, { now, negationScope = null } = {}) {
   const c = candOf(candidate);
   const nowYear = nowYearOf(now);
   const checks = [];
@@ -275,7 +278,7 @@ export function judge(candidate, results, { now } = {}) {
     if (!r || !r.probe) continue;
     if (r.probe.kind === "life-dates") checks.push(lifeCheck(r.probe, c.name, r, nowYear));
     else if (r.status === "unmeasured") checks.push({ probe: r.probe, outcome: "unmeasured", reason: r.reason || SAY.noOther, text: null });
-    else checks.push(localCheck(r.probe, c, r.pool, nowYear));
+    else checks.push(localCheck(r.probe, c, r.pool, nowYear, negationScope));
   }
   const refuters = checks.flatMap((k) => k.refuters || []);
   const survived = checks.filter((k) => k.outcome === "none").map((k) => k.text);
@@ -311,7 +314,7 @@ function raceAbort(promise, signal) {
 
 /** Run the probes: at most DECLARED.maxQueries network queries, every one aborted by `signal`; the local probes read `rows`.
  *  -> judge(...) plus { probes, queries, results }. A failed or stopped lookup is 'unmeasured', never 'survived'. */
-export async function runFalsify({ candidate, frame, rows, now, fetchLead, signal, current } = {}) {
+export async function runFalsify({ candidate, frame, rows, now, fetchLead, signal, current, negationScope = null } = {}) {
   const probes = probesFor(candidate, frame, { now, rows, current });
   const queries = [];
   const settled = await Promise.all(probes.map(async (probe) => {
@@ -328,5 +331,5 @@ export async function runFalsify({ candidate, frame, rows, now, fetchLead, signa
       return { probe, status: "unmeasured", error: true, reason: e && e.name === "AbortError" ? SAY.cancelled : SAY.cantRead(probe.query) };
     }
   }));
-  return { ...judge(candidate, settled, { now }), probes, queries, results: settled };
+  return { ...judge(candidate, settled, { now, negationScope }), probes, queries, results: settled };
 }
