@@ -379,7 +379,12 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
     const rk = posRank(t);
     const isRel = k === relPos || (rk != null && rk <= 6) || (rk == null && nextContent(k) && !afterRelation(k) && !afterCopula(k));
     const isName = !isRel && (rk == null || rk >= 8);
-    if (!seen.has(stem)) { seen.add(stem); predicate.push({ surface: t.text, stem, ...(isRel ? { rel: true } : {}), ...(isName ? { name: true } : {}) }); }
+    // `kind`: a noun DIRECTLY after a relation word that qualifies it ("the first WOMAN", "the tallest MOUNTAIN") restricts what the
+    // answer is; a witness must say it (the live false premise: "Neil Armstrong was the first person to walk on the Moon" answered "the
+    // first woman"). Structural: adjacency to a relation word in the ask, no list.
+    const prev = k > 0 ? rest[k - 1] : null;
+    const isKind = !isRel && !isName && !!prev && !closed(prev.fold) && predicate.some((p) => p.rel && p.stem === stemOf(prev.fold, lang));
+    if (!seen.has(stem)) { seen.add(stem); predicate.push({ surface: t.text, stem, ...(isRel ? { rel: true } : {}), ...(isName ? { name: true } : {}), ...(isKind ? { kind: true } : {}) }); }
   });
   // "how MANY legs …": the number must belong to the counted noun (the first content word after the interrogative), never to a
   // neighbouring noun ("52,075 SPECIES") — the witness reads this (fold-chat-witness.js nearestNumber).

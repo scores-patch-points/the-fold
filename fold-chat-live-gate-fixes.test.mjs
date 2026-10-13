@@ -428,3 +428,16 @@ test("LIVE-41 fourth pass: a possessor or a kinsman is not the anchor — the fa
   const own = bind(f, "Wolfgang Amadeus Mozart was born in Salzburg.", { page: "Wolfgang Amadeus Mozart" });
   assert.equal(own && own.filler && own.filler.text, "Salzburg");
 });
+
+test("LIVE-42 a crowned row must NAME the anchor in its clause: a title-carried 'first American woman to walk in space' is never the first woman on the Moon", async () => {
+  const { runAnswerTurn } = await import("./fold-chat-answerturn.js");
+  const titles = { moon: "Moon", "kathryn sullivan": "Kathryn D. Sullivan", "neil armstrong": "Neil Armstrong" };
+  const pages = {
+    "Has a Woman Ever Walked on the Moon?": "In 1984, Kathryn Sullivan became the first American woman to walk in space during a shuttle mission.",
+    "Apollo 11": "Neil Armstrong was the first person to walk on the Moon.",
+  };
+  const pass = Object.entries(pages).map(([title, text], i) => ({ ref: "S" + (i + 1), title, url: "https://en.wikipedia.org/wiki/" + i, host: "en.wikipedia.org", lang: "en", text }));
+  const deps = { fw: functionWordsOf, resolveTitles: door(titles), fetchLead: async () => null, searchPassages: async () => [] };
+  const t = await runAnswerTurn({ question: "Who was the first woman to walk on the Moon?", lang: "en", passages: pass, now: { year: 2026 }, deps });
+  assert.ok(!(t.answer && /Sullivan|Armstrong/.test(t.answer.filler.text)), "a false premise is never answered: " + JSON.stringify(t.answer && t.answer.filler));
+});

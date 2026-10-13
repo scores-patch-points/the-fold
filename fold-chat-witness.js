@@ -212,7 +212,8 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const relMatched = !relStems.length || predMatches.some((k) => relStems.includes(toks[k].stem) && !ordinalBefore(k));   // "the SECOND largest" is not the largest (MF16)
   const nameStems = (frame.predicate || []).filter((p) => p.name).map((p) => p.stem);
   const namesSaid = nameStems.every((st) => toks.some((t) => t.stem === st));                                        // "where was ZELDA born" needs Zelda (MF20)
-  const tier = attrSaid && namesSaid && (!(frame.predicate || []).length || (predMatches.length && relMatched)) ? "T1" : "T2";
+  const kindSaid = (frame.predicate || []).filter((p) => p.kind).every((p) => toks.some((t) => t.stem === p.stem));    // "the first WOMAN" needs woman
+  const tier = attrSaid && namesSaid && kindSaid && (!(frame.predicate || []).length || (predMatches.length && relMatched)) ? "T1" : "T2";
 
   // ── polarity and tense: the sentence's own closed-class words ──────────────────────────────────────────────────
   // STANCE (the archon panel, MF2): a sentence that only might, if, allegedly or by legend says so, or that ASKS, is neither a witness
