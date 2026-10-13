@@ -372,11 +372,18 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // and predicate stems is cut — never a name, and never on any other slot.
     if (frame.slot === "place") {
       const PREP = new Set(G.prepositions || []);
-      const PLACE_VERBS = G.placeVerbs || [];
+      // the declared place verbs are compared as STEMS (the stemmer drops the final -e: "located" is "locat"); comparing the surface
+      // form never matched once the stemmer changed, and "located in the Coral Sea" kept its lead
+      const PLACE_STEMS = new Set((G.placeVerbs || []).map((w) => stemOf(w, L)));
+      const dets = new Set(G.determiners || []);
       let k = toks.findIndex((t) => t.start >= a);
       const lead = [];
-      while (k < toks.length && (PREP.has(toks[k].fold) || predMatches.includes(k) || PLACE_VERBS.includes(toks[k].stem))) { lead.push(toks[k]); k++; }
-      if (lead.length && k < toks.length) a = toks[k].start;
+      while (k < toks.length && (PREP.has(toks[k].fold) || predMatches.includes(k) || PLACE_STEMS.has(toks[k].stem))) { lead.push(toks[k]); k++; }
+      // a PLACE is introduced: by a preposition or a place verb ("in Agra", "located in the Coral Sea", "born at …"). A complement with
+      // neither is a description of the subject ("a biodiversity hotspot", "endemic"), never where it is: no filler, a typed gap upstream.
+      if (!lead.length) return null;
+      while (k < toks.length && dets.has(toks[k].fold)) k++;
+      if (k < toks.length) a = toks[k].start;
     }
     const inside = toks.filter((t) => t.start >= a && t.end <= b);
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;

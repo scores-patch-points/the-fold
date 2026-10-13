@@ -103,8 +103,12 @@ test("a property anaphor: 'What is the capital of Australia and where is it?' bi
   const w = fakeWorld(["Australia", "Canberra"]);
   const res = await runSlotParts({ parts, lang: "en", webPassages: ["australia", "canberra"].map(asPassage), searchQ: "What is the capital of Australia", now: NOW, fetchImpl: w.fetchImpl });
   assert.equal(res.parts[1].boundAsk, "where is Australia", "the real referent title, not a topic string");
-  assert.equal(res.parts[1].answer.text, "Canberra is the capital city of Australia.");
-  assert.equal(w.busy.refused, 0);
+  // the fixture's only sentence about Australia ("Canberra is the capital city of Australia") says what the capital is, not WHERE the
+  // country is: a place filler needs a locative cue (a preposition or a place verb), so this part is a typed gap, never "Canberra"
+  assert.ok(!res.parts[1].answer || !/Canberra/.test(res.parts[1].answer.text || ""), "no place is invented from a sentence that does not say where");
+  // (a gap row's closest sentence is followed to its page like any other row — the origin follower's own fetches are the only refused
+  // calls here, all for the article the fixture's one sentence came from; no request goes anywhere but the article and its proxies)
+  assert.ok(w.busy.urls.every((u) => /en\.wikipedia\.org|holodeck-proxy/.test(u)), "only the article's own address is ever tried: " + JSON.stringify(w.busy.urls.slice(0, 3)));
 });
 
 // ── the honest end-states ────────────────────────────────────────────────────

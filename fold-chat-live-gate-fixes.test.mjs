@@ -182,3 +182,14 @@ test("LIVE-16 place alternatives: a subordinate clause ('a day when …'), a wid
   const u = await frameOf("Who is the president of the United States of America?", { "united states": "United States", president: "President" });
   assert.equal(u.ok, true, "'United States' inside its own longer name is not an unresolved anchor");
 });
+
+test("LIVE-17 a PLACE is introduced: 'located in the Coral Sea' answers 'Coral Sea'; 'endemic' / 'a biodiversity hotspot' are descriptions, never where", async () => {
+  const f = await frameOf("Where is the Great Barrier Reef?", { "great barrier reef": "Great Barrier Reef" });
+  const t = (x) => { const r = bind(f, x, { page: "Great Barrier Reef" }); return r && r.filler ? r.filler.text : null; };
+  assert.equal(t("The Great Barrier Reef is located in the Coral Sea, off the coast of Queensland in Australia."), "Coral Sea");
+  assert.equal(t("The islands of the Great Barrier Reef also support 2,195 known plant species; three of these are endemic."), null);
+  assert.equal(t("The Great Barrier Reef is a biodiversity hotspot, housing at least 450 species of hard coral."), null);
+  const g = await frameOf("Where is the Taj Mahal?", { "taj mahal": "Taj Mahal" });
+  const r = bind(g, "The Taj Mahal is situated in Agra, Uttar Pradesh, India.", { page: "Taj Mahal" });
+  assert.equal(r && r.filler && r.filler.text, "Agra", "'situated' and 'lived' and 'raised' lead into a place (declared place verbs are compared as stems)");
+});
