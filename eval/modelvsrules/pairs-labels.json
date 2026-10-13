@@ -1,0 +1,974 @@
+[
+ {
+  "k": 0,
+  "label": "STATES",
+  "answer": "Jane Austen",
+  "why": "novel by Austen stated"
+ },
+ {
+  "k": 1,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 2,
+  "label": "STATES",
+  "answer": "Austen",
+  "why": "states Austen wrote it"
+ },
+ {
+  "k": 3,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 4,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 5,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 6,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 7,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 8,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 9,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 10,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 11,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 12,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 13,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 14,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 15,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 16,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 17,
+  "label": "STATES",
+  "answer": "Einstein",
+  "why": "Einstein developed general relativity"
+ },
+ {
+  "k": 18,
+  "label": "STATES",
+  "answer": "Albert Einstein",
+  "why": "two theories by Einstein incl. GR"
+ },
+ {
+  "k": 19,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 20,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 21,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 22,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 23,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 24,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 25,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 26,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 27,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 28,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 29,
+  "label": "STATES",
+  "answer": "Beethoven",
+  "why": "Beethoven wrote the Moonlight Sonata"
+ },
+ {
+  "k": 30,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 31,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 32,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 33,
+  "label": "STATES",
+  "answer": "15 April 1912",
+  "why": "sank on that date"
+ },
+ {
+  "k": 34,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 35,
+  "label": "STATES",
+  "answer": "15 April 1912",
+  "why": "Titanic sank on that date"
+ },
+ {
+  "k": 36,
+  "label": "STATES",
+  "answer": "15 April 1912",
+  "why": "Titanic sank on that date"
+ },
+ {
+  "k": 37,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 38,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 39,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 40,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 41,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 42,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 43,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 44,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 45,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 46,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 47,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 48,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 49,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 50,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 51,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 52,
+  "label": "STATES",
+  "answer": "Apollo 11 in 1969",
+  "why": "first crewed landing in 1969"
+ },
+ {
+  "k": 53,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 54,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 55,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 56,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 57,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 58,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 59,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 60,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 61,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 62,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 63,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 64,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 65,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 66,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 67,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 68,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 69,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 70,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 71,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 72,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 73,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 74,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 75,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 76,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 77,
+  "label": "STATES",
+  "answer": "Agra, Uttar Pradesh, India",
+  "why": "location stated"
+ },
+ {
+  "k": 78,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 79,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 80,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 81,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 82,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 83,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 84,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 85,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 86,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 87,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 88,
+  "label": "STATES",
+  "answer": "The New Capital",
+  "why": "de facto capital of Egypt asserted"
+ },
+ {
+  "k": 89,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 90,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 91,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 92,
+  "label": "STATES",
+  "answer": "206 bones",
+  "why": "adult skeleton 206 bones"
+ },
+ {
+  "k": 93,
+  "label": "STATES",
+  "answer": "206 bones",
+  "why": "adult skeleton 206 bones"
+ },
+ {
+  "k": 94,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 95,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 96,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 97,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 98,
+  "label": "STATES",
+  "answer": "seven continents",
+  "why": "most recognize seven"
+ },
+ {
+  "k": 99,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 100,
+  "label": "STATES",
+  "answer": "Seven Continents",
+  "why": "commonly accepted seven"
+ },
+ {
+  "k": 101,
+  "label": "STATES",
+  "answer": "four strings",
+  "why": "commonly four strings"
+ },
+ {
+  "k": 102,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 103,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 104,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 105,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 106,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 107,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 108,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 109,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 110,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 111,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 112,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 113,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 114,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 115,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 116,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 117,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 118,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 119,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 120,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 121,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 122,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 123,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 124,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 125,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 126,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 127,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 128,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 129,
+  "label": "STATES",
+  "answer": "Dr. Bell",
+  "why": "Bell called inventor of telephone"
+ },
+ {
+  "k": 130,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 131,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 132,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 133,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 134,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 135,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 136,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 137,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 138,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 139,
+  "label": "STATES",
+  "answer": "Portuguese",
+  "why": "official and national language"
+ },
+ {
+  "k": 140,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 141,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 142,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 143,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 144,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 145,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 146,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 147,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 148,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 149,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 150,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 151,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 152,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 153,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 154,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 155,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 156,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 157,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 158,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 159,
+  "label": "NOT",
+  "answer": "",
+  "why": "does not assert the answer explicitly"
+ },
+ {
+  "k": 160,
+  "label": "STATES",
+  "answer": "Claudia Sheinbaum Pardo",
+  "why": "66th president since 2024"
+ },
+ {
+  "k": 161,
+  "label": "STATES",
+  "answer": "Felipe",
+  "why": "King of Spain since 2014"
+ }
+]

@@ -66,3 +66,26 @@ test("CONTROL: the ASK's own word after the name is not a modifier of something 
   const t = await turnOf("Who is the mayor of Nashville?", [P("Nashville, Tennessee", "The Nashville mayor is John Cooper.")], door({ "john cooper": "John Cooper (mayor)" }));
   assert.equal(t.answer && t.answer.filler.text, "John Cooper", JSON.stringify({ names: names(t), gap: t.gap }));
 });
+
+// ── "X is a novel BY Jane Austen": a copular noun phrase + the agent marker (live gate, h-slot#0: the answer on screen, a gap) ───────────
+test("LIVE Austen: 'Pride and Prejudice is a novel by English author Jane Austen' answers 'who wrote Pride and Prejudice' — the name, not the descriptor", { todo: "KNOWN GAP (2026-10-13): the tier is decided before any filler is read, so a sentence with no relation word never binds; and wrote/written share no stem. See eval/modelvsrules." }, async () => {
+  const t = await turnOf("Who wrote Pride and Prejudice?", [P("Pride and Prejudice", "Pride and Prejudice is a novel by English author Jane Austen.")],
+    door({ "pride and prejudice": "Pride and Prejudice" }));
+  assert.equal(t.answer && t.answer.filler.text, "Jane Austen", JSON.stringify({ names: names(t), gap: t.gap }));
+});
+
+test("the same form for another creative verb: 'The Starry Night is a painting by Vincent van Gogh' answers 'who painted The Starry Night'", { todo: "KNOWN GAP (2026-10-13): the tier is decided before any filler is read, so a sentence with no relation word never binds; and wrote/written share no stem. See eval/modelvsrules." }, async () => {
+  const t = await turnOf("Who painted The Starry Night?", [P("The Starry Night", "The Starry Night is an oil-on-canvas painting by Vincent van Gogh.")],
+    door({ "the starry night": "The Starry Night", "vincent van gogh": "Vincent van Gogh" }));
+  assert.equal(t.answer && t.answer.filler.text, "Vincent van Gogh", JSON.stringify({ names: names(t), gap: t.gap }));
+});
+
+test("CONTROL: a LOCATION 'by' is not an agent — 'Nashville is a city by the Cumberland River' does not answer 'who founded Nashville'", async () => {
+  const t = await turnOf("Who founded Nashville?", [P("Nashville, Tennessee", "Nashville is a city by the Cumberland River.")], door({ "cumberland river": "Cumberland River" }));
+  assert.ok(!t.answer, JSON.stringify(names(t)));
+});
+
+test("CONTROL: a MANNER 'by' is not an agent — 'it is a decision made by consensus' names nobody", async () => {
+  const t = await turnOf("Who wrote Pride and Prejudice?", [P("Pride and Prejudice", "Pride and Prejudice is a novel loved by readers.")], door({ readers: "Reader" }));
+  assert.ok(!t.answer, JSON.stringify(names(t)));
+});
