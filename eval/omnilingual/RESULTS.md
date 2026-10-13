@@ -49,3 +49,24 @@ Pre-registration: `PREREG.md`. Battery: `battery.mjs` (real askFrame / bindSente
 
 Nothing was tuned to pass: the es/fr tables are byte-identical to the pre-registered ones; every fix above is in code and also holds in English
 (the full suite by test name is unchanged).
+
+## Run 2 — version-2 priors (PREREG.md §Version 2)
+- **Per-language POS priors** (UD Spanish-AnCora, UD French-GSD, the received janus/priors POSPriors compiled by the same builder as English):
+  turned three PRIOR falls into holds — Spanish "y murió" now opens a clause (es later-clause), "primera" is a relation so "mujer" is a kind
+  (es false premise), and the French later-clause case. (Disclosed: wired and run once before the §Version 2 text was written.)
+- **Declared light stemmers**: French "découvert"/"découverte" now meet — the French passive agent holds. Spanish "descubrió"/"descubierta"
+  still falls, as pre-registered: an irregular participle no suffix rule can reach; it needs a lemma prior (UD lemmas — not on disk; a download).
+- **Euphonic letters**: the pre-registered expectation was FALSIFIED as stated — the tokenizer does not split "a-t-il", it keeps it whole, so the
+  run-1 diagnosis ("splits the inversion") was wrong. The fix is structural: a hyphen-joined form whose every part is closed class (by the
+  language's own table — "a", euphonic "t", "il") is closed class. French hedged row now holds.
+
+| improvement | en | es | fr |
+|---|---|---|---|
+| passive agent inside a relative clause | HOLDS | FALLS (PRIOR: irregular participle — needs a lemma prior) | HOLDS |
+| place: a possessor/kinsman is not the anchor | HOLDS | HOLDS | FALLS (RULE: the fold makes "né" the function word "ne") |
+| every other improvement (14 rows) | HOLDS | HOLDS | HOLDS |
+
+**14 of 16 improvements are omnilingual after run 2.** The two that remain need, respectively, a received lemma prior for Spanish (a download of
+the UD lemma column, not on disk) and a per-language decision that some diacritics are contrastive (French "né"/"ne", "où"/"ou"; Spanish
+"qué"/"que", "él"/"el") — a change to the fold the whole app shares, scoped by a table field so English is untouched.
+English is unchanged by every v2 change (full suite by test name: same 11 pre-existing failures).

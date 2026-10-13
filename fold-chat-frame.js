@@ -15,7 +15,7 @@ import { salienceOf } from "./fold-chat-salience-infer.js";
 import { PLACE_NOUNS_EN } from "./fold-chat-grammar-places.js";
 /** The received POSPrior's rank of a form (UD English-EWT via the salience prior: PROPN 9, NOUN 7, VERB 6, ADJ 4, ADV 1), or null when
  *  the prior has not seen it. One door for every module that reads a form's usual part of speech. */
-export function posRankOf(form) { const v = salienceOf(form); return v == null ? null : Math.round(v * 9); }
+export function posRankOf(form, lang = null) { const v = salienceOf(form, lang); return v == null ? null : Math.round(v * 9); }
 export function stripFrame(question, fw) {
   const q = String(question ?? "").trim();
   if (!q || !(fw instanceof Set) || !fw.size) return q;
@@ -229,7 +229,15 @@ export function tokensOf(text) {
 // meet their root, which is a limit, not a bug. Applied to BOTH sides of every comparison, so a collision is symmetric.
 export function stemOf(fold, lang = "en") {
   const w = String(fold ?? "");
-  if (lang !== "en" || /\p{N}/u.test(w)) return w;
+  if (/\p{N}/u.test(w)) return w;
+  if (lang !== "en") {
+    // another language stems by its own DECLARED suffix table (longest first, a minimum stem kept); none declared → the form as written
+    const G = grammarOf(lang);
+    if (!G || !Array.isArray(G.suffixes)) return w;
+    const min = G.minStem || 3;
+    for (const suf of G.suffixes) if (w.length - suf.length >= min && w.endsWith(suf)) return w.slice(0, -suf.length);
+    return w;
+  }
   if (w.length > 4 && w.endsWith("ies")) return w.slice(0, -3) + "y";
   if (w.length >= 6 && w.endsWith("ing")) return w.slice(0, -3);
   if (w.length >= 5 && w.endsWith("ed")) return w.slice(0, -2);
@@ -245,9 +253,14 @@ function dropE(w) {
 /** The closed-class test for a language: the khora's function words, plus the declared auxiliaries, negators and any "n't" token. */
 export function closedClassOf(fw, lang = "en") {
   const G = grammarOf(lang);
-  const extra = new Set(G ? [...G.auxiliaries, ...G.negation] : []);
+  // the table's auxiliaries, negators and EUPHONIC letters (French "t" of "a-t-il") are closed class; the negating suffix is the table's
+  const extra = new Set(G ? [...G.auxiliaries, ...G.negation, ...(G.euphonic || [])] : []);
   const set = fw instanceof Set ? fw : new Set();
-  return (fold) => set.has(fold) || extra.has(fold) || /n['’]t$/.test(fold);
+  const negSuf = G && G.negationSuffix ? new RegExp(`${G.negationSuffix}$`, "u") : null;
+  const one = (f) => set.has(f) || extra.has(f) || (!!negSuf && negSuf.test(f));
+  // a hyphen-joined inversion made only of closed-class parts ("a-t-il", "est-ce", "y a-t-il") is closed class too — the tokenizer keeps
+  // it whole, so the word itself is never in a list (the omnilingual falsification, run 2)
+  return (fold) => one(fold) || (fold.includes("-") && fold.split("-").every((p) => p && one(p)));
 }
 
 const gapFrame = (said, lang, slot, kind) => ({ ok: false, lang: lang ?? null, said, slot, referents: [], predicate: [], gap: { kind } });
@@ -309,7 +322,7 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
   // received POSPrior (UD English-EWT, via the salience prior: PROPN 9, NOUN 7, VERB 6, ADJ 4, ADV 1) says what a form usually IS.
   // A single token that is usually a verb, adjective or adverb is never a referent on its own; a run that BEGINS with a
   // verb-dominant token ("wrote Hamlet") is not one either. Multi-word names ("Prime Minister of Canada") are untouched.
-  const posRank = (t) => { const v = salienceOf(t.text); return v == null ? null : Math.round(v * 9); };
+  const posRank = (t) => { const v = salienceOf(t.text, lang); return v == null ? null : Math.round(v * 9); };
   // POSITION DECIDES, THE PRIOR ONLY BREAKS TIES (the archon panel, 2026-10-13: MF6, MF7). A token is the ask's RELATION when it sits
   // where English puts the verb of a wh-question — the first content word after the wh-phrase with no copula before it ("who WROTE
   // Hamlet", "who PENNED Hamlet", whatever the prior knows of it). A token in ARGUMENT position — after a copula ("where is NICE",

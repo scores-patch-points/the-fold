@@ -20,6 +20,12 @@
 //
 // It never guesses: an unseen form is `unmeasured`, not assumed content or function. Pure, no IO.
 import { SALIENCE_PRIOR, SALIENCE_PRIOR_SCHEMA, SALIENCE_PRIOR_SOURCE } from "./fold-chat-salience-prior.js";
+// Received priors of other languages (UD Spanish-AnCora, UD French-GSD; built by scripts/build-salience-prior.mjs --lang). A language
+// with no prior here measures nothing: every form is unmeasured (null), never read through the English prior.
+import { SALIENCE_PRIOR as SALIENCE_PRIOR_ES } from "./fold-chat-salience-prior-es.js";
+import { SALIENCE_PRIOR as SALIENCE_PRIOR_FR } from "./fold-chat-salience-prior-fr.js";
+const PRIORS = { en: SALIENCE_PRIOR, es: SALIENCE_PRIOR_ES, fr: SALIENCE_PRIOR_FR };
+const priorOf = (lang) => (lang == null ? SALIENCE_PRIOR : PRIORS[lang] || null);
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
 import { stemOf } from "./fold-chat-ground.js";
 // The fold's text folding, at the khora's declared scope (Latin vowel accents only). The old
@@ -32,10 +38,10 @@ const tokens = (s) => fold(s).match(/[\p{L}\p{N}][\p{L}\p{N}'-]*/gu) || [];
 const EN_FW = new Set(FUNCTION_WORDS.en || []);
 
 /** The salience of a form in [0,1], or null when the prior has never seen it. */
-export function salienceOf(form) { const d = SALIENCE_PRIOR[fold(form)]; return d == null ? null : d / 9; }
+export function salienceOf(form, lang = null) { const P = priorOf(lang); if (!P) return null; const d = P[fold(form)]; return d == null ? null : d / 9; }
 
 /** Is this form a NAME (proper noun) in the prior — the thing an ask is usually about? */
-export function isName(form) { return (SALIENCE_PRIOR[fold(form)] || 0) >= 8; }
+export function isName(form, lang = null) { const P = priorOf(lang); return !!P && (P[fold(form)] || 0) >= 8; }
 
 /**
  * The ask's measured terms. Returns:

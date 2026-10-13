@@ -179,7 +179,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     const after = [];
     for (let m = k + 2; m < tk.length && !/[|:;,.()–—]/u.test(String(src).slice(tk[m - 1].end, tk[m].start)); m++) {
       const f = tk[m].fold;
-      const rkX = posRankOf(tk[m].text);
+      const rkX = posRankOf(tk[m].text, L);
       if (coordX.has(f) || G.clauseWords.includes(f) || (closed(f) && !detsX.has(f)) || (!closed(f) && rkX != null && rkX <= 6)) break;   // "… of the United Kingdom NOW": an adverb ends the phrase
       after.push(tk[m]);
     }
@@ -243,7 +243,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   for (const a of attrs) toks.forEach((t, k) => {
     if (t.stem !== a.stems[0]) return;
     let m = k - 1;
-    while (m >= 0 && !closed(toks[m].fold) && posRankOf(toks[m].text) === 4) m--;
+    while (m >= 0 && !closed(toks[m].fold) && posRankOf(toks[m].text, L) === 4) m--;
     if (m >= 0 && closed(toks[m].fold) && !G.copulas.includes(toks[m].fold)) attrDescIdx.add(k);
     else if (m >= 0 && G.copulas.includes(toks[m].fold)) {
       // "… is King OF the United Kingdom" / "… is king." is a predicate noun; "… is King Charles III" opens a name
@@ -285,7 +285,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       // …and only a coordinator that OPENS a clause (a pronoun, preposition or verb follows it) — "the United Kingdom AND the other
       // Commonwealth realms, the reigning monarch since 1952" is one noun phrase's coordination, not a second clause
       const dets = new Set(G.determiners || []);
-      const opens = (k) => { const nx = toks[k + 1]; return !!nx && ((closed(nx.fold) && !dets.has(nx.fold)) || (posRankOf(nx.text) === 6 && !(G.auxiliaries || []).includes(nx.fold))); };
+      const opens = (k) => { const nx = toks[k + 1]; return !!nx && ((closed(nx.fold) && !dets.has(nx.fold)) || (posRankOf(nx.text, L) === 6 && !(G.auxiliaries || []).includes(nx.fold))); };
       const subsB = new Set(G.subordinators || []);
       const brkB = (k) => (toks[k] && (((G.coordinators || []).includes(toks[k].fold) && opens(k)) || subsB.has(toks[k].fold))) || (k > 0 && /;/.test(text.slice(toks[k - 1].end, toks[k].start)));
       for (let k = ci - 1; k >= 0; k--) if (brkB(k)) { c0b = k + 1; break; }
@@ -382,7 +382,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         // break and no second verb ("discovered in 1928 and later DEVELOPED by Howard Florey" is Florey's development, not his discovery)
         const coord = new Set(G.coordinators || []);
         for (let k = relK + 1; k < byK; k++) {
-          const rk = posRankOf(toks[k].text);
+          const rk = posRankOf(toks[k].text, L);
           if (coord.has(toks[k].fold) || (rk === 6 && !G.auxiliaries.includes(toks[k].fold))) return null;
         }
         if (/[,;:()]/u.test(text.slice(toks[relK].end, toks[byK].start))) return null;
@@ -392,7 +392,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         if (e <= byK + 1) return null;
         // an agent is somebody: a number ("by 1930") or a common noun alone ("by accident") is manner or time, not a person (MF3)
         const run = toks.slice(byK + 1, e);
-        if (/^\p{Nd}/u.test(run[0].text) || !run.some((t) => !closed(t.fold) && !/^\p{Nd}/u.test(t.text) && (posRankOf(t.text) == null || posRankOf(t.text) >= 8))) return null;
+        if (/^\p{Nd}/u.test(run[0].text) || !run.some((t) => !closed(t.fold) && !/^\p{Nd}/u.test(t.text) && (posRankOf(t.text, L) == null || posRankOf(t.text, L) >= 8))) return null;
         a = toks[byK + 1].start; b = toks[e - 1].end;
         fromAgent = true;
       }
@@ -430,13 +430,13 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         const SUB = new Set(G.subordinators || []);
         const CONT = new Set(G.containment), INDEF = new Set(G.indefinites || []), dets = new Set(G.determiners || []), coord = new Set(G.coordinators || []);
         const PLACE_STEMS2 = new Set((G.placeVerbs || []).map((w) => stemOf(w, L)));
-        const rankAt = (j) => posRankOf(toks[j].text);
+        const rankAt = (j) => posRankOf(toks[j].text, L);
         // a word INSIDE a noun phrase is a noun: "a DESERT", "a hot DESERT", "the largest hot DESERT" — walk back over adjectives (or words the
         // prior has never seen) to a determiner
         const PREPS3 = new Set([...(G.prepositions || []), ...(G.containment || []), ...(G.agentStops || [])]);
         // …or after a PREPOSITION ("a country in WEST Africa", "in northern Africa"): the object of a preposition is a noun phrase
         const inNounPhrase = (k) => { let j = k - 1; while (j >= 0 && !closed(toks[j].fold) && (rankAt(j) === 4 || rankAt(j) == null)) j--; return j >= 0 && (dets.has(toks[j].fold) || PREPS3.has(toks[j].fold)); };
-        const isVerb = (k) => posRankOf(toks[k].text) === 6 && !closed(toks[k].fold) && !(G.auxiliaries || []).includes(toks[k].fold)
+        const isVerb = (k) => posRankOf(toks[k].text, L) === 6 && !closed(toks[k].fold) && !(G.auxiliaries || []).includes(toks[k].fold)
           && !PLACE_STEMS2.has(toks[k].stem) && !inNounPhrase(k);      // "located in", "born in" lead INTO a place; "a hot DESERT in Africa" is a noun
         let end = toks.length;
         for (let k = relIn + 1; k < toks.length; k++) {
@@ -462,7 +462,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
           if (run.length) chainEnd = toks[e2 - 1].end;
           k = Math.max(k, e2 - 1);
           if (!run.length || run.some((t) => /\p{Nd}/u.test(t.text) || (G.temporal || []).includes(t.fold))) continue;
-          if (!run.some((t) => !closed(t.fold) && (salienceOf(t.text) == null || isName(t.text)))) continue;
+          if (!run.some((t) => !closed(t.fold) && (salienceOf(t.text, L) == null || isName(t.text, L)))) continue;
           alts.push({ text: text.slice(toks[s2].start, toks[e2 - 1].end), span: [toks[s2].start, toks[e2 - 1].end], det: ledByDet });
         }
         // inside ONE unbroken chain ("at the hospital IN Honolulu", "in the shadow of the Archbishop IN Salzburg", "in January IN Salzburg") the
@@ -502,7 +502,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         let m = gk + 1; while (m < toks.length && dets.has(toks[m].fold)) m++;
         let e = m; while (e < toks.length && toks[e].end <= b && !closed(toks[e].fold)) e++;
         const nameRun = toks.slice(m, e);
-        if (!nameRun.length || !nameRun.some((t) => salienceOf(t.text) == null || isName(t.text))) return null;
+        if (!nameRun.length || !nameRun.some((t) => salienceOf(t.text, L) == null || isName(t.text, L))) return null;
         a = toks[m].start; b = toks[e - 1].end;
       } else {
         while (k < toks.length && dets.has(toks[k].fold)) k++;
@@ -528,7 +528,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     const lead = new Set([...(G.prepositions || []), ...(G.agentStops || []), ...(G.subordinators || [])]);
     if (!lead.has(run[0].fold)) return false;
     // a TITLE may begin with a preposition ("On the Road", "After the Gold Rush"): only a clause — a digit or a verb in it — is adverbial
-    return run.some((t) => /^\p{Nd}/u.test(t.text) || (posRankOf(t.text) === 6 && !closed(t.fold) && !(G.auxiliaries || []).includes(t.fold)));
+    return run.some((t) => /^\p{Nd}/u.test(t.text) || (posRankOf(t.text, L) === 6 && !closed(t.fold) && !(G.auxiliaries || []).includes(t.fold)));
   }
   // A PERSON FILLER IS SOMEBODY, not a description and not a date (the first live gate run: "April 30", "March 22", "its leader", "the
   // chancellor"). Structural, from the language's own table: a run with a digit-led word ("April 30") is a date or a count; a run
@@ -542,7 +542,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     const first = toks.indexOf(run[0]);
     const led = dets.has(run[0].fold) || (first > 0 && dets.has(toks[first - 1].fold) && gapless(text, toks[first - 1], run[0]));
     if (!led) return true;
-    return content.some((t) => salienceOf(t.text) == null || isName(t.text));
+    return content.some((t) => salienceOf(t.text, L) == null || isName(t.text, L));
   }
 
   // A SUBJECT-VERB filler for the real-web holder sentence (declared 2026-10-11,
@@ -600,7 +600,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         if (a <= r.to) continue;
         let ok = true;
         for (let k = r.to + 1; k < a && ok; k++) {
-          const rank = (() => { const v = salienceOf(toks[k].text); return v == null ? null : Math.round(v * 9); })();
+          const rank = (() => { const v = salienceOf(toks[k].text, L); return v == null ? null : Math.round(v * 9); })();
           ok = closed(toks[k].fold) || (rank != null && rank === 4);          // determiner/preposition or an adjective-dominant form
         }
         if (ok && /^[^,;.()!?]*$/.test(text.slice(toks[r.to].end, toks[a].start))) { if (!best || a - r.to < best.d) best = { r, d: a - r.to }; }

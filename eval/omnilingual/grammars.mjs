@@ -3,7 +3,11 @@
 const F = (a) => Object.freeze(a);
 const months = { es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
   fr: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"] };
+// VERSION 2 (PREREG.md §Version 2): new declared fields only — a light suffix stemmer and euphonic letters; no version-1 entry changed.
+const ES_V2 = { minStem: 3, suffixes: ["aciones", "amiento", "imiento", "adoras", "adores", "ancias", "ación", "adora", "ador", "ancia", "mente", "ables", "ibles", "istas", "able", "ible", "ista", "osos", "osas", "oso", "osa", "ados", "adas", "idos", "idas", "ado", "ada", "ido", "ida", "ando", "iendo", "aron", "ieron", "ará", "erá", "irá", "ió", "ó", "as", "es", "os", "a", "e", "o", "s"] };
+const FR_V2 = { minStem: 3, suffixes: ["issements", "issement", "ations", "ation", "euses", "euse", "ements", "ement", "ités", "ité", "ives", "ive", "ifs", "if", "ées", "ée", "és", "é", "es", "e", "s", "x"], euphonic: ["t"] };
 export const ES = Object.freeze({
+  ...ES_V2,
   giver: "the author's reading of Spanish closed classes (2026-10-13); declared, not measured",
   interrogatives: F([{ words: ["cuántos"], slot: "quantity" }, { words: ["cuántas"], slot: "quantity" }, { words: ["cuánto"], slot: "quantity" },
     { words: ["qué", "año"], slot: "time" }, { words: ["quién"], slot: "person" }, { words: ["quiénes"], slot: "person" },
@@ -34,6 +38,7 @@ export const ES = Object.freeze({
   year: Object.freeze({ minDigits: 3, maxDigits: 4 }), maxRun: 4,
 });
 export const FR = Object.freeze({
+  ...FR_V2,
   giver: "the author's reading of French closed classes (2026-10-13); declared, not measured",
   interrogatives: F([{ words: ["combien"], slot: "quantity" }, { words: ["quelle", "année"], slot: "time" }, { words: ["qui"], slot: "person" },
     { words: ["où"], slot: "place" }, { words: ["quand"], slot: "time" }, { words: ["quelle"], slot: "thing" }, { words: ["quel"], slot: "thing" }, { words: ["que"], slot: "thing" }]),

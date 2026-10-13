@@ -33,7 +33,7 @@
 // An answer whose checks could not be run ships as standing 'unmeasured' — the source states it, nothing was able to cross-check it, and
 // the card says so. It is never called 'survived'. No case logic anywhere: entities are what a TITLE resolves to.
 
-import { askFrame, GRAMMAR, tokensOf, stemOf, closedClassOf, posRankOf } from "./fold-chat-frame.js";
+import { askFrame, grammarOf, tokensOf, stemOf, closedClassOf, posRankOf } from "./fold-chat-frame.js";
 import { sentencesOf, bindSentence } from "./fold-chat-witness.js";
 import { runFalsify, askTense, sameFiller } from "./fold-chat-falsify.js";
 import { createTurnVoid, traceOf, noteFalsification } from "./fold-chat-void.js";
@@ -124,7 +124,7 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
   const variantsOf = (f) => {
     const tk = tokensOf(f.text), out = [{ text: f.text, from: 0, to: f.text.length }];
     let h = 0;
-    while (h < tk.length && (closedV(tk[h].fold) || ((r) => r != null && r < 8)(posRankOf(tk[h].text)))) h++;
+    while (h < tk.length && (closedV(tk[h].fold) || ((r) => r != null && r < 8)(posRankOf(tk[h].text, frame.lang || null)))) h++;
     if (h >= tk.length) return out;
     for (let e = tk.length; e > h; e--) {
       if (e - h < 2 && tk.length - h >= 2) break;
@@ -232,7 +232,7 @@ function firstBoundary(text, from, G) {
  *  number — subject + the closed-class words right before the number + the number + the matched noun after it ("Spiders have eight
  *  legs."). A time, or anything that cannot be built from the row's own words, is the row's sentence verbatim. */
 export function realise(row, frame, { fw, lang }) {
-  const G = GRAMMAR[lang];
+  const G = grammarOf(lang);
   const f = row && row.filler;
   const text = row ? row.sentence : "";
   if (!G || !f || !Array.isArray(f.span) || text.slice(f.span[0], f.span[1]) !== f.text) return text;

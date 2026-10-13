@@ -8,11 +8,9 @@ import { run } from "./eval/omnilingual/battery.mjs";
 
 // (improvement → languages where it FALLS, and why) — measured 2026-10-13, see eval/omnilingual/RESULTS.md
 const KNOWN_FALLS = {
-  "passive agent inside a relative clause": { es: "PRIOR: no stemmer — 'descubrió' (ask) never meets 'descubierta' (sentence)", fr: "PRIOR: no stemmer — 'découvert' vs 'découverte'" },
-  "place: a later clause's place is not the relation's": { es: "PRIOR: 'y murió' opens a clause only if the English POS prior ranks 'murió' a verb (it has never seen it)", fr: "RULE: the fold makes 'né' the function word 'ne', so the relation is dropped" },
-  "place: a possessor/kinsman is not the anchor": { fr: "RULE: the fold makes 'né' the function word 'ne', so the ask has no relation and the possessor guard (relation asks only) never runs" },
-  "false premise: the kind noun must be said": { es: "PRIOR: 'primera' is a relation word only by the English POS prior, so 'mujer' is not marked a kind" },
-  "a hedged row is no rival": { fr: "RULE: the tokenizer splits the inversion 'a-t-il' and the euphonic 't' becomes a name the witness must say" },
+  // run 2 (version-2 priors: per-language UD POS priors, declared light stemmers, euphonic letters) — eval/omnilingual/RESULTS.md
+  "passive agent inside a relative clause": { es: "PRIOR: an IRREGULAR participle — 'descubrió' (ask) and 'descubierta' (sentence) share no regular suffix; needs a lemma prior" },
+  "place: a possessor/kinsman is not the anchor": { fr: "RULE: the diacritic fold makes 'né' the function word 'ne', so the ask has no relation and the possessor guard (relation asks only) never runs" },
 };
 
 test("OMNILINGUAL: every improvement that held in en, es and fr still holds; the known falls are exactly the recorded ones; ru stays a typed null", async () => {
