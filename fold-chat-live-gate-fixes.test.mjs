@@ -222,3 +222,31 @@ test("LIVE-21 the referent's WHOLE name on one side decides the copula's side, n
   const r = bind(f, "General relativity is a theory of gravitation developed by Einstein in the years 1907–1915.", { page: "Theory of relativity" });
   assert.equal(r && r.filler && r.filler.text, "Einstein");
 });
+
+test("LIVE-22 a hedged row is no rival: 'you may have learned that there are … four continents' does not contest 'seven'", async () => {
+  const { runAnswerTurn } = await import("./fold-chat-answerturn.js");
+  const titles = { continents: "Continent" };
+  const pages = {
+    Continent: "There are seven continents on our planet: Asia, Africa, North America, South America, Antarctica, Europe, and Australia. However, depending on where you live, you may have learned that there are five, six, or even four continents.",
+  };
+  const pass = Object.entries(pages).map(([title, text], i) => ({ ref: "S" + (i + 1), title, url: "https://en.wikipedia.org/wiki/" + title, host: "en.wikipedia.org", lang: "en", text }));
+  const deps = { fw: functionWordsOf, resolveTitles: door(titles), fetchLead: async () => null, searchPassages: async () => [] };
+  const t = await runAnswerTurn({ question: "How many continents are there?", lang: "en", passages: pass, now: { year: 2026 }, deps });
+  assert.ok(!(t.contest && t.contest.length), "hedged rows are not rivals: " + JSON.stringify(t.contest && t.contest.map((c) => c.filler && c.filler.text)));
+  assert.ok(t.answer && /seven/i.test(t.answer.filler.text), JSON.stringify(t.answer && t.answer.filler));
+});
+
+test("LIVE-23 one row says every word of the ask another says AND more: 'on the field' → 11, not a contest with the NFL roster's 53", async () => {
+  const { runAnswerTurn } = await import("./fold-chat-answerturn.js");
+  const pages = {
+    "How Many Players on a Football Team": "An NFL football team carries 53 players on its active roster during the regular season.",
+    "Football team": "A football team has 11 players on the field at one time.",
+  };
+  const titles = { "football team": "Football team" };      // "field" does not resolve to a page: it is a word of the ask, not an anchor
+  const pass = Object.entries(pages).map(([title, text], i) => ({ ref: "S" + (i + 1), title, url: "https://en.wikipedia.org/wiki/" + title.replace(/ /g, "_"), host: "en.wikipedia.org", lang: "en", text }));
+  const deps = { fw: functionWordsOf, resolveTitles: door(titles), fetchLead: async () => null, searchPassages: async () => [] };
+  const t = await runAnswerTurn({ question: "How many players does a football team have on the field?", lang: "en", passages: pass, now: { year: 2026 }, deps });
+  assert.ok(!(t.contest && t.contest.length), "the narrower sentence is no rival: " + JSON.stringify(t.contest && t.contest.map((c) => c.filler && c.filler.text)));
+  assert.ok(t.answer && /\b11\b/.test(t.answer.filler.text), JSON.stringify(t.answer && t.answer.filler));
+  assert.ok(t.answer.unmeasured.some((u) => /53/.test(u)), "the dominated row is disclosed, not hidden: " + JSON.stringify(t.answer.unmeasured));
+});

@@ -235,7 +235,9 @@ function localCheck(probe, c, pool, nowYear) {
   const titleOf = (r) => (r && r.filler && typeof r.filler.title === "string" ? r.filler.title.trim().toLowerCase() : null);
   const claimTitle = titleOf(c.row);
   const sameClaim = (r) => sameFiller(fillerText(r.filler), c.name) || (!!claimTitle && titleOf(r) === claimTitle);
-  const rivals = witnessing.filter((r) => r.polarity !== "-" && fillerText(r.filler) && !sameClaim(r)
+  // a hedged, conditional or asking row (polarity "?") is neither a witness nor a denial (the binder's stance read): it is no rival
+  // either — "you may have learned that there are five, six, or even four continents" must not contest "seven"
+  const rivals = witnessing.filter((r) => (r.polarity == null || r.polarity === "+") && fillerText(r.filler) && !sameClaim(r)
     && (!probe.current || r.tense === "present" || r.tense === "unknown" || r.tense == null));
   if (probe.kind === "rival-holder") {
     if (!rivals.length) return { probe, outcome: "none", scope, text: SAY.noRival(scope) };

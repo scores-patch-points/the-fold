@@ -154,6 +154,27 @@ function makeBearing(frame, code, fw) {
     return [covered, pred, titleAgree, -entry.order];
   };
 }
+/** DOMINANCE (the live held-out "how many players does a football team have on the field": 53 vs 11): one row says every word of the
+ *  ask that another row says AND more ("on the field"), so the other row speaks to a narrower or different question — it is not a
+ *  rival. No threshold: a strict superset of the ask's own content stems, over each of the others. → the dominant row, or null. */
+export function dominantRow(rows, frame, code, fw) {
+  if (!Array.isArray(rows) || rows.length < 2) return null;
+  const closed = closedClassOf(fw, code);
+  const stemsOf = (t) => tokensOf(t).filter((x) => !closed(x.fold)).map((x) => stemOf(x.fold, code));
+  const ask = new Set([
+    ...frame.referents.flatMap((r) => [r.surface, r.title, ...asArr(r.aliases)].filter(Boolean).flatMap(stemsOf)),
+    ...asArr(frame.predicate).map((p) => p.stem),
+    ...asArr(frame.attributes).flatMap((a) => asArr(a.stems)),
+    ...asArr(frame.counted && frame.counted.stems),
+  ].filter(Boolean));
+  if (!ask.size) return null;
+  const cover = rows.map((r) => { const have = new Set(stemsOf(String(r.sentence || ""))); return [...ask].filter((st) => have.has(st)); });
+  for (let i = 0; i < rows.length; i++) {
+    const mine = new Set(cover[i]);
+    if (rows.every((_, j) => j === i || (cover[j].every((st) => mine.has(st)) && mine.size > cover[j].length))) return { row: rows[i], index: i, missing: rows.filter((_, j) => j !== i).map((r2, k) => ({ row: r2, words: [...mine].filter((st) => !new Set(cover[rows.indexOf(r2)]).has(st)) })) };
+  }
+  return null;
+}
 const byBearing = (a, b) => { for (let i = 0; i < 4; i++) if (a.b[i] !== b.b[i]) return b.b[i] - a.b[i]; return 0; };
 
 // ── realising: a clause of the row's OWN words ───────────────────────────────────────────────────────────────────
@@ -385,6 +406,13 @@ async function run({ question, lang, passages, now, deps }) {
   }
   if (run.standing === "contested") {
     const rows = run.contest.length >= 2 ? run.contest : [cand];
+    // one row covers strictly more of the ask's own words than every other: the others answer a narrower or different question
+    const dom = dominantRow(rows, frame, code, fw);
+    if (dom) {
+      const unmeasured = [`${dom.missing.map((m) => `another source says ${q(m.row.filler && m.row.filler.text)} but does not say ${m.words.slice(0, 3).map(q).join(", ")}`).join("; ")}`];
+      const answer = { text: realise(dom.row, frame, { fw, lang: code }), filler: dom.row.filler, row: dom.row, standing: "unmeasured", survived: [], unmeasured, by: "mechanical" };
+      return finishTurn({ answer });
+    }
     if (rows.length >= 2) return finishTurn({ contest: rows });
     return finishTurn({ gap: { kind: "unwitnessed", closest: cand, tried: readTitles, closeBy: [] } });
   }
