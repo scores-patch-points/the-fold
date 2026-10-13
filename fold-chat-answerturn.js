@@ -73,7 +73,7 @@ function langOf(lang, question) {
 /** Bind every sentence of the passages. A sentence the frame cannot bind on its own words gets a second chance with the page's TITLE
  *  carrying the referent it leaves unsaid ("The current prime minister is Andy Burnham" on the page "Prime Minister of the United
  *  Kingdom") — such a row is marked via the returned `viaTitle` set, and its filler MUST then resolve by title to count. */
-function bindPassages(passages, frame, { fw, code, from = 0 }) {
+function bindPassages(passages, frame, { fw, code, from = 0, pageEntity = null }) {
   const out = [], read = [], skipped = [];
   asArr(passages).forEach((p, i) => {
     if (!p || typeof p.text !== "string" || !p.text) return;
@@ -81,15 +81,30 @@ function bindPassages(passages, frame, { fw, code, from = 0 }) {
     const source = { ref: isStr(p.ref) ? p.ref : "S" + (from + i + 1), title: p.title || "", url: p.url || "", host: p.host || hostOf(p.url), lang: p.lang || code };
     read.push(source);
     sentencesOf(p.text).forEach((s, k) => {
-      let row = bindSentence(s, frame, { fw, lang: code, source, page: p.title || null }), viaTitle = false;
+      const pe = pageEntity && isStr(p.title) ? pageEntity.get(p.title) || null : null;      // what the page's own title RESOLVES to (a redirect is the same entity)
+      let row = bindSentence(s, frame, { fw, lang: code, source, page: p.title || null, pageEntity: pe }), viaTitle = false;
       if (!row && isStr(p.title)) {
-        const r2 = bindSentence(s, frame, { fw, lang: code, source, topic: p.title, page: p.title });
+        const r2 = bindSentence(s, frame, { fw, lang: code, source, topic: p.title, page: p.title, pageEntity: pe });
         if (r2 && r2.filler) { row = r2; viaTitle = true; }
       }
       if (row) out.push({ row, viaTitle, page: source, order: (from + i) * 10000 + k });
     });
   });
   return { entries: out, read, skipped };
+}
+
+/** What each page's own title resolves to (one batched title-door call, the titles of pages ALREADY read): "Microsoft Corporation" is
+ *  "Microsoft" after the redirect, so a lead that says "Microsoft Corporation" is about the referent, not a longer entity. A failed or
+ *  absent door leaves the map empty and the string test stands. */
+async function pageEntitiesOf(passages, resolveTitles) {
+  const titles = [...new Set(asArr(passages).map((p) => p && p.title).filter(isStr))];
+  const out = new Map();
+  if (!titles.length || typeof resolveTitles !== "function") return out;
+  try {
+    const table = await resolveTitles(titles);
+    for (const t of titles) { const r = table && table.get && table.get(t); if (r && isStr(r.title) && !r.disambiguation) out.set(t, r.title); }
+  } catch { /* no door: the string test stands */ }
+  return out;
 }
 
 /** One resolveTitles call over the fillers of person/place/thing rows: a filler that is no page is not a name, so it witnesses nothing
@@ -161,8 +176,9 @@ export function dominantRow(rows, frame, code, fw) {
   if (!Array.isArray(rows) || rows.length < 2) return null;
   const closed = closedClassOf(fw, code);
   const stemsOf = (t) => tokensOf(t).filter((x) => !closed(x.fold)).map((x) => stemOf(x.fold, code));
+  // only the ask's SCOPE words count — predicate, attribute and counted stems. A referent's own name is never a scope word: a row that
+  // spells the same entity longer ("Wolfgang Amadeus Mozart" for "Mozart") says no more of what was asked (panel 4, second re-read).
   const ask = new Set([
-    ...frame.referents.flatMap((r) => [r.surface, r.title, ...asArr(r.aliases)].filter(Boolean).flatMap(stemsOf)),
     ...asArr(frame.predicate).map((p) => p.stem),
     ...asArr(frame.attributes).flatMap((a) => asArr(a.stems)),
     ...asArr(frame.counted && frame.counted.stems),
@@ -296,7 +312,8 @@ async function run({ question, lang, passages, now, deps }) {
   const partial = () => finishTurn({ aborted: true });
 
   // 2 ── bind
-  const first = bindPassages(passages, frame, { fw, code });
+  const pageEntity = await pageEntitiesOf(passages, deps.resolveTitles);
+  const first = bindPassages(passages, frame, { fw, code, pageEntity });
   addSources(first.read);
   let entries = first.entries;
   let unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles, fw)).unverified;
@@ -312,7 +329,7 @@ async function run({ question, lang, passages, now, deps }) {
     if (aborted(signal)) return partial();
     const have = new Set(entries.map((e) => e.page.url + "\u0000" + e.page.title));
     const fresh = more.filter((p) => p && typeof p.text === "string" && !have.has((p.url || "") + "\u0000" + (p.title || "")) && !asArr(passages).some((x) => x && x.url && x.url === p.url));
-    const next = bindPassages(fresh, frame, { fw, code, from: asArr(passages).length });
+    const next = bindPassages(fresh, frame, { fw, code, from: asArr(passages).length, pageEntity: await pageEntitiesOf(fresh, deps.resolveTitles) });
     addSources(next.read);
     entries = entries.concat(next.entries);
     for (const p of fresh) if (isStr(p.query)) searched.push(p.query);

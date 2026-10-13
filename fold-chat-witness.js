@@ -66,7 +66,7 @@ function mergeSpans(spans) {
 }
 
 
-export function bindSentence(sentence, frame, { fw = null, lang = null, source = null, topic = null, page = null } = {}) {
+export function bindSentence(sentence, frame, { fw = null, lang = null, source = null, topic = null, page = null, pageEntity = null } = {}) {
   const L = frame?.lang || lang;
   const G = L ? GRAMMAR[L] : null;
   if (!sentence || typeof sentence.text !== "string" || !frame || !frame.ok || !G) return null;
@@ -101,7 +101,9 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const pageToks = pageTokObjs ? pageTokObjs.map((t) => stemOf(t.fold, L)) : null;
   const sameStems = (x, y) => x.length === y.length && x.every((st, k) => st === y[k]);
   // the page IS the ask's own referent (its resolved title): its lead names it by the title, and that is no derivative of anything
-  const pageIsReferent = !!pageToks && frame.referents.some((r) => r && r.title && sameStems(tokensOf(String(r.title).replace(/\s*\([^)]*\)\s*$/u, "")).map((t) => stemOf(t.fold, L)), pageToks));
+  const stemsOfTitle = (t) => tokensOf(String(t).replace(/\s*\([^)]*\)\s*$/u, "")).map((x) => stemOf(x.fold, L));
+  // the page IS a referent when its title equals a referent's resolved title, or RESOLVES to it (a redirect: "Microsoft Corporation")
+  const pageIsReferent = !!pageToks && frame.referents.some((r) => r && r.title && (sameStems(stemsOfTitle(r.title), pageToks) || (pageEntity && sameStems(stemsOfTitle(r.title), stemsOfTitle(pageEntity)))));
   // the words of the ASK itself (its attribute and relation stems): a longer title made of them is the ask's own phrase, not another
   // entity ("Attack on Pearl Harbor" for "when was Pearl Harbor attacked", "President of France" for "who is the president of France")
   // …including every referent's own words: "Longest Rivers in Africa" is made of the ask's relation and BOTH its referents
@@ -134,7 +136,9 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       seqs.push(at.map((t) => stemOf(t.fold, L)));
       for (const t of at) if (!closed(t.fold)) content.add(stemOf(t.fold, L));
     }
-    return { seqs, content, occ: seqs.flatMap((s) => occurrences(toks, text, s)).filter((o) => !partOfLongerTitle(o, seqs)) };
+    // `titleLen`: the referent's FULL resolved name in tokens — an occurrence shorter than it is a stem of the name, not the referent
+    const titleLen = tokensOf(String(r.title || r.surface || "").replace(/\s*\([^)]*\)\s*$/u, "")).length || 1;
+    return { seqs, content, titleLen, occ: seqs.flatMap((s) => occurrences(toks, text, s)).filter((o) => !partOfLongerTitle(o, seqs)) };
   });
   const topicStems = topic ? tokensOf(String(topic)).map((t) => stemOf(t.fold, L)) : null;
   const carriedByTopic = (g) => !!topicStems && g.seqs.some((s) => containsSeq(topicStems, s));
@@ -218,7 +222,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const hedged = toks.some((t, k) => (G.hedges || []).includes(t.fold) && !isMonthMay(k)) || /\?\s*["”’')\]]*\s*$/u.test(text);
   // a negation word directly before a NUMBER is the abbreviation "No. 1" / "no. 14" ("Symphony No. 1"), not a denial: the live
   // "Moonlight Sonata" sentence was read as negative because its subordinate clause named another work's number
-  const numberSign = (k) => toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text) && /^\s*\.?\s*$/u.test(text.slice(toks[k].end, toks[k + 1].start));
+  const numberSign = (k) => toks[k].fold === "no" && toks[k + 1] && /^\p{Nd}/u.test(toks[k + 1].text) && /^\s*\.\s*$/u.test(text.slice(toks[k].end, toks[k + 1].start));      // "No. 1" — with its period; "no 6 legs" is a denial
   const polarity = hedged ? "?" : toks.some((t, k) => (G.negation.includes(t.fold) && !numberSign(k)) || /n['’]t$/.test(t.fold)) ? "-" : "+";
   let tense = "unknown";
   for (const t of toks) {
@@ -266,22 +270,49 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     const carries = (a, b) => toks.some((t, k) => k >= a && k <= b && (carry.has(t.stem) || attrDescIdx.has(k)));
     const holdsPredicate = (a, b) => predMatches.some((k) => k >= a && k <= b);
     let cl = carries(0, ci - 1), cr = carries(ci + 1, toks.length - 1);
-    // The referent's WHOLE name is on exactly one side: that side is the subject's, whatever stems of the ask's alias ("theory" of
-    // "theory of general relativity") the other side happens to share — a stem is not the referent (the live "who developed the theory
-    // of general relativity": "General relativity is a theory of gravitation developed by Einstein" carried 'theory' on both sides).
-    {
-      const nameIn = (a, b) => groups.some((g) => g.occ.some((o) => o.from >= a && o.to <= b));
-      const gl = nameIn(0, ci - 1), gr = nameIn(ci + 1, toks.length - 1);
-      if (gl !== gr && (gl || gr)) { cl = gl; cr = gr; }
+    // an ATTRIBUTE the ask names must be said in THIS copula's clause: "Australia's largest city is Sydney; the capital Canberra is
+    // inland" says the attribute in the other clause — Sydney is no capital's answer
+    if (attrs.length) {
+      const inClause = (st) => toks.some((t, k) => t.stem === st && k >= c0b && k <= c1b);
+      let c0b = 0, c1b = toks.length - 1;
+      // (a coordinator or a semicolon only: a parenthetical ", since its construction in 1960," does not end the main clause)
+      // …and only a coordinator that OPENS a clause (a pronoun, preposition or verb follows it) — "the United Kingdom AND the other
+      // Commonwealth realms, the reigning monarch since 1952" is one noun phrase's coordination, not a second clause
+      const dets = new Set(G.determiners || []);
+      const opens = (k) => { const nx = toks[k + 1]; return !!nx && ((closed(nx.fold) && !dets.has(nx.fold)) || (posRankOf(nx.text) === 6 && !(G.auxiliaries || []).includes(nx.fold))); };
+      const brkB = (k) => (toks[k] && (G.coordinators || []).includes(toks[k].fold) && opens(k)) || (k > 0 && /;/.test(text.slice(toks[k - 1].end, toks[k].start)));
+      for (let k = ci - 1; k >= 0; k--) if (brkB(k)) { c0b = k + 1; break; }
+      for (let k = ci + 1; k < toks.length; k++) if (brkB(k)) { c1b = k - 1; break; }
+      if (!attrs.every((a) => a.stems.every(inClause))) return null;
     }
+    // the copula's OWN clause: back/forward to a semicolon, a coordinator or a relative word
+    const brk = (k) => (toks[k] && ((G.coordinators || []).includes(toks[k].fold) || G.clauseWords.includes(toks[k].fold)))
+      || (k > 0 && /;/.test(text.slice(toks[k - 1].end, toks[k].start)));
+    let c0 = 0, c1 = toks.length - 1;
+    for (let k = ci - 1; k >= 0; k--) if (brk(k)) { c0 = k + 1; break; }
+    for (let k = ci + 1; k < toks.length; k++) if (brk(k)) { c1 = k - 1; break; }
     // A TYPE WORD recurs inside the answer's own name: "The Nile RIVER is the longest RIVER in Africa" names the referent "river" on both
     // sides, but the left names nothing the right does not and the right names an ANCHOR the left lacks (Africa): the left is the
     // answer. Decided by referent GROUPS (whole names), never by shared stems — "Leopold Mozart … his son Wolfgang Amadeus Mozart" is
     // one group on both sides and stays a refusal.
     if (cl && cr) {
       const here = (g, a, b) => g.occ.some((o) => o.from >= a && o.to <= b);
-      const onL = groups.filter((g) => here(g, 0, ci - 1)), onR = groups.filter((g) => here(g, ci + 1, toks.length - 1));
+      const onL = groups.filter((g) => here(g, c0, ci - 1)), onR = groups.filter((g) => here(g, ci + 1, c1));
       if (onL.length && onL.every((g) => onR.includes(g)) && onR.some((g) => !onL.includes(g))) { cl = false; for (const g of onL) for (const st of g.content) typeStems.add(st); }
+    }
+    // The referent's WHOLE name is on exactly one side: that side is the subject's, whatever stems of the ask's alias ("theory" of
+    // "theory of general relativity") the other side happens to share — a stem is not the referent (the live "who developed the theory
+    // of general relativity": "General relativity is a theory of gravitation developed by Einstein" carried 'theory' on both sides).
+    // an occurrence must BEGIN the subject: no content word gaplessly before it ("LOUIS Napoleon was born in Paris" is another Napoleon,
+    // whose one-word name matches a one-word alias)
+    const beginsSubject = (o) => !(o.from > 0 && !closed(toks[o.from - 1].fold) && gapless(text, toks[o.from - 1], toks[o.from]));
+    {
+      // an alias occurrence that BEGINS its noun phrase (on the left: the subject) — "Mozart" of "Leopold Mozart" does not
+      const nameIn = (a, b, subj) => groups.some((g) => g.occ.some((o) => o.from >= a && o.to <= b && (!subj || beginsSubject(o))));
+      // a left clause that is a RELATIVE clause ("Chlorine, which reacts with sodium, is …") is about its antecedent, not the subject
+      const relativeLeft = c0 > 0 && G.clauseWords.includes(toks[c0 - 1].fold);
+      const gl = nameIn(c0, ci - 1, true), gr = nameIn(ci + 1, c1, false);
+      if (!relativeLeft && gl !== gr && (gl || gr)) { cl = gl; cr = gr; }
     }
     let side;
     // Both sides carry the anchor's word ("Wolfgang Amadeus Mozart was born … to Leopold Mozart …"): for a PLACE ask with a relation
@@ -289,10 +320,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // what on it is the place (a person's surname there is another person, never the filler)
     // "Leopold Mozart was born in Augsburg, and his son Wolfgang Amadeus Mozart …" carries the surname on the left too, but it is
     // the father: the left side must hold the anchor's FULL name (its longest alias), not a stem of it
-    // …and that occurrence must BEGIN the subject: no content word gaplessly before it ("LOUIS Napoleon was born in Paris" is another
-    // Napoleon, whose one-word name matches a one-word alias)
-    const beginsSubject = (o) => !(o.from > 0 && !closed(toks[o.from - 1].fold) && gapless(text, toks[o.from - 1], toks[o.from]));
-    const fullLeft = groups.some((g) => { const L0 = Math.max(0, ...g.seqs.map((q) => q.length)); return g.occ.some((o) => o.to < ci && o.to - o.from + 1 >= L0 && beginsSubject(o)); });
+    const fullLeft = groups.some((g) => { const L0 = Math.max(g.titleLen, ...g.seqs.map((q) => q.length)); return g.occ.some((o) => o.to < ci && o.to - o.from + 1 >= L0 && beginsSubject(o)); });
     if (cl && cr) { if (frame.slot === "place" && relStems.length && fullLeft) side = "right"; else return null; }
     else if (cl) side = "right"; else if (cr) side = "left";
     else {                                                            // neither side names the referent (topic mode): the predicate's side is the subject
@@ -392,14 +420,19 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
           while (s2 < end && dets.has(toks[s2].fold)) { if (INDEF.has(toks[s2].fold)) indef = true; s2++; }
           if (indef) continue;
           let e2 = s2;
-          while (e2 < end && !CONT.has(toks[e2].fold) && !G.clauseWords.includes(toks[e2].fold) && !coord.has(toks[e2].fold) && !/[,;:()]/u.test(text.slice(toks[e2 - 1].end, toks[e2].start))) e2++;
+          const PREPS = new Set([...(G.prepositions || []), ...(G.agentStops || [])].filter((w) => !(G.governs || []).includes(w)));
+          while (e2 < end && !CONT.has(toks[e2].fold) && !PREPS.has(toks[e2].fold) && !G.clauseWords.includes(toks[e2].fold) && !coord.has(toks[e2].fold) && !/[,;:()]/u.test(text.slice(toks[e2 - 1].end, toks[e2].start))) e2++;
           const run = toks.slice(s2, e2);
           if (run.length) chainEnd = toks[e2 - 1].end;
           k = Math.max(k, e2 - 1);
-          if (!run.length || run.some((t) => /\p{Nd}/u.test(t.text))) continue;
+          if (!run.length || run.some((t) => /\p{Nd}/u.test(t.text) || (G.temporal || []).includes(t.fold))) continue;
           if (!run.some((t) => !closed(t.fold) && (salienceOf(t.text) == null || isName(t.text)))) continue;
           alts.push({ text: text.slice(toks[s2].start, toks[e2 - 1].end), span: [toks[s2].start, toks[e2 - 1].end] });
         }
+        // inside ONE unbroken chain ("at the hospital IN Honolulu", "in the shadow of the Archbishop IN Salzburg", "in January IN Salzburg") the
+        // phrase the others sit inside — the LAST — is tried first; the earlier ones are the fallback when the door does not know it. A
+        // wider region after a comma ("in Salzburg, in the Holy Roman Empire") never joins the chain (it ends it).
+        alts.reverse();
         if (alts.length) return { ...alts[0], alts };
       }
     }
@@ -418,9 +451,20 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       while (k < toks.length && (PREP.has(toks[k].fold) || predMatches.includes(k) || PLACE_STEMS.has(toks[k].stem))) { lead.push(toks[k]); k++; }
       // a PLACE is introduced: by a preposition or a place verb ("in Agra", "located in the Coral Sea", "born at …"). A complement with
       // neither is a description of the subject ("a biodiversity hotspot", "endemic"), never where it is: no filler, a typed gap upstream.
-      if (!lead.length) return null;
-      while (k < toks.length && dets.has(toks[k].fold)) k++;
-      if (k < toks.length) a = toks[k].start;
+      if (!lead.length) {
+        // "Cairo is the capital OF Egypt", "the Eiffel Tower is a landmark OF Paris": no locative preposition, but a noun governing a
+        // name says where — the run after the governing word, when it holds a word the prior calls a name or has never seen
+        const gk = toks.findIndex((t, j) => t.start >= a && t.end <= b && (G.governs || []).includes(t.fold) && j > 0);
+        if (gk < 0) return null;
+        let m = gk + 1; while (m < toks.length && dets.has(toks[m].fold)) m++;
+        let e = m; while (e < toks.length && toks[e].end <= b && !closed(toks[e].fold)) e++;
+        const nameRun = toks.slice(m, e);
+        if (!nameRun.length || !nameRun.some((t) => salienceOf(t.text) == null || isName(t.text))) return null;
+        a = toks[m].start; b = toks[e - 1].end;
+      } else {
+        while (k < toks.length && dets.has(toks[k].fold)) k++;
+        if (k < toks.length) a = toks[k].start;
+      }
     }
     const inside = toks.filter((t) => t.start >= a && t.end <= b);
     if (!inside.length || inside.every((t) => closed(t.fold))) return null;
@@ -437,7 +481,9 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   function startsAdverbial(run) {
     if (frame.slot === "place" || !run.length) return false;
     const lead = new Set([...(G.prepositions || []), ...(G.agentStops || []), ...(G.subordinators || [])]);
-    return lead.has(run[0].fold);
+    if (!lead.has(run[0].fold)) return false;
+    // a TITLE may begin with a preposition ("On the Road", "After the Gold Rush"): only a clause — a digit or a verb in it — is adverbial
+    return run.some((t) => /^\p{Nd}/u.test(t.text) || (posRankOf(t.text) === 6 && !closed(t.fold) && !(G.auxiliaries || []).includes(t.fold)));
   }
   // A PERSON FILLER IS SOMEBODY, not a description and not a date (the first live gate run: "April 30", "March 22", "its leader", "the
   // chancellor"). Structural, from the language's own table: a run with a digit-led word ("April 30") is a date or a count; a run
@@ -517,7 +563,9 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
           let c = r.from - 1;
           while (c >= 0 && closed(toks[c].fold) && !G.copulas.includes(toks[c].fold)) c--;
           if (c < 0 || !(G.copulas.includes(toks[c].fold) || toks[c].fold === "been")) continue;
-          const a = at.find((k) => k < c && /^[^,;.()!?]*$/.test(text.slice(toks[k].end, toks[c].start)));
+          const heads = new Set(G.countHeads || []);
+          const a = at.find((k) => k < c && /^[^,;.()!?]*$/.test(text.slice(toks[k].end, toks[c].start))
+            && toks.slice(0, k).some((t, j) => heads.has(t.fold) && toks[j + 1] && (G.governs || []).includes(toks[j + 1].fold)));      // "the NUMBER OF bones"
           if (a != null && (!best || r.from - c < best.d)) best = { r, d: r.from - c };
         }
       }

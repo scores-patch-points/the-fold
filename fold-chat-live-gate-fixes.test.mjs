@@ -286,3 +286,64 @@ test("LIVE-27 an attribute qualified by an ordinal the ask does not say is not t
   const r = bind(g, "George Washington was the first president of the United States.", { page: "President of the United States" });
   assert.equal(r && r.filler && r.filler.text, "George Washington", "the ask's own ordinal is kept");
 });
+
+test("LIVE-28 dominance counts the ask's SCOPE words only: a longer spelling of the referent's name never dominates an honest contest", async () => {
+  const { runAnswerTurn } = await import("./fold-chat-answerturn.js");
+  const titles = { mozart: "Wolfgang Amadeus Mozart", salzburg: "Salzburg", vienna: "Vienna" };
+  const mk = (pages) => Object.entries(pages).map(([title, text], i) => ({ ref: "S" + (i + 1), title, url: "https://en.wikipedia.org/wiki/" + title.replace(/ /g, "_"), host: "en.wikipedia.org", lang: "en", text }));
+  const deps = { fw: functionWordsOf, resolveTitles: door(titles), fetchLead: async () => null, searchPassages: async () => [] };
+  for (const pages of [
+    { A: "Mozart was born in Salzburg.", B: "Wolfgang Amadeus Mozart was born in Vienna." },
+    { A: "Wolfgang Amadeus Mozart was born in Salzburg.", B: "Mozart was born in Vienna." },
+  ]) {
+    const t = await runAnswerTurn({ question: "Where was Mozart born?", lang: "en", passages: mk(pages), now: { year: 2026 }, deps });
+    assert.ok(!t.answer || (t.contest && t.contest.length) || t.gap, "a spelling is not a scope word: " + JSON.stringify(t.answer && t.answer.filler));
+  }
+});
+
+test("LIVE-29 the whole-name override stays inside the copula's own clause and never reads a relative clause as the subject", async () => {
+  const c = await frameOf("What is the capital of Australia?", { australia: "Australia", capital: "Capital", sydney: "Sydney", wellington: "Wellington", canberra: "Canberra" });
+  const t = (q, x) => { const r = bind(q, x); return r && r.filler ? r.filler.text : null; };
+  assert.notEqual(t(c, "Australia's largest city is Sydney; the capital Canberra is inland."), "Sydney");
+  assert.notEqual(t(c, "The capital Wellington is also nearby, and Australia is large."), "Wellington");
+  assert.notEqual(t(c, "The capital Wellington is small, but Australia is large."), "Wellington");
+  const s = await frameOf("What is the chemical symbol for sodium?", { sodium: "Sodium", "chemical symbol": "Chemical symbol" });
+  assert.notEqual(t(s, "Chlorine, which reacts with sodium, is represented by the chemical symbol Cl."), "Cl", "a relative clause names the antecedent's attribute");
+  const e = await frameOf("Where was Albert Einstein born?", { "albert einstein": "Albert Einstein", buchau: "Buchau", ulm: "Ulm" });
+  const r = bind(e, "Hermann Einstein was born in Buchau, and his son Albert Einstein was born in Ulm.");
+  assert.ok(!r || !r.filler || !/Buchau/.test(r.filler.text) && !(r.filler.alts || []).some((a) => /Buchau/.test(a.text)), "the father's place: " + JSON.stringify(r && r.filler));
+});
+
+test("LIVE-30 a denial is a denial: only 'No.' with its period is a number sign; a count needs 'the number of' to be copular", async () => {
+  const f = await frameOf("How many legs does a spider have?", { spider: "Spider" });
+  const n = bind(f, "A spider has no 6 legs.");
+  assert.ok(!n || n.polarity !== "+" || !n.filler, "'no 6 legs' is not a positive count of 6: " + JSON.stringify(n && { p: n.polarity, f: n.filler }));
+  const l = bind(f, "The legs of a spider are 5 mm long.");
+  assert.ok(!l || !l.filler, "a length is not a count: " + JSON.stringify(l && l.filler));
+});
+
+test("LIVE-31 place alternatives: the container of an unbroken chain first; a month, a manner or a style is no place; alternatives end at any preposition", async () => {
+  const alts = async (q, T, x, page) => { const f = await frameOf(q, T); const r = bind(f, x, { page }); return r && r.filler && r.filler.alts ? r.filler.alts.map((a) => a.text) : []; };
+  assert.deepEqual((await alts("Where was Obama born?", { obama: "Barack Obama" }, "Barack Obama was born at the hospital in Honolulu.", "Barack Obama")).slice(0, 1), ["Honolulu"]);
+  assert.deepEqual((await alts("Where was Mozart born?", { mozart: "Wolfgang Amadeus Mozart" }, "Wolfgang Amadeus Mozart was born in January in Salzburg.", "Wolfgang Amadeus Mozart")).slice(0, 1), ["Salzburg"]);
+  assert.deepEqual(await alts("Where is Salzburg?", { salzburg: "Salzburg" }, "Salzburg is busiest in July.", "Salzburg"), [], "a month is a time");
+  assert.deepEqual((await alts("Where is the Eiffel Tower?", { "eiffel tower": "Eiffel Tower" }, "The Eiffel Tower is a landmark in jeopardy in Paris.", "Eiffel Tower")).slice(0, 1), ["Paris"]);
+  assert.deepEqual((await alts("Where is Notre-Dame?", { "notre-dame": "Notre-Dame de Paris" }, "Notre-Dame is a cathedral in Gothic style on the Île de la Cité in Paris.", "Notre-Dame de Paris")).slice(0, 1), ["Paris"]);
+});
+
+test("LIVE-32 'the capital OF Egypt' says where by the name it governs; a title may begin with a preposition ('On the Road')", async () => {
+  const c = await frameOf("Where is Cairo?", { cairo: "Cairo" });
+  assert.equal(bind(c, "Cairo is the capital of Egypt.", { page: "Cairo" }).filler.text, "Egypt");
+  const k = await frameOf("What is Jack Kerouac's most famous novel?", { "jack kerouac": "Jack Kerouac" });
+  const r = bind(k, "Jack Kerouac's most famous novel is On the Road.", { page: "Jack Kerouac" });
+  assert.equal(r && r.filler && r.filler.text, "On the Road");
+});
+
+test("LIVE-33 a page whose title RESOLVES to the referent (a redirect) is the referent's page: 'Microsoft Corporation' is 'Microsoft'", async () => {
+  const f = await frameOf("Who founded Microsoft?", { microsoft: "Microsoft" });
+  const s = "Microsoft Corporation was founded by Bill Gates and Paul Allen in 1975.";
+  const withEntity = bind(f, s, { page: "Microsoft Corporation", pageEntity: "Microsoft" });
+  assert.match(withEntity && withEntity.filler ? withEntity.filler.text : "", /Bill Gates/);
+  const without = bind(f, s, { page: "Microsoft Corporation" });
+  assert.ok(!without || !without.filler, "with no door the string test stands (a different entity until a redirect says otherwise)");
+});

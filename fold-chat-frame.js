@@ -85,10 +85,14 @@ export const GRAMMAR = Object.freeze({
     // prepositions that lead into one — moved out of fold-chat-witness.js (2026-10-13) so a language is a table, never a code path
     roleVerbs: Object.freeze(["became", "become", "becomes", "succeeded", "succeeds", "assumed", "assumes", "took", "takes", "taken", "elected", "elects", "crowned", "crowns", "acceded", "accedes", "appointed", "appoints", "named", "won", "serves", "served", "holds", "held", "leads", "led"]),
     placeVerbs: Object.freeze(["born", "located", "lived", "found", "raised", "grew", "situated"]),
-    prepositions: Object.freeze(["in", "at", "on", "near", "from", "around", "outside", "inside", "beside", "above", "below", "across"]),
+    prepositions: Object.freeze(["in", "at", "on", "near", "from", "around", "outside", "inside", "beside", "above", "below", "across", "to"]),
+    // the head nouns of a COUNT subject ("the NUMBER of bones … is 206"; declared, not measured)
+    countHeads: Object.freeze(["number", "total", "count", "amount", "tally"]),
     // subordinators that open a clause the relation does not govern ("a day WHEN Leopold was away in Augsburg"); only the place
     // alternatives' walk ends at them (clauseWords also cut fillers elsewhere, so this is a separate declared field)
     subordinators: Object.freeze(["when", "where", "while", "whereas", "because", "although", "though", "after", "before", "until", "as"]),
+    // calendar words: a month or a weekday is a TIME, never where ("in July", "born in January in Salzburg"); declared, not measured
+    temporal: Object.freeze(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "spring", "summer", "autumn", "fall", "winter"]),
     indefinites: Object.freeze(["a", "an"]),
     containment: Object.freeze(["in", "at", "within", "inside"]),
     // a passive AGENT ("was discovered by the physician Alexander Fleming at St Mary's") runs from "by" to the first of these
