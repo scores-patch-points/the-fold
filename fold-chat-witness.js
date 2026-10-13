@@ -391,6 +391,19 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
         fromAgent = true;
       }
     }
+    // A POSSESSOR OR A KINSMAN IS NOT THE ANCHOR (the archon re-reads: "Mozart's father Leopold was born in Augsburg", "the father of
+    // Mozart was born in Augsburg", "Mozart, whose father was born in Augsburg, …"): for a place ask WITH a relation, when the anchor is
+    // mentioned in the relation's clause only as a possessor ("X's N", "N of X") the clause is about N; a relative clause opened by
+    // "whose" has its own subject, not the antecedent. HEAD answered all of these with the father's place.
+    if (frame.slot === "place" && relStems.length && !topic) {
+      const own = [];
+      groups.forEach((g) => g.occ.forEach((o) => { if (o.to < ci) own.push(o); }));
+      const whoseClause = c0 > 0 && toks[c0 - 1].fold === "whose";
+      const region = (c0 > 0 && !whoseClause && (G.clauseWords.includes(toks[c0 - 1].fold) || SUBS.has(toks[c0 - 1].fold))) ? own : own.filter((o) => o.from >= c0);
+      const isPossessor = (o) => /^['’]s\b/u.test(text.slice(toks[o.to].end, toks[o.to].end + 3))
+        || (o.from >= 2 && (G.governs || []).includes(toks[o.from - 1].fold) && !closed(toks[o.from - 2].fold) && !askedStems.has(toks[o.from - 2].stem));
+      if ((region.length && region.every(isPossessor)) || (whoseClause && !region.length)) return null;
+    }
     // PLACE ALTERNATIVES (the first live gate run: "where was Mozart born" had the right sentence and no filler): the cut above stops at
     // the first comma, which in "born on 27 January 1756 to Leopold and Anna Maria, née Pertl, at Getreidegasse 9 in Salzburg" is
     // before the place. The candidates are the phrases after a CONTAINMENT preposition inside the RELATION'S OWN CLAUSE: the walk starts
@@ -405,11 +418,19 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       const relIn = relStems.length ? toks.findIndex((t, k) => k > ci && relStems.includes(t.stem) && !ordinalBefore(k)) : ci;
       const subjRegionStart = (c0 > 0 && (G.clauseWords.includes(toks[c0 - 1].fold) || SUBS.has(toks[c0 - 1].fold))) ? 0 : c0;      // a relative clause's subject is its antecedent
       const subjectIsAnchor = groups.some((g) => g.occ.some((o) => o.from >= subjRegionStart && o.to < ci && beginsSubject(o)));
+      void subjectIsAnchor;
       if (relIn >= 0 && subjectIsAnchor && !toks.slice(ci + 1, relIn).some((t) => G.clauseWords.includes(t.fold))) {
         const SUB = new Set(G.subordinators || []);
         const CONT = new Set(G.containment), INDEF = new Set(G.indefinites || []), dets = new Set(G.determiners || []), coord = new Set(G.coordinators || []);
+        const PLACE_STEMS2 = new Set((G.placeVerbs || []).map((w) => stemOf(w, L)));
+        const rankAt = (j) => posRankOf(toks[j].text);
+        // a word INSIDE a noun phrase is a noun: "a DESERT", "a hot DESERT", "the largest hot DESERT" — walk back over adjectives (or words the
+        // prior has never seen) to a determiner
+        const PREPS3 = new Set([...(G.prepositions || []), ...(G.containment || []), ...(G.agentStops || [])]);
+        // …or after a PREPOSITION ("a country in WEST Africa", "in northern Africa"): the object of a preposition is a noun phrase
+        const inNounPhrase = (k) => { let j = k - 1; while (j >= 0 && !closed(toks[j].fold) && (rankAt(j) === 4 || rankAt(j) == null)) j--; return j >= 0 && (dets.has(toks[j].fold) || PREPS3.has(toks[j].fold)); };
         const isVerb = (k) => posRankOf(toks[k].text) === 6 && !closed(toks[k].fold) && !(G.auxiliaries || []).includes(toks[k].fold)
-          && !(k > 0 && dets.has(toks[k - 1].fold));      // "a DESERT in Africa": directly after a determiner a word is a noun
+          && !PLACE_STEMS2.has(toks[k].stem) && !inNounPhrase(k);      // "located in", "born in" lead INTO a place; "a hot DESERT in Africa" is a noun
         let end = toks.length;
         for (let k = relIn + 1; k < toks.length; k++) {
           const t = toks[k];
@@ -425,7 +446,8 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
           let s2 = k + 1, indef = false;
           while (s2 < end && dets.has(toks[s2].fold)) { if (INDEF.has(toks[s2].fold)) indef = true; s2++; }
           if (indef) continue;
-          const ledByDet = s2 > k + 1;
+          const PN = new Set(G.placeNouns || []);
+          const ledByDet = s2 > k + 1 && !PN.has(toks[s2] && toks[s2].fold);      // "the CITY of Ulm" is a place phrase; "the hospital" is not
           let e2 = s2;
           const PREPS = new Set([...(G.prepositions || []), ...(G.agentStops || [])].filter((w) => !(G.governs || []).includes(w)));
           while (e2 < end && !CONT.has(toks[e2].fold) && !PREPS.has(toks[e2].fold) && !G.clauseWords.includes(toks[e2].fold) && !coord.has(toks[e2].fold) && !/[,;:()]/u.test(text.slice(toks[e2 - 1].end, toks[e2].start))) e2++;

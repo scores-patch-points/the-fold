@@ -402,3 +402,29 @@ test("LIVE-38 dominance needs FULL coverage: a false premise ('the first woman t
   const t = await runAnswerTurn({ question: "Who was the first woman to walk on the Moon?", lang: "en", passages: pass, now: { year: 2026 }, deps });
   assert.ok(!(t.answer && /Armstrong/.test(t.answer.filler.text)), "a man is not the first woman: " + JSON.stringify(t.answer && t.answer.filler));
 });
+
+test("LIVE-39 fourth pass: 'the CITY of Ulm' is a place phrase and keeps its place; 'the hospital' does not; a holiday is no place", async () => {
+  const alts0 = async (q, T, x, page) => { const f = await frameOf(q, T); const r = bind(f, x, { page }); return r && r.filler && r.filler.alts ? r.filler.alts.map((a) => a.text)[0] : null; };
+  assert.match(await alts0("Where was Einstein born?", { einstein: "Albert Einstein" }, "Albert Einstein was born in the city of Ulm in Germany.", "Albert Einstein"), /Ulm/);
+  assert.equal(await alts0("Where was Obama born?", { obama: "Barack Obama" }, "Barack Obama was born at the hospital in Honolulu.", "Barack Obama"), "Honolulu");
+  assert.equal(await alts0("Where was Mozart born?", { mozart: "Wolfgang Amadeus Mozart" }, "Wolfgang Amadeus Mozart was born in Lent in Salzburg.", "Wolfgang Amadeus Mozart"), "Salzburg");
+});
+
+test("LIVE-40 fourth pass: a homograph inside a noun phrase or after a preposition is a noun ('a hot DESERT in Africa', 'in WEST Africa', 'located in northern Africa')", async () => {
+  const alts0 = async (q, T, x, page) => { const f = await frameOf(q, T); const r = bind(f, x, { page }); return r && r.filler && r.filler.alts ? r.filler.alts.map((a) => a.text)[0] : null; };
+  assert.equal(await alts0("Where is the Sahara?", { sahara: "Sahara" }, "The Sahara is a hot desert in Africa.", "Sahara"), "Africa");
+  assert.equal(await alts0("Where is the Sahara?", { sahara: "Sahara" }, "The Sahara is the largest hot desert in Africa.", "Sahara"), "Africa");
+  assert.equal(await alts0("Where is Ghana?", { ghana: "Ghana" }, "Ghana is a country in West Africa.", "Ghana"), "West Africa");
+  assert.match(await alts0("Where is the Sahara?", { sahara: "Sahara" }, "The Sahara is a vast desert located in northern Africa.", "Sahara") || "", /Africa/);
+});
+
+test("LIVE-41 fourth pass: a possessor or a kinsman is not the anchor — the father's birthplace is not Mozart's", async () => {
+  const f = await frameOf("Where was Mozart born?", { mozart: "Wolfgang Amadeus Mozart", salzburg: "Salzburg", augsburg: "Augsburg" });
+  const none = (x) => { const r = bind(f, x, { page: "Wolfgang Amadeus Mozart" }); return !r || !r.filler || !(r.filler.alts || [r.filler]).some((a) => /Augsburg/.test(a.text)); };
+  assert.ok(none("Mozart's father Leopold was born in Augsburg."));
+  assert.ok(none("The father of Mozart was born in Augsburg."));
+  assert.ok(none("Wolfgang Amadeus Mozart's wife Constanze was born in Vienna.") );
+  assert.ok(none("Wolfgang Amadeus Mozart, whose father was born in Augsburg, was born in Salzburg."), "'whose' opens a clause with its own subject");
+  const own = bind(f, "Wolfgang Amadeus Mozart was born in Salzburg.", { page: "Wolfgang Amadeus Mozart" });
+  assert.equal(own && own.filler && own.filler.text, "Salzburg");
+});

@@ -91,9 +91,9 @@ export const GRAMMAR = Object.freeze({
     countHeads: Object.freeze(["number", "total", "count", "amount", "tally"]),
     // subordinators that open a clause the relation does not govern ("a day WHEN Leopold was away in Augsburg"); only the place
     // alternatives' walk ends at them (clauseWords also cut fillers elsewhere, so this is a separate declared field)
-    subordinators: Object.freeze(["when", "where", "while", "whereas", "because", "although", "though", "after", "before", "until", "as"]),
+    subordinators: Object.freeze(["when", "where", "while", "whereas", "because", "although", "though", "after", "before", "until", "as", "if", "unless", "whose"]),
     // calendar words: a month or a weekday is a TIME, never where ("in July", "born in January in Salzburg"); declared, not measured
-    temporal: Object.freeze(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "spring", "summer", "autumn", "fall", "winter"]),
+    temporal: Object.freeze(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "spring", "summer", "autumn", "fall", "winter", "lent", "easter", "christmas", "ramadan", "advent", "passover", "hanukkah", "diwali", "eid", "wartime", "peacetime", "childhood", "infancy", "adulthood"]),
     placeNouns: PLACE_NOUNS_EN,       // nouns that name a KIND OF PLACE (fold-chat-grammar-places.js)
     indefinites: Object.freeze(["a", "an"]),
     containment: Object.freeze(["in", "at", "within", "inside"]),

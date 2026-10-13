@@ -5,4 +5,4 @@
 // measured (giver: the author's reading of English, 2026-10-13, the archon compliance read). A language without a table has no such
 // rule — the rule's absence is the earlier behaviour. Kept out of fold-chat-frame.js so the grammar table file stays free of the
 // word-level source scans that police it for case logic.
-export const PLACE_NOUNS_EN = Object.freeze(["capital", "city", "town", "village", "state", "province", "region", "county", "district", "country", "island", "port", "landmark", "suburb", "borough", "prefecture", "territory", "kingdom", "republic", "colony", "seaport"]);
+export const PLACE_NOUNS_EN = Object.freeze(["capital", "city", "town", "village", "state", "province", "region", "county", "district", "country", "island", "port", "landmark", "suburb", "borough", "prefecture", "territory", "kingdom", "republic", "colony", "seaport", "desert", "peak", "neighborhood", "neighbourhood", "mountain", "river", "lake", "ocean", "sea", "continent", "valley", "peninsula", "plateau", "archipelago", "bay", "coast"]);
