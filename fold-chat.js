@@ -1720,8 +1720,9 @@ export function mount(root, opts = {}) {
     const box = el("div", "followup");
     const row = el("div", "followup-opts");
     row.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px;";
-    for (const o of f.options) {
-      const b = el("button", "followup-opt", o);
+    for (const o0 of f.options) {
+      const o = o0 && typeof o0 === "object" ? String(o0.ask || o0.label || "") : o0;   // a reference choice shows its label and sends its marked ask
+      const b = el("button", "followup-opt", o0 && typeof o0 === "object" ? String(o0.label || o) : o);
       b.type = "button";
       b.style.cssText = "border:1px solid #cfd4da;background:#fff;border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer;color:#2f6feb;";
       b.onclick = (e) => { e.stopPropagation(); askFollowup(o); };
@@ -2799,7 +2800,13 @@ export function mount(root, opts = {}) {
     // THE CLARIFICATION PATHWAY: a bare term that names several things ("president") is not answered and not
     // guessed — the machine ASKS WHICH, listing the senses as options the person can pick. No model writes it.
     let clarify = null, followup = null;
-    if (!plan && !strand && murmur && murmur.ambiguous && sensesProbe) {
+    // DISCOURSE AWARENESS (user, 2026-10-13): "he" / "its" / "that one" that the channel cannot resolve to ONE referent is ASKED — the candidates
+    // are clickable options that resend the ask marked "(about: X)"; with no person in the channel the Fold says so. App-authored, no search, no model.
+    if (follow && follow.mode === "clarify" && follow.question) {
+      clarify = { term: follow.pronoun || "", senses: (follow.choices || []).map((c) => ({ label: c.label })), reference: true };
+      followup = { question: follow.question, options: (follow.choices || []).map((c) => ({ label: c.label, ask: c.ask })) };
+    }
+    if (!clarify && !plan && !strand && murmur && murmur.ambiguous && sensesProbe) {
       try { const probe = await sensesProbe; clarify = probe && probe.results ? disambiguationOf(probeTerm, probe.results) : null; } catch (e) { clarify = null; }
       if (clarify) followup = { question: `Which ${clarify.term} did you mean?`, options: (clarify.senses || []).map((s) => s.label).filter(Boolean).slice(0, 6) };
     }
@@ -3348,7 +3355,7 @@ export function mount(root, opts = {}) {
         if (aw.flags.length) feedPush(lineEvent(tt, "Trail", { tone: "warn", note: `One thing did not line up as expected: ${aw.flags.map((f) => f.flag.replace(/_/g, " ")).join(", ")} — noted, not repaired.` }));
       } catch (e) { /* the watcher is an aid, never a reason to lose a turn */ }
       if (!provenance && srcRecall && srcRecall.provenance) provenance = srcRecall.provenance;   // the same source line, drawn again under this turn
-      if (aloneBarred) { const at = follow.mode === "cold-gap" ? { notice: follow.missing ? missingAnswerNotice(follow.missing) : coldFollowUpNotice() } : recall ? { notice: { kind: "alone", text: recall.text } } : srcRecall ? { notice: { kind: "alone", text: srcRecall.text } } : primaryNotice ? { notice: { kind: "alone", text: primaryNotice } } : aloneTurn(noLookup ? "nolookup" : kind, genOt && !noLookup ? { outputType: genOt, hasMaterial: materialOf(s).length > 0, question } : undefined); if (at.void && !genGate) genGate = { ok: false, void: at.void, notice: { kind: "gen-void", text: at.notice?.text || at.void.note }, fallbackAllowed: false }; if (at.notice && !at.void) notices.push(at.notice); }
+      if (aloneBarred) { const at = follow.mode === "clarify" ? {} : follow.mode === "cold-gap" ? { notice: follow.missing ? missingAnswerNotice(follow.missing) : coldFollowUpNotice() } : recall ? { notice: { kind: "alone", text: recall.text } } : srcRecall ? { notice: { kind: "alone", text: srcRecall.text } } : primaryNotice ? { notice: { kind: "alone", text: primaryNotice } } : aloneTurn(noLookup ? "nolookup" : kind, genOt && !noLookup ? { outputType: genOt, hasMaterial: materialOf(s).length > 0, question } : undefined); if (at.void && !genGate) genGate = { ok: false, void: at.void, notice: { kind: "gen-void", text: at.notice?.text || at.void.note }, fallbackAllowed: false }; if (at.notice && !at.void) notices.push(at.notice); }
       if (threadTurn && text.trim()) { const tn = threadNotice(threadTurn); notices.push(threadTurn.carried ? { ...tn, text: tn.text.replace(/No web source was used[^.]*\./, `No new search was made; it used the ${threadTurn.carried} source(s) that turn read, and is checked against them.`) } : tn); }
       { const cn = carryNotice(follow, s.messages.filter((x) => x.role === "assistant").length + 1); if (cn) notices.push(cn); }   // what the pronoun was read as: the person may refuse it (fold-chat-minds.js)
       if (!text.trim() && !notices.length && !skipModel && !liveDrop && !genGate) notices.push(emptyNotice({ tokens: out.tokens, model: m.id }));      const turn = s.messages.filter((x) => x.role === "assistant").length + 1;
@@ -3563,7 +3570,7 @@ export function mount(root, opts = {}) {
       s.updated = now();
       maybeName(s);
       // The referent record the NEXT turn's "him"/"it" resolves against (fold-chat-mind.js): what this turn's sources and answer named.
-      try { s.referents = admitReferents(s.referents || emptyReferents(), { question, creative: kind === "generate" || kind === "compose", answer: strand && !slotTurn ? "" : text, sources: (() => { const used = usedRefs({ pivot: pivotRes, record }), shown = strand ? new Set(relevantPassages(webPassages, searchQ, functionWordsOf(lang0 === "unknown" ? "en" : lang0)).map((p) => String(p.ref || ""))) : used;   /* on a SOURCES turn the pages SHOWN (the relevant ones) name the topic; otherwise only pages a spoken sentence was witnessed by. A title names a a referent only if a spoken sentence was witnessed by that page AND the cleaned title is a NAME (<= 4 words): "Photosynthesis" and "Eiffel Tower" are; a magazine headline is not */ return webPassages.filter((p) => (strand ? shown : used).has(String(p.ref || ""))).map((p) => ({ title: (String(p.ref || "").includes(" \u2014 ") ? String(p.ref).slice(String(p.ref).indexOf(" \u2014 ") + 3) : String(p.ref || "")).split(/\s+[|\u2013\u2014-]\s+/)[0] })).filter((x) => x.title.trim().split(/\s+/).length <= 4); })() }); } catch (e) { /* the record is an aid, never a reason to lose a turn */ }   // a page names a referent ONLY if a spoken sentence was witnessed by it: research never swamps the exchange
+      try { s.referents = admitReferents(s.referents || emptyReferents(), { question, slot: slotTurn && slotTurn.slot ? slotTurn.slot : null, filler: slotTurn && slotTurn.answer && slotTurn.answer.filler && slotTurn.answer.filler.text ? { text: slotTurn.answer.filler.text, slot: slotTurn.slot || null } : null, candidates: slotTurn && Array.isArray(slotTurn.contest) ? slotTurn.contest.map((r) => r && r.filler && r.filler.text).filter(Boolean) : [], creative: kind === "generate" || kind === "compose", answer: strand && !slotTurn ? "" : text, sources: (() => { const used = usedRefs({ pivot: pivotRes, record }), shown = strand ? new Set(relevantPassages(webPassages, searchQ, functionWordsOf(lang0 === "unknown" ? "en" : lang0)).map((p) => String(p.ref || ""))) : used;   /* on a SOURCES turn the pages SHOWN (the relevant ones) name the topic; otherwise only pages a spoken sentence was witnessed by. A title names a a referent only if a spoken sentence was witnessed by that page AND the cleaned title is a NAME (<= 4 words): "Photosynthesis" and "Eiffel Tower" are; a magazine headline is not */ return webPassages.filter((p) => (strand ? shown : used).has(String(p.ref || ""))).map((p) => ({ title: (String(p.ref || "").includes(" \u2014 ") ? String(p.ref).slice(String(p.ref).indexOf(" \u2014 ") + 3) : String(p.ref || "")).split(/\s+[|\u2013\u2014-]\s+/)[0] })).filter((x) => x.title.trim().split(/\s+/).length <= 4); })() }); } catch (e) { /* the record is an aid, never a reason to lose a turn */ }   // a page names a referent ONLY if a spoken sentence was witnessed by it: research never swamps the exchange
       // THE CARRY IS COMPUTED (fold-chat-carry.js, THE-HOLOGRAPH §6): now that this turn is in the referent record, the running
       // summary's Flow is the Atmosphere read off the transcript (where the conversation stands, where it turned) and its Entities
       // are the record's own names in any script — replacing the first-clause topic / capitalised-run guess above. No model; it is

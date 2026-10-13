@@ -68,7 +68,12 @@ test("admitReferents keeps what a turn established: titles first, then the answe
 });
 
 test("THE 'HIM' FAILURE: a follow-up that names nothing carries the last answer's referent — and says so", () => {
-  const rec = nashvilleRecord();
+  // ONE person in the answer: "him" is that person (the page title "Nashville, Tennessee" is not a person)
+  const rec = admitReferents(emptyReferents(), {
+    question: "Who founded the city of Nashville, and when?",
+    answer: "Nashville was founded in 1779 by Judge Richard Henderson.",
+    sources: [{ title: "Wikipedia — Nashville, Tennessee" }],
+  });
   const r = resolveQuestion("what happened to him later in life?", rec, { hints: EN_HINTS });
   assert.equal(r.reason, "carried");
   assert.equal(r.said, "what happened to him later in life?", "the person's words are never rewritten");
@@ -77,6 +82,14 @@ test("THE 'HIM' FAILURE: a follow-up that names nothing carries the last answer'
   assert.match(r.resolved, /Judge Richard Henderson/);
   assert.match(searchQueries(r)[0], /^Judge Richard Henderson/);
   assert.equal(searchQueries(r)[1], r.said, "the raw question is kept as a second query");
+});
+
+test("THREE people in the answer are an exact tie for 'him': it is ASKED which, and the page title is not offered (discourse awareness, 2026-10-13)", () => {
+  const r = resolveQuestion("what happened to him later in life?", nashvilleRecord(), { hints: EN_HINTS });
+  assert.equal(r.reason, "ambiguous", JSON.stringify(r));
+  assert.deepEqual(r.options.slice().sort(), ["James Robertson", "John Donelson", "Judge Richard Henderson"]);
+  assert.deepEqual(r.carried, []);
+  assert.equal(r.said, "what happened to him later in life?", "the person's words are never rewritten");
 });
 
 test("without a trigger nothing carries — a typed reason, not a guess (the false-carry fix: 85% of new-topic questions used to inherit the last topic)", () => {
