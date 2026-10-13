@@ -1845,6 +1845,10 @@
         <div class="line stack"><label for="setDiscourse">Show the conversation’s discourse</label>
           <label class="check"><input type="checkbox" id="setDiscourse"> Always disclose what the fold reads the thread as, each turn (mechanically generated - reversible here or with the note’s own hide button)</label>
         </div>
+        <div class="line stack"><label for="setPublicFallback">When the fold's own relay can't read a page</label>
+          <label class="check"><input type="checkbox" id="setPublicFallback"> Try public proxy services instead</label>
+        </div>
+        <div class="hint">Off: a page only the relay could read is left out, and the answer says so. On: five public proxy services and two text readers are tried, and each of them sees the page's address.</div>
         <div class="line"><label for="setPreset">Preset</label><select id="setPreset"></select></div>
         <div class="line"><span class="flabel">Display</span><button type="button" class="btn" id="topFocus">Full screen</button></div>
       </div>

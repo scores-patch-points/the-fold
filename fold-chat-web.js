@@ -12,6 +12,7 @@
 //   { title, url, snippet, source, meta, kind }
 // and a combined { results, more, engine } per scope.
 
+import { publicFallbackOn } from "./fold-chat-hosts.js";
 import { impressionOf } from "./fold-chat-impression.js";
 import { declaredBlocksFromHtml, looksBlocked } from "./fold-chat-strand.js";
 import { looksDisambiguation } from "./fold-chat-senses.js";
@@ -40,8 +41,9 @@ export const SCOPES = Object.freeze([
 // holodeck-proxy/ in this workspace.
 export const FOLD_RELAY = "https://holodeck-proxy.prometheoid.workers.dev";
 
-// A page the site refuses to hand the browser is fetched through one of these,
-// in parallel; the trace names which. The FOLD'S OWN RELAY is first — it is a
+// A page the site refuses to hand the browser is fetched through the relay (index 0);
+// the rest are the public fallback, raced only when the relay failed and the person
+// switched the fallback on (readText, fold-chat-hosts.js). The trace names which. The FOLD'S OWN RELAY is first — it is a
 // server-side fetch with CORS open, so reads are reliable rather than a roll of
 // the dice against a string of public proxies.
 export const CORS_PROXIES = [
@@ -351,7 +353,7 @@ export function looksBinary(s) {
   return bad / t.length > 0.05;
 }
 
-export async function readText(url, { fetchImpl = fetch, timeoutMs = 8000, memo = null, direct = false } = {}) {
+export async function readText(url, { fetchImpl = fetch, timeoutMs = 8000, memo = null, direct = false, publicFallback = publicFallbackOn(typeof localStorage !== "undefined" ? localStorage : null) } = {}) {
   const now = Date.now();
   const host = hostKey(url);
   if (memo) {
@@ -360,7 +362,7 @@ export async function readText(url, { fetchImpl = fetch, timeoutMs = 8000, memo 
     const dead = memo.dead.get(host);
     if (dead && now < dead) return { ok: false, text: "", title: "", via: null, url, error: "turned away on every door a moment ago — not tried again yet" };
   }
-  const out = await readTextUncached(url, { fetchImpl, timeoutMs, direct });
+  const out = await readTextUncached(url, { fetchImpl, timeoutMs, direct, publicFallback });
   if (memo) {
     if (out.ok) {
       memo.pages.set(url, { at: Date.now(), val: out });
@@ -370,7 +372,7 @@ export async function readText(url, { fetchImpl = fetch, timeoutMs = 8000, memo 
   return out;
 }
 
-async function readTextUncached(url, { fetchImpl = fetch, timeoutMs = 8000, direct = false } = {}) {
+async function readTextUncached(url, { fetchImpl = fetch, timeoutMs = 8000, direct = false, publicFallback = false } = {}) {
   const titleOf = (raw) => oneLine(((String(raw).match(/<title[^>]*>([^<]*)/i) || [])[1] || ""));
   // Read a body but STOP at MAX_RAW: a full `r.text()` can buffer many MB of a
   // directory/proxy page before we slice it; streaming bounds memory so the
@@ -455,7 +457,13 @@ async function readTextUncached(url, { fetchImpl = fetch, timeoutMs = 8000, dire
       }
     });
   };
-  const viaProxy = await firstOf(CORS_PROXIES.map((p, i) => ({ p, i })).filter(({ i }) => i === 0 || doorUp("proxy:" + i)).map(({ p, i }) => (ctl) => attempt(p(url), i === 0 ? "the fold's relay" : "a public proxy", ctl, Math.min(timeoutMs, GATEWAY_BUDGET_MS)).then((v) => { if (i) doorSaw("proxy:" + i, true, 6); return v; }, (e) => { if (i && !(e && e.name === "AbortError")) doorSaw("proxy:" + i, false, 6); throw e; })));
+  // C8 (fold-chat-hosts.js, user 2026-10-13 "Relay only"): the fold's own relay reads alone. The public proxies and the
+  // text readers (each a third party that learns the address) run only when the relay failed AND the person switched
+  // the fallback on in Settings — off by default, so a page only they could read is an honest "unreachable".
+  const viaRelay = await firstOf([(ctl) => attempt(CORS_PROXIES[0](url), "the fold's relay", ctl, Math.min(timeoutMs, GATEWAY_BUDGET_MS))]);
+  if (viaRelay) return viaRelay;
+  if (!publicFallback) return { ok: false, text: "", title: "", via: null, url, error: "unreachable", publicFallback: "off" };
+  const viaProxy = await firstOf(CORS_PROXIES.map((p, i) => ({ p, i })).filter(({ i }) => i > 0 && doorUp("proxy:" + i)).map(({ p, i }) => (ctl) => attempt(p(url), "a public proxy", ctl, Math.min(timeoutMs, GATEWAY_BUDGET_MS)).then((v) => { doorSaw("proxy:" + i, true, 6); return v; }, (e) => { if (!(e && e.name === "AbortError")) doorSaw("proxy:" + i, false, 6); throw e; })));
   if (viaProxy) return viaProxy;
   const viaReader = await firstOf(TEXT_READERS.map((rd) => (ctl) => attempt(rd(url), "a text reader", ctl, Math.min(timeoutMs, GATEWAY_BUDGET_MS))));
   if (viaReader) return viaReader;

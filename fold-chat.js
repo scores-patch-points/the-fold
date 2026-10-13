@@ -12,6 +12,7 @@
 // cards), conversation memory (fork / edit / continue), presets, a live stage
 // line, and the sealed badge always visible.
 
+import { publicFallbackOn, PUBLIC_FALLBACK_KEY } from "./fold-chat-hosts.js";
 import * as client from "./fold-chat-client.js";
 import { mountFolds, isMakeAsk } from "./fold-chat-folds.js";
 import { artifactsOf, previewable } from "./fold-chat-artifacts.js";
@@ -536,7 +537,7 @@ export function mount(root, opts = {}) {
     composerWrap: $("composerWrap"), composer: $("composer"), input: $("input"), send: $("send"), attach: $("attach"),
     footer: $("footer"), drawer: $("drawer"), toast: $("toast"),
     settingsModal: $("settingsModal"), settingsClose: $("settingsClose"), settingsCancel: $("settingsCancel"), settingsSave: $("settingsSave"),
-    setPreset: $("setPreset"), setAgentLane: $("setAgentLane"), setAgentRounds: $("setAgentRounds"), setAgentEscalate: $("setAgentEscalate"), setTheme: $("setTheme"), setMode: $("setMode"), setTransparency: $("setTransparency"), setDiscourse: $("setDiscourse"),
+    setPreset: $("setPreset"), setAgentLane: $("setAgentLane"), setAgentRounds: $("setAgentRounds"), setAgentEscalate: $("setAgentEscalate"), setPublicFallback: $("setPublicFallback"), setTheme: $("setTheme"), setMode: $("setMode"), setTransparency: $("setTransparency"), setDiscourse: $("setDiscourse"),
     keyAnthropic: $("keyAnthropic"), keyOpenai: $("keyOpenai"), keyStatus: $("keyStatus"),
   };
   // FOLLOW THE TURN: while something below is growing (a download's progress, the feed, the streamed answer), the thread
@@ -3900,6 +3901,8 @@ export function mount(root, opts = {}) {
   E.setMode.onclick = (e) => { const b = e.target.closest("button"); if (!b) return; setEngagement(b.dataset.mode); paintModeSetting(); };
   E.setTransparency.onclick = (e) => { const b = e.target.closest("button"); if (!b) return; setTransparency(b.dataset.transparency === "1"); paintTransparency(); };
   E.setDiscourse?.addEventListener?.("change", (e) => { setDiscourseOn(e.target.checked); });
+  // C8 (fold-chat-hosts.js): the public fallback is the person's choice, off by default, and takes effect on the next page read
+  E.setPublicFallback?.addEventListener?.("change", (e) => { try { localStorage.setItem(PUBLIC_FALLBACK_KEY, e.target.checked ? "on" : "off"); } catch (err) {} });
 
   function openSettings() {
     for (const [k, p] of Object.entries(PRESETS)) if (!E.setPreset.querySelector(`option[value="${k}"]`)) E.setPreset.append(new Option(p.label, k));
@@ -3907,6 +3910,7 @@ export function mount(root, opts = {}) {
     if (E.setAgentLane) E.setAgentLane.value = agentLane();
     if (E.setAgentRounds) E.setAgentRounds.value = String(agentRounds());
     if (E.setAgentEscalate) E.setAgentEscalate.checked = agentEscalates();
+    try { if (E.setPublicFallback) E.setPublicFallback.checked = publicFallbackOn(localStorage); } catch (e) {}
     paintTheme(); paintModeSetting(); paintTransparency(); paintDiscourseSetting();
     try { const k = browserJudgeKey(localStorage); if (k && E.keyAnthropic && !E.keyAnthropic.value) E.keyAnthropic.value = k; } catch (e) {}
     refreshKeyStatus();
