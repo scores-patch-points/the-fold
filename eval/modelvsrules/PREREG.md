@@ -145,6 +145,28 @@ and "is a novel by" is syntax, not morphology; and **no harm**.
    statement the old stemmer could not read now binds** (otherwise reverted as dead weight).
 A larger source (UniMorph English, an 18 MB download that needs the user's explicit yes) is the obvious next step and is NOT used here.
 
+## Experiment 4 — the same table, mined from UniMorph English — pre-registered 2026-10-13, BEFORE the file was downloaded
+
+**Authorised by the user ("make it so", 2026-10-13) as proposed:** `eng` from `github.com/unimorph/eng`, 18,022,905 bytes, English only.
+The raw file is kept OUT of the repository (its own directory, scratchpad) and its sha256 is recorded in the generated module.
+
+**The change (rules unchanged from Experiment 3, now over a complete paradigm source):** `scripts/build-lemma-table.mjs` additionally reads
+UniMorph rows `lemma<TAB>form<TAB>features`. A UniMorph form enters only if (a) the light stemmer does not unify it with its lemma, (b) **every**
+UniMorph analysis of the form — verb, noun, adjective, any — gives the SAME lemma and is a verb analysis (`V…`), so "saw" (N;SG saw / V;PST see)
+and "leaves" are out by construction, (c) the English POS pack has never seen it as NOUN/PROPN/ADJ. The PUD entries are kept; a form two sources
+disagree on is dropped (unanimity across sources). Nothing is hand-edited.
+
+**Predictions, written now:**
+1. **Help:** the three Titanic STATES sentences ("RMS Titanic *sank* …") move from silent to correct for "When did the Titanic sink?": **+3** on
+   the 20 STATES sentences (R: 5 → 8), with no other STATES change expected.
+2. **No harm:** false commits on the 142 NOT sentences not more (Fisher one-sided p ≥ 0.05); wrong answers on STATES not more; G3 corpora
+   unchanged (44/45, 18/22, 0 wrong, 0 leaks); no new failing test by name.
+3. **Size:** the table stays a small module (declared bound: under 400 KB); if it grows past that, only the unanimous irregulars are kept
+   (forms whose stem differs from the lemma's by more than a suffix), and the change is reported.
+
+**Falsified if** the paired run shows < +2 on STATES (the benefit claim fails; the table is then kept only if it harms nothing, as in
+Experiment 3), OR any harm criterion above fails (→ reverted).
+
 ## Not tested here, and why
 
 Discourse (who "he" is) is Experiment 2 above and has its own verdict. Nothing in Experiment 1 is evidence about it.

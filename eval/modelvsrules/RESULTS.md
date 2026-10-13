@@ -120,6 +120,35 @@ STATES sentences — is not in PUD at all). The concrete, falsifiable next predi
 (UniMorph English, an 18 MB download needing the user's explicit yes), "sank→sink" binds and the three Titanic sentences move from silent to
 correct (+3 of the 16 silent STATES sentences), with no change in false commits.
 
+## Experiment 4 — the same table, mined from UniMorph English (authorised by the user, "make it so"; predictions written before the download)
+
+Source: `eng` from `github.com/unimorph/eng`, 18,022,905 bytes, sha256 `20a191cefdc7cad6fa74b00f49d6f658684f17b14541aae372e5a3d5a8c15c67`, 652,477 rows;
+kept outside the repository, read as text only. Rules unchanged from Experiment 3 (the form must have EVERY UniMorph analysis a verb analysis with the
+same lemma; not unified by the light stemmer; never a noun/adjective in the POS pack), plus agreement with the treebank source.
+
+Built: **6,036** entries (140 from PUD + 5,896 from UniMorph; 47,610 UniMorph forms already unified by the stemmer, 483,497 dropped as ambiguous or not
+verb-only, 9 as nounish; **0 disagreements with the treebank**); module 145 KB (declared bound 400 KB).
+
+**Paired result (same 162 pairs, one door cache, frozen checkout of `77cad07` vs table-on; 14 door failures both sides):**
+
+| | STATES (20): correct / wrong | NOT (142): false commit |
+|---|---|---|
+| R before (PUD table) | 4 / 0 | 4 |
+| R with the UniMorph table | **7** / 0 | 4 |
+
+**3 answers changed, all three the predicted ones:** the Titanic sentences ("RMS Titanic *sank* in the North Atlantic Ocean on 15 April 1912", "…
+after the Titanic *sank* on 15 April 1912…", "The Titanic *sank* on 15 April 1912…") for *"When did the Titanic sink?"* went `null → "1912"`.
+Nothing else changed: false commits 4 → 4, wrong 0 → 0, G3 corpora unchanged (44/45, 18/22, 0 wrong, 0 leaks), suite 2416 pass / 1 fail (the
+Champollion manifest) / 2 `todo`, none new.
+
+**Against the pre-registration:** prediction 1 (+3, no other STATES change) — met exactly; prediction 2 (no harm) — met; prediction 3 (size under
+400 KB) — met. Not falsified. McNemar, 3 gained / 0 lost, one-sided p = 0.125: **not significant at n = 20** — three sentences of one question, so
+this is a confirmed *specific* prediction, not statistical evidence of a general gain. What it supports: the reading gap the experiments located is
+closable with received data, no model, no hand-written entries, no harm on this sample.
+
+What it does not touch: "is a novel by …" (syntax, not morphology), the passing-mention / namesake licensing, and every language but English
+(Spanish 50.3 MB and French 13.4 MB UniMorph files exist; neither was downloaded).
+
 ## Experiment 2 — discourse (who is "he"?) — PRIMARY ARMS, recorded before Amendment A1 was run
 
 G3 corpora (`eval/ants/g3/corpus.mjs` 113 sequences + `corpus2.mjs` 56), en/es/fr. Prompt md5 `dbb96e55552fed7d149c679175c8e600`.

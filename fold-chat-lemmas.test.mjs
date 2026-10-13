@@ -27,6 +27,16 @@ test("irregular forms meet their lemma: wrote ~ written ~ write, took ~ take, be
   assert.notEqual(lightStemOf("took"), lightStemOf("take"));
 });
 
+test("Experiment 4: UniMorph's complete paradigms close what the 1,000-sentence treebank could not — sank ~ sunk ~ sink, and the sources agree", () => {
+  assert.equal(stemOf("sank"), stemOf("sink"));
+  assert.equal(stemOf("sunk"), stemOf("sink"));
+  assert.equal(stemOf("wrote"), stemOf("write"));                    // PUD and UniMorph give the same lemma
+  assert.ok(LEMMAS_EN_PROVENANCE.unimorph && /^[0-9a-f]{64}$/.test(LEMMAS_EN_PROVENANCE.unimorph.sha256), "the UniMorph file's sha256 is recorded");
+  assert.equal(LEMMAS_EN_PROVENANCE.unimorph.dropped.disagreeWithTreebank, 0);
+  assert.ok(Object.keys(LEMMAS_EN).length < 20000);
+  assert.ok(fs.statSync(new URL("./fold-chat-lemmas-en.js", import.meta.url)).size < 400 * 1024, "the declared size bound (PREREG Experiment 4)");
+});
+
 test("a word absent from the table stems EXACTLY as before — additive, byte for byte", () => {
   const words = ["walked", "walking", "walks", "cities", "houses", "leaving", "composed", "composing", "painted", "founded", "founders", "river", "rivers",
     "capital", "capitals", "president", "presidents", "born", "bones", "strings", "violin", "continents", "language", "spoken", "currency", "symbol",
