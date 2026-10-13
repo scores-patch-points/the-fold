@@ -370,7 +370,7 @@ export function finalizePack(base, opts = {}) {
     const seen = new Set();
     const all = prepared.filter((s) => { const g = s.group ?? s.name; if (seen.has(g)) return false; seen.add(g); return true; }).flatMap((s) => s.tp.map((p) => p.c));
     const share = Math.max(...prepared.map((s) => closedShare(s.anchor)));
-    flags = functionFlags(all, share, rng(base.seed + 1));
+    flags = base.flagsMemo ??= functionFlags(all, share, rng(base.seed + 1));
   }
   let final = applyGates(kept, flags, opts);
   // identity fill: attested creole forms with no kept vote whose folded string equals an anchor form
@@ -388,6 +388,25 @@ export function finalizePack(base, opts = {}) {
     forms, flags,
     stats: { sources: prepared.map((s) => ({ name: s.name, pairs: s.tp.length, creoleTokens: s.tp.reduce((n, p) => n + p.c.length, 0) })), forms: Object.keys(forms).length, rawForms: base.real.size, B: base.B, lambdas: base.lambdas },
   };
+}
+/**
+ * Gold-free chance check for one pack: how many (form, class) votes would the SAME filter keep if a shuffled-pairing run were
+ * the data (each draw judged against the maximum of the other draws)? The real count must exceed every draw's count.
+ */
+export function chanceDiscoveries(base) {
+  const top = new Map(); // key f\0u → [max, second]
+  for (const d of base.nullRaw) for (const [f, m] of d) for (const [u, v] of m) {
+    const k = `${f}\u0000${u}`; const t = top.get(k) ?? [0, 0];
+    if (v > t[0]) { t[1] = t[0]; t[0] = v; } else if (v > t[1]) t[1] = v;
+    top.set(k, t);
+  }
+  const counts = base.nullRaw.map((d) => {
+    let n = 0;
+    for (const [f, m] of d) for (const [u, v] of m) { const t = top.get(`${f}\u0000${u}`); const others = v === t[0] ? t[1] : t[0]; if (v > others) n += 1; }
+    return n;
+  });
+  let real = 0; for (const m of base.kept.values()) real += m.size;
+  return { real, nullMax: Math.max(0, ...counts), nullCounts: counts, beatsChance: real > Math.max(0, ...counts) };
 }
 export function buildPack(sources, opts = {}) {
   const base = projectBase(sources, opts);
@@ -417,7 +436,9 @@ export function tally(forms, gold) {
       const sc = scriptClass(form);
       if (sc) { t.trivial += 1; t.trivialGold[upos] = (t.trivialGold[upos] ?? 0) + 1; if (sc === upos) t.trivialTp += 1; continue; }
       const key = foldText(String(form).trim());
-      const d = forms[key] ?? forms[key.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "")];
+      const trimmed = key.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+      // own properties only: "constructor" is a real word and must not resolve to Object.prototype.constructor
+      const d = Object.hasOwn(forms, key) ? forms[key] : Object.hasOwn(forms, trimmed) ? forms[trimmed] : null;
       t.tokens += 1; t.gold[upos] = (t.gold[upos] ?? 0) + 1;
       if (!d) continue;
       const p = argmax(d); t.covered += 1; t.pred[p] = (t.pred[p] ?? 0) + 1;

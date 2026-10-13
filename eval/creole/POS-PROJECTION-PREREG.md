@@ -162,3 +162,31 @@ auxiliary is labelled AUX, which UD may call PART or AUX).
   and no pap/kea pack is emitted. The projection is run and reported only as type-level agreement with the Wiktionary packs and
   as the count of closed-class forms the Wiktionary packs lack.
 - **A7 (S-large).** Calibration-only run on hat with the held-out ht-fr creole sentences is reported separately and feeds nothing.
+- **A8 (correction to A5, pre-run).** `tatoeba_sentence_mining/gcf-eng.tsv` is not in BASELINE's held-out list and is a build source for
+  gcf; it is therefore NOT part of the guard key set (its overlap with `gcf-fra.tsv`, 27 of 96 sentences, is dropped by the key
+  guard). The guard set is BASELINE's tatoeba files + `hat-eng_sample1` + cbk files + `ht-{en,fr,es}.trg` + `en-cr_{dev,test}`.
+
+## 11. ROUND 2 — written after Round 1 (R1) results were seen; R1 is kept verbatim as `packs/CALIBRATION-R1.json`
+
+What R1 showed (selection on pcm dev, report on pcm test and hat; all numbers are in `CALIBRATION-R1.json`, `_work/selection-R1.json`):
+adopted M, G1, I; non-trivial-token accuracy (abstention = wrong) pcm test C1 0.27 / C2 0.47, hat C1 0.19 / C2 0.23, hat S-large
+0.47; the chance falsifier held everywhere; **B1 (identity lookup alone) beat the method on pcm C1** (0.31 vs 0.27) and the
+diagonal sharpness hit the top of the declared grid (λ = 16) in every fit. Reading the alignments by eye on hat UDHR
+(`le~whereas  paske~contempt  moun→AUX`) showed paragraph-length units (~50 words) are too long for IBM-1 to learn from.
+
+R1 numbers were seen before the changes below. They are therefore NOT a clean pre-registration; they are repair arms. The R1 table
+stays the headline "as pre-registered" row; R2 is reported beside it, never instead of it. hat was "run once, never tuned on" —
+**T below is informed by the shape of hat's gold forms and R2's hat numbers are therefore contaminated by that knowledge**; the
+R1 hat row is the untouched one.
+
+- **T (convention, always on in R2).** An elision splits into a BARE clitic and the word (`l'ekol` → `l` `ekol`, `n'ap` → `n` `ap`):
+  the Fold's tokeniser keeps `l'ekol` whole and a consumer splits elision itself, and UD Haitian's gold tokens are `l` + `'` +
+  word (`l` PRON 1,215 vs `l'` 2). Anchor-side forms ending in an apostrophe pool with their bare form (`qu'` → `qu`).
+- **S (arm).** UDHR pairs are cut again below the paragraph: each matched paragraph pair is split at `. ; : ! ?` and the clauses
+  are aligned by the same Gale–Church DP, where both sides have more than one clause.
+- **L (arm).** λ is chosen by 2-fold HELD-OUT likelihood (train on half the pairs, score the other half, both ways) rather than
+  training likelihood, because training likelihood rewards a sharper position prior without limit on tiny data.
+- **Selection in R2.** Same rule (max-T, B = 199, paired per-sentence correct counts on pcm dev), order M, S, L, G1, G2, I; S and L
+  are decided on C1 and C2 dev concatenated (one test, two conditions), the rest as in §4.
+- **Not done, on purpose:** the λ grid is NOT extended (a sharper prior is not evidence the alignments are better), no new
+  tagger, no threshold. If R2 is not better than R1 on pcm test, R1 packs ship.

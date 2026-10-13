@@ -149,6 +149,13 @@ test("a shuffled pairing carries no information: far fewer forms survive than wi
   const bad = M0.buildPack([{ name: "b", anchor, pairs: fake }], { B: 19 });
   assert.ok(bad.stats.forms < good.stats.forms, `shuffled ${bad.stats.forms} vs real ${good.stats.forms}`);
 });
+test("chanceDiscoveries: the true pairing out-discovers every shuffled draw; a shuffled pairing does not", () => {
+  const anchor = M0.anchorIndex(Object.fromEntries([...anchorOf].map(([k, m]) => [k, Object.fromEntries(m)])));
+  const real = corpus(60), r = M0.rng(9), p = M0.derange(real.length, r);
+  const fake = real.map((x, i) => ({ c: x.c, a: real[p[i]].a }));
+  assert.equal(M0.chanceDiscoveries(M0.projectBase([{ name: "g", anchor, pairs: real }], { B: 19 })).beatsChance, true);
+  assert.equal(M0.chanceDiscoveries(M0.projectBase([{ name: "b", anchor, pairs: fake }], { B: 19 })).beatsChance, false);
+});
 test("pairedMaxT adopts a uniform gain and refuses a tie", () => {
   const a = Array.from({ length: 40 }, () => 1), b = Array.from({ length: 40 }, () => 0);
   assert.equal(M0.pairedMaxT(a, b, M0.rng(1)).adopt, true);
@@ -164,6 +171,10 @@ test("tally/summarise: hand-computed precision and recall; abstention counts aga
   assert.equal(s.perClass.VERB.recall, 0);           // abstained
   assert.equal(s.perClass.VERB.precision, null);     // never predicted
   assert.equal(s.perClass.ADP.recall, 0);
+});
+test("a word named like an Object.prototype member is looked up as a word, not as the prototype", () => {
+  const s = M0.summarise(M0.tally({ la: { DET: 1 } }, [[{ form: "constructor", upos: "NOUN" }, { form: "valueOf", upos: "NOUN" }]]));
+  assert.equal(s.covered, 0);
 });
 test("gold isolation: buildPack has no gold parameter and never mentions one", () => {
   assert.ok(M0.buildPack.length <= 2);
