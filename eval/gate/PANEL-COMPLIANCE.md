@@ -43,3 +43,23 @@ Full suite by test name against baseline 620f0a4: 2315 tests, the same 11 failur
 nothing that passed at baseline fails or is missing. 16 falsifiers in `fold-chat-live-gate-fixes.test.mjs`; one existing assertion was
 changed (`fold-chat-witness.test.mjs`: "the one that acceded" is a pronoun-like run, no longer a person filler; the clause-boundary trim is
 pinned on a name instead).
+
+## Live held-out, after the fixes (2026-10-13, no model, live web, concurrency 1)
+Measured on the 32 slot + holder rows the run finished (the headless browser's GPU process crashed after row 36 under machine load; the
+compound, follow-up, compute and false-premise categories were not re-run — compute was 4/4 in the earlier fixed run, compound and
+follow-up 0/4 each, which is the discourse-audit session's ground). The code changed during the run (commits eb7cae6 … 61206ab landed
+between rows), so this is a mixed-tree measurement, one run, live variance about ±15 points.
+
+| 32 slot + holder rows | before the fixes (panel run) | after |
+|---|---|---|
+| committed and correct | 9 | **14** |
+| committed WRONG | 2 | 1 |
+| contest (right answer present in most) | 13 | **10** |
+| typed gap | 8 | 7 |
+
+Row-level changes: gained — first president, Moonlight Sonata, Titanic, Mozart's birthplace, capital of Egypt, longest river in Africa,
+presidents of Brazil and Mexico; typed gap instead of a wrong commit — Pride and Prejudice (Zombies), chancellor of Germany; lost —
+capital of Brazil (contest with the "fourth and unofficial capital"), bones (the count's copular form), both fixed afterwards in
+39cfc0c but not re-measured live; "tallest mountain" is committed to Mauna Kea (the page says "tallest … from the ocean floor"), a
+gold-dispute, not a defect of the binder. C1 on this slice: 14/32 = 44% (bar 60%); the oracle ceiling over what retrieval handed the
+fold was 78%.
