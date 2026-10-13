@@ -12,6 +12,9 @@ const tokens = (q) => String(q ?? "").match(/[\p{L}\p{N}'’.-]+|[^\p{L}\p{N}\s]
 /** Drop the leading run of function words (and the trailing '?'), keeping at least one content word. Returns the ask unchanged when
  *  there is no prior, nothing to cut, or cutting would leave nothing. `fw`: a Set of case-folded function words, or null. */
 import { salienceOf } from "./fold-chat-salience-infer.js";
+/** The received POSPrior's rank of a form (UD English-EWT via the salience prior: PROPN 9, NOUN 7, VERB 6, ADJ 4, ADV 1), or null when
+ *  the prior has not seen it. One door for every module that reads a form's usual part of speech. */
+export function posRankOf(form) { const v = salienceOf(form); return v == null ? null : Math.round(v * 9); }
 export function stripFrame(question, fw) {
   const q = String(question ?? "").trim();
   if (!q || !(fw instanceof Set) || !fw.size) return q;
@@ -69,6 +72,11 @@ export const GRAMMAR = Object.freeze({
     tense: Object.freeze({ present: ["is", "are", "am", "has", "have"], past: ["was", "were", "had"], future: ["will", "shall"] }),
     negation: Object.freeze(["not", "no", "never", "none", "nor", "neither", "nothing", "nobody", "cannot"]),   // plus any token ending n't
     clauseWords: Object.freeze(["who", "which", "since", "that", "having"]),
+    // ROLES (2026-10-12): "the capital OF Australia" — X of Y makes X an ATTRIBUTE of the anchor Y; "Australia's capital" likewise.
+    governs: Object.freeze(["of"]),
+    // a passive AGENT ("was discovered by the physician Alexander Fleming at St Mary's") runs from "by" to the first of these
+    agentBy: "by",
+    agentStops: Object.freeze(["in", "on", "at", "during", "between", "from", "since", "until", "around", "about", "for", "with", "after", "before", "under", "near"]),
     numerals: Object.freeze(["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety", "hundred", "thousand", "million", "billion", "trillion"]),
     magnitudes: Object.freeze(["hundred", "thousand", "million", "billion", "trillion"]),
     year: Object.freeze({ minDigits: 3, maxDigits: 4 }),                   // a "year" is a bare run of 3–4 digits ("2 September" is a day)
@@ -246,10 +254,34 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
     if (!res || typeof res.title !== "string" || !res.title || res.disambiguation) continue;
     if (!agrees(rest.slice(r.i, r.j + 1), res, closed, lang)) continue;
     for (let k = r.i; k <= r.j; k++) taken.add(k);
-    chosen.push({ at: r.i, referent: { surface: r.surface, title: res.title, aliases: aliasesOf(r.surface, res) } });
+    chosen.push({ at: r.i, to: r.j, referent: { surface: r.surface, title: res.title, aliases: aliasesOf(r.surface, res) } });
   }
   if (!chosen.length) return gapFrame(said, lang, slot, "referents_unresolved");
   chosen.sort((a, b) => a.at - b.at);
+
+  // 4b ── ANCHORS and ATTRIBUTES (2026-10-12, the operator: "are we using referents correctly?"). A referent is an ANCHOR: the entity
+  //        the answer is about. A run the anchor GOVERNS is an ATTRIBUTE of it, not a second entity: "the CAPITAL of Australia",
+  //        "Australia's CAPITAL", "how many LEGS does a spider have". An attribute must still be said by a witnessing sentence, but it
+  //        is never read as a page, never an alias, and never carried to a follow-up as a thing. Structural, from the ask's own
+  //        connectors (GRAMMAR.governs, the possessive clitic, the counted noun) — never a list of attribute words.
+  const governs = new Set(G.governs || []);
+  const possessorEnds = new Set();
+  rest.forEach((t, k) => { if (/^['’]s\b/u.test(said.slice(t.end, t.end + 3))) possessorEnds.add(k); });
+  const k0 = rest.findIndex((t) => !closed(t.fold));
+  const isAttr = (c, n) => {
+    const after = rest[c.to + 1];
+    if (after && governs.has(after.fold) && chosen.some((d, m) => m !== n && d.at > c.to + 1 && rest.slice(c.to + 2, d.at).every((t) => closed(t.fold)))) return true;
+    if (chosen.some((d, m) => m !== n && possessorEnds.has(d.to) && c.at === d.to + 1)) return true;
+    if (slot === "quantity" && c.at === k0 && chosen.length > 1) return true;
+    return false;
+  };
+  const attrIdx = new Set(chosen.map((c, n) => (isAttr(c, n) ? n : -1)).filter((n) => n >= 0));
+  if (attrIdx.size === chosen.length) attrIdx.clear();            // nothing left to be about: the ask has no anchor, keep today's reading
+  const attributes = chosen.filter((c, n) => attrIdx.has(n)).map((c) => {
+    const toksA = rest.slice(c.at, c.to + 1).filter((t) => !closed(t.fold));
+    return { surface: c.referent.surface, stems: toksA.map((t) => stemOf(t.fold, lang)) };
+  });
+  const anchorsChosen = chosen.filter((c, n) => !attrIdx.has(n));
 
   // 5. the leftover content words are the predicate
   const predicate = [], seen = new Set();
@@ -264,9 +296,6 @@ export async function askFrame(question, { fw = null, lang = null, resolveTitles
   // "how MANY legs …": the number must belong to the counted noun (the first content word after the interrogative), never to a
   // neighbouring noun ("52,075 SPECIES") — the witness reads this (fold-chat-witness.js nearestNumber).
   let counted = null;
-  if (slot === "quantity") {
-    const k0 = rest.findIndex((t) => !closed(t.fold));
-    if (k0 >= 0 && taken.has(k0)) counted = { stem: stemOf(rest[k0].fold, lang), surface: rest[k0].text };
-  }
-  return { ok: true, lang, said, slot, referents: chosen.map((c) => c.referent), predicate, counted, gap: null };
+  if (slot === "quantity" && k0 >= 0 && taken.has(k0)) counted = { stem: stemOf(rest[k0].fold, lang), surface: rest[k0].text };
+  return { ok: true, lang, said, slot, referents: anchorsChosen.map((c) => c.referent), attributes, predicate, counted, gap: null };
 }

@@ -33,7 +33,7 @@
 // An answer whose checks could not be run ships as standing 'unmeasured' — the source states it, nothing was able to cross-check it, and
 // the card says so. It is never called 'survived'. No case logic anywhere: entities are what a TITLE resolves to.
 
-import { askFrame, GRAMMAR, tokensOf, stemOf, closedClassOf } from "./fold-chat-frame.js";
+import { askFrame, GRAMMAR, tokensOf, stemOf, closedClassOf, posRankOf } from "./fold-chat-frame.js";
 import { sentencesOf, bindSentence } from "./fold-chat-witness.js";
 import { runFalsify, askTense, sameFiller } from "./fold-chat-falsify.js";
 import { createTurnVoid, traceOf, noteFalsification } from "./fold-chat-void.js";
@@ -94,19 +94,35 @@ function bindPassages(passages, frame, { fw, code, from = 0 }) {
 
 /** One resolveTitles call over the fillers of person/place/thing rows: a filler that is no page is not a name, so it witnesses nothing
  *  (the row stays in the pool as a T1 row with no filler). A failed call leaves direct rows unverified — said so — and drops title-carried ones. */
-async function verifyFillers(entries, frame, resolveTitles) {
+async function verifyFillers(entries, frame, resolveTitles, fw = null) {
   const need = DECLARED.verifySlots.includes(frame.slot);
   const withFiller = entries.filter((e) => e.row.tier === "T1" && e.row.filler && !e.checked);
   if (!need || !withFiller.length) { entries.forEach((e) => { e.checked = true; }); return { unverified: false }; }
-  const texts = [...new Set(withFiller.map((e) => e.row.filler.text))];
+  // TITLE-DECIDED NAME (2026-10-12): an agent phrase carries its description ("the Scottish physician Alexander Fleming"); the NAME is
+  // the longest tail of it that the title door resolves, starting at a name-like word (the received POSPrior ranks it PROPN, or does not
+  // know it). Every variant rides the SAME one title call; the full phrase is always tried first.
+  const closedV = closedClassOf(fw, frame.lang || "en");
+  const variantsOf = (f) => {
+    const tk = tokensOf(f.text), out = [{ text: f.text, from: 0 }];
+    for (let i = 1; i < tk.length; i++) {
+      if (closedV(tk[i].fold)) continue;
+      const rank = posRankOf(tk[i].text);
+      if (rank == null || rank >= 8) out.push({ text: f.text.slice(tk[i].start), from: tk[i].start });
+    }
+    return out;
+  };
+  const texts = [...new Set(withFiller.flatMap((e) => variantsOf(e.row.filler).map((v) => v.text)))];
   let table = null;
   try { table = typeof resolveTitles === "function" ? await resolveTitles(texts.slice()) : null; } catch { table = null; }
   const ok = table instanceof Map;
+  const isNamed = (res) => !!(res && typeof res.title === "string" && res.title && !res.disambiguation);
   for (const e of withFiller) {
     e.checked = true;
-    const res = ok ? table.get(e.row.filler.text) : undefined;
-    const named = ok ? !!(res && typeof res.title === "string" && res.title && !res.disambiguation) : !e.viaTitle;
-    if (!named) e.row = { ...e.row, filler: null };
+    if (!ok) { if (e.viaTitle) e.row = { ...e.row, filler: null }; continue; }
+    const f = e.row.filler;
+    const hit = variantsOf(f).find((v) => isNamed(table.get(v.text)));
+    if (!hit) { e.row = { ...e.row, filler: null }; continue; }
+    if (hit.from > 0) e.row = { ...e.row, filler: { text: hit.text, span: [f.span[0] + hit.from, f.span[1]] } };
   }
   return { unverified: !ok };
 }
@@ -250,7 +266,7 @@ async function run({ question, lang, passages, now, deps }) {
   const first = bindPassages(passages, frame, { fw, code });
   addSources(first.read);
   let entries = first.entries;
-  let unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles)).unverified;
+  let unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles, fw)).unverified;
   if (aborted(signal)) return partial();
 
   const witnesses = () => entries.filter((e) => e.row.tier === "T1" && e.row.filler && e.row.polarity === "+");
@@ -268,7 +284,7 @@ async function run({ question, lang, passages, now, deps }) {
     entries = entries.concat(next.entries);
     for (const p of fresh) if (isStr(p.query)) searched.push(p.query);
     tv.note("widen", { asked, read: next.read.map((s) => ({ title: s.title, host: s.host, url: s.url })), ...(reason ? { reason } : {}) });
-    unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles)).unverified || unverifiedNames;
+    unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles, fw)).unverified || unverifiedNames;
     if (aborted(signal)) return partial();
   }
 

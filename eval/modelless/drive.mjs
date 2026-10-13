@@ -17,7 +17,8 @@ const conc = +opt("conc", 4);
 const WORLD = opt("world", "live");   // "live" = the real web lanes; "stub" = eval/modelless/world.mjs (deterministic, retrieval held perfect)
 const out = path.resolve(HERE, opt("out", `results/run-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.jsonl`));
 fs.mkdirSync(path.dirname(out), { recursive: true });
-const P = JSON.parse(fs.readFileSync(path.join(HERE, "prompts.json"), "utf8"));
+const PROMPTS = opt("prompts", path.join(HERE, "prompts.json"));
+const P = JSON.parse(fs.readFileSync(path.resolve(PROMPTS), "utf8"));
 const jobs = P.categories.filter((c) => !only.length || only.includes(c.id)).flatMap((c) => c.turns.slice(0, limit).map((t, i) => ({ cat: c.id, idx: i, turns: t })));
 
 // settle: the composer re-enables BEFORE some turns are stored (the feed keeps streaming), so idle is not enough.

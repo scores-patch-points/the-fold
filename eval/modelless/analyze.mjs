@@ -5,8 +5,9 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const file = process.argv[2];
 const rows = fs.readFileSync(path.resolve(HERE, "..", "..", file.startsWith("results/") ? "eval/modelless/" + file : file), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
-const GOLD = JSON.parse(fs.readFileSync(path.join(HERE, "gold.json"), "utf8"));
-const PRE = JSON.parse(fs.readFileSync(path.join(HERE, "prompts.json"), "utf8"));
+const argOf = (k) => { const i = process.argv.indexOf("--" + k); return i >= 0 ? process.argv[i + 1] : null; };
+const PRE = JSON.parse(fs.readFileSync(path.resolve(argOf("prompts") || path.join(HERE, "prompts.json")), "utf8"));
+const GOLD = PRE.gold || JSON.parse(fs.readFileSync(path.join(HERE, "gold.json"), "utf8"));
 const bodyOf = (s) => { const m = String(s || "").split(/show only what a source actually says\.\s*/i); return (m.length > 1 ? m.slice(1).join(" ") : String(s || "")).replace(/\s*(copy|retry|try again|how I reasoned)[\s<>/⋯]*$/i, "").trim(); };
 const norm = (s) => String(s).replace(/[,  ]/g, "");
 

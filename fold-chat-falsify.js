@@ -273,7 +273,10 @@ export function judge(candidate, results, { now } = {}) {
   const contestRows = [];
   if (!hard && refuters.length && c.row) contestRows.push(c.row);
   for (const x of refuters) if (x.row && !contestRows.some((y) => sameRow(y, x.row))) contestRows.push(x.row);
-  const standing = hard ? "refuted" : refuters.length ? "contested" : survived.length ? "survived" : "unmeasured";
+  // A HARD check that could not be run leaves the claim UNMEASURED (2026-10-12): the local checks (rival, negation, later date) passing
+  // say nothing about whether a current holder is still living, so they cannot lift the standing to 'survived' on their own.
+  const hardUnmeasured = checks.some((k) => k.probe.kind === "life-dates" && k.outcome === "unmeasured");
+  const standing = hard ? "refuted" : refuters.length ? "contested" : survived.length && !hardUnmeasured ? "survived" : "unmeasured";
   return { standing, survived, unmeasured, refuters, contest: standing === "contested" ? contestRows : [], checks };
 }
 

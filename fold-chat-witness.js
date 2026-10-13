@@ -36,7 +36,7 @@
 // No capital letter is read: matching is stem-folded and caseless (toLocaleLowerCase("und")), the filler is shown as the page wrote it.
 
 import { sentencesWithOffsets } from "./fold-chat-impression.js";
-import { GRAMMAR, tokensOf, stemOf, closedClassOf } from "./fold-chat-frame.js";
+import { GRAMMAR, tokensOf, stemOf, closedClassOf, posRankOf } from "./fold-chat-frame.js";
 import { salienceOf } from "./fold-chat-salience-infer.js";
 
 /** Sentences of a text with UTF-16 offsets (the repo's own splitter, fold-chat-impression.js sentencesWithOffsets). */
@@ -76,6 +76,8 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   const closed = closedClassOf(fw, L);
   const toks = tokensOf(text).map((t) => ({ ...t, stem: stemOf(t.fold, L) }));
   if (!toks.length) return null;
+  const attrs = Array.isArray(frame.attributes) ? frame.attributes : [];
+  const attrSaid = attrs.every((a) => a.stems.every((st) => toks.some((t) => t.stem === st)));
 
   // ── referent groups: any alias, stem-folded; a group is present when one alias occurs contiguously ───────────────
   const groups = frame.referents.map((r) => {
@@ -107,11 +109,36 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // predicate stem must be carried, exactly as before).
   const referentContent = predStems.length ? [] : [...new Set(groups.flatMap((g) => [...g.content]).filter((s) => s.length >= 3))];
   const roleStems = predStems.length ? predStems : referentContent;
-  const roleCarriedByTopic = predStems.length ? roleStems.every((s) => topicStems?.includes(s)) : roleStems.some((s) => topicStems?.includes(s));
+  // A role page must not be ANOTHER anchor's page (2026-10-12). "Prime Minister of Australia" carried the role words of "who is the prime
+  // minister of Canada" and so witnessed it; its title DECLARES its own anchor through the same connector the ask uses (GRAMMAR.governs:
+  // "<role> of <anchor>"). When the title says "<role word> of X", X must be the referent's own or the sentence's. A headline that only
+  // names a person ("Who is King Charles III? A look at his life") declares no anchor and still binds, as declared on 2026-10-11.
+  // Residual, disclosed: a page for another country's king titled only by his name is not caught here.
+  const sentStems = new Set(toks.map((t) => t.stem));
+  const refStemsAll = new Set(groups.flatMap((g) => [...g.content]));
+  const titleToks = topic ? tokensOf(String(topic)) : [];
+  const governsSet = new Set(G.governs || []);
+  // "<role word> of X" with X not the referent's own: the text declares ANOTHER anchor for the same role
+  const roleWords = new Set([...roleStems, ...attrs.flatMap((a) => a.stems)]);      // the role may be the ask's attribute ("king OF the UK")
+  const declaresOtherAnchor = (tk, src) => tk.some((t, k) => {
+    if (!roleWords.has(stemOf(t.fold, L)) || !governsSet.has(tk[k + 1]?.fold)) return false;
+    const after = []; for (let m = k + 2; m < tk.length && !/[|:;,.()–—]/u.test(String(src).slice(tk[m - 1].end, tk[m].start)); m++) after.push(tk[m]);
+    const content = after.filter((x) => !closed(x.fold));
+    return content.length > 0 && content.some((x) => !refStemsAll.has(stemOf(x.fold, L)));
+  });
+  const titleOtherAnchor = declaresOtherAnchor(titleToks, topic || "");
+  const roleCarriedByTopic = (predStems.length ? roleStems.every((s) => topicStems?.includes(s)) : roleStems.some((s) => topicStems?.includes(s))) && !titleOtherAnchor;
   const roleInSentenceNow = predStems.length ? roleInSentence : roleStems.some((s) => toks.some((t) => t.stem === s));
   const titleCarriesRole = !!topicStems && frame.slot === "person" && roleStems.length > 0 && roleInSentenceNow && roleCarriedByTopic;
   if (!groups.every((g) => g.occ.length || carriedByTopic(g) || titleCarriesRole)) return null;
-  if (!groups.some((g) => g.occ.length) && !titleCarriesRole) return null;   // no anchor at all: only the declared role page may carry the whole group anaphorically
+  // An ATTRIBUTE said in the sentence anchors it when the page's own title carries the anchor (2026-10-12): "The current prime
+  // minister is Andy Burnham" on the page "Prime Minister of the United Kingdom" — the role is said, the UK is the page.
+  const attrAnchors = attrs.length > 0 && attrSaid && groups.every((g) => g.occ.length || carriedByTopic(g));
+  if (!groups.some((g) => g.occ.length) && !titleCarriesRole && !attrAnchors) return null;
+  if (!groups.every((g) => g.occ.length) && declaresOtherAnchor(toks, text)) return null;   // "the prime minister of Australia is …" for Canada
+  // An attribute is part of what the ask is ABOUT: a sentence that never says it ("The United Kingdom is a country" for "who is the
+  // king of the UK") is about something else — no row, not even a closest one (the same standing the attribute had as a referent).
+  if (attrs.length && !attrSaid) return null;   // no anchor at all: only the declared role page may carry the whole group anaphorically
 
   // ── predicate stems ─────────────────────────────────────────────────────────────────────────────────────────────
   const predMatches = [];                                             // token indices that carry a predicate stem
@@ -119,9 +146,11 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // A RELATION MUST MATCH (battery 2026-10-12): when the ask carries a relation word (verb/adjective/adverb by the received prior:
   // "wrote", "largest"), a sentence is a witness only if IT says the relation. Leftover noun words of the ask ("solar", "system") that
   // happen to occur must not stand in for it — they made Saturn's "second-largest" a rival to "largest".
-  const relStems = (frame.predicate || []).filter((p) => p.rel).map((p) => p.stem);
+  // Not for a COUNT: "how many kilometres does the Quillon run" is pinned by the counted noun's own number, and "flows for 640
+  // kilometres" says the same count in other words (the Pivot's rung 2 relies on exactly that).
+  const relStems = frame.slot === "quantity" ? [] : (frame.predicate || []).filter((p) => p.rel).map((p) => p.stem);
   const relMatched = !relStems.length || predMatches.some((k) => relStems.includes(toks[k].stem));
-  const tier = !(frame.predicate || []).length || (predMatches.length && relMatched) ? "T1" : "T2";
+  const tier = attrSaid && (!(frame.predicate || []).length || (predMatches.length && relMatched)) ? "T1" : "T2";
 
   // ── polarity and tense: the sentence's own closed-class words ──────────────────────────────────────────────────
   const polarity = toks.some((t) => G.negation.includes(t.fold) || /n['’]t$/.test(t.fold)) ? "-" : "+";
@@ -133,6 +162,23 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
 
   const inRef = new Set(); for (const g of groups) for (const o of g.occ) for (let k = o.from; k <= o.to; k++) inRef.add(k);
   const carry = new Set(); for (const g of groups) for (const s of g.content) carry.add(s);
+  // ATTRIBUTES (fold-chat-frame.js 4b) decide WHICH sentences can witness (attrSaid, above). They mark the anchor's SIDE only when used
+  // as a DESCRIPTION — a determiner before it, adjectives allowed between ("THE current prime minister is Andy Burnham") — never when
+  // they open a name ("King Charles III is …"), where the word is part of the answer itself. Determiner = closed class; adjective = the
+  // received POSPrior's ADJ rank.
+  const attrDescIdx = new Set();
+  for (const a of attrs) toks.forEach((t, k) => {
+    if (t.stem !== a.stems[0]) return;
+    let m = k - 1;
+    while (m >= 0 && !closed(toks[m].fold) && posRankOf(toks[m].text) === 4) m--;
+    if (m >= 0 && closed(toks[m].fold) && !G.copulas.includes(toks[m].fold)) attrDescIdx.add(k);
+    else if (m >= 0 && G.copulas.includes(toks[m].fold)) {
+      // "… is King OF the United Kingdom" / "… is king." is a predicate noun; "… is King Charles III" opens a name
+      const nx = toks[k + a.stems.length];
+      const gap = nx ? text.slice(toks[k + a.stems.length - 1].end, nx.start) : "";
+      if (!nx || /[,;.()]/u.test(gap) || (G.governs || []).includes(nx.fold)) attrDescIdx.add(k);
+    }
+  });
   const spanOf = (a, b) => [toks[a].start, toks[b].end];
 
   // ── filler (T1 only) ────────────────────────────────────────────────────────────────────────────────────────────
@@ -149,7 +195,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     // filler; the auxiliary before it is trimmed off whatever side is read.
     const ci = toks.findIndex((t, k) => (G.copulas.includes(t.fold) || t.fold === "been") && !inRef.has(k));
     if (ci < 0) return null;
-    const carries = (a, b) => toks.some((t, k) => k >= a && k <= b && carry.has(t.stem));
+    const carries = (a, b) => toks.some((t, k) => k >= a && k <= b && (carry.has(t.stem) || attrDescIdx.has(k)));
     const holdsPredicate = (a, b) => predMatches.some((k) => k >= a && k <= b);
     const cl = carries(0, ci - 1), cr = carries(ci + 1, toks.length - 1);
     let side;
@@ -191,6 +237,23 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
       while (b > a && /[\s.,:;!?"”’')]/u.test(text[b - 1])) b--;
       if (b <= a) return null;
     }
+    // THE PASSIVE AGENT (2026-10-12): "Penicillin was discovered in 1928 by the physician Alexander Fleming at St Mary's" — when a
+    // PERSON slot's filler side holds the ask's RELATION followed by the agent marker (GRAMMAR.agentBy), the filler is the agent: from
+    // after "by" to the first declared agent-stop preposition or clause word. The relation on that side with no agent means the side is
+    // the event, not a person: no filler.
+    if (frame.slot === "person" && relStems.length && G.agentBy) {
+      const inSide = (t) => t.start >= a && t.end <= b;
+      const relK = toks.findIndex((t) => inSide(t) && relStems.includes(t.stem));
+      if (relK >= 0) {
+        const byK = toks.findIndex((t, k) => k > relK && inSide(t) && t.fold === G.agentBy);
+        if (byK < 0 || byK + 1 >= toks.length || !inSide(toks[byK + 1])) return null;
+        const stops = new Set(G.agentStops || []);
+        let e = byK + 1;
+        while (e < toks.length && inSide(toks[e]) && !stops.has(toks[e].fold) && !G.clauseWords.includes(toks[e].fold)) e++;
+        if (e <= byK + 1) return null;
+        a = toks[byK + 1].start; b = toks[e - 1].end;
+      }
+    }
     // A PLACE filler must be the PLACE, not the phrase that leads to it
     // (2026-10-11; declared, not measured): "was born in Queens" → "Queens",
     // "is located in New York" → "New York". Only a LEADING run of prepositions
@@ -214,7 +277,11 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // subject ("He became king") is closed class and yields nothing — never a
   // guess; the title-resolution stage still vets whatever the run names.
   function subjectFiller() {
-    const vi = toks.findIndex((t, k) => !inRef.has(k) && ROLE_VERBS.has(t.fold));
+    // the ask's own RELATION verb counts too (2026-10-12), but only when an ANCHOR is its direct object — nothing but closed class
+    // between the verb and the anchor ("discovered penicillin", "painted the Mona Lisa"), so "Voltaire wrote a negative review OF
+    // Hamlet" never makes Voltaire the author
+    const objectAfter = (k) => groups.some((g) => g.occ.some((o) => o.from > k && toks.slice(k + 1, o.from).every((t) => closed(t.fold))));
+    const vi = toks.findIndex((t, k) => !inRef.has(k) && (ROLE_VERBS.has(t.fold) || (relStems.includes(t.stem) && objectAfter(k))));
     if (vi <= 0) return null;
     let s = vi;
     while (s - 1 >= 0 && !closed(toks[s - 1].fold) && !inRef.has(s - 1) && /^\s+$/.test(text.slice(toks[s - 1].end, toks[s].start))) s--;
@@ -287,6 +354,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
   // ── emphasis ────────────────────────────────────────────────────────────────────────────────────────────────────
   const spans = [];
   for (const g of groups) for (const o of g.occ) spans.push([o.start, o.end]);
+  for (const a of attrs) for (const st of a.stems) toks.forEach((t) => { if (t.stem === st) spans.push([t.start, t.end]); });   // the attribute is drawn bold too ("eight legs")
   for (const k of predMatches) spans.push([toks[k].start, toks[k].end]);
   if (filler) spans.push(filler.span);
   if (fillerCandidates) for (const c of fillerCandidates) spans.push(c.span);
