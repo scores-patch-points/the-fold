@@ -63,3 +63,26 @@ capital of Brazil (contest with the "fourth and unofficial capital"), bones (the
 39cfc0c but not re-measured live; "tallest mountain" is committed to Mauna Kea (the page says "tallest … from the ocean floor"), a
 gold-dispute, not a defect of the binder. C1 on this slice: 14/32 = 44% (bar 60%); the oracle ceiling over what retrieval handed the
 fold was 78%.
+
+## Second re-read (final tree after 59ba780) and what it changed (bdf17b1)
+Verdicts: SHIP-WITH-DISCLOSURE ×3 (panels 5, 7, 8), HOLD ×6 — each HOLD was a reproduced new regression versus 4c5050a, not a reopened old one.
+All reproduced MUST-FIX items were fixed in bdf17b1 with falsifiers LIVE-28…LIVE-33 (they fail on 4c5050a or on the tree they were found in):
+dominance on scope words only; the whole-name override bounded to the copula's clause (alias must begin its noun phrase, a relative left clause
+never overrides, the named attribute must be said in that clause); "No." only with its period and the copular count only after "number of";
+place alternatives: container of an unbroken chain first, end at any preposition, calendar words never a place; "the capital OF Egypt" says
+where; a title may begin with a preposition; a page that RESOLVES (redirects) to a referent is the referent's page.
+
+Still disclosed after this round (each reproduced, none a new wrong commit versus HEAD unless noted):
+1. `personLike` admits a role noun the prior has never seen ("the throne", "the pharaoh", "the actor") when the door has its page — same as
+   HEAD; the title door is the only net. A name led by its article whose words are known common nouns ("The Rock", "The Edge") gaps.
+2. A page title that extends the ask's with unrelated words and does not redirect to it ("The Lord of the Rings: The Fellowship of the Ring",
+   "Hamlet: Prince of Denmark") is discounted: a typed gap with no closest sentence (HEAD answered).
+3. A third entity's derivative read on an unrelated page ("Seth Grahame-Smith wrote Pride and Prejudice and Zombies" on the Jane Austen page)
+   still binds, as at HEAD.
+4. Alternatives are tried container-first; a chain whose container is wrong ("born in Paris in France" → France) answers the wider region.
+5. The copula side, the alias-begins-the-subject test, the locative cue and the adverbial test are token-position/class decisions with the
+   referent consulted afterwards by the title door; a kind test (is the resolved page a place / a person) needs a kind from the door and is
+   not available offline.
+6. Dominance is a containment test over the ask's scope words, disclosed in the answer ("another source says X but does not say …").
+7. `isVerb` is `posRankOf(...) === 6` — the received prior's tag, English only; a language without that prior has no verb test.
+8. Digit-led names ("50 Cent", "21 Savage", "Louis 16") read as dates and gap.
