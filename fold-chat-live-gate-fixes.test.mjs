@@ -383,3 +383,9 @@ test("LIVE-36 dominance reads the clause that holds the filler: 'Voltaire wrote 
   const t = await runAnswerTurn({ question: "Who wrote the novel Emma?", lang: "en", passages: pass, now: { year: 2026 }, deps });
   assert.ok(!(t.answer && /Voltaire/.test(t.answer.filler.text)), "no crowning by an appositive: " + JSON.stringify(t.answer && t.answer.filler));
 });
+
+test("LIVE-37 the name after 'of' says where only after a declared place noun: 'a marvel of engineering' is no place", async () => {
+  const f = await frameOf("Where is the Taj Mahal?", { "taj mahal": "Taj Mahal" });
+  const r = bind(f, "The Taj Mahal is a marvel of engineering that was built as a mausoleum for the wife of Mughal emperor Shah Jahan.", { page: "Taj Mahal" });
+  assert.ok(!r || !r.filler, JSON.stringify(r && r.filler));
+});
