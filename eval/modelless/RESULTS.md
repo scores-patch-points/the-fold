@@ -60,3 +60,37 @@ Run 1 vs run 3: 82 of 96 prompts landed in the same bucket (85%). Differences ar
 - Gold regexes are strict on compounds (all parts must appear) and lenient on slots (any shown text); "gold visible" counts the pager's stored cards, not only what was visible without clicking.
 - Two summarize asks (`generate#5`, `url#3`) hit the 150 s settle cap in the graph-writing step and are counted as graph-no-answer, not measured to completion.
 - Ethos/Paradigm effects, retrieval relevance and multilingual quality are not separately measured.
+
+
+---
+
+## Appended 2026-10-13 — the deterministic world, the referent restructure and the archon panel
+
+Nothing above this line was edited.
+
+**The deterministic world** (`world.mjs`): the real page, Wikipedia replaced by 47 fixture pages that keep the live confounders (Polonius,
+Ophelia, "second-largest", "52,075 species", relation words that resolve as titles) and MediaWiki's own redirect shapes. It holds
+retrieval perfect, so it measures the answering layer alone. Same 42 answerable prompts, same page, baseline 620f0a4 vs the fixes:
+
+| | baseline | after 80a144b | after the referent restructure + panel (4019850) |
+|---|---|---|---|
+| committed & correct | 17 / 42 | 24 / 42 | 25 / 42 |
+| committed & wrong | 1 | 0 | 0 |
+| compute | 6 / 10 | 10 / 10 | 10 / 10 |
+| compound (8) / follow-up (6) | 0 / 0 | 0 / 0 | 0 / 1 |
+
+The world is too clean: the live held-out run on the same code scores 13 / 49 and commits 3 wrong answers the world never produces. The
+world is a regression instrument for the answering layer, not a measure of the product (see GATE.md).
+
+**What changed in the code** (branch `panel-fixes`, 4019850, on top of `modelless-fixes`): the ask's relation is not a referent (decided
+by position, with the received POSPrior only breaking ties); anchors and attributes are separate; the passive agent is the person
+filler, bounded to its verb's clause; the filler's name keeps its head; stance (hedge, condition, question) marks a row "?"; real calendar
+dates only; -e verbs meet their inflections; the receipt keeps attributes and the counted noun.
+
+**The archon panel** (83 compendium archons + Champollion + the nine revision-grid editors + Kelsen, eight panels, Gebser's arrival, 14
+independent reproductions): 62 must-fix findings across panels, deduplicated by Gebser to 22; MF1–MF14 reproduced independently. Verdict
+on the first read: the frame work stands as a foundation; the passive-agent path and the calendar were not to ship until MF1–MF10 closed.
+All of MF1–MF10 and most of MF11–MF21 are pinned in `fold-chat-archon-panel.test.mjs` (17 falsifiers). **Disclosed, not fixed:** a title made
+only of function words ("Up") is never a referent; irregular verbs (wrote/written) and found/founded need a lemma prior; surname-only
+coreference ("Einstein" for "Albert Einstein") does not bind. **The archons' second read of the fixed code was still running** when
+this was written; its result is not in this file.

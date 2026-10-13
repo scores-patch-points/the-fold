@@ -53,3 +53,31 @@ So the prediction is: **neither MVP passes today.** The gate exists to say by ho
 ---
 
 ## Results (appended; nothing above this line changes)
+
+### Run of 2026-10-13 (first gate run; live web, no model reachable, headless Chromium without WebGPU)
+
+Code under test: `modelless-fixes` 0320a6e (pre-panel) and `panel-fixes` 4019850 (after the archon panel's must-fix findings); baseline
+620f0a4. Held-out set: `chat-heldout.json` (49 scripts, 53 turns). Live Wikipedia and the page's own web lanes; the model endpoint answered 503.
+
+| bar | measured | threshold | verdict |
+|---|---|---|---|
+| C1 factual asks committed AND correct (held-out, live) | **13 / 49 scripts = 26%** at 0320a6e and at 4019850; baseline 8 / 49 = 16%. Of the answerable factual classes: slot 9/27, holder 0/6, compute 4/4 | ≥ 60% | **FAIL** |
+| C2 confident WRONG answers per 100 turns | **3 in 53 held-out turns** at 4019850 (and at 0320a6e); baseline 2; plus 1 false-premise commit in the 96-prompt live battery at 0320a6e | ≤ 1 per 100 | **FAIL** |
+| C3 follow-ups + compound asks committed and correct | **0 / 8** (compound 0/4: graph shown, no answer; follow-up 0/4: R0 with sources shown) | ≥ 50% | **FAIL** |
+| C4 turns end; p90 latency | 4 of 205 turns did not settle in 150 s (2 of 102 in the 96 battery, 2 of 50 WildChat; all long "write/summarize" asks that wait on a mouth that is absent); p90 latency 13–21 s, p50 8–10 s | ≥ 99% end; p90 ≤ 20 s | **FAIL (marginal)**: 98% end; p90 21 s on the 96 battery |
+| C5 WildChat sample (50 asks), how they end | 24 sources shown for a mouth that is absent · 12 typed gap · 5 wanted a model, nothing shown · 4 canned note · 2 contest · 2 graph shown, no answer · 1 other · **0 committed** | reported | — |
+| C6 in-tab model, grounded prose | not run (no WebGPU) | ≥ 60% | **UNMEASURED** |
+| K1–K4 coder | the in-process coder gate (`coder-gate.mjs run --direct`, qwen2.5-coder:1.5b, `maxRounds: 3`) probed ONE task (the-fold-09853ea): 540 s, no edit applied, not solved. The full 20-task run died with its session; a second run was relaunched and had not finished at the time of writing | K1 ≥ 50%, K3 = 0 | **UNMEASURED** (1/1 failed) |
+
+Predictions made before the run: C1 25–40% (observed 26%, inside the range); C2 0–1 per 100 (observed ~6 per 100: outside, worse); C3 0–15%
+(observed 0%, inside); C4 passes (observed marginal fail); K1 10–25% (unmeasured). **Neither MVP passes**; that prediction held.
+
+What binds C1, measured: on the held-out slot asks the right answer was on screen for 22 of 27 but committed for 9; the other 13 ended in a
+contest (10) or a typed gap (7). The answering layer's contest policy declines to pick whenever any rival filler is in the pool, and the
+live pool carries junk fillers; retrieval and rival typing, not the committing rule, are the lever. The three confident-wrong answers are
+live-only shapes the fixture world does not contain: a derivative page whose title CONTAINS the asked title ("Pride and Prejudice and
+Zombies" for "who wrote Pride and Prejudice"), a definitional sentence about the role instead of its holder ("chancellor of Germany"), and
+a product sentence for a company ("Tesla Semi" for "CEO of Tesla").
+
+Not established: one run per condition (live web varies about ±15 points between runs); the held-out set was frozen before the run but
+written by the person who also tuned the fixes; golds for office holders are as known on 2026-10-13.
