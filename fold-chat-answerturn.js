@@ -126,9 +126,20 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
     let h = 0;
     while (h < tk.length && (closedV(tk[h].fold) || ((r) => r != null && r < 8)(posRankOf(tk[h].text, frame.lang || null)))) h++;
     if (h >= tk.length) return out;
+    // A word the prior knows ONLY as a common noun (rank 7 or 8: NOUN, never PROPN-dominant) cannot END a name that is cut short of the run:
+    // "Confederate veteran" in "Confederate veteran John W. Morton" is a description (the title door happens to have a page for it).
+    const commonAt = (k) => !closedV(tk[k].fold) && ((r) => r === 7 || r === 8)(posRankOf(tk[k].text, frame.lang || null));
+    const nameLikeAt = (k) => !closedV(tk[k].fold) && ((r) => r == null || r >= 8)(posRankOf(tk[k].text, frame.lang || null));
     for (let e = tk.length; e > h; e--) {
       if (e - h < 2 && tk.length - h >= 2) break;
-      const v = { text: f.text.slice(tk[h].start, tk[e - 1].end), from: tk[h].start, to: tk[e - 1].end };
+      const v = { text: f.text.slice(tk[h].start, tk[e - 1].end), from: tk[h].start, to: tk[e - 1].end, descriptor: e < tk.length && commonAt(e - 1) };
+      if (!out.some((x) => x.text === v.text)) out.push(v);
+    }
+    // …and the NAME can be the TAIL of a descriptive run whose first words the prior does not know: from every name-like word that follows a
+    // common one, the rest of the run is a candidate ("Confederate veteran | John W. Morton").
+    for (let st = h + 1; st < tk.length; st++) {
+      if (!commonAt(st - 1) || !nameLikeAt(st)) continue;
+      const v = { text: f.text.slice(tk[st].start, tk[tk.length - 1].end), from: tk[st].start, to: tk[tk.length - 1].end };
       if (!out.some((x) => x.text === v.text)) out.push(v);
     }
     return out;
@@ -145,7 +156,7 @@ async function verifyFillers(entries, frame, resolveTitles, fw = null) {
     e.checked = true;
     if (!ok) { if (e.viaTitle) e.row = { ...e.row, filler: null }; continue; }
     const f = e.row.filler;
-    const hit = candidatesOf(f).find((v) => isNamed(table.get(v.text)));
+    const hit = candidatesOf(f).find((v) => !v.descriptor && isNamed(table.get(v.text)));
     if (!hit) { e.row = { ...e.row, filler: null }; continue; }
     const title = table.get(hit.text).title;                       // what the name IS: contest candidates that are one page are one entity
     const b0 = hit.base.span[0];

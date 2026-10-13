@@ -128,6 +128,27 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     }
     return false;
   };
+  // An occurrence whose very next word is an UNASKED common noun is a MODIFIER of that noun ("the Nashville CHAPTER of the Klan", "Kenya
+  // AIRWAYS"): the sentence is not about the referent. A word the ask itself uses ("the Nashville MAYOR" for "the mayor of Nashville") is
+  // exempt; a word the prior does not know, a name-ranked word and a verb are never read as a head noun.
+  //
+  // Only where the language DECLARES which nouns complete a name (G.nameKinds): without that table the rule is absent, as it was.
+  const nameKinds = Array.isArray(G.nameKinds) && G.nameKinds.length ? new Set(G.nameKinds) : null;
+  const modifiesOther = (o) => {
+    if (!nameKinds) return false;
+    const nx = toks[o.to + 1], last = toks[o.to];
+    if (!nx || !last || !/^\s+$/.test(text.slice(last.end, nx.start))) return false;
+    if (closed(nx.fold) || askedStems.has(nx.stem) || nameKinds.has(nx.fold)) return false;
+    const r = posRankOf(nx.text, L);
+    if (!(r === 7 || r === 8)) return false;
+    // …and it must STAND AS A HEAD NOUN: the word after it is the language's "of" (the chapter OF the Klan) or an auxiliary / copula (the
+    // airline WAS founded). A verb the prior also ranks as a plural noun ("The Quillon RISES in the Karth Mountains") is followed by a
+    // preposition or an object, never by those.
+    const af = toks[o.to + 2];
+    if (!af || !/^\s+$/.test(text.slice(nx.end, af.start))) return false;
+    const heads = new Set([...(G.governs || []), ...(G.auxiliaries || []), ...(G.copulas || [])]);
+    return heads.has(af.fold);
+  };
   const groups = frame.referents.map((r) => {
     const names = Array.isArray(r.aliases) && r.aliases.length ? r.aliases : [r.surface, r.title];
     const seqs = [], content = new Set();
@@ -140,7 +161,7 @@ export function bindSentence(sentence, frame, { fw = null, lang = null, source =
     }
     // `titleLen`: the referent's FULL resolved name in tokens — an occurrence shorter than it is a stem of the name, not the referent
     const titleLen = tokensOf(String(r.title || r.surface || "").replace(/\s*\([^)]*\)\s*$/u, "", L)).length || 1;
-    return { seqs, content, titleLen, occ: seqs.flatMap((s) => occurrences(toks, text, s)).filter((o) => !partOfLongerTitle(o, seqs)) };
+    return { seqs, content, titleLen, occ: seqs.flatMap((s) => occurrences(toks, text, s)).filter((o) => !partOfLongerTitle(o, seqs)).filter((o) => !modifiesOther(o)) };
   });
   const topicStems = topic ? tokensOf(String(topic), L).map((t) => stemOf(t.fold, L)) : null;
   const carriedByTopic = (g) => !!topicStems && g.seqs.some((s) => containsSeq(topicStems, s));

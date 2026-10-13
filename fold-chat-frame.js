@@ -12,7 +12,7 @@ const tokens = (q) => String(q ?? "").match(/[\p{L}\p{N}'’.-]+|[^\p{L}\p{N}\s]
 /** Drop the leading run of function words (and the trailing '?'), keeping at least one content word. Returns the ask unchanged when
  *  there is no prior, nothing to cut, or cutting would leave nothing. `fw`: a Set of case-folded function words, or null. */
 import { salienceOf } from "./fold-chat-salience-infer.js";
-import { PLACE_NOUNS_EN } from "./fold-chat-grammar-places.js";
+import { PLACE_NOUNS_EN, NAME_KINDS_EN } from "./fold-chat-grammar-places.js";
 /** The received POSPrior's rank of a form (UD English-EWT via the salience prior: PROPN 9, NOUN 7, VERB 6, ADJ 4, ADV 1), or null when
  *  the prior has not seen it. One door for every module that reads a form's usual part of speech. */
 export function posRankOf(form, lang = null) { const v = salienceOf(form, lang); return v == null ? null : Math.round(v * 9); }
@@ -129,6 +129,7 @@ export const GRAMMAR = Object.freeze({
     // calendar words: a month or a weekday is a TIME, never where ("in July", "born in January in Salzburg"); declared, not measured
     temporal: Object.freeze(["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "spring", "summer", "autumn", "fall", "winter", "lent", "easter", "christmas", "ramadan", "advent", "passover", "hanukkah", "diwali", "eid", "wartime", "peacetime", "childhood", "infancy", "adulthood"]),
     placeNouns: PLACE_NOUNS_EN,       // nouns that name a KIND OF PLACE (fold-chat-grammar-places.js)
+    nameKinds: NAME_KINDS_EN,         // nouns that COMPLETE a name ("the Quillon RIVER", "Microsoft CORPORATION"): an occurrence before any other noun is a modifier
     // English-only forms the binder used to spell in code (moved 2026-10-13 for the omnilingual falsification): the month that is also a
     // modal ("May 1945" vs "might"), the number sign ("No. 1"), the perfect copula ("has BEEN king"), the possessive suffix ("Mozart'S
     // father"), the possessive relative ("WHOSE father"), the negating suffix ("didN'T")
