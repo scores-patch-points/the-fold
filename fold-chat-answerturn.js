@@ -301,7 +301,7 @@ async function run({ question, lang, passages, now, deps }) {
   if (aborted(signal)) return bare({ aborted: true });
 
   // 1 ── the grammar of the ask
-  const frame = await askFrame(said, { fw, lang: code, resolveTitles: deps.resolveTitles });
+  const frame = await askFrame(said, { fw, lang: code, resolveTitles: deps.resolveTitles, suggestQuery: typeof deps.suggestQuery === "function" ? deps.suggestQuery : null });
   if (aborted(signal)) return bare({ aborted: true });
   if (!frame.ok) {
     const kind = frame.gap && frame.gap.kind ? frame.gap.kind : "not_a_slot_ask";

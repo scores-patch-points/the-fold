@@ -373,7 +373,8 @@ test("the record's summary and process line say what happened in plain words and
 test("slotDeps hands the pipeline ONLY the declared deps, over the one fetch it was given (nothing global, nothing a model could be)", () => {
   const seen = [];
   const deps = slotDeps({ fetchImpl: async (u) => { seen.push(u); return json({}); }, onStatus: () => {} });
-  assert.deepEqual(Object.keys(deps).sort(), ["fetchLead", "fw", "resolveTitles", "searchPassages", "signal"]);
+  // suggestQuery (2026-10-13, survive typing): the encyclopedia's own spelling suggestion, asked only when an ask's names do not resolve
+  assert.deepEqual(Object.keys(deps).sort(), ["fetchLead", "fw", "resolveTitles", "searchPassages", "signal", "suggestQuery"]);
   assert.equal(typeof deps.fw, "function");
   assert.ok(deps.fw("en") instanceof Set); assert.equal(deps.fw("xx"), null);
   assert.doesNotMatch(WIRE_SRC.replace(/\/\/[^\n]*/g, ""), /\bfetch\(|Date\.now|Math\.random|client\.chat|callModel|chat\/completions/);

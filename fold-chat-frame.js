@@ -309,10 +309,33 @@ export async function askFrame(question, opts = {}) {
   const { readingOf } = await import("./fold-chat-typing.js");
   const protect = new Set((first && first.ok ? first.referents : []).flatMap((r) => tokensOf(r.surface, lang).map((t) => t.fold)));
   const reading = readingOf(question, lang, { fw: opts.fw, protect });
-  if (!reading.changes.length) return first;
-  const second = await askFrameOnce(reading.text, opts);
+  let second = reading.changes.length ? await askFrameOnce(reading.text, opts) : null;
+  if (second && second.ok) return { ...second, said: String(question ?? ""), readAs: reading.changes };
+  // THE ENCYCLOPEDIA'S OWN SPELLING (a misspelled NAME: no lexicon knows "Mzoart"): asked once, only when no reading resolved; taken only at
+  // words still in no lexicon and not protected, aligned word for word; the exact title door must then confirm it (the frame resolves)
+  // only for an ask whose NAMES did not resolve — never for an ask that is not a slot ask, or a language with no table (no request at all)
+  if ((first && first.ok) || typeof opts.suggestQuery !== "function" || !(first && first.gap && first.gap.kind === "referents_unresolved")) return first;
+  const { outOfLexicon, withCaseOf } = await import("./fold-chat-typing.js");
+  const base = reading.changes.length ? reading.text : String(question ?? "");
+  const sug = await opts.suggestQuery(base);
+  if (!sug) return first;
+  const bt = tokensOf(base, lang), st = tokensOf(sug, lang);
+  if (bt.length !== st.length) return first;
+  const oov = outOfLexicon(lang, opts.fw);
+  let text = "", at = 0;
+  const changes = reading.changes.slice();
+  bt.forEach((t, i) => {
+    const s2 = st[i];
+    const take = s2.fold !== t.fold && oov(t.fold) && !protect.has(t.fold);
+    text += base.slice(at, t.start) + (take ? withCaseOf(t.text, s2.text) : t.text);
+    if (take) changes.push({ typed: t.text, read: s2.text, how: "suggested" });
+    at = t.end;
+  });
+  text += base.slice(at);
+  if (changes.length === reading.changes.length) return first;
+  second = await askFrameOnce(text, opts);
   if (!second || !second.ok) return first;
-  return { ...second, said: String(question ?? ""), readAs: reading.changes };
+  return { ...second, said: String(question ?? ""), readAs: changes };
 }
 async function askFrameOnce(question, { fw = null, lang = null, resolveTitles = null } = {}) {
   const said = String(question ?? "");

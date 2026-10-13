@@ -56,7 +56,10 @@ function leetVariants(w, leet) {
   return acc;
 }
 
-const withCaseOf = (orig, read) => (/^\p{Lu}/u.test(orig) ? read.charAt(0).toLocaleUpperCase() + read.slice(1) : read);
+/** A predicate: is this folded form in NO lexicon of the language (and not closed class)? The words a spelling suggestion may touch. */
+export function outOfLexicon(lang, fw = null) { const inLex = lexiconOf(lang, fw); return (w) => !/^\p{N}+([.,]\p{N}+)*$/u.test(w) && !inLex(w); }
+
+export const withCaseOf = (orig, read) => (/^\p{Lu}/u.test(orig) ? read.charAt(0).toLocaleUpperCase() + read.slice(1) : read);
 
 /**
  * The reading of a typed text in `lang`: { text, changes: [{ typed, read, how: "leet"|"edit" }] }. `protect`: folded forms never to touch.

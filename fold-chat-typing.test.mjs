@@ -39,3 +39,22 @@ test("askFrame keeps what the person typed, discloses every reading, and a resol
   const clean = await askFrame("Where was Mozart born?", { fw, lang: "en", resolveTitles: door({ mozart: "Wolfgang Amadeus Mozart" }) });
   assert.equal(clean.readAs, undefined);
 });
+
+test("a misspelled NAME no lexicon knows takes the encyclopedia's own spelling — only at out-of-lexicon words, confirmed by the exact title door", async () => {
+  // the live suggestion observed 2026-10-13 (en.wikipedia list=search&srinfo=suggestion): "Where was Mzoart born" → "where was mozart born"
+  const calls = [];
+  const suggestQuery = async (q) => { calls.push(q); return /mzoart/i.test(q) ? "where was mozart born" : /ciare/i.test(q) ? "where is le ciara" : null; };
+  const T = { mozart: "Wolfgang Amadeus Mozart", "le caire": "Le Caire" };
+  const f = await askFrame("Where was Mzoart born?", { fw, lang: "en", resolveTitles: door(T), suggestQuery });
+  assert.equal(f.ok, true);
+  assert.deepEqual(f.referents.map((r) => r.title), ["Wolfgang Amadeus Mozart"]);
+  assert.ok(f.readAs.some((c) => c.typed === "Mzoart" && c.read === "mozart" && c.how === "suggested"), JSON.stringify(f.readAs));
+  assert.equal(f.said, "Where was Mzoart born?");
+  // FALSIFIER: a suggestion the exact title door does not confirm ("le ciara") changes nothing — the ask stays as typed
+  const g = await askFrame("Where is Le Ciare?", { fw, lang: "en", resolveTitles: door(T), suggestQuery });
+  assert.ok(!g.ok || !(g.readAs || []).some((c) => c.how === "suggested"), JSON.stringify(g.readAs));
+  // an ask that resolves as typed never asks for a suggestion (no extra request)
+  const n0 = calls.length;
+  await askFrame("Where was Mozart born?", { fw, lang: "en", resolveTitles: door(T), suggestQuery });
+  assert.equal(calls.length, n0);
+});

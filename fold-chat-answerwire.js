@@ -17,7 +17,7 @@
 
 import { runAnswerTurn, HANDOFF_WHY } from "./fold-chat-answerturn.js";
 import { functionWordsOf } from "./fold-chat-snippets.js";
-import { resolveTitlesWikipedia } from "./fold-chat-titles.js";
+import { resolveTitlesWikipedia, suggestQueryWikipedia } from "./fold-chat-titles.js";
 import { wikiLead, referentPassages } from "./fold-chat-web.js";
 import { originateTurn, ORIGIN } from "./fold-chat-origin.js";
 import { expandAskAbbreviations } from "./fold-chat-frame.js";
@@ -86,6 +86,7 @@ export function slotDeps({ fetchImpl, signal = null, memo = null, lang = "en", o
     fw: functionWordsOf,
     signal,
     resolveTitles: (candidates) => resolveTitlesWikipedia(candidates, { fetchImpl, edition: lang }),
+    suggestQuery: (q) => suggestQueryWikipedia(q, { fetchImpl, edition: lang, signal }),
     fetchLead: (query) => { tell(`looking up “${query}”…`); return wikiLead(query, { fetchImpl, lang }); },
     searchPassages: (frame) => { tell(`reading the pages the names in the question lead to…`); return referentPassages(frame, { fetchImpl, memo, lang }); },
   };

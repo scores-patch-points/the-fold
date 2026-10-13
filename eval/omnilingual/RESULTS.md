@@ -104,3 +104,13 @@ What still breaks, by cause:
 - **A typo that is another real word** ("prejuicio" → "perjuicio" is a Spanish word): no lexicon can tell; left as typed, as it must be.
 - **French leet/typo on words the fr prior lacks** ("terrain", "joueurs" decode fine; "capitale" with 1 → i|l ambiguity): partly the
   ambiguity rule refusing to guess.
+
+## The misspelled-name step (after run 4)
+A misspelled NAME ("Mzoart", "Taj Mhaal") is in no lexicon, so the reading cannot fix it, and the title door matches exact titles and redirects
+only. The encyclopedia's own spelling suggestion (list=search & srinfo=suggestion) reads the whole question: observed live on en.wikipedia,
+"Where was Mzoart born" → "where was mozart born", "Taj Mhaal" → "taj mahal", "pneicilina" → none, and "Where is Le Ciare" → "where is le
+ciara" (wrong — on the English edition). So it is asked ONCE, only when an ask's names did not resolve (never for an ask that is not a slot ask —
+the suite's HANDOFF test pins that no request is made), taken only at words still in no lexicon, aligned word for word, and used only if the exact
+title door then confirms it; a suggestion the door does not confirm ("le ciara") changes nothing. Disclosed in the trace (how: "suggested").
+The offline battery has no suggestion stub, so its arm numbers above do not include this step; the step is pinned by fold-chat-typing.test.mjs
+with the live-observed suggestion.
