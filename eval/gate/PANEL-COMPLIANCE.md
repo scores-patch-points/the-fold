@@ -105,3 +105,14 @@ place does not resolve; an article-less common noun ("born in hospital in Honolu
 "The Rock" gap; the possessor-of-the-subject case "Leopold Mozart, father of Wolfgang Amadeus Mozart, was born in Augsburg" (unchanged from
 HEAD); "Jeff Williams is the COO of Apple Inc. and Tim Cook is the CEO" answers by first copula (unchanged from HEAD); a title that begins with a
 function word whose later word the prior ranks a verb ("After the Gold Rush") reads as a clause and gaps.
+
+## Live held-out on the final tree (ed08dac; clean run, one process per category, concurrency 1, no model, live web)
+Slot + holder (33 rows): committed-correct **12** (before the fixes 9), committed-WRONG **1** (before 3), contest 12 (13), typed gap 7 (8),
+one holder ask with no slot answer. False premises (4): **no committed answer** (1 contest, 3 typed gaps). Compute 4/4 (earlier run).
+Compound 0/4 and follow-up 0/4 are unchanged — the discourse-audit session's ground.
+- the one committed-WRONG is "tallest mountain" → Mauna Kea (the page says "tallest … from the ocean floor"): a gold dispute;
+- "What language is spoken in Brazil?" moved from a committed-"correct" to a typed gap: the earlier "correct" was a false positive (the answer line
+  was "Before the first Portuguese explorers arrived in 1500" — the gold pattern matched the word "Portuguese");
+- the clean run caught one real C2 violation the earlier runs did not (the Armstrong false premise), now closed and pinned (LIVE-38).
+C1 on slot + holder + compute: 16/37 = 43% (bar 60%; the oracle ceiling over what retrieval handed the fold was 78%). C2 held on this set
+(0 confident-wrong outside the disputed row). One run, live variance about ±15 points.
