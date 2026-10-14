@@ -7,7 +7,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkBattery, recordingFetch, score, voidFieldsScore, solvable, tally } from "./harness.mjs";
 import { runSlotTurn, answerLine } from "../../fold-chat-answerwire.js";
-import { makeMemo } from "../../fold-chat-web.js";   // the surface's own page memo (fold-chat.js: web.makeMemo())
+import { makeMemo } from "../../fold-chat-web.js";
+import { slotDeps } from "../../fold-chat-answerwire.js";
+import { functionWordsOf } from "../../fold-chat-snippets.js";
+import { declareAskVoid } from "../../fold-chat-void-declare.js";   // the surface's own page memo (fold-chat.js: web.makeMemo())
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const NOW = new Date("2026-10-14T12:00:00Z");   // the battery's date (passed to the probes; never the wall clock)
@@ -21,6 +24,14 @@ export const ARMS = {
     const anchorTitle = turn?.frame?.referents?.[0]?.title || null;
     return { answer, voidDecl: null, anchorTitle, raw: { handoff, gap: turn?.gap?.kind || null, slot: turn?.frame?.slot || null } };
   },
+  // L1: L0's answer unchanged (an answer is never altered by a layer that declares), plus the void the ask declares (perception + grammar + pathos)
+  async L1(q, fetchImpl) {
+    const base = await ARMS.L0(q, fetchImpl);
+    const deps = slotDeps({ fetchImpl, memo: makeMemo(), lang: "en" });
+    const v = await declareAskVoid(q, { fw: functionWordsOf("en"), lang: "en", resolveTitles: deps.resolveTitles });
+    return { ...base, voidDecl: v.decl, anchorTitle: v.anchor ? v.anchor.title : base.anchorTitle, raw: { ...base.raw, void: v.fields, anchorBy: v.anchor ? v.anchor.by : null, experiencer: v.experiencer, voidGap: v.gap || null } };
+  },
+  // the void-null: each ask carries ANOTHER ask's void (rotation by a seeded offset) — does an informative gap describe THIS ask?
 };
 
 async function pool(items, n, fn) {
