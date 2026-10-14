@@ -154,9 +154,10 @@ test("a PARTIAL compound carries its missing part as the composed gap's english 
 
 test("fold-chat.js is wired: the compound runs before the single one shot, model-barred through the strand, drawn as stored parts", () => {
   const at = (re) => { const m = re.exec(CHAT_SRC); return m ? m.index : -1; };
-  assert.ok(at(/splitSlotParts\(question\)/) > 0, "the splitter is called");
-  assert.ok(at(/runSlotParts\(\{ parts: slotParts/) > at(/splitSlotParts\(question\)/), "parts run after the split, before the single shot");
-  assert.ok(at(/runSlotTurn\(\{ question/) > at(/runSlotParts\(\{ parts: slotParts/), "the single one shot still runs for a non-compound ask");
+  assert.ok(at(/splitSlotParts\(slotQuestion\)/) > 0, "the splitter is called (on the follow-up-bound ask, nesting audit B-D6: slotQuestion is `question` unless a pronoun was bound)");
+  assert.ok(at(/runSlotParts\(\{ parts: slotParts/) > at(/splitSlotParts\(slotQuestion\)/), "parts run after the split, before the single shot");
+  assert.ok(at(/runSlotTurn\(\{ question: slotQuestion/) > at(/runSlotParts\(\{ parts: slotParts/), "the single one shot still runs for a non-compound ask");
+  assert.ok(/slotAskFor\(follow, question,/.test(CHAT_SRC), "the follow-up's bound referent is handed to the slot pipeline (B-D6)");
   assert.ok(/\? slotTurn = slotRes/.test(CHAT_SRC) || /slotTurn = slotRes/.test(CHAT_SRC), "the composed turn is slotTurn (the strand marks it, barring the model)");
   assert.ok(/fold-chat-split\.js/.test(fs.readFileSync(new URL("./fold-chat-answercard.js", import.meta.url), "utf8")), "a parts turn draws its content as prose, not as the single-answer card (the guard lives in mountAnswerCard, so the wired call line stands)");
   assert.ok(/splitSlotParts, runSlotParts/.test(CHAT_SRC), "the imports are in place");

@@ -122,6 +122,38 @@ export function bindPartAsk(part, { filler = "", referent = "", topic = "" } = {
   return mapped.join(" ").replace(/\s{2,}/g, " ").trim();
 }
 
+/** BIND A FOLLOW-UP'S PRONOUN to the referent the thread already resolved (nesting audit B, D6). `planTurn` binds "he" in "Where was he born?" to
+ *  "Emmanuel Macron" (the carry notice says so) and searches with it, but the slot pipeline was handed the person's raw words, so its own title door
+ *  read "born" as a page ("Charles III") and answered about that. The same SUBSTITUTION the compound parts use (bindPartAsk): the pronoun's own
+ *  token is replaced by the carried referent's surface, nothing else is touched, and the person's words stay what they said (`said`, kept by the
+ *  caller; `ask` here is only what the pipeline is asked).
+ *  Binds only when it is determined: the thread carried exactly ONE referent through a pronoun, the language has a declared anaphor table, and the
+ *  ask holds a token of that table. A person-class token binds the referent as a person ("he" -> "Emmanuel Macron", "his" -> "Emmanuel Macron's");
+ *  a thing-class token binds it as a thing ("it" -> "the Eiffel Tower" is the surface as the record holds it). Otherwise the ask is returned unchanged
+ *  and `bound` is false: today's path, exactly.
+ *  -> { ask, bound, surface, via: "person" | "thing" | null } */
+export function bindFollowUp(question, { surface = "", lang = "en" } = {}) {
+  const ask = String(question ?? "");
+  const code = lang && typeof lang === "object" ? lang.code : lang;
+  const T = SPLIT_LANG[code || "en"];
+  const s = String(surface ?? "").trim();
+  const none = { ask, bound: false, surface: null, via: null };
+  if (!T || !s || !ask.trim()) return none;
+  const toks = ask.split(/\s+/).map((w) => w.toLowerCase().replace(/[^\p{L}\p{N}']/gu, ""));
+  const personal = toks.some((t) => T.person.includes(t) || T.poss.includes(t));
+  const thing = !personal && toks.some((t) => T.prop.includes(t));
+  if (!personal && !thing) return none;
+  const out = bindPartAsk({ ask, dependsOn: 0 }, personal ? { filler: s } : { referent: s }, code || "en");
+  return out !== ask ? { ask: out, bound: true, surface: s, via: personal ? "person" : "thing" } : none;
+}
+
+/** What the slot pipeline is asked on a follow-up: the planned turn (`follow`, fold-chat-flow.js planTurn) and the person's words -> `{ ask, bound, ... }`.
+ *  Bound only when the thread carried exactly ONE referent through a PRONOUN (the gate said so) — see bindFollowUp. Pure; run() and the tests read it. */
+export function slotAskFor(follow, question, lang = "en") {
+  const ok = follow && follow.kind === "carried" && follow.gate && follow.gate.kind === "pronoun" && Array.isArray(follow.carried) && follow.carried.length === 1;
+  return ok ? bindFollowUp(question, { surface: follow.carried[0], lang }) : { ask: String(question ?? ""), bound: false, surface: null, via: null };
+}
+
 /** The earlier ask's TOPIC: its content tail, mechanically cut (declared;
  *  fallback only — the real referent above is preferred). */
 export function topicOfAsk(ask) {

@@ -79,7 +79,7 @@ import { createPageEngine, canonicalModelId, ollamaTagOf, MODEL_CHOICES, DEFAULT
 import { snipsOf, strandText, storeSnip, verifySnips, STRAND } from "./fold-chat-strand.js";
 import { ensureFoundation, mindPassagesFor, mergeMind } from "./fold-chat-foundation.js";
 import { slotTurnWanted, slotPipelineOn, runSlotTurn, endsTurn, answerLine, storeAnswerTurn, traceFeed, answerRecordNote, answerProcessLine, frameReferentsOf } from "./fold-chat-answerwire.js";
-import { splitSlotParts, runSlotParts, partsLine, partsContentAllowed } from "./fold-chat-split.js";
+import { splitSlotParts, runSlotParts, partsLine, partsContentAllowed, slotAskFor } from "./fold-chat-split.js";
 import { mountAnswerCard } from "./fold-chat-answercard.js";
 import { pivotText, verifyPivot, storePivot, pivotLine, standingLine, pivotEnabled, relevantPassages } from "./fold-chat-pivot.js";
 // the gate HISTORY (the fold's a900f6e): a check that has never withheld anything reads "unmeasured", never "pass" (Constitution II.10 over time)
@@ -2783,10 +2783,17 @@ export function mount(root, opts = {}) {
       // each part resolved by the SAME one shot in dependency order (later parts bind
       // earlier parts' fillers by anaphora), and composed into one modelless answer.
       // A non-compound ask runs the single one shot exactly as before.
-      const slotParts = splitSlotParts(question);
-      const slotRes = slotParts && slotParts.length >= 2
+      // A FOLLOW-UP'S BOUND REFERENT (nesting audit B, D6): planTurn read "he" in "Where was he born?" as Emmanuel Macron (the carry notice says so and the search
+      // used it), but the slot pipeline was handed the raw words and its own title door read "born" as a page ("Charles III"). The pronoun the thread
+      // resolved to exactly one referent is substituted by that referent's surface (fold-chat-split.js bindFollowUp, the compound parts' own rule); the
+      // person's words stay what they said (`said`), the receipt carries `boundAsk`. Not determined (several referents, no table, no pronoun): unchanged.
+      const slotBind = slotAskFor(follow, question, lang0 === "unknown" ? "en" : lang0);
+      const slotQuestion = slotBind.bound ? slotBind.ask : question;
+      const slotParts = splitSlotParts(slotQuestion);
+      let slotRes = slotParts && slotParts.length >= 2
         ? await raceAbort(runSlotParts({ parts: slotParts, lang: lang0, webPassages, searchQ, now: new Date(), fetchImpl: slotFetch, signal: ac.signal, memo: pageMemo, onStatus: (t) => say(`turn \u00b7 ${kindWord} \u00b7 ${t}`) }), ac.signal)
-        : await raceAbort(runSlotTurn({ question, lang: lang0, webPassages, searchQ, now: new Date(), fetchImpl: slotFetch, signal: ac.signal, memo: pageMemo, onStatus: (t) => say(`turn \u00b7 ${kindWord} \u00b7 ${t}`) }), ac.signal);
+        : await raceAbort(runSlotTurn({ question: slotQuestion, lang: lang0, webPassages, searchQ, now: new Date(), fetchImpl: slotFetch, signal: ac.signal, memo: pageMemo, onStatus: (t) => say(`turn \u00b7 ${kindWord} \u00b7 ${t}`) }), ac.signal);
+      if (slotBind.bound && slotRes && !slotRes.handoff && !slotRes.aborted) slotRes = { ...slotRes, said: question, boundAsk: slotQuestion, boundTo: slotBind.surface };
       if (slotRes.aborted || ac.signal.aborted) throw abortError();   // Stop: no card, no answer — the same stopped turn as any other
       if (slotRes.handoff) feedPush(lineEvent(tt, "Handling this the usual way", { tone: "info", note: slotRes.handoff.why }));
       else if (endsTurn(slotRes)) { slotTurn = slotRes; feedPush(traceFeed(tt, slotRes, lineEvent)); }   // the app's own first-person reasoning, one row per line
