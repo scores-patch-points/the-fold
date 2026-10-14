@@ -41,3 +41,24 @@ Void fields declared right (dev / held, of 29): slot 28 / 28 · admits 21 / 20 �
   - The Titanic shows the contest working as designed: 15 April 1912 ×3 against 31 December 2025 ×1 stays a contest gap, not an answer.
 - **Diagnosis:** the kind and binding rules were written by hand (a copula regex, page-subject continuity, nearest argument), where the cube map (`fold-rules/cube-map/MAP.md`) already names a FILLED organ for each cell: SIG·Figure `cast.js`, NUL/SIG·Pattern `entity-kind-induction` with its null, CON·Figure `makeRelationReader`, EVA·Pattern `contest.adjudicate`, SIG·Ground `void-loop.whatWouldSettle`. The next amendment replaces the hand rules with those organs, induction across all terrains (the user's direction), before any re-run.
 - khora's `kind-induction` was renamed `terrainInduction` (khora `terrain-induction` @ c12416c2) and re-vendored. The L2 replay after the rename is identical.
+
+## L1.1: the longest name (both witnesses). **Admitted (marginally).**
+
+| | RIGHT | WRONG | Useful | void-null p95 |
+|---|---|---|---|---|
+| dev | 5 | 0 | 16 (=) | 7 |
+| held | 2 | 1 | **15** (+1) | 5 |
+
+- V1–V4 hold. On dev **nothing changed**, and the specimen it was built for (Pride and Prejudice) did not fire. The khora perceiver splits names at function words (`["Pride","Prejudice"]`, `["One Hundred Years","Solitude"]`), so no perceived surface contains the door's anchor. The longer name lives in askFrame's own title-door runs, which allow an inner function word. That is Amendment 9's L1.2.
+
+## L2′: the Born parliament (clause + engine), logos order, four corners. **Not admitted: it adds nothing (V1 is not strictly earned; RIGHT and WRONG are unchanged).**
+
+Dev and held are identical to L1.1: no new RIGHT and no new WRONG. It is safe, and it earns nothing. Dev traces:
+
+- **The engine witness is noise.** "who wrote Pride and Prejudice" gives *dismissal* (M = 4); "who composed The Four Seasons" gives *county*; "where was Einstein born" gives *lieserl einstein*. Causes:
+  - anchor co-reference is too loose (`namesCorefer` with no `witness` lets "Prejudice" stand for "Pride and Prejudice");
+  - an edge counts as its own instance even when it shares a sentence with others (Pearl);
+  - edge direction is ignored.
+- **The Born null as written blocks right bindings.** Titanic: "15 April 1912" is bound by 3 independent clauses (M = 3), but the null's top over *all* candidates reaches 3, because 1912 is on every line of the page and chance placement recreates the binding. Apollo 11's "1969" (M 1.5 against a null of 2) is blocked the same way. The comparison should be **per candidate**: is *this* candidate bound more than its own frequency in the universe predicts?
+- **The order check refused 3 to 83 slots per ask.** Callimachus (CALLIMACHUS.md §6) measured chain closure over grammar-feature cells as **non-discriminating** (real 4.2% against shuffled 4.6%). Over the void's own fields its value is unmeasured. The pre-registered order-off arm must run before it is trusted.
+- `null_unbuildable` was reached on the no-wh asks whose anchor L1 could not read: the gap is correctly typed, never a guess.
