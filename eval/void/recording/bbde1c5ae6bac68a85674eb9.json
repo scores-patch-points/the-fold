@@ -1,0 +1,1 @@
+{"url":"https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&search=strings&language=en&type=property&limit=5","method":"GET","status":200,"contentType":"application/json; charset=utf-8","sha256":"46917cbc6fe32ee9cad30d4db5909e93dc5fce2e161a329952fd57fa965dbbfb","body":"{\"searchinfo\":{\"search\":\"strings\"},\"search\":[],\"success\":1}"}

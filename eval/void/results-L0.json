@@ -1,0 +1,483 @@
+{
+ "arm": "L0",
+ "record": false,
+ "at": "2026-10-14T12:00:00.000Z",
+ "fetch": {
+  "live": 0,
+  "hits": 478,
+  "misses": 12,
+  "hosts": {
+   "en.wikipedia.org": 450,
+   "www.sfgate.com": 1,
+   "www.onlinenevada.org": 1,
+   "www.newspapers.com": 1,
+   "holodeck-proxy.prometheoid.workers.dev": 20,
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
+  }
+ },
+ "dev": {
+  "n": 29,
+  "RIGHT": 7,
+  "WRONG": 0,
+  "GAP": 22,
+  "informativeGap": 1,
+  "useful": 8
+ },
+ "held": {
+  "n": 29,
+  "RIGHT": 5,
+  "WRONG": 1,
+  "GAP": 23,
+  "informativeGap": 2,
+  "useful": 7
+ },
+ "all": {
+  "n": 58,
+  "RIGHT": 12,
+  "WRONG": 1,
+  "GAP": 45,
+  "informativeGap": 3,
+  "useful": 15
+ },
+ "voidFields": {
+  "dev": {
+   "slot": 0,
+   "admits": 0,
+   "anchor": 17,
+   "relation": 0,
+   "cardinality": 0,
+   "n": 29
+  },
+  "held": {
+   "slot": 0,
+   "admits": 0,
+   "anchor": 21,
+   "relation": 0,
+   "cardinality": 0,
+   "n": 29
+  }
+ },
+ "rows": [
+  {
+   "id": "v01",
+   "set": "dev",
+   "q": "When was the Sydney Opera House opened?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The orchestra has performed at the Sydney Opera House as its home concert hall, since the venue's opening in 1973.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v03",
+   "set": "dev",
+   "q": "When was the Eiffel Tower completed?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Completed in 1889.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v05",
+   "set": "dev",
+   "q": "When did the Titanic sink?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v07",
+   "set": "dev",
+   "q": "When did Apollo 11 land on the Moon?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v09",
+   "set": "dev",
+   "q": "When did the Berlin Wall fall?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The Berlin Wall fell on 9 November 1989.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v11",
+   "set": "dev",
+   "q": "In what year did the Chernobyl disaster happen?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v13",
+   "set": "dev",
+   "q": "When did Queen Victoria die?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "On 22 January 1901, Queen Victoria died.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v15",
+   "set": "dev",
+   "q": "When was the Empire State Building completed?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Some 151,000 barrels of Atlas cement were used in constructing the Empire State Building, completed in 1931.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v17",
+   "set": "dev",
+   "q": "Who painted the Mona Lisa?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v19",
+   "set": "dev",
+   "q": "Who discovered penicillin?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v21",
+   "set": "dev",
+   "q": "Who wrote Pride and Prejudice?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v23",
+   "set": "dev",
+   "q": "Who composed The Four Seasons?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v25",
+   "set": "dev",
+   "q": "Who invented the telephone?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v27",
+   "set": "dev",
+   "q": "Who wrote One Hundred Years of Solitude?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v29",
+   "set": "dev",
+   "q": "What is the capital of Canada?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ottawa (,; Canadian French:) is the capital city of Canada.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v31",
+   "set": "dev",
+   "q": "What is the currency of Japan?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v33",
+   "set": "dev",
+   "q": "What is the largest planet in the Solar System?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v35",
+   "set": "dev",
+   "q": "What is the capital of New Zealand?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The capital of New Zealand has been Wellington since 1865.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v37",
+   "set": "dev",
+   "q": "Where is the Taj Mahal?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "place"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v39",
+   "set": "dev",
+   "q": "Where is Machu Picchu located?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v41",
+   "set": "dev",
+   "q": "Where was Albert Einstein born?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v43",
+   "set": "dev",
+   "q": "How long is the Nile?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v45",
+   "set": "dev",
+   "q": "How tall is the Eiffel Tower?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v47",
+   "set": "dev",
+   "q": "How deep is the Mariana Trench?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v49",
+   "set": "dev",
+   "q": "capital of Australia?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v51",
+   "set": "dev",
+   "q": "year the Titanic sank",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v53",
+   "set": "dev",
+   "q": "tallest mountain in Africa",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v55",
+   "set": "dev",
+   "q": "Name the author of Don Quixote",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v57",
+   "set": "dev",
+   "q": "Who was the first president of Antarctica?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person"
+   },
+   "solvable": null
+  }
+ ]
+}

@@ -38,3 +38,12 @@ fast: 10 files · 193 affected tests pass · law: WARN P6 P11 cited (false posit
 | Kondo | stray files | eval/wald/results-amendment2-runA.json | clean | kept on purpose: the pre-registered baseline run's raw output |
 | Marshall | P6/P11 citations | docs/archons/WALD-PROPOSAL.md | false-positive-on-review | prior labels, not law |
 clean: Simon/Chekhov (every changed source is imported by a test; 7 mutants killed)
+
+## 2026-10-14 — the void, L1 (declared void: perception + grammar + pathos), void/universe @ b3c453a..HEAD
+fast: 15 files · 90 affected tests pass · law: WARN P4 cited (false positive on review: khora's own law inside vendored void-shape.js)
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Pearl | independence | fold-chat-void-declare.js (anchor.by) | fixed | "title-door"+"perceiver" read as two witnesses of the referent; the perceiver only witnesses the surface, the title is the one door's — said so in the header |
+| Holmes | coreference | fold-chat-void-declare.js:85 | noted | the perceiver-led anchor still takes its title from the title door: no alias merge by surface |
+| Diaconis | null | eval/void/null-void.mjs | noted | derangement keeps every void's base rate; 200 shuffles pre-registered |
+clean: Feynman (200 is the prereg's), Dijkstra (folding is declared English-scope), Kondo (vendored file is wired), Simon/Chekhov (module tested 9/9, 5 mutants)

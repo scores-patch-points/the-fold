@@ -1,0 +1,1149 @@
+{
+ "arm": "L5_open",
+ "record": true,
+ "at": "2026-10-14T12:00:00.000Z",
+ "fetch": {
+  "live": 11,
+  "hits": 825,
+  "misses": 0,
+  "hosts": {
+   "en.wikipedia.org": 609,
+   "www.wikidata.org": 191,
+   "www.sfgate.com": 1,
+   "www.onlinenevada.org": 1,
+   "www.newspapers.com": 1,
+   "holodeck-proxy.prometheoid.workers.dev": 16,
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
+  }
+ },
+ "dev": {
+  "n": 29,
+  "RIGHT": 15,
+  "WRONG": 1,
+  "GAP": 13,
+  "informativeGap": 8,
+  "useful": 23
+ },
+ "held": {
+  "n": 29,
+  "RIGHT": 13,
+  "WRONG": 3,
+  "GAP": 13,
+  "informativeGap": 8,
+  "useful": 21
+ },
+ "all": {
+  "n": 58,
+  "RIGHT": 28,
+  "WRONG": 4,
+  "GAP": 26,
+  "informativeGap": 16,
+  "useful": 44
+ },
+ "voidFields": {
+  "dev": {
+   "slot": 27,
+   "admits": 20,
+   "anchor": 24,
+   "relation": 19,
+   "cardinality": 28,
+   "n": 29
+  },
+  "held": {
+   "slot": 28,
+   "admits": 20,
+   "anchor": 24,
+   "relation": 21,
+   "cardinality": 24,
+   "n": 29
+  }
+ },
+ "rows": [
+  {
+   "id": "v01",
+   "set": "dev",
+   "q": "When was the Sydney Opera House opened?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The orchestra has performed at the Sydney Opera House as its home concert hall, since the venue's opening in 1973.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Sydney Opera House",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "open"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v03",
+   "set": "dev",
+   "q": "When was the Eiffel Tower completed?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Completed in 1889.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Eiffel Tower",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "complet"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v05",
+   "set": "dev",
+   "q": "When did the Titanic sink?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Titanic",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "sink"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q25173",
+     "values": [],
+     "refused": "no_keys",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": null
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v07",
+   "set": "dev",
+   "q": "When did Apollo 11 land on the Moon?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Apollo 11",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "moon"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q43653",
+     "values": [],
+     "refused": "datatype_mismatch",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": [
+      "country:wikibase-item"
+     ]
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v09",
+   "set": "dev",
+   "q": "When did the Berlin Wall fall?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The Berlin Wall fell on 9 November 1989.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Fall of the Berlin Wall",
+     "admits": "date",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v11",
+   "set": "dev",
+   "q": "In what year did the Chernobyl disaster happen?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Chernobyl disaster",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "happen"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q486",
+     "values": [],
+     "refused": "datatype_mismatch",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": [
+      "located in the administrative territorial entity:wikibase-item"
+     ]
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v13",
+   "set": "dev",
+   "q": "When did Queen Victoria die?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "On 22 January 1901, Queen Victoria died.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Queen Victoria",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "die"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v15",
+   "set": "dev",
+   "q": "When was the Empire State Building completed?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Some 151,000 barrels of Atlas cement were used in constructing the Empire State Building, completed in 1931.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Empire State Building",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "complet"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v17",
+   "set": "dev",
+   "q": "Who painted the Mona Lisa?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Mona Lisa — creator: Leonardo da Vinci.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Mona Lisa",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "paint"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q12418",
+     "property": "creator",
+     "how": "shares a lemma with \"painted\"",
+     "values": [
+      "Leonardo da Vinci"
+     ],
+     "refused": null,
+     "alternatives": [],
+     "nKeys": 1,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q12418#P170"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v19",
+   "set": "dev",
+   "q": "Who discovered penicillin?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Penicillin — discoverer or inventor: Alexander Fleming.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Penicillin",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "discover"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q12190",
+     "property": "discoverer or inventor",
+     "how": "shares a lemma with \"discovered\"",
+     "values": [
+      "Alexander Fleming"
+     ],
+     "refused": null,
+     "alternatives": [
+      "location of discovery=Alexander Fleming Laboratory Museum"
+     ],
+     "nKeys": 3,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q12190#P61"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v21",
+   "set": "dev",
+   "q": "Who wrote Pride and Prejudice?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Pride and Prejudice",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "writ"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q170583",
+     "values": [],
+     "refused": "no_keys",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": null
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v23",
+   "set": "dev",
+   "q": "Who composed The Four Seasons?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "4",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "compos"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q202",
+     "values": [],
+     "refused": "no_keys",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": null
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v25",
+   "set": "dev",
+   "q": "Who invented the telephone?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Telephone — discoverer or inventor: Johann Philipp Reis; Elisha Gray; Alexander Graham Bell; Antonio Meucci.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Telephone",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "invent"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q11035",
+     "property": "discoverer or inventor",
+     "how": "label/alias = \"invented\"",
+     "values": [
+      "Johann Philipp Reis",
+      "Elisha Gray",
+      "Alexander Graham Bell",
+      "Antonio Meucci"
+     ],
+     "refused": null,
+     "alternatives": [],
+     "nKeys": 2,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q11035#P61"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v27",
+   "set": "dev",
+   "q": "Who wrote One Hundred Years of Solitude?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "One Hundred Years of Solitude",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "writ"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "ask-run",
+     "title-door",
+     "longest-name"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q178869",
+     "values": [],
+     "refused": "no_keys",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": null
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v29",
+   "set": "dev",
+   "q": "What is the capital of Canada?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ottawa (,; Canadian French:) is the capital city of Canada.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing",
+    "void": {
+     "slot": "thing",
+     "anchor": "Canada",
+     "admits": "capital",
+     "extent": null,
+     "relation": [
+      "capital"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v31",
+   "set": "dev",
+   "q": "What is the currency of Japan?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Japan — currency: yen.",
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
+    "void": {
+     "slot": "thing",
+     "anchor": "Japan",
+     "admits": "currency",
+     "extent": null,
+     "relation": [
+      "currency"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q17",
+     "property": "currency",
+     "how": "label/alias = \"currency\"",
+     "values": [
+      "yen"
+     ],
+     "refused": null,
+     "alternatives": [],
+     "nKeys": 1,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q17#P38"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v33",
+   "set": "dev",
+   "q": "What is the largest planet in the Solar System?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
+    "void": {
+     "slot": "thing",
+     "anchor": "List of largest exoplanets",
+     "admits": null,
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": "no-anchor-or-admits"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v35",
+   "set": "dev",
+   "q": "What is the capital of New Zealand?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The capital of New Zealand has been Wellington since 1865.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing",
+    "void": {
+     "slot": "thing",
+     "anchor": "Capital of New Zealand",
+     "admits": null,
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door"
+    ],
+    "l5": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v37",
+   "set": "dev",
+   "q": "Where is the Taj Mahal?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "place",
+    "void": {
+     "slot": "place",
+     "anchor": "Taj Mahal",
+     "admits": "place",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q9141",
+     "values": [],
+     "refused": "no_keys",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": null
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v39",
+   "set": "dev",
+   "q": "Where is Machu Picchu located?",
+   "tier": "WRONG",
+   "informative": null,
+   "answer": "Machu Picchu — location: Aguas Calientes.",
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
+    "void": {
+     "slot": "place",
+     "anchor": "Machu Picchu",
+     "admits": "place",
+     "extent": null,
+     "relation": [
+      "locat"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q676203",
+     "property": "location",
+     "how": "label/alias = \"located\"",
+     "values": [
+      "Aguas Calientes"
+     ],
+     "refused": null,
+     "alternatives": [
+      "located in the administrative territorial entity=Urubamba Province; Cusco Department; Machupicchu District"
+     ],
+     "nKeys": 2,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q676203#P276"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v41",
+   "set": "dev",
+   "q": "Where was Albert Einstein born?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Albert Einstein — place of birth: Ulm.",
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
+    "void": {
+     "slot": "place",
+     "anchor": "Albert Einstein",
+     "admits": "place",
+     "extent": null,
+     "relation": [
+      "bear"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q937",
+     "property": "place of birth",
+     "how": "label/alias = \"born\"",
+     "values": [
+      "Ulm"
+     ],
+     "refused": null,
+     "alternatives": [],
+     "nKeys": 3,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q937#P19"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v43",
+   "set": "dev",
+   "q": "How long is the Nile?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Nile — length: 6650.",
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "quantity",
+     "anchor": "Nile",
+     "admits": "length",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q3392",
+     "property": "length",
+     "how": "label/alias = \"long\"",
+     "values": [
+      "6650"
+     ],
+     "refused": null,
+     "alternatives": [],
+     "nKeys": 2,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q3392#P2043"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v45",
+   "set": "dev",
+   "q": "How tall is the Eiffel Tower?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "quantity",
+     "anchor": "Eiffel Tower",
+     "admits": "length",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q243",
+     "values": [],
+     "refused": "no_matching_key",
+     "alternatives": null,
+     "nKeys": 1,
+     "declaredNoValue": null,
+     "openVoid": [
+      "height"
+     ],
+     "matched": null
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v47",
+   "set": "dev",
+   "q": "How deep is the Mariana Trench?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "quantity",
+     "anchor": "Mariana Trench",
+     "admits": "length",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q510",
+     "values": [],
+     "refused": "datatype_mismatch",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": [
+      "lowest point:wikibase-item"
+     ]
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v49",
+   "set": "dev",
+   "q": "capital of Australia?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Australia — capital: Canberra.",
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "thing",
+     "anchor": "Australia",
+     "admits": "capital",
+     "extent": null,
+     "relation": [
+      "capital"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q408",
+     "property": "capital",
+     "how": "label/alias = \"capital\"",
+     "values": [
+      "Canberra"
+     ],
+     "refused": null,
+     "alternatives": [],
+     "nKeys": 1,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q408#P36"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v51",
+   "set": "dev",
+   "q": "year the Titanic sank",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "thing",
+     "anchor": "Titanic",
+     "admits": "sink",
+     "extent": null,
+     "relation": [
+      "sink"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "perceiver",
+     "title-door"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q25173",
+     "values": [],
+     "refused": "no_keys",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": null
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v53",
+   "set": "dev",
+   "q": "tallest mountain in Africa",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": null,
+     "anchor": "Tallest mountain",
+     "admits": null,
+     "extent": null,
+     "relation": null,
+     "cardinality": null
+    },
+    "anchorBy": [
+     "ask-run",
+     "title-door",
+     "longest-name"
+    ],
+    "l5": "no-anchor-or-admits"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v55",
+   "set": "dev",
+   "q": "Name the author of Don Quixote",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Don Quixote — author: Miguel de Cervantes.",
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "person",
+     "anchor": "Don Quixote",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "author"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "bound",
+     "qid": "Q480",
+     "property": "author",
+     "how": "label/alias = \"author\"",
+     "values": [
+      "Miguel de Cervantes"
+     ],
+     "refused": null,
+     "alternatives": [
+      "language of work or name=Early Modern Spanish"
+     ],
+     "nKeys": 2,
+     "declaredNoValue": [],
+     "openVoid": null,
+     "matched": null,
+     "grounds": "Q480#P50"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v57",
+   "set": "dev",
+   "q": "Who was the first president of Antarctica?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Antarctica",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "first",
+      "president"
+     ],
+     "cardinality": 1
+    },
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l5": {
+     "verdict": "unbound",
+     "qid": "Q51",
+     "values": [],
+     "refused": "no_keys",
+     "alternatives": null,
+     "declaredNoValue": null,
+     "openVoid": null,
+     "matched": null
+    }
+   },
+   "solvable": null
+  }
+ ]
+}

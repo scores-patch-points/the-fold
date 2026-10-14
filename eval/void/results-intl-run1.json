@@ -1,0 +1,2028 @@
+{
+ "arm": "intl-door",
+ "record": false,
+ "at": "2026-10-14T12:00:00.000Z",
+ "fetch": {
+  "live": 0,
+  "hits": 828,
+  "misses": 0,
+  "gaveUp": 0
+ },
+ "l0": {
+  "none": 5,
+  "no_grammar_for_language": 48,
+  "answered": 1
+ },
+ "perLang": {
+  "en": {
+   "GAP": 2,
+   "RIGHT": 2,
+   "WRONG": 2
+  },
+  "es": {
+   "RIGHT": 3,
+   "WRONG": 2,
+   "GAP": 1
+  },
+  "fr": {
+   "GAP": 4,
+   "WRONG": 2
+  },
+  "de": {
+   "RIGHT": 6
+  },
+  "ru": {
+   "GAP": 5,
+   "WRONG": 1
+  },
+  "ja": {
+   "RIGHT": 3,
+   "GAP": 3
+  },
+  "ko": {
+   "GAP": 6
+  },
+  "tr": {
+   "GAP": 3,
+   "WRONG": 2,
+   "RIGHT": 1
+  },
+  "hi": {
+   "RIGHT": 4,
+   "GAP": 2
+  }
+ },
+ "causes": {
+  "LABEL": 24,
+  "RIGHT": 19,
+  "ANCHOR": 2,
+  "PROPERTY": 9
+ },
+ "matrix": {
+  "en": {
+   "capital-au": "LABEL",
+   "capital-ca": "LABEL",
+   "creator-mona": "RIGHT",
+   "opening-syd": "WRONG:PROPERTY",
+   "birthplace-mozart": "WRONG:PROPERTY",
+   "currency-jp": "RIGHT"
+  },
+  "es": {
+   "capital-au": "RIGHT",
+   "capital-ca": "RIGHT",
+   "creator-mona": "RIGHT",
+   "opening-syd": "WRONG:PROPERTY",
+   "birthplace-mozart": "WRONG:PROPERTY",
+   "currency-jp": "LABEL"
+  },
+  "fr": {
+   "capital-au": "LABEL",
+   "capital-ca": "LABEL",
+   "creator-mona": "ANCHOR",
+   "opening-syd": "WRONG:PROPERTY",
+   "birthplace-mozart": "WRONG:PROPERTY",
+   "currency-jp": "LABEL"
+  },
+  "de": {
+   "capital-au": "RIGHT",
+   "capital-ca": "RIGHT",
+   "creator-mona": "RIGHT",
+   "opening-syd": "RIGHT",
+   "birthplace-mozart": "RIGHT",
+   "currency-jp": "RIGHT"
+  },
+  "ru": {
+   "capital-au": "LABEL",
+   "capital-ca": "LABEL",
+   "creator-mona": "LABEL",
+   "opening-syd": "WRONG:PROPERTY",
+   "birthplace-mozart": "ANCHOR",
+   "currency-jp": "LABEL"
+  },
+  "ja": {
+   "capital-au": "RIGHT",
+   "capital-ca": "RIGHT",
+   "creator-mona": "LABEL",
+   "opening-syd": "LABEL",
+   "birthplace-mozart": "RIGHT",
+   "currency-jp": "LABEL"
+  },
+  "ko": {
+   "capital-au": "LABEL",
+   "capital-ca": "LABEL",
+   "creator-mona": "LABEL",
+   "opening-syd": "LABEL",
+   "birthplace-mozart": "LABEL",
+   "currency-jp": "LABEL"
+  },
+  "tr": {
+   "capital-au": "LABEL",
+   "capital-ca": "LABEL",
+   "creator-mona": "LABEL",
+   "opening-syd": "WRONG:PROPERTY",
+   "birthplace-mozart": "WRONG:PROPERTY",
+   "currency-jp": "RIGHT"
+  },
+  "hi": {
+   "capital-au": "RIGHT",
+   "capital-ca": "RIGHT",
+   "creator-mona": "LABEL",
+   "opening-syd": "LABEL",
+   "birthplace-mozart": "RIGHT",
+   "currency-jp": "RIGHT"
+  }
+ },
+ "rows": [
+  {
+   "id": "capital-au.en",
+   "ask": "capital-au",
+   "lang": "en",
+   "set": "dev",
+   "q": "What is the capital of Australia?",
+   "l0": {
+    "handoff": null,
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "capital of Australia",
+     "title": "Canberra",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-au.es",
+   "ask": "capital-au",
+   "lang": "es",
+   "set": "dev",
+   "q": "¿Cuál es la capital de Australia?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Australia",
+   "tried": [
+    {
+     "surface": "Australia",
+     "title": "Australia",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P36",
+     "matched": null
+    }
+   ],
+   "line": "Australia — capital: Canberra.",
+   "claim": {
+    "property": "P36",
+    "values": [
+     "Q3114"
+    ]
+   }
+  },
+  {
+   "id": "capital-au.fr",
+   "ask": "capital-au",
+   "lang": "fr",
+   "set": "dev",
+   "q": "Quelle est la capitale de l'Australie ?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "capitale de l'Australie",
+     "title": "Canberra",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Quelle",
+     "title": "Karstadt",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-au.de",
+   "ask": "capital-au",
+   "lang": "de",
+   "set": "dev",
+   "q": "Was ist die Hauptstadt von Australien?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Australien",
+   "tried": [
+    {
+     "surface": "Hauptstadt",
+     "title": "Hauptstadt",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Australien",
+     "title": "Australien",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P36",
+     "matched": null
+    }
+   ],
+   "line": "Australien — Hauptstadt: Canberra.",
+   "claim": {
+    "property": "P36",
+    "values": [
+     "Q3114"
+    ]
+   }
+  },
+  {
+   "id": "capital-au.ru",
+   "ask": "capital-au",
+   "lang": "ru",
+   "set": "dev",
+   "q": "Какая столица Австралии?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "столица Австралии",
+     "title": "Канберра",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-au.ja",
+   "ask": "capital-au",
+   "lang": "ja",
+   "set": "dev",
+   "q": "オーストラリアの首都はどこですか。",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "オーストラリア",
+   "tried": [
+    {
+     "surface": "オーストラリア",
+     "title": "オーストラリア",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P36",
+     "matched": null
+    },
+    {
+     "surface": "首都",
+     "title": "首都",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "オーストラリア — 行政中心地： キャンベラ。",
+   "claim": {
+    "property": "P36",
+    "values": [
+     "Q3114"
+    ]
+   }
+  },
+  {
+   "id": "capital-au.ko",
+   "ask": "capital-au",
+   "lang": "ko",
+   "set": "dev",
+   "q": "호주의 수도는 어디입니까?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "호주",
+     "title": "오스트레일리아",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "수도",
+     "title": "수도",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-au.tr",
+   "ask": "capital-au",
+   "lang": "tr",
+   "set": "dev",
+   "q": "Avustralya'nın başkenti neresidir?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "Avustralya",
+     "title": "Avustralya",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "başkent",
+     "title": "Başkent",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-au.hi",
+   "ask": "capital-au",
+   "lang": "hi",
+   "set": "dev",
+   "q": "ऑस्ट्रेलिया की राजधानी क्या है?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "ऑस्ट्रेलिया",
+   "tried": [
+    {
+     "surface": "ऑस्ट्रेलिया",
+     "title": "ऑस्ट्रेलिया",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P36",
+     "matched": null
+    },
+    {
+     "surface": "राजधानी",
+     "title": "राजधानी",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "ऑस्ट्रेलिया — राजधानी: कैनबरा.",
+   "claim": {
+    "property": "P36",
+    "values": [
+     "Q3114"
+    ]
+   }
+  },
+  {
+   "id": "capital-ca.en",
+   "ask": "capital-ca",
+   "lang": "en",
+   "set": "held",
+   "q": "What is the capital of Canada?",
+   "l0": {
+    "handoff": null,
+    "answered": true
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "capital of Canada",
+     "title": "Ottawa",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-ca.es",
+   "ask": "capital-ca",
+   "lang": "es",
+   "set": "held",
+   "q": "¿Cuál es la capital de Canadá?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Canadá",
+   "tried": [
+    {
+     "surface": "Canadá",
+     "title": "Canadá",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P36",
+     "matched": null
+    }
+   ],
+   "line": "Canadá — capital: Ottawa.",
+   "claim": {
+    "property": "P36",
+    "values": [
+     "Q1930"
+    ]
+   }
+  },
+  {
+   "id": "capital-ca.fr",
+   "ask": "capital-ca",
+   "lang": "fr",
+   "set": "held",
+   "q": "Quelle est la capitale du Canada ?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "capitale du Canada",
+     "title": "Ottawa",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Quelle",
+     "title": "Karstadt",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-ca.de",
+   "ask": "capital-ca",
+   "lang": "de",
+   "set": "held",
+   "q": "Was ist die Hauptstadt von Kanada?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Kanada",
+   "tried": [
+    {
+     "surface": "Hauptstadt",
+     "title": "Hauptstadt",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Kanada",
+     "title": "Kanada",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P36",
+     "matched": null
+    }
+   ],
+   "line": "Kanada — Hauptstadt: Ottawa.",
+   "claim": {
+    "property": "P36",
+    "values": [
+     "Q1930"
+    ]
+   }
+  },
+  {
+   "id": "capital-ca.ru",
+   "ask": "capital-ca",
+   "lang": "ru",
+   "set": "held",
+   "q": "Какая столица Канады?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "столица",
+     "title": "Столица",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-ca.ja",
+   "ask": "capital-ca",
+   "lang": "ja",
+   "set": "held",
+   "q": "カナダの首都はどこですか。",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "カナダ",
+   "tried": [
+    {
+     "surface": "カナダ",
+     "title": "カナダ",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P36",
+     "matched": null
+    },
+    {
+     "surface": "首都",
+     "title": "首都",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "カナダ — 行政中心地： オタワ。",
+   "claim": {
+    "property": "P36",
+    "values": [
+     "Q1930"
+    ]
+   }
+  },
+  {
+   "id": "capital-ca.ko",
+   "ask": "capital-ca",
+   "lang": "ko",
+   "set": "held",
+   "q": "캐나다의 수도는 어디입니까?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "캐나다",
+     "title": "캐나다",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "수도",
+     "title": "수도",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-ca.tr",
+   "ask": "capital-ca",
+   "lang": "tr",
+   "set": "held",
+   "q": "Kanada'nın başkenti neresidir?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "başkent",
+     "title": "Başkent",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Kanada",
+     "title": "Kanada",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "capital-ca.hi",
+   "ask": "capital-ca",
+   "lang": "hi",
+   "set": "held",
+   "q": "कनाडा की राजधानी क्या है?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "कनाडा",
+   "tried": [
+    {
+     "surface": "राजधानी",
+     "title": "राजधानी",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "कनाडा",
+     "title": "कनाडा",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P36",
+     "matched": null
+    }
+   ],
+   "line": "कनाडा — राजधानी: ओटावा.",
+   "claim": {
+    "property": "P36",
+    "values": [
+     "Q1930"
+    ]
+   }
+  },
+  {
+   "id": "creator-mona.en",
+   "ask": "creator-mona",
+   "lang": "en",
+   "set": "dev",
+   "q": "Who is the creator of the Mona Lisa?",
+   "l0": {
+    "handoff": null,
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Mona Lisa",
+   "tried": [
+    {
+     "surface": "Mona Lisa",
+     "title": "Mona Lisa",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P170",
+     "matched": null
+    }
+   ],
+   "line": "Mona Lisa — creator: Leonardo da Vinci.",
+   "claim": {
+    "property": "P170",
+    "values": [
+     "Q762"
+    ]
+   }
+  },
+  {
+   "id": "creator-mona.es",
+   "ask": "creator-mona",
+   "lang": "es",
+   "set": "dev",
+   "q": "¿Quién es el creador de la Mona Lisa?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "La Gioconda",
+   "tried": [
+    {
+     "surface": "Mona Lisa",
+     "title": "La Gioconda",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P170",
+     "matched": null
+    },
+    {
+     "surface": "creador",
+     "title": "Deidad creadora",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "La Gioconda — creador: Leonardo da Vinci.",
+   "claim": {
+    "property": "P170",
+    "values": [
+     "Q762"
+    ]
+   }
+  },
+  {
+   "id": "creator-mona.fr",
+   "ask": "creator-mona",
+   "lang": "fr",
+   "set": "dev",
+   "q": "Qui est le créateur de la Joconde ?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "ANCHOR",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "creator-mona.de",
+   "ask": "creator-mona",
+   "lang": "de",
+   "set": "dev",
+   "q": "Wer ist der Schöpfer der Mona Lisa?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Mona Lisa",
+   "tried": [
+    {
+     "surface": "Mona Lisa",
+     "title": "Mona Lisa",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P170",
+     "matched": null
+    }
+   ],
+   "line": "Mona Lisa — Urheber: Leonardo da Vinci.",
+   "claim": {
+    "property": "P170",
+    "values": [
+     "Q762"
+    ]
+   }
+  },
+  {
+   "id": "creator-mona.ru",
+   "ask": "creator-mona",
+   "lang": "ru",
+   "set": "dev",
+   "q": "Кто создатель Моны Лизы?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "Моны",
+     "title": "Моны",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "creator-mona.ja",
+   "ask": "creator-mona",
+   "lang": "ja",
+   "set": "dev",
+   "q": "モナ・リザの作者は誰ですか。",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "モナ",
+     "title": "Mona",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "作者",
+     "title": "作者",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "creator-mona.ko",
+   "ask": "creator-mona",
+   "lang": "ko",
+   "set": "dev",
+   "q": "모나리자의 작가는 누구입니까?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "모나리자",
+     "title": "모나리자",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "작가",
+     "title": "작가",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "creator-mona.tr",
+   "ask": "creator-mona",
+   "lang": "tr",
+   "set": "dev",
+   "q": "Mona Lisa'nın yaratıcısı kimdir?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "Mona Lisa",
+     "title": "Mona Lisa",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "yaratıcı",
+     "title": "Yaratıcı",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "ki",
+     "title": "Ninhursag",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "creator-mona.hi",
+   "ask": "creator-mona",
+   "lang": "hi",
+   "set": "dev",
+   "q": "मोना लिसा का रचयिता कौन है?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "मोना लिसा",
+     "title": "मोना लीसा",
+     "verdict": "unbound",
+     "refused": "no_identity",
+     "matched": null
+    },
+    {
+     "surface": "रचयिता",
+     "title": "ईश्वर",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "opening-syd.en",
+   "ask": "opening-syd",
+   "lang": "en",
+   "set": "held",
+   "q": "What is the opening date of the Sydney Opera House?",
+   "l0": {
+    "handoff": null,
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Sydney Opera House",
+   "tried": [
+    {
+     "surface": "Sydney Opera House",
+     "title": "Sydney Opera House",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P571",
+     "matched": null
+    }
+   ],
+   "line": "Sydney Opera House — inception: 1973.",
+   "claim": {
+    "property": "P571",
+    "values": [
+     "+1973-00-00T00:00:00Z"
+    ]
+   }
+  },
+  {
+   "id": "opening-syd.es",
+   "ask": "opening-syd",
+   "lang": "es",
+   "set": "held",
+   "q": "¿Cuál es la fecha de apertura de la Ópera de Sídney?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Ópera de Sídney",
+   "tried": [
+    {
+     "surface": "Ópera de Sídney",
+     "title": "Ópera de Sídney",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P571",
+     "matched": null
+    },
+    {
+     "surface": "apertura",
+     "title": "Apertura",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "fecha",
+     "title": "Fecha",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Ópera de Sídney — fecha de fundación o creación: 1973.",
+   "claim": {
+    "property": "P571",
+    "values": [
+     "+1973-00-00T00:00:00Z"
+    ]
+   }
+  },
+  {
+   "id": "opening-syd.fr",
+   "ask": "opening-syd",
+   "lang": "fr",
+   "set": "held",
+   "q": "Quelle est la date d'ouverture de l'opéra de Sydney ?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Karstadt",
+   "tried": [
+    {
+     "surface": "l'opéra",
+     "title": "Art lyrique",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Quelle",
+     "title": "Karstadt",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P571",
+     "matched": null
+    },
+    {
+     "surface": "Sydney",
+     "title": "Sydney",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P571",
+     "matched": null
+    },
+    {
+     "surface": "date",
+     "title": "Date",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Karstadt — date de fondation ou de création: 14 mai 1881.",
+   "claim": {
+    "property": "P571",
+    "values": [
+     "+1881-05-14T00:00:00Z"
+    ]
+   }
+  },
+  {
+   "id": "opening-syd.de",
+   "ask": "opening-syd",
+   "lang": "de",
+   "set": "held",
+   "q": "Was ist das Eröffnungsdatum des Sydney Opera House?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Sydney Opera House",
+   "tried": [
+    {
+     "surface": "Sydney Opera House",
+     "title": "Sydney Opera House",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P1619",
+     "matched": null
+    }
+   ],
+   "line": "Sydney Opera House — Eröffnungsdatum: 20. Oktober 1973.",
+   "claim": {
+    "property": "P1619",
+    "values": [
+     "+1973-10-20T00:00:00Z"
+    ]
+   }
+  },
+  {
+   "id": "opening-syd.ru",
+   "ask": "opening-syd",
+   "lang": "ru",
+   "set": "held",
+   "q": "Какова дата открытия Сиднейской оперы?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Опера",
+   "tried": [
+    {
+     "surface": "оперы",
+     "title": "Опера",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P571",
+     "matched": null
+    },
+    {
+     "surface": "дата",
+     "title": "Календарная дата",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Опера — дата возникновения: the 16th century.",
+   "claim": {
+    "property": "P571",
+    "values": [
+     "+1600-00-00T00:00:00Z"
+    ]
+   }
+  },
+  {
+   "id": "opening-syd.ja",
+   "ask": "opening-syd",
+   "lang": "ja",
+   "set": "held",
+   "q": "シドニー・オペラハウスの開館日はいつですか。",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "シドニー",
+     "title": "シドニー",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "オペラ",
+     "title": "オペラ",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "日",
+     "title": "日",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "opening-syd.ko",
+   "ask": "opening-syd",
+   "lang": "ko",
+   "set": "held",
+   "q": "시드니 오페라 하우스의 개관일은 언제입니까?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "시드니 오페라 하우스",
+     "title": "시드니 오페라 하우스",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "opening-syd.tr",
+   "ask": "opening-syd",
+   "lang": "tr",
+   "set": "held",
+   "q": "Sidney Opera Binası'nın açılış tarihi nedir?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Sidney Opera Evi",
+   "tried": [
+    {
+     "surface": "Sidney Opera Binası",
+     "title": "Sidney Opera Evi",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P31",
+     "matched": null
+    },
+    {
+     "surface": "tarih",
+     "title": "Tarih",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P31",
+     "matched": null
+    },
+    {
+     "surface": "nedir",
+     "title": "Nedir",
+     "verdict": "unbound",
+     "refused": "no_keys",
+     "matched": null
+    },
+    {
+     "surface": "açı",
+     "title": "Açı",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Sidney Opera Evi — nedir: opera salonu; yön bulma işareti; historical cultural heritage site.",
+   "claim": {
+    "property": "P31",
+    "values": [
+     "Q153562",
+     "Q2319498",
+     "Q38048707"
+    ]
+   }
+  },
+  {
+   "id": "opening-syd.hi",
+   "ask": "opening-syd",
+   "lang": "hi",
+   "set": "held",
+   "q": "सिडनी ओपेरा हाउस की उद्घाटन तिथि क्या है?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "सिडनी ओपेरा हाउस",
+     "title": "सिडनी ओपेरा हाउस",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "तिथि",
+     "title": "तिथियाँ",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "birthplace-mozart.en",
+   "ask": "birthplace-mozart",
+   "lang": "en",
+   "set": "dev",
+   "q": "What is the place of birth of Wolfgang Amadeus Mozart?",
+   "l0": {
+    "handoff": null,
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Wolfgang Amadeus Mozart",
+   "tried": [
+    {
+     "surface": "Wolfgang Amadeus Mozart",
+     "title": "Wolfgang Amadeus Mozart",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P108",
+     "matched": null
+    },
+    {
+     "surface": "place of birth",
+     "title": "Place of birth",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Wolfgang Amadeus Mozart — employer: Count Hieronymus von Colloredo; Joseph II, Holy Roman Emperor.",
+   "claim": {
+    "property": "P108",
+    "values": [
+     "Q615681",
+     "Q76555"
+    ]
+   }
+  },
+  {
+   "id": "birthplace-mozart.es",
+   "ask": "birthplace-mozart",
+   "lang": "es",
+   "set": "dev",
+   "q": "¿Cuál es el lugar de nacimiento de Wolfgang Amadeus Mozart?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Wolfgang Amadeus Mozart",
+   "tried": [
+    {
+     "surface": "Wolfgang Amadeus Mozart",
+     "title": "Wolfgang Amadeus Mozart",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P20",
+     "matched": null
+    },
+    {
+     "surface": "nacimiento",
+     "title": "Nacimiento",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "lugar",
+     "title": "Lugar",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Wolfgang Amadeus Mozart — lugar de fallecimiento: Viena.",
+   "claim": {
+    "property": "P20",
+    "values": [
+     "Q1741"
+    ]
+   }
+  },
+  {
+   "id": "birthplace-mozart.fr",
+   "ask": "birthplace-mozart",
+   "lang": "fr",
+   "set": "dev",
+   "q": "Quel est le lieu de naissance de Wolfgang Amadeus Mozart ?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Wolfgang Amadeus Mozart",
+   "tried": [
+    {
+     "surface": "Wolfgang Amadeus Mozart",
+     "title": "Wolfgang Amadeus Mozart",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P20",
+     "matched": null
+    },
+    {
+     "surface": "lieu de naissance",
+     "title": "Lieu de naissance",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Wolfgang Amadeus Mozart — lieu de mort: Vienne.",
+   "claim": {
+    "property": "P20",
+    "values": [
+     "Q1741"
+    ]
+   }
+  },
+  {
+   "id": "birthplace-mozart.de",
+   "ask": "birthplace-mozart",
+   "lang": "de",
+   "set": "dev",
+   "q": "Was ist der Geburtsort von Wolfgang Amadeus Mozart?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Wolfgang Amadeus Mozart",
+   "tried": [
+    {
+     "surface": "Wolfgang Amadeus Mozart",
+     "title": "Wolfgang Amadeus Mozart",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P19",
+     "matched": null
+    },
+    {
+     "surface": "Geburtsort",
+     "title": "Geburtsort",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Wolfgang Amadeus Mozart — Geburtsort: Salzburg.",
+   "claim": {
+    "property": "P19",
+    "values": [
+     "Q34713"
+    ]
+   }
+  },
+  {
+   "id": "birthplace-mozart.ru",
+   "ask": "birthplace-mozart",
+   "lang": "ru",
+   "set": "dev",
+   "q": "Каково место рождения Вольфганга Амадея Моцарта?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "ANCHOR",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "birthplace-mozart.ja",
+   "ask": "birthplace-mozart",
+   "lang": "ja",
+   "set": "dev",
+   "q": "ヴォルフガング・アマデウス・モーツァルトの出生地はどこですか。",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "ヴォルフガング・アマデウス・モーツァルト",
+   "tried": [
+    {
+     "surface": "モーツァルト",
+     "title": "ヴォルフガング・アマデウス・モーツァルト",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P19",
+     "matched": null
+    },
+    {
+     "surface": "アマデウス",
+     "title": "アマデウス",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "出生地",
+     "title": "出生地",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "ヴォルフガング・アマデウス・モーツァルト — 出生地： ザルツブルク。",
+   "claim": {
+    "property": "P19",
+    "values": [
+     "Q34713"
+    ]
+   }
+  },
+  {
+   "id": "birthplace-mozart.ko",
+   "ask": "birthplace-mozart",
+   "lang": "ko",
+   "set": "dev",
+   "q": "볼프강 아마데우스 모차르트의 출생지는 어디입니까?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "볼프강 아마데우스 모차르트",
+     "title": "볼프강 아마데우스 모차르트",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "출생지",
+     "title": "출생지",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "birthplace-mozart.tr",
+   "ask": "birthplace-mozart",
+   "lang": "tr",
+   "set": "dev",
+   "q": "Wolfgang Amadeus Mozart'ın doğum yeri neresidir?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "WRONG",
+   "cause": "PROPERTY",
+   "propertyRight": false,
+   "anchor": "Wolfgang Amadeus Mozart",
+   "tried": [
+    {
+     "surface": "Wolfgang Amadeus Mozart",
+     "title": "Wolfgang Amadeus Mozart",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P108",
+     "matched": null
+    },
+    {
+     "surface": "doğum",
+     "title": "Doğum",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "yeri",
+     "title": "Ы",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": "Wolfgang Amadeus Mozart — işvereni: Hieronymus von Colloredo; II. Joseph.",
+   "claim": {
+    "property": "P108",
+    "values": [
+     "Q615681",
+     "Q76555"
+    ]
+   }
+  },
+  {
+   "id": "birthplace-mozart.hi",
+   "ask": "birthplace-mozart",
+   "lang": "hi",
+   "set": "dev",
+   "q": "वोल्फगांग आमाडेउस मोत्सार्ट का जन्मस्थान क्या है?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "वोल्फ़गांक आमडेयुस मोत्सार्ट",
+   "tried": [
+    {
+     "surface": "मोत्सार्ट",
+     "title": "वोल्फ़गांक आमडेयुस मोत्सार्ट",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P19",
+     "matched": null
+    }
+   ],
+   "line": "वोल्फ़गांक आमडेयुस मोत्सार्ट — जन्म स्थान: साल्त्सबर्ग.",
+   "claim": {
+    "property": "P19",
+    "values": [
+     "Q34713"
+    ]
+   }
+  },
+  {
+   "id": "currency-jp.en",
+   "ask": "currency-jp",
+   "lang": "en",
+   "set": "held",
+   "q": "What is the currency of Japan?",
+   "l0": {
+    "handoff": null,
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Japan",
+   "tried": [
+    {
+     "surface": "currency",
+     "title": "Currency",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Japan",
+     "title": "Japan",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P38",
+     "matched": null
+    }
+   ],
+   "line": "Japan — currency: yen.",
+   "claim": {
+    "property": "P38",
+    "values": [
+     "Q8146"
+    ]
+   }
+  },
+  {
+   "id": "currency-jp.es",
+   "ask": "currency-jp",
+   "lang": "es",
+   "set": "held",
+   "q": "¿Cuál es la moneda de Japón?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "moneda de Japón",
+     "title": "Yen",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "currency-jp.fr",
+   "ask": "currency-jp",
+   "lang": "fr",
+   "set": "held",
+   "q": "Quelle est la monnaie du Japon ?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "monnaie du Japon",
+     "title": "Monnaie du Japon",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Quelle",
+     "title": "Karstadt",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "currency-jp.de",
+   "ask": "currency-jp",
+   "lang": "de",
+   "set": "held",
+   "q": "Was ist die Währung von Japan?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Japan",
+   "tried": [
+    {
+     "surface": "Währung",
+     "title": "Währung",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Japan",
+     "title": "Japan",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P38",
+     "matched": null
+    }
+   ],
+   "line": "Japan — Währung: Yen.",
+   "claim": {
+    "property": "P38",
+    "values": [
+     "Q8146"
+    ]
+   }
+  },
+  {
+   "id": "currency-jp.ru",
+   "ask": "currency-jp",
+   "lang": "ru",
+   "set": "held",
+   "q": "Какая валюта Японии?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "валюта Японии",
+     "title": "Иена",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "currency-jp.ja",
+   "ask": "currency-jp",
+   "lang": "ja",
+   "set": "held",
+   "q": "日本の通貨は何ですか。",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "日本の通貨",
+     "title": "円 (通貨)",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "currency-jp.ko",
+   "ask": "currency-jp",
+   "lang": "ko",
+   "set": "held",
+   "q": "일본의 통화는 무엇입니까?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "GAP",
+   "cause": "LABEL",
+   "propertyRight": null,
+   "anchor": null,
+   "tried": [
+    {
+     "surface": "일본",
+     "title": "일본",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "통화",
+     "title": "통화",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    }
+   ],
+   "line": null,
+   "claim": null
+  },
+  {
+   "id": "currency-jp.tr",
+   "ask": "currency-jp",
+   "lang": "tr",
+   "set": "held",
+   "q": "Japonya'nın para birimi nedir?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "Japonya",
+   "tried": [
+    {
+     "surface": "para birimi",
+     "title": "Döviz",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "Japonya",
+     "title": "Japonya",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P38",
+     "matched": null
+    },
+    {
+     "surface": "nedir",
+     "title": "Nedir",
+     "verdict": "unbound",
+     "refused": "no_keys",
+     "matched": null
+    }
+   ],
+   "line": "Japonya — para birimi: Japon yeni.",
+   "claim": {
+    "property": "P38",
+    "values": [
+     "Q8146"
+    ]
+   }
+  },
+  {
+   "id": "currency-jp.hi",
+   "ask": "currency-jp",
+   "lang": "hi",
+   "set": "held",
+   "q": "जापान की मुद्रा क्या है?",
+   "l0": {
+    "handoff": "no_grammar_for_language",
+    "answered": false
+   },
+   "tier": "RIGHT",
+   "cause": null,
+   "propertyRight": true,
+   "anchor": "जापान",
+   "tried": [
+    {
+     "surface": "मुद्रा",
+     "title": "मुद्रा (भाव भंगिमा)",
+     "verdict": "unbound",
+     "refused": "no_matching_key",
+     "matched": null
+    },
+    {
+     "surface": "जापान",
+     "title": "जापान",
+     "verdict": "bound",
+     "refused": null,
+     "property": "P38",
+     "matched": null
+    }
+   ],
+   "line": "जापान — मुद्रा: जापानी येन.",
+   "claim": {
+    "property": "P38",
+    "values": [
+     "Q8146"
+    ]
+   }
+  }
+ ]
+}
