@@ -60,6 +60,10 @@ The first recording had frozen 84 Wikipedia rate-limit 429s as evidence (Amendme
 
 The gain is informative gaps (the void says WHAT is missing), not new correct answers. **The open gap is a slot-fill witness**, one that picks which licensed filler fills the slot.
 
+## The structured door (Amendment 14, the user's rule: "kinds have specific parameters (keys), that's what makes them a kind")
+
+Identity by Wikidata item (the encyclopedia's own `wikibase_item`), the kind's key set = the item's own keys ∪ its classes' declared `P1963`, a relation matches a key by label, alias or dominant lemma (open-class words only), the property's own datatype is the `admits` kind, verdicts on hl.js's four corners. **L5-keyed: RIGHT dev 7 → 18, held 5 → 15 (11 and 10 from the door); WRONG +1 each, so not admitted under the written rule.** Ablation L5-open (property-label search over all properties) is worse, so the rule holds. See RESULTS.md. Open: verb/adjective → noun-label derivation (*tall* → *height*), the admission rule's treatment of finer-grained true answers and set answers.
+
 ## Settled findings (so they are not rediscovered)
 
 - **The cause, located.**
