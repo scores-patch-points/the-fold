@@ -64,6 +64,15 @@ The gain is informative gaps (the void says WHAT is missing), not new correct an
 
 Identity by Wikidata item (the encyclopedia's own `wikibase_item`), the kind's key set = the item's own keys ∪ its classes' declared `P1963`, a relation matches a key by label, alias or dominant lemma (open-class words only), the property's own datatype is the `admits` kind, verdicts on hl.js's four corners. **L5-keyed: RIGHT dev 7 → 18, held 5 → 15 (11 and 10 from the door); WRONG +1 each, so not admitted under the written rule.** Ablation L5-open (property-label search over all properties) is worse, so the rule holds. See RESULTS.md. Open: verb/adjective → noun-label derivation (*tall* → *height*), the admission rule's treatment of finer-grained true answers and set answers.
 
+## The principle (the user, 2026-10-14): EOT is the pivot; every language goes in and out through its OWN grammar
+
+"We need to respect every language's grammar. We can go from any grammar in to EOT and out to any grammar and language as we want."
+
+NL(any grammar) → **EOT** → NL(any grammar), with no language as the pivot. English is one output grammar among many, never the interlingua. Earlier wording in this file and in the amendments that said "englished" or "P-id → English label" means *the language-free claim rendered in English as one target*, and should be read that way. Consequences:
+- A language's word order, case marking and function words are **its grammar's** (RoleConfig@1, order parameters, forms), never an English default.
+- The door's answer is an **EOT claim** (anchor Q-id, property P-id, typed values, grounds), and the line the person reads is a **realization** in the grammar and language asked for. Dates and numbers go through CLDR (`Intl`) for the language, labels come from Wikidata in that language.
+- A language with no declared grammar is a typed gap (`no_grammar_for_language`), never a fall-through to English.
+
 ## Omnilingual: how it was solved before, and what the keyed door inherits (read 2026-10-14)
 
 **The user's ask:** make whatever we do "englished and SOV shaped as needed", and do things that improve general omnilingual reading.

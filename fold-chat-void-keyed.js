@@ -18,7 +18,7 @@
 import { verdictOfSupport } from "./vendor/khora/native/interpretation/hl.js";
 
 const WD = "https://www.wikidata.org/w/api.php";
-const WP = "https://en.wikipedia.org/w/api.php";
+const WP_OF = (edition) => `https://${edition}.wikipedia.org/w/api.php`;   // the question's own edition identifies the anchor (the identity witness is that edition's wikibase_item)
 const SINGLE_VALUE_CONSTRAINT = "Q19474404";
 const fold = (s) => String(s ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 const toksOf = (s) => fold(s).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
@@ -29,7 +29,34 @@ const qs = (o) => new URLSearchParams({ format: "json", origin: "*", ...o }).toS
 const DATATYPE_OF_ADMITS = Object.freeze({ date: "time", era: "time", year: "time", century: "time", decade: "time", length: "quantity", mass: "quantity", temperature: "quantity", count: "quantity", amount: "quantity", person: "wikibase-item", place: "wikibase-item", city: "wikibase-item", country: "wikibase-item", language: "wikibase-item", currency: "wikibase-item", thing: "wikibase-item" });
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-/** A Wikidata time value rendered at its own recorded precision (11 day, 10 month, 9 year, ≤8 coarser). */
+// ── THE OUT-GRAMMAR (the user's principle, 2026-10-14: any grammar in → EOT → any grammar out; English is one target, never the pivot) ──
+// The door's result is an EOT claim, language-free; the line a person reads is a REALIZATION of it for a language. Dates and numbers are CLDR
+// (`Intl`) for that language; labels come from Wikidata in that language. DECLARED (not measured): the date-order locale for "en" is en-GB
+// (day month year, as the battery's gold shows) and the sentence-final / colon forms for the CJK scripts; every other language uses its own
+// Intl locale and the ASCII forms. A language with no Intl locale falls to English with a typed `realized_in`.
+const CJK = new Set(["ja", "zh", "ko"]);
+const LOCALE_OF = (lang) => (lang === "en" ? "en-GB" : lang);
+/** A Wikidata time value, for a language, at its own recorded precision (11 day, 10 month, 9 year). BC years and centuries keep the English form. */
+export function renderTimeFor(v, lang = "en") {
+  const m = String(v.time || "").match(/^\+(\d{4,})-(\d{2})-(\d{2})/);
+  if (!m || v.precision < 9) return renderTime(v);
+  const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+  try {
+    const when = new Date(Date.UTC(y, Math.max(0, mo - 1), Math.max(1, d)));
+    if (v.precision >= 11 && mo && d) return new Intl.DateTimeFormat(LOCALE_OF(lang), { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" }).format(when);
+    if (v.precision === 10 && mo) return new Intl.DateTimeFormat(LOCALE_OF(lang), { timeZone: "UTC", month: "long", year: "numeric" }).format(when);
+    return new Intl.DateTimeFormat(LOCALE_OF(lang), { timeZone: "UTC", year: "numeric" }).format(when);
+  } catch { return renderTime(v); }
+}
+/** The claim, for a language: `<anchor> — <property>: <values>.` with the colon and full stop of the language's script. */
+export function realizeClaim(claim, { lang = "en", labels = {} } = {}) {
+  const a = labels.anchor || claim.anchor.title, p = labels.property || claim.relation.label;
+  const vals = claim.values.map((v) => (v.kind === "time" ? renderTimeFor(v, lang) : v.kind === "quantity" ? new Intl.NumberFormat(LOCALE_OF(lang)).format(Number(v.amount)) : (labels.items && labels.items[v.qid]) || v.text || v.qid));
+  const colon = CJK.has(lang) ? "：" : ":", stop = CJK.has(lang) ? "。" : ".", sep = CJK.has(lang) ? "、" : "; ";
+  return `${a} — ${p}${colon} ${vals.join(sep)}${stop}`;
+}
+
+/** A Wikidata time value rendered at its own recorded precision (11 day, 10 month, 9 year, ≤8 coarser). English. */
 export function renderTime(v) {
   const m = String(v.time || "").match(/^([+-])(\d{4,})-(\d{2})-(\d{2})/);
   if (!m) return String(v.time);
@@ -42,17 +69,19 @@ export function renderTime(v) {
   return yy;
 }
 
-export async function keyedFill({ fields, anchor, relationWords = [], askWords = [], getJson, sameAct = null, lemmasOf = null, dominantOf = null, keyed = true, skipWords = null } = {}) {
+export async function keyedFill({ fields, anchor, relationWords = [], askWords = [], getJson, sameAct = null, lemmasOf = null, dominantOf = null, keyed = true, skipWords = null, lang = "en", edition = null } = {}) {
   const res = (verdict, extra = {}) => ({ verdict, ...extra });
   if (!fields || !fields.admits) return res("unbound", { refused: "admits_undeclared" });
   if (!anchor || !anchor.title) return res("unbound", { refused: "no_anchor" });
   const wantType = DATATYPE_OF_ADMITS[fields.admits] || (fields.admits ? "wikibase-item" : null);
   // 1. identity: the encyclopedia's own wikibase_item for the exact title
-  const pp = await getJson(`${WP}?${qs({ action: "query", prop: "pageprops", ppprop: "wikibase_item", titles: anchor.title, redirects: "1" })}`);
+  const pp = await getJson(`${WP_OF(edition || lang)}?${qs({ action: "query", prop: "pageprops", ppprop: "wikibase_item", titles: anchor.title, redirects: "1" })}`);
   const page = Object.values(pp?.query?.pages || {})[0];
   const qid = page?.pageprops?.wikibase_item;
   if (!qid) return res("unbound", { refused: "no_identity", title: anchor.title });
-  const ent = await getJson(`${WD}?${qs({ action: "wbgetentities", ids: qid, props: "claims|labels", languages: "en" })}`);
+  const LANGS = lang === "en" ? "en" : `${lang}|en`;   // labels in the asker's language, English as fallback
+  const pick = (e) => (e?.labels?.[lang]?.value) || (e?.labels?.en?.value) || null;
+  const ent = await getJson(`${WD}?${qs({ action: "wbgetentities", ids: qid, props: "claims|labels", languages: LANGS })}`);
   const claims = ent?.entities?.[qid]?.claims || {};
   const itemKeys = Object.keys(claims);
   // 2. the kind's parameters: own keys ∪ the classes' declared keys (P31 → class → P1963)
@@ -80,8 +109,8 @@ export async function keyedFill({ fields, anchor, relationWords = [], askWords =
   // 3. labels, aliases, datatypes of the keys
   const props = new Map();
   for (const ids of chunk(keySet, 50)) {
-    const pe = await getJson(`${WD}?${qs({ action: "wbgetentities", ids: ids.join("|"), props: "labels|aliases|datatype", languages: "en" })}`);
-    for (const [id, e] of Object.entries(pe?.entities || {})) props.set(id, { id, label: e.labels?.en?.value || id, aliases: (e.aliases?.en || []).map((a) => a.value), datatype: e.datatype });
+    const pe = await getJson(`${WD}?${qs({ action: "wbgetentities", ids: ids.join("|"), props: "labels|aliases|datatype", languages: LANGS })}`);
+    for (const [id, e] of Object.entries(pe?.entities || {})) props.set(id, { id, label: pick(e) || id, aliases: [...(e.aliases?.[lang] || []), ...(lang === "en" ? [] : (e.aliases?.en || []))].map((a) => a.value), datatype: e.datatype });
   }
   // open-class tokens only, and the DOMINANT lemma of each (EWT's whole lemma sets bridge closed-class words: where -> be, of -> have)
   const sameWord = (a, b) => {
@@ -121,10 +150,10 @@ export async function keyedFill({ fields, anchor, relationWords = [], askWords =
     for (const c of claims[p.id]) {
       if (c.rank === "deprecated") continue;
       const dv = c.mainsnak?.datavalue; if (!dv) continue;
-      if (dv.type === "wikibase-entityid") { vals.push({ id: dv.value.id, rank: c.rank }); refIds.push(dv.value.id); }
-      else if (dv.type === "time") vals.push({ text: renderTime(dv.value), rank: c.rank, raw: dv.value.time });
-      else if (dv.type === "quantity") vals.push({ text: String(Number(dv.value.amount)), rank: c.rank, unit: dv.value.unit });
-      else if (dv.type === "string") vals.push({ text: dv.value, rank: c.rank });
+      if (dv.type === "wikibase-entityid") { vals.push({ id: dv.value.id, kind: "item", rank: c.rank }); refIds.push(dv.value.id); }
+      else if (dv.type === "time") vals.push({ kind: "time", time: dv.value.time, precision: dv.value.precision, text: renderTimeFor(dv.value, lang), rank: c.rank, raw: dv.value.time });
+      else if (dv.type === "quantity") vals.push({ kind: "quantity", amount: dv.value.amount, text: String(Number(dv.value.amount)), rank: c.rank, unit: dv.value.unit });
+      else if (dv.type === "string") vals.push({ kind: "string", text: dv.value, rank: c.rank });
     }
     // preferred rank wins when any value is preferred (Wikidata's own statement)
     const pref = vals.filter((v) => v.rank === "preferred");
@@ -132,18 +161,24 @@ export async function keyedFill({ fields, anchor, relationWords = [], askWords =
   }
   const labelOf = new Map();
   for (const ids of chunk([...new Set(refIds)], 50)) {
-    const le = await getJson(`${WD}?${qs({ action: "wbgetentities", ids: ids.join("|"), props: "labels", languages: "en" })}`);
-    for (const [id, e] of Object.entries(le?.entities || {})) labelOf.set(id, e.labels?.en?.value || id);
+    const le = await getJson(`${WD}?${qs({ action: "wbgetentities", ids: ids.join("|"), props: "labels", languages: LANGS })}`);
+    for (const [id, e] of Object.entries(le?.entities || {})) labelOf.set(id, pick(e) || id);
   }
   for (const h of hit) for (const v of h.vals) if (v.id) v.text = labelOf.get(v.id) || v.id;
   const best = hit.find((h) => h.vals.length) || null;
   if (!best) return res("unbound", { qid, refused: "no_value", matched: typed.map((p) => p.label) });
   const values = [...new Set(best.vals.map((v) => v.text))];
   const verdict = verdictOfSupport(true, values.length > 1 && best.single);   // against = a second value for a single-valued property
-  const text = `${anchor.title} — ${best.prop.label}: ${values.join("; ")}.`;
+  // the EOT claim (language-free) and its realization for `lang`
+  const claim = { schema: "EOClaim@1", anchor: { qid, title: anchor.title }, relation: { property: best.prop.id, label: best.prop.label, datatype: best.prop.datatype },
+    values: best.vals.map((v) => (v.kind === "item" ? { kind: "item", qid: v.id, text: v.text } : v.kind === "time" ? { kind: "time", time: v.time, precision: v.precision } : v.kind === "quantity" ? { kind: "quantity", amount: v.amount, unit: v.unit } : { kind: "string", text: v.text })),
+    grounds: `${qid}#${best.prop.id}` };
+  const items = {}; for (const v of best.vals) if (v.id) items[v.id] = v.text;
+  const anchorLabel = lang === "en" ? null : pick(ent?.entities?.[qid]);
+  const text = realizeClaim(claim, { lang, labels: { anchor: anchorLabel, property: best.prop.label, items } });
   return res(verdict, {
     qid, property: { id: best.prop.id, label: best.prop.label, how: best.prop.how, datatype: best.prop.datatype, single: best.single },
-    values, answer: verdict === "bound" ? { text, grounds: `${qid}#${best.prop.id}` } : null,
+    values, claim, lang, answer: verdict === "bound" ? { text, grounds: `${qid}#${best.prop.id}` } : null,
     alternatives: hit.filter((h) => h !== best && h.vals.length).map((h) => `${h.prop.label}=${h.vals.map((v) => v.text).join("; ")}`),
     nKeys: props.size, declaredNoValue,
   });
