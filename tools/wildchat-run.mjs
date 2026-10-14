@@ -17,6 +17,7 @@ import { chromium } from "../node_modules/playwright/index.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { pickPair } from "./wildchat-pick.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const URL = process.env.FOLD_URL || "http://127.0.0.1:8814/";
@@ -27,8 +28,6 @@ const CAP = Number(process.argv.find((_, i) => process.argv[i - 1] === "--cap") 
 const BATCH = Number(process.argv.find((_, i) => process.argv[i - 1] === "--batch") || 8);
 
 const battery = JSON.parse(fs.readFileSync(BATTERY, "utf8"));
-const asks = battery.asks || [];
-const follows = battery.followups || [];
 // Multilingual research asks (the battery itself is English-only; swapping language exercises detectLang + the murmur).
 const LANG_EXTRA = [
   { text: "Qui est le président des États-Unis ?", lang: "fr" },
@@ -39,8 +38,9 @@ const LANG_EXTRA = [
   { text: "Wer war Ada Lovelace?", lang: "de" },
 ];
 
-const PICK = (i) => { const a = asks[(i * 17) % asks.length]; return { text: a.text, cls: a.cls, lang: "en" }; };
-const PICK_FOLLOW = (i) => { const f = follows[(i * 11) % (follows.length || 1)]; return { text: f.text, cls: "follow-up", lang: "en" }; };
+// A first ask and its follow-up are one PAIR from the battery: the follow-up is the turn that actually followed `prev` in its conversation
+// (tools/wildchat-pick.mjs). They used to be picked by two independent strides, so every "follow-up" row tested nothing about binding.
+const PAIR = (i) => pickPair(i, battery);
 
 const results = [];
 const started = Date.now();
@@ -64,7 +64,7 @@ async function runAsk(page, ask, mode, i, st) {
   await page.waitForFunction((k) => document.querySelectorAll(".msg.assistant").length > k, before, { timeout: 150000 }).catch(() => {});
   await page.waitForFunction(() => { const i = document.getElementById("input"); return i && !i.disabled && i.getAttribute("aria-busy") !== "true"; }, null, { timeout: 150000 }).catch(() => {});
   const m = await measure(page, st);
-  const row = { n: i, mode, lang: ask.lang || "en", cls: ask.cls || "other", text: ask.text.slice(0, 90), ...m };
+  const row = { n: i, mode, lang: ask.lang || "en", cls: ask.cls || "other", ...(ask.id ? { id: ask.id } : {}), ...(ask.prev ? { prev: ask.prev } : {}), text: ask.text.slice(0, 90), ...m };
   results.push(row);
   fs.appendFileSync(OUT, JSON.stringify(row) + "\n");
   const flag = m.refused ? "  REFUSED" : m.hard ? "  hard" : !m.answered && m.gap ? " gap" : " ok";
@@ -93,12 +93,13 @@ try {
     await page.goto(URL, { waitUntil: "load", timeout: 90000 });
     await page.waitForFunction(() => { const i = document.getElementById("input"); return i && !i.disabled; }, null, { timeout: 90000 }).catch(() => {});
     await page.waitForTimeout(900);
-    // 1) a first-turn ask (or a language swap every 8th)
-    let ask = i % 8 === 7 ? LANG_EXTRA[langIdx++ % LANG_EXTRA.length] : PICK(i);
+    // 1) a first-turn ask (or a language swap every 8th: no battery follow-up follows a swapped-in language ask, so none is run)
+    const swap = i % 8 === 7;
+    const pair = swap ? null : PAIR(i);
+    const ask = swap ? LANG_EXTRA[langIdx++ % LANG_EXTRA.length] : pair.first;
     await runAsk(page, ask, mode, i);
-    // 2) topics within the SAME chat: a different-topic follow-up
-    const follow = PICK_FOLLOW(i);
-    await runAsk(page, follow, mode + "+", i, Date.now());
+    // 2) the follow-up that actually followed that ask, in the SAME chat
+    if (pair) await runAsk(page, pair.follow, mode + "+", i, Date.now());
     await ctx.close();
     i++;
   }
