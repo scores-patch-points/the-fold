@@ -45,14 +45,20 @@ The void's declaration is khora `the-fold/void-shape.js` `declareVoid` (nine ope
 7. **Two forms of every answer:** the verbatim snip, and a net-new paraphrase realized EOT → NL by the Callimachus writer and equated by YadaYadaYada (Amendment 3).
 8. No model anywhere on this path. The model is only ever the mouth.
 
-## What is measured so far (`eval/void/RESULTS.md`; offline replay of a sha-pinned recording, byte-exact)
+## What is measured so far (`eval/void/RESULTS.md` "CLEAN RESULTS"; offline replay of a sha-pinned recording, byte-exact)
 
-| stack | dev Useful / WRONG | held Useful / WRONG | standing |
+The first recording had frozen 84 Wikipedia rate-limit 429s as evidence (Amendment 10); every arm was re-recorded and these are the clean figures.
+
+| stack | dev RIGHT / WRONG / Useful | held RIGHT / WRONG / Useful | standing |
 |---|---|---|---|
-| L0, the pipeline as merged | 6 / 0 | 4 / 1 | baseline |
-| L1, the declared void (perception + grammar + pathos) | **16** / 0 | **14** / 1 | **admitted** (above the void-null p95) |
-| L2, the clause universe with hand rules | 16 / 0 | 14 / **2** | **not admitted** (V2 fails on held) |
-| L1.1 + L2′ on organs (Amendments 4–6) | — | — | being built |
+| L0, the pipeline as merged | 7 / 0 / 8 | 5 / 1 / 7 | baseline |
+| L1, the declared void (perception + grammar + pathos) | 7 / 0 / **20** | 5 / 1 / **18** | **admitted** (above the void-null p95) |
+| L1.1, longest perceived name | 7 / 0 / 20 | 5 / 1 / 19 | admitted |
+| **L1.2, longest name from the ask's own runs** | 7 / 0 / **21** | 5 / 1 / **19** | **admitted: the last admitted stack** |
+| L2, clause universe with hand rules | 8 / 0 / 20 | 6 / **4** / 17 | **refused** (held WRONG 1 → 4) |
+| L2′, L2c, L2c-noorder, L2d (Born parliament, engine, order check, counterfactual nulls) | = L1.2 | = L1.2 | **refused**: each is identical to L1.2 |
+
+The gain is informative gaps (the void says WHAT is missing), not new correct answers. **The open gap is a slot-fill witness**, one that picks which licensed filler fills the slot.
 
 ## Settled findings (so they are not rediscovered)
 
@@ -60,6 +66,7 @@ The void's declaration is khora `the-fold/void-shape.js` `declareVoid` (nine ope
   - The chat's frame (`askFrame`) is {slot, referents, predicate}. It reads a slot only from a front wh-word, and it never says what would satisfy the slot.
   - khora's nine-field `declareVoid` was never vendored into the-fold.
   - The hyperlexicon is never read on the slot path.
+- **A null licenses fillers and cannot choose between them.** Under the relation-counterfactual Born null (L2d) the right fillers become probable, but each ask then has two probable fillers (contested), so nothing answers. Callimachus's drive eval (khora PR #12) found the same from the other side: the claims picked are about the figure, not filling the slot, and its contest was wrong 5 of 5.
 - **The engine's rich reader binds name → name.** The date and the referring expression land inside connector text ("peter hall —, the building was formally opened by→ queen elizabeth"). So the unit for binding a void is the clause, with the engine as one witness (Amendment 2).
 - **Six dev causes, each a missing organ:**
   - a nominal relation (painting by → paint);
