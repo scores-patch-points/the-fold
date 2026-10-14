@@ -59,6 +59,8 @@ export const ENTRIES = [
   "organs/kondo.js",
   // THE PULL (Wald, under heimdall): what a prompt must pull — nothing, the thread, what the fold holds, a structured source, the web — fold-chat-wald.js. Pure, no imports.
   "organs/wald.js",
+  // THE VOID (declareVoid: nine operators, every omission typed; cellOf injected from kernel/cube.js) — fold-chat-void-declare.js. Pure, no imports.
+  "the-fold/void-shape.js",
   // THE CONVERSATION'S FLOW (Terry Gross, in earned-cast.js): the speech act of the turn and the facts a reply hears — fold-chat-flow.js.
   "the-fold/earned-cast.js",
   // THE PATHOS ARCHONS: the felt shape of a run of answers for a DECLARED experiencer (Abhinavagupta, with Murch's pacing,

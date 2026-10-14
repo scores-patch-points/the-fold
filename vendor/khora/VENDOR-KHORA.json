@@ -17,6 +17,7 @@
     "organs/firewall.js",
     "organs/kondo.js",
     "organs/wald.js",
+    "the-fold/void-shape.js",
     "the-fold/earned-cast.js",
     "organs/pathos.js",
     "the-fold/pathos-turn.js",
@@ -105,7 +106,8 @@
     "the-fold/relative.js": "d2a3bf70a9950dc1885295bf8578910c3a9cd1c8516cdd86e4d77932f3aa9bf3",
     "the-fold/resolutions.js": "f52c7b8868692004fa2d6249684087ed3df114f488a039ecad803dde0af906cc",
     "the-fold/source.js": "209f129da0bdd9abbc5a8faa40fe6786b170f29cad40d6d00f3e784dcf4d45d1",
-    "the-fold/span-drift.js": "4cdf25f11885a661afcfc7ae0a95f406b6f10fd978cc6b2205d170cc497b4208"
+    "the-fold/span-drift.js": "4cdf25f11885a661afcfc7ae0a95f406b6f10fd978cc6b2205d170cc497b4208",
+    "the-fold/void-shape.js": "613c8cc8609d1bc4b1d9b9a944a98d264c2e915dd6c6c903042f307f4a0f4863"
   },
   "skips": [],
   "missing": []
