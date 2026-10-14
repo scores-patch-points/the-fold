@@ -1,0 +1,2035 @@
+{
+ "schema": "PronounFixture@1",
+ "per": 30,
+ "note": "Sentences from Universal Dependencies treebanks (CC BY / CC BY-SA per UD documentation); selection is deterministic.",
+ "languages": {
+  "ca": {
+   "treebank": "ca_ancora",
+   "license": "CC BY 4.0 (per UD documentation; no README on disk to verify)",
+   "pos": [
+    {
+     "text": "Hi han intervingut quatre cotxes dels bombers i un helicòpter.",
+     "pron": "Hi"
+    },
+    {
+     "text": "La Generalitat hi aporta 250 milions i l'Ajuntament de Palamós la resta.",
+     "pron": "hi"
+    },
+    {
+     "text": "La inscripció per participar-hi val 18.000 pessetes.",
+     "pron": "hi"
+    },
+    {
+     "text": "Al seu voltant hi havia les dependències monacals.",
+     "pron": "hi"
+    },
+    {
+     "text": "En aquest espai, estava previst construir-hi uns lavabos públics.",
+     "pron": "hi"
+    },
+    {
+     "text": "En total hi ha 185.000 llibres catalogats.",
+     "pron": "hi"
+    },
+    {
+     "text": "\"Es desqualifiquen per elles mateixes\", va dir el conseller.",
+     "pron": "elles"
+    },
+    {
+     "text": "\"Estic molt contenta per elles.",
+     "pron": "elles"
+    },
+    {
+     "text": "\"Però no ho ha fet\", va reiterar .",
+     "pron": "ho"
+    },
+    {
+     "text": "Per aconseguir-ho, s'impulsa la creació d'hotels.",
+     "pron": "ho"
+    },
+    {
+     "text": "Se 'ls atribueix algun homicidi ritual.",
+     "pron": "'ls"
+    },
+    {
+     "text": "És evident que hi ha ciutats que tenen unes circumstàncies locals determinades.",
+     "pron": "hi"
+    },
+    {
+     "text": "Hi ha una altra opció, hi ha altres opcions.",
+     "pron": "Hi"
+    },
+    {
+     "text": "Hi ha el PSC, hi som nosaltres '.",
+     "pron": "Hi"
+    },
+    {
+     "text": "- Ho entendrà el seu electorat?",
+     "pron": "Ho"
+    },
+    {
+     "text": "- A ERC, en qualsevol congrés hi ha debat.",
+     "pron": "hi"
+    },
+    {
+     "text": "Això significa que hi ha moltes òptiques i maneres de veure les coses.",
+     "pron": "hi"
+    },
+    {
+     "text": "Per a quantes cal preparar-lo?",
+     "pron": "lo"
+    },
+    {
+     "text": "Evidentment pot haver-hi un salt en el 'postpujolisme'.",
+     "pron": "hi"
+    },
+    {
+     "text": "Crec que no ho farà, però ell mai no ho ha dit.",
+     "pron": "ho"
+    },
+    {
+     "text": "Perquè li pot tornar a prendre vots al PSC ...",
+     "pron": "li"
+    },
+    {
+     "text": "Ja no hi compten ?",
+     "pron": "hi"
+    },
+    {
+     "text": "Què li semblen aquestes declaracions?",
+     "pron": "li"
+    },
+    {
+     "text": "- No ho sé.",
+     "pron": "ho"
+    },
+    {
+     "text": "Jo penso que ho som, ja.",
+     "pron": "ho"
+    },
+    {
+     "text": "Cal entendre que no ho planteja tan sols en termes d'hipòtesi?",
+     "pron": "ho"
+    },
+    {
+     "text": "En la Fira hi haurà 8 expositors de la comarca del Bages.",
+     "pron": "hi"
+    },
+    {
+     "text": ", O va mentir llavors o ho està fent ara\".",
+     "pron": "ho"
+    },
+    {
+     "text": "Apuntem -ne algunes.",
+     "pron": "-ne"
+    },
+    {
+     "text": "Hi ha vida cinematogràfica més enllà dels menjadors de crispetes anomenats multicines.",
+     "pron": "Hi"
+    }
+   ],
+   "neg": [
+    {
+     "text": "Aquests contenidors només estaran instal·lats mentre duri la vaga."
+    },
+    {
+     "text": "L'estudi ha estat realitzat amb la col·laboració de la Diputació de Barcelona."
+    },
+    {
+     "text": "La remodelació ha costat 110 milions de pessetes."
+    },
+    {
+     "text": "El trajecte del viatge dura tres minuts."
+    },
+    {
+     "text": "Són cabines espaioses i estan adaptades a persones de mobilitat reduïda."
+    },
+    {
+     "text": "Aquesta situació ha durat dues hores."
+    },
+    {
+     "text": "Ramon va néixer fa 42 anys a Amposta (Montsià)."
+    },
+    {
+     "text": "És llicenciat en Veterinària per la Universitat de Saragossa."
+    },
+    {
+     "text": "L'esmena ha estat aprovada."
+    },
+    {
+     "text": "El vehicle ha estat localitzat avui a les onze del matí."
+    },
+    {
+     "text": "El vehicle no presenta cap senyal d'haver patit un accident."
+    },
+    {
+     "text": "Els fets van tenir lloc el 25 de juny de l'any passat."
+    },
+    {
+     "text": "D'aquesta manera, la ciutat paga 57.529.375 de l'obra."
+    },
+    {
+     "text": "El pressupost d'enguany és de 46 milions de pessetes."
+    },
+    {
+     "text": "Aquestes tres vies representen el 83 per cent dels canals utilitzats."
+    },
+    {
+     "text": "L'estudi recomana potenciar les promocions al mercat europeu."
+    },
+    {
+     "text": "Més de la meitat dels turistes repeteix estada a la zona."
+    },
+    {
+     "text": "La via va quedar tallada durant una hora."
+    },
+    {
+     "text": "Ha participat en més de quaranta congressos científics nacionals i internacionals."
+    },
+    {
+     "text": "El cos de la dona presentava signes de violència."
+    },
+    {
+     "text": "Segons Protecció Civil de Tarragona, en aquests moments el problema està resolt."
+    },
+    {
+     "text": "Anteriorment havia publicat 'El plaer de mirar'."
+    },
+    {
+     "text": "Les places són limitades."
+    },
+    {
+     "text": "La matrícula costa 10 euros."
+    },
+    {
+     "text": "Ha tornat a L'Índia un parell de vegades més."
+    },
+    {
+     "text": "Va anar per primera vegada al sud-est d'Àsia el 1980."
+    },
+    {
+     "text": "Va ser col·laborador habitual del programa-tertúlia de Catalunya Ràdio, De Viatge."
+    },
+    {
+     "text": "Els últims campions de Catalunya han estat Sílvia Rovira i Eloi Gispert."
+    },
+    {
+     "text": "IQUA (http://www.iqua.net)."
+    },
+    {
+     "text": "De fet, els organitzadors esperen superar els 5.000 participants d'edicions anteriors."
+    }
+   ],
+   "neg2": [
+    {
+     "text": "L'aturada s'ha convocat amb caràcter indefinit.",
+     "prons": [
+      "s'"
+     ]
+    },
+    {
+     "text": "El judici se celebrarà la setmana que ve a l'Audiència de Barcelona.",
+     "prons": [
+      "se",
+      "que"
+     ]
+    },
+    {
+     "text": "El judici se celebrarà la setmana vinent a l'Audiència de Barcelona.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "El judici se celebrarà la setmana entrant a l'Audiència de Barcelona.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Segons el conseller aquesta és una xifra de satisfacció 'inaudita'.",
+     "prons": [
+      "aquesta"
+     ]
+    },
+    {
+     "text": "Frida Alimentaria es va crear l'any 1987.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "Internet s'utilitza en el 0,7 per cent dels casos.",
+     "prons": [
+      "s'"
+     ]
+    },
+    {
+     "text": "Es van fer un total de 1.808 enquestes.",
+     "prons": [
+      "Es",
+      "un"
+     ]
+    },
+    {
+     "text": "Una hora més tard s'ha ordenat l'aixecament del cadàver.",
+     "prons": [
+      "s'"
+     ]
+    },
+    {
+     "text": "De moment no es tenen més detalls sobre aquest fet.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "No es descarta que el mòbil sigui una revenja.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "L'incident es va produir a la zona de torxes.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "S'ofereixen dos itineraris alternatius.",
+     "prons": [
+      "S'"
+     ]
+    },
+    {
+     "text": "La inauguració de les millores es farà dijous a la tarda.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "Aquests poden seguir acudint a l'hostatgeria del monestir.",
+     "prons": [
+      "Aquests"
+     ]
+    },
+    {
+     "text": "En aquesta ocasió s'han presentat dues candidatures.",
+     "prons": [
+      "s'"
+     ]
+    },
+    {
+     "text": "El mòdul de serveis es construïa a la vorera nord de la Rambla.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "Un dels aspectes més valorats de la Biblioteca són els serveis virtuals.",
+     "prons": [
+      "Un"
+     ]
+    },
+    {
+     "text": "L'ampliació d'horaris de la Biblioteca és una altra de les peticions.",
+     "prons": [
+      "altra"
+     ]
+    },
+    {
+     "text": "Tot el material es farà arribar als camps de refugiats d'Albània.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "Durant aquests dies s'assenyalaran rutes alternatives per als vehicles.",
+     "prons": [
+      "s'"
+     ]
+    },
+    {
+     "text": "El compromís es compleix just ara.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "Les obres es dividiran en diverses fases.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "Després es farà l'explanació i s'anivellaran els terres.",
+     "prons": [
+      "es",
+      "s'"
+     ]
+    },
+    {
+     "text": "El VII Festival de Poesia de Girona s'emmarcarà també en aquesta setmana.",
+     "prons": [
+      "s'"
+     ]
+    },
+    {
+     "text": "La circulació fèrria es va restablir cap a la mitjanit.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "A partir d'aquesta primera publicació es va professionalitzar.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "També es podrà visitar l'exposició 'Retrospectiva del Triumvirat'.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "Es calcula que en un dia normal s'efectuen 80.000 desplaçaments per vehicle.",
+     "prons": [
+      "Es",
+      "s'"
+     ]
+    },
+    {
+     "text": "Alhora, es repartiran unes 700 samarretes de l'expedició.",
+     "prons": [
+      "es",
+      "unes"
+     ]
+    }
+   ]
+  },
+  "de": {
+   "treebank": "de_gsd",
+   "license": "CC BY-SA 4.0 (per UD documentation; no README on disk to verify)",
+   "pos": [
+    {
+     "text": "Hier gibt es die beste Wurst in ganz Thüringen!!",
+     "pron": "es"
+    },
+    {
+     "text": "Das Hotel sah aus als wäre es kurz davor abgerissen zu werden.",
+     "pron": "es"
+    },
+    {
+     "text": "Es bietet nette Atmosphäre und eine motivierte und zuvorkommende Bedienung.",
+     "pron": "Es"
+    },
+    {
+     "text": "Sie verließ daraufhin ohne ein weiteres Wort das Untersuchungszimmer.",
+     "pron": "Sie"
+    },
+    {
+     "text": "Lange hat es gedauert bis es auch hier die skandinavischen Modemarken erhältlich sind.",
+     "pron": "es"
+    },
+    {
+     "text": "Ich kann es nur weiter empfehlen.",
+     "pron": "es"
+    },
+    {
+     "text": "Es lohnt sich!",
+     "pron": "Es"
+    },
+    {
+     "text": "Anfangs war es ganz cool.",
+     "pron": "es"
+    },
+    {
+     "text": "Entweder gefällt es Dir oder Du hasst es.",
+     "pron": "es"
+    },
+    {
+     "text": "Leider gab es lange Wartezeiten.",
+     "pron": "es"
+    },
+    {
+     "text": "Und dabei war er noch nicht mal richtig günstig.",
+     "pron": "er"
+    },
+    {
+     "text": "Zeit nahm sie sich nur für ein kostenpflichtiges teures Hautkrebsscreening.",
+     "pron": "sie"
+    },
+    {
+     "text": "Sie zeigte sich in Bezug auf Roaccutan zudem als sehr schlecht informiert.",
+     "pron": "Sie"
+    },
+    {
+     "text": "Es ist ein Familienhotel mit sehr herzlicher Führung!",
+     "pron": "Es"
+    },
+    {
+     "text": "Und wie es sich lohnt...!",
+     "pron": "es"
+    },
+    {
+     "text": "Sie war super freundlich und hat mich zwischen die Termine geschoben.",
+     "pron": "Sie"
+    },
+    {
+     "text": "Sie hörte aufmerksam zu, war sehr freundlich und zuvorkommend.",
+     "pron": "Sie"
+    },
+    {
+     "text": "Es lohnt sich wirklich dort Essen zu gehen!",
+     "pron": "Es"
+    },
+    {
+     "text": "Es gibt sogar Jakobsmuscheln!!!!",
+     "pron": "Es"
+    },
+    {
+     "text": "Zum Schluß gibt es sogar noch typische chinesische Kitschgeschenke.",
+     "pron": "es"
+    },
+    {
+     "text": "Ich kann es nur weiter empfehlen!",
+     "pron": "es"
+    },
+    {
+     "text": "Für einen Allrounder geht es eigentlich nicht besser.",
+     "pron": "es"
+    },
+    {
+     "text": "Mir hat es bei Ihnen sehr gefallen.",
+     "pron": "es"
+    },
+    {
+     "text": "Er ist ein super Taxifahrer und immer Pünktlich und nett",
+     "pron": "Er"
+    },
+    {
+     "text": "Es war einfach ein toller Abend!",
+     "pron": "Es"
+    },
+    {
+     "text": "Es gibt nichts zu beanstanden.",
+     "pron": "Es"
+    },
+    {
+     "text": "Es sind nette Leute, fachlich kompetent, zuverlässig und flexibel.",
+     "pron": "Es"
+    },
+    {
+     "text": "Die Außeneinrichtung könnten sie vielleicht noch etwas verbessern.",
+     "pron": "sie"
+    },
+    {
+     "text": "Sie bekommen Frühstüch, Mittag und einen Snack.",
+     "pron": "Sie"
+    },
+    {
+     "text": "Bei Schwierigkeiten sind sie sehr kulant.",
+     "pron": "sie"
+    }
+   ],
+   "neg": [
+    {
+     "text": "Die Kosten sind definitiv auch im Rahmen."
+    },
+    {
+     "text": "Nette Gespräche, klasse Ergebnis"
+    },
+    {
+     "text": "Die Bedienung verschwand sofort wieder und kam auch erstmal nicht mehr."
+    },
+    {
+     "text": "Unser Fazit: Nie wieder Café Bleich!"
+    },
+    {
+     "text": "Dienstleistung und Beratung wird wirklich gross geschrieben :-)"
+    },
+    {
+     "text": "Fachlich kompetent, sehr gute Beratung und ein freundliches Team."
+    },
+    {
+     "text": "Der Firma liegt genau am Ortseingang."
+    },
+    {
+     "text": "Nett, freundlich und sehr kompetent."
+    },
+    {
+     "text": "Der Friseursalon ist mit dem Bus sehr gut zu erreichen."
+    },
+    {
+     "text": "Terminfestlegung am Vortag war kein Problem; keine Wartezeiten."
+    },
+    {
+     "text": "So profitiert nicht nur die Agentur, sondern in erster Linie der Kunde."
+    },
+    {
+     "text": "Die Stuttgarter Volksbank Homepage ist übersichtlich und vom Design erste Klasse."
+    },
+    {
+     "text": "Eine echt gelungene Seite."
+    },
+    {
+     "text": "Das Sushi schmeckt immer hervorragend."
+    },
+    {
+     "text": "Unbedingt mal ausprobieren!!!!"
+    },
+    {
+     "text": "Das Angebot ist reichlich und unerwartet vielseitig!"
+    },
+    {
+     "text": "Die Bedienung war sehr aufmerksam und schnell."
+    },
+    {
+     "text": "Ein lohnendes Sonntagsvergnügen!"
+    },
+    {
+     "text": "Neubau für viele Schulklassen vorhanden, also alles in Einwandfreiem Zustand."
+    },
+    {
+     "text": "Das Bild auf Google Maps ist veraltet!"
+    },
+    {
+     "text": "Diese Schule ist schon lange keine Bauststelle mehr!"
+    },
+    {
+     "text": "Positiv: Schöne Zimmer, alles sauber, freundliches personal, gut eingerichtet."
+    },
+    {
+     "text": "Leider ist das Seminarhotel eine Entäuschung."
+    },
+    {
+     "text": "Nach langem Suchen endlich den richtigen gefunden!!!"
+    },
+    {
+     "text": "Vielen Vielen Dank für die super professionelle Arbeit."
+    },
+    {
+     "text": "Auf jeden Fall zu empfehlen!"
+    },
+    {
+     "text": "Meine Erfahrung sagt: Sehr zu empfehlen."
+    },
+    {
+     "text": "Dortmunds erste Wahl für dauerhafte Haarentfernung und Wellness."
+    },
+    {
+     "text": "Der mechanische Trackpad - Klick meines Macbook Pro funktionierte eines Tages nicht mehr."
+    },
+    {
+     "text": "Das Personal ist sehr nett und versuchen einem gleich zu helfen."
+    }
+   ],
+   "neg2": [
+    {
+     "text": "Gutbürgerliche Küche von einem Koch der sein Handwerk noch versteht",
+     "prons": [
+      "der"
+     ]
+    },
+    {
+     "text": "Hier ist Marketing eine Investition die sich auch auszahlt!",
+     "prons": [
+      "die",
+      "sich"
+     ]
+    },
+    {
+     "text": "Finden kann man wirklich alles was man sucht.",
+     "prons": [
+      "man",
+      "was",
+      "man"
+     ]
+    },
+    {
+     "text": "Dabei sitzt man drinnen wie draußen in angenehm freundlicher und ruhiger Umgebung.",
+     "prons": [
+      "man"
+     ]
+    },
+    {
+     "text": "Ein hervorragender Schulgarten in dem die Schüler einiges über die Natur lernen können.",
+     "prons": [
+      "dem"
+     ]
+    },
+    {
+     "text": "Was für eine Bruchbude..",
+     "prons": [
+      "Was"
+     ]
+    },
+    {
+     "text": "Kurze Wartezeiten und Arbeiten die selbst andere Zahnärzte bewundern.",
+     "prons": [
+      "die"
+     ]
+    },
+    {
+     "text": "Diesen Luxus gab es leider nicht für die wartenden Patienten.",
+     "prons": [
+      "es"
+     ]
+    },
+    {
+     "text": "Vielleicht war das mein Fehler?",
+     "prons": [
+      "das"
+     ]
+    },
+    {
+     "text": "Wer einen guten Schnitt will darf keine Discounterpreise erwarten.",
+     "prons": [
+      "Wer"
+     ]
+    },
+    {
+     "text": "Außerdem wird sich für einen Zeit genommen und man bekommt Erfrischungen angeboten.",
+     "prons": [
+      "sich",
+      "man"
+     ]
+    },
+    {
+     "text": "Das hat alles sehr gut geklappt!",
+     "prons": [
+      "Das"
+     ]
+    },
+    {
+     "text": "Familien die keine 500 Euro Brille kaufen werden hier wohl nicht gerne gesehen.",
+     "prons": [
+      "die"
+     ]
+    },
+    {
+     "text": "Man darf gespannt sein.",
+     "prons": [
+      "Man"
+     ]
+    },
+    {
+     "text": "der Ausblick von der Terrasse ist irgendwie der einzige der wirklich schön ist.",
+     "prons": [
+      "der"
+     ]
+    },
+    {
+     "text": "Hier sieht man wirklich was man für seine Wohnung haben muss.",
+     "prons": [
+      "man",
+      "was",
+      "man"
+     ]
+    },
+    {
+     "text": "Es hat nichts gefehlt.",
+     "prons": [
+      "Es",
+      "nichts"
+     ]
+    },
+    {
+     "text": "Das essen war im Verhältnis zum Preis gut.",
+     "prons": [
+      "Das"
+     ]
+    },
+    {
+     "text": "Leider nützt einem das wenig.",
+     "prons": [
+      "das"
+     ]
+    },
+    {
+     "text": "Nichts für Familien.",
+     "prons": [
+      "Nichts"
+     ]
+    },
+    {
+     "text": "In meinem Land Brasilien funktioniert das besser!",
+     "prons": [
+      "das"
+     ]
+    },
+    {
+     "text": "Hab bis jetzt immer was gefunden.",
+     "prons": [
+      "was"
+     ]
+    },
+    {
+     "text": "Was will man mehr?",
+     "prons": [
+      "Was",
+      "man"
+     ]
+    },
+    {
+     "text": "Zwei Praxen die sich in ihren Therapiemöglichkeiten sehr gut ergänzen.",
+     "prons": [
+      "die",
+      "sich"
+     ]
+    },
+    {
+     "text": "die bedienung ist total nett und klasse und das essen ist der hammer.",
+     "prons": [
+      "der"
+     ]
+    },
+    {
+     "text": "Der Service ist super, die mitarbeiter kompetent.",
+     "prons": [
+      "die"
+     ]
+    },
+    {
+     "text": "Der Chef nimmt sich wirklich sehr viel Zeit für jeden Kunden.",
+     "prons": [
+      "sich"
+     ]
+    },
+    {
+     "text": "Das ist, wie man weiß, nicht bei allen Optikern so!",
+     "prons": [
+      "Das",
+      "man"
+     ]
+    },
+    {
+     "text": "Nicht wie das typische asiatische Essen, was man für europäer zubereitet. :-)",
+     "prons": [
+      "was",
+      "man"
+     ]
+    },
+    {
+     "text": "Kostenlos versteht sich.",
+     "prons": [
+      "sich"
+     ]
+    }
+   ]
+  },
+  "en": {
+   "treebank": "en_ewt",
+   "license": "CC BY-SA 4.0 (per UD documentation; no README on disk to verify)",
+   "pos": [
+    {
+     "text": "You wonder if he was manipulating the market with his bombing targets.",
+     "pron": "he"
+    },
+    {
+     "text": "His mother was also killed in the attack.",
+     "pron": "His"
+    },
+    {
+     "text": "The Commission said it had no legal grounds for such an exclusion.",
+     "pron": "it"
+    },
+    {
+     "text": "But in my view it is highly significant.",
+     "pron": "it"
+    },
+    {
+     "text": "It should continue to be defanged.",
+     "pron": "It"
+    },
+    {
+     "text": "He could not name the others.",
+     "pron": "He"
+    },
+    {
+     "text": "Have they, however, actually weakened Israeli security?",
+     "pron": "they"
+    },
+    {
+     "text": "He did not allow Palestinian radicals to launch operations against Israel from Iraq.",
+     "pron": "He"
+    },
+    {
+     "text": "Its ramshackle army had virtually collapsed before the American invasion in 2003.",
+     "pron": "Its"
+    },
+    {
+     "text": "They have also reestablished their historical links with Lebanese and Iranian Shiites.",
+     "pron": "They"
+    },
+    {
+     "text": "But they, too, failed.",
+     "pron": "they"
+    },
+    {
+     "text": "They don't let just anybody do it.",
+     "pron": "They"
+    },
+    {
+     "text": "That he didn’t show up for duty in Alabama?",
+     "pron": "he"
+    },
+    {
+     "text": "That he missed a physical?",
+     "pron": "he"
+    },
+    {
+     "text": "That his daddy got him in?",
+     "pron": "his"
+    },
+    {
+     "text": "Almost immediately, he began an extended period of training.",
+     "pron": "he"
+    },
+    {
+     "text": "It was full-time work.",
+     "pron": "It"
+    },
+    {
+     "text": "By the time it was over, Bush had served nearly two years.",
+     "pron": "it"
+    },
+    {
+     "text": "As he did, he accumulated points toward his National Guard service requirements.",
+     "pron": "he"
+    },
+    {
+     "text": "He earned 137 points in 1970-1971.",
+     "pron": "He"
+    },
+    {
+     "text": "And he earned 112 points in 1971-1972.",
+     "pron": "he"
+    },
+    {
+     "text": "His superior officers said OK.",
+     "pron": "His"
+    },
+    {
+     "text": "In fact, you were helping them solve their problem.”",
+     "pron": "them"
+    },
+    {
+     "text": "Then, at his request, he was given permission to go.",
+     "pron": "his"
+    },
+    {
+     "text": "During his service, Bush received high marks as a pilot.",
+     "pron": "his"
+    },
+    {
+     "text": "His column appears in The Hill each week.",
+     "pron": "His"
+    },
+    {
+     "text": "Its support base is much larger than what it seems.",
+     "pron": "Its"
+    },
+    {
+     "text": "He said that resistance was the only commonsense solution.",
+     "pron": "He"
+    },
+    {
+     "text": "I can't imagine they wanted to do this.",
+     "pron": "they"
+    },
+    {
+     "text": "His case threatens the consensus fiction of the \"War on Terror.\"",
+     "pron": "His"
+    }
+   ],
+   "neg": [
+    {
+     "text": "The third was being run by the head of an investment firm."
+    },
+    {
+     "text": "Guerrillas killed an engineer, Asi Ali, from Tikrit."
+    },
+    {
+     "text": "This item is a small one and easily missed."
+    },
+    {
+     "text": "The situation in Iraq is only going to get better this way."
+    },
+    {
+     "text": "The trial begins again Nov.28."
+    },
+    {
+     "text": "Over 300 Iraqis are reported dead and 500 wounded in Fallujah alone."
+    },
+    {
+     "text": "Al-Iraqiyah tv said that ICDC were controlling Ramadi."
+    },
+    {
+     "text": "CHERNOBYL ACCIDENT: TEN YEARS ON"
+    },
+    {
+     "text": "Here are some excerpts:"
+    },
+    {
+     "text": "IAEA Report Lessons learned"
+    },
+    {
+     "text": "The tape was a way to signal priorities."
+    },
+    {
+     "text": "' Bush fails reporter's pop quiz on international leaders"
+    },
+    {
+     "text": "November 5, 1999"
+    },
+    {
+     "text": "Web posted at: 3:29 p.m. EST (2029 GMT)"
+    },
+    {
+     "text": "WASHINGTON (CNN) --"
+    },
+    {
+     "text": "A spokesman for President Clinton also criticized Bush's comments."
+    },
+    {
+     "text": "From Friday's Daily Star"
+    },
+    {
+     "text": "Friday, June 04, 2004"
+    },
+    {
+     "text": "The anger has spread throughout the Muslim world, including Iraq."
+    },
+    {
+     "text": "THE DAILY STAR publishes this commentary in agreement with Agence Global"
+    },
+    {
+     "text": "India defensive over Sri Lanka"
+    },
+    {
+     "text": "Colombo, too, seems to be in an intractable position."
+    },
+    {
+     "text": "About 1,200 Indian soldiers were killed during this phase of the conflict."
+    },
+    {
+     "text": "Asia Times Online 16/11/2004"
+    },
+    {
+     "text": "Musharraf calls the bluff"
+    },
+    {
+     "text": "That distinction has now gone to the United States."
+    },
+    {
+     "text": "( Click here for source. )"
+    },
+    {
+     "text": "Read on to learn the facts."
+    },
+    {
+     "text": "Bush’s National Guard years"
+    },
+    {
+     "text": "The future president joined the Guard in May 1968."
+    }
+   ],
+   "neg2": [
+    {
+     "text": "If someone committed a crime against humanity, prosecute the person.",
+     "prons": [
+      "someone"
+     ]
+    },
+    {
+     "text": "There has been talk that the night curfew might be implemented again.",
+     "prons": [
+      "There"
+     ]
+    },
+    {
+     "text": "So what happened?",
+     "prons": [
+      "what"
+     ]
+    },
+    {
+     "text": "This is not a post about fault-finding or assigning blame.",
+     "prons": [
+      "This"
+     ]
+    },
+    {
+     "text": "There is a lot to learn about Chernobyl.",
+     "prons": [
+      "There"
+     ]
+    },
+    {
+     "text": "There are a wealth of references on Chernobyl.",
+     "prons": [
+      "There"
+     ]
+    },
+    {
+     "text": "Remember the old shoe sizing machines that was a form of radiation xray?",
+     "prons": [
+      "that"
+     ]
+    },
+    {
+     "text": "That too was stopped.",
+     "prons": [
+      "That"
+     ]
+    },
+    {
+     "text": "\"Wait, wait, is this 50 questions?\" asked Bush.",
+     "prons": [
+      "this"
+     ]
+    },
+    {
+     "text": "Saddam never did anything practical to help the Palestinians.",
+     "prons": [
+      "anything"
+     ]
+    },
+    {
+     "text": "That’s fine.",
+     "prons": [
+      "That"
+     ]
+    },
+    {
+     "text": "This is a excellent blog.",
+     "prons": [
+      "This"
+     ]
+    },
+    {
+     "text": "This is not unknown to New Delhi.",
+     "prons": [
+      "This"
+     ]
+    },
+    {
+     "text": "However there were visible signs of a crackdown on the Pakistan side.",
+     "prons": [
+      "there"
+     ]
+    },
+    {
+     "text": "That too may change.",
+     "prons": [
+      "That"
+     ]
+    },
+    {
+     "text": "That is the logic of the medal).",
+     "prons": [
+      "That"
+     ]
+    },
+    {
+     "text": "Prominent Southern Republicans were something of a rare breed in those days.",
+     "prons": [
+      "something"
+     ]
+    },
+    {
+     "text": "There are concerns that some may have been siphoned off.\"",
+     "prons": [
+      "There"
+     ]
+    },
+    {
+     "text": "When victims and witnesses stay silent, nothing changes.",
+     "prons": [
+      "nothing"
+     ]
+    },
+    {
+     "text": "That's still the domain of those who don't.",
+     "prons": [
+      "That",
+      "those",
+      "who"
+     ]
+    },
+    {
+     "text": "\"There's no tracking mechanism in place\"?!?!?",
+     "prons": [
+      "There"
+     ]
+    },
+    {
+     "text": "no one was charged for forced marriage, only the beating.",
+     "prons": [
+      "one"
+     ]
+    },
+    {
+     "text": "Or something like that.",
+     "prons": [
+      "something",
+      "that"
+     ]
+    },
+    {
+     "text": "If the load was 99 tonnes there were probably less than 20,000.",
+     "prons": [
+      "there"
+     ]
+    },
+    {
+     "text": "Has anyone read the letter purportedly from Ahmadinejad to George Bush?",
+     "prons": [
+      "anyone"
+     ]
+    },
+    {
+     "text": "But who would do a thing like that.... hey wait a minute",
+     "prons": [
+      "who",
+      "that"
+     ]
+    },
+    {
+     "text": "So what is all the fuss about suicide killings?",
+     "prons": [
+      "what"
+     ]
+    },
+    {
+     "text": "This has not yet penetrated the thinking of the Western World.",
+     "prons": [
+      "This"
+     ]
+    },
+    {
+     "text": "What is behind the suicide murders?",
+     "prons": [
+      "What"
+     ]
+    },
+    {
+     "text": "No Moslem preacher has ever blown himself up.",
+     "prons": [
+      "himself"
+     ]
+    }
+   ]
+  },
+  "es": {
+   "treebank": "es_gsd",
+   "license": "CC BY-SA 4.0 (per UD documentation; no README on disk to verify)",
+   "pos": [
+    {
+     "text": "Os lo recomiendo y mas sabiendo lo que hay por ahi fuera.",
+     "pron": "lo"
+    },
+    {
+     "text": "Fernando el Católico lo ratificó un mes después.",
+     "pron": "lo"
+    },
+    {
+     "text": "También se le concedió el título de Par de Francia.",
+     "pron": "le"
+    },
+    {
+     "text": "Por lo demás, no existen razones para alarmarse.",
+     "pron": "lo"
+    },
+    {
+     "text": "Hinojo lo convenció a robar las semillas de su bóveda.",
+     "pron": "lo"
+    },
+    {
+     "text": "Es muy mandona, aunque le regala a Jonatán un anillo de diamantes.",
+     "pron": "le"
+    },
+    {
+     "text": "La segunda película revela que ella lleva un vestido color lavanda.",
+     "pron": "ella"
+    },
+    {
+     "text": "Compiten en ella 16 equipos de todo el territorio nacional.",
+     "pron": "ella"
+    },
+    {
+     "text": "Cuando ella se resiste, él abusa de ella.",
+     "pron": "ella"
+    },
+    {
+     "text": "Al final les da la pieza de oro y se va riendo.",
+     "pron": "les"
+    },
+    {
+     "text": "En ella está tallado el escudo del valle del Roncal.",
+     "pron": "ella"
+    },
+    {
+     "text": "Terminados los estudios y ordenado sacerdote, le encargaron la cátedra de filosofía.",
+     "pron": "le"
+    },
+    {
+     "text": "Yo volveré para averiguarlo.",
+     "pron": "lo"
+    },
+    {
+     "text": "El pan te lo sacan y te lo cobran aunque no lo toques.",
+     "pron": "lo"
+    },
+    {
+     "text": "El cliente de arte sabe lo que quiere, no es tan caprichoso.",
+     "pron": "lo"
+    },
+    {
+     "text": "La magia fue lo mejor de todo.",
+     "pron": "lo"
+    },
+    {
+     "text": "Esto lo hace la nodriza para que nadie la inculpe de su actuación.",
+     "pron": "lo"
+    },
+    {
+     "text": "Lo supimos hace ya algunos meses.",
+     "pron": "Lo"
+    },
+    {
+     "text": "Es muy viejo y le falta algun que otro arreglo y mantenimiento.",
+     "pron": "le"
+    },
+    {
+     "text": "Aang y Katara comienzan a fastidiarlo.",
+     "pron": "lo"
+    },
+    {
+     "text": "Su revista por antonomasia le sobrevivió hasta 1941.",
+     "pron": "le"
+    },
+    {
+     "text": "Una carta de apoyo también les hará mucho bien.",
+     "pron": "les"
+    },
+    {
+     "text": "Quiero agradecerles el buen trabajo que han hecho con mi casa.",
+     "pron": "les"
+    },
+    {
+     "text": "He jugado varios partidos en ella.",
+     "pron": "ella"
+    },
+    {
+     "text": "Quiroga le respondió: No se desanime, todo es cuestión de tiempo.",
+     "pron": "le"
+    },
+    {
+     "text": "Desde él se obtiene una panorámica de las fortificaciones de Niebla y Mancera.",
+     "pron": "él"
+    },
+    {
+     "text": "Y como si esto fuera poco, le dio otro golpe en Asunción.",
+     "pron": "le"
+    },
+    {
+     "text": "María visita al niño y lo persuade a que camine.",
+     "pron": "lo"
+    },
+    {
+     "text": "La mayor parte de ellos fueron víctimas de incendios fortuitos o provocados.",
+     "pron": "ellos"
+    },
+    {
+     "text": "Excesivamente caro para lo que es.",
+     "pron": "lo"
+    }
+   ],
+   "neg": [
+    {
+     "text": "Aclarando hacia todo el mundo Valderrama Y Eduardo Son La Misma Persona."
+    },
+    {
+     "text": "Christian González es una joven promesa de la actuación."
+    },
+    {
+     "text": "Según el censo de 2010, había 37 personas residiendo en Moquino."
+    },
+    {
+     "text": "Fue llevado hasta el hospital de Verona en helicóptero donde falleció."
+    },
+    {
+     "text": "Tiene 2 madres."
+    },
+    {
+     "text": "Presentan hojas disectas, laticíferos y las flores son usualmente zigomorfas."
+    },
+    {
+     "text": "Mirko Tavoni (Consorcio de Universidades Italianas ICoN);"
+    },
+    {
+     "text": "Observatorio de Murcia (La Murta)."
+    },
+    {
+     "text": "La densidad de población era de 34,47 hab. / km²."
+    },
+    {
+     "text": "Este triunfo supuso su comienzo en el mundo de moda."
+    },
+    {
+     "text": "George aparece una vez más en Back to the Future III."
+    },
+    {
+     "text": "Es el único miembro del género monotípico Melilestes."
+    },
+    {
+     "text": "Las pizzas son buenas pero muy muy caras."
+    },
+    {
+     "text": "Giorgio Persano de Milán y McKee Gallery de Nueva York."
+    },
+    {
+     "text": "Asamblea de la Jerarquía Católica de Egipto;"
+    },
+    {
+     "text": "El diseño es mezcla de los estilos arquitectónicos federal, griego y gótico."
+    },
+    {
+     "text": "Fue catedrático en la Universidad de Teherán, en el departamento de filosofía."
+    },
+    {
+     "text": "En 2000 actuó en la película Faust: Love of the Damned."
+    },
+    {
+     "text": "Asimismo, fue introducido también en la Península de Kamchatka (Rusia)."
+    },
+    {
+     "text": "Hasta 1945 era parte de Alemania."
+    },
+    {
+     "text": "Tampoco a personas que hayan sufrido trastornos cardiovasculares."
+    },
+    {
+     "text": "La serie de La Nueva Orden Jedi supuso una revolución."
+    },
+    {
+     "text": "Al parecer, había un fuerte vínculo con su tripulación."
+    },
+    {
+     "text": "En 1945 apareció como bailarina en la película musical The Blonde From Brooklyn."
+    },
+    {
+     "text": "La duración de cada juego es corta."
+    },
+    {
+     "text": "Son animales de hábitos nocturnos o crepusculares."
+    },
+    {
+     "text": "Genera Plantarum Florae Germanicae, (abreviado Gen. Fl."
+    },
+    {
+     "text": "Este doblaje es usado y distribuido en todos los países de habla hispana."
+    },
+    {
+     "text": "Esta última acepción es también conocida como entidad de coordinación."
+    },
+    {
+     "text": "Este condado fue fundado el 25 de agosto de 1855."
+    }
+   ],
+   "neg2": [
+    {
+     "text": "Es un bar disfrazado de restaurante la comida esta demasiado salada.",
+     "prons": [
+      "demasiado"
+     ]
+    },
+    {
+     "text": "Se inicia la construcción del antiguo templo de Nuestra Señora de Guadalupe.",
+     "prons": [
+      "Se"
+     ]
+    },
+    {
+     "text": "La estabilidad financiera es algo que Macedonia reconoce.",
+     "prons": [
+      "algo",
+      "que"
+     ]
+    },
+    {
+     "text": "El municipio de Galloway se encuentra ubicado en las coordenadas.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Los equipos restantes juegan entre sí por los puestos 13 a 16.",
+     "prons": [
+      "sí"
+     ]
+    },
+    {
+     "text": "Nunca se verá tu correo.)",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Batavia se encuentra ubicada en las coordenadas.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Entonces todas las piedras se fueron furiosamente para abajo sin dejar rastro.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Todo debido a la baja densidad de la exosfera.",
+     "prons": [
+      "Todo"
+     ]
+    },
+    {
+     "text": "El municipio de Webster se encuentra ubicado en las coordenadas.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Se encuentra en las Azores en Portugal.",
+     "prons": [
+      "Se"
+     ]
+    },
+    {
+     "text": "El municipio de Buck se encuentra ubicado en las coordenadas.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Se trataba, más bien, de un profeta apocalíptico.",
+     "prons": [
+      "Se"
+     ]
+    },
+    {
+     "text": "El show comenzó a emitirse el 8 de octubre de 2007.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "En dicha arteria, se pueden apreciar señalamientos hacia Palma Sola.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "El daño se estima que excedió un millardo de dólares estadounidenses actuales.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Los crudos se pueden congelar.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "En el asilo, Fatone se continúa golpeandose en el rostro.",
+     "prons": [
+      "se",
+      "se"
+     ]
+    },
+    {
+     "text": "Garfield se encuentra ubicado en las coordenadas.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Se come muy bien.",
+     "prons": [
+      "Se"
+     ]
+    },
+    {
+     "text": "Se podían ver miles de fotografías sobre Nueva York en Moscú y viceversa.",
+     "prons": [
+      "Se"
+     ]
+    },
+    {
+     "text": "Más tarde se irían a vivir a Madrid.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Escribió además el ensayo \"¿Por qué leer a los clásicos?\"",
+     "prons": [
+      "qué"
+     ]
+    },
+    {
+     "text": "Después de derrotar a este fue destinada a la provincia de Macedonia.",
+     "prons": [
+      "este"
+     ]
+    },
+    {
+     "text": "Gisela se encuentra ubicado en las coordenadas.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Si vienen de otro pais ignoren eso.",
+     "prons": [
+      "eso"
+     ]
+    },
+    {
+     "text": "¿Por qué?",
+     "prons": [
+      "qué"
+     ]
+    },
+    {
+     "text": "Se respetan la libertad de los medios de comunicación y su pluralismo.",
+     "prons": [
+      "Se"
+     ]
+    },
+    {
+     "text": "Estas son las frecuencias en que emite la emisora:",
+     "prons": [
+      "Estas",
+      "que"
+     ]
+    },
+    {
+     "text": "Mi hijo esta tan contento que no quiere venirse a casa.",
+     "prons": [
+      "se"
+     ]
+    }
+   ]
+  },
+  "pt": {
+   "treebank": "pt_bosque",
+   "license": "CC BY-SA 4.0 (per UD documentation; no README on disk to verify)",
+   "pos": [
+    {
+     "text": "Eles se dizem oposição, mas ainda não informaram o que vão combater.",
+     "pron": "Eles"
+    },
+    {
+     "text": "Ele só não jogava porque não estava bem.",
+     "pron": "Ele"
+    },
+    {
+     "text": "Elas estão separadas por espaços de 80 km a 100 km.",
+     "pron": "Elas"
+    },
+    {
+     "text": "«Eles bateram muito.",
+     "pron": "Eles"
+    },
+    {
+     "text": "Ele afirma ter negros e judeus entre seus correligionários.",
+     "pron": "Ele"
+    },
+    {
+     "text": "Segundo ele, hoje as concessões de financiamento bancário são restritas e elitistas.",
+     "pron": "ele"
+    },
+    {
+     "text": "Eles sustentaram que a renúncia interrompeu o processo de impeachment.",
+     "pron": "Eles"
+    },
+    {
+     "text": "Com Kina, ele chegou bem perto da perfeição.",
+     "pron": "ele"
+    },
+    {
+     "text": "Mas ela parece ser mera exceção.",
+     "pron": "ela"
+    },
+    {
+     "text": "Eles estão fazendo uma «guerra» contra o tráfico.",
+     "pron": "Eles"
+    },
+    {
+     "text": "Ele receberá o valor à vista após 30 dias.",
+     "pron": "Ele"
+    },
+    {
+     "text": "Ele filmaram todos os jogos das brasileiras.",
+     "pron": "Ele"
+    },
+    {
+     "text": "«Você vai pescar?»",
+     "pron": "Você"
+    },
+    {
+     "text": "«Você vai pescar?»",
+     "pron": "Você"
+    },
+    {
+     "text": "«Ah bem, pensei que voce ia pescar».",
+     "pron": "voce"
+    },
+    {
+     "text": "Ele fechou um tempo de divergências para abrir uma era de convergências.",
+     "pron": "Ele"
+    },
+    {
+     "text": "Em 90 ele não pôde fugir.",
+     "pron": "ele"
+    },
+    {
+     "text": "Ela é vencida por Quércia, indicado candidato à Presidência.",
+     "pron": "Ela"
+    },
+    {
+     "text": "Daria a mesma nota para ele e para o Rossi.",
+     "pron": "ele"
+    },
+    {
+     "text": "«Eles dão comida pra gente nesse lugar?",
+     "pron": "Eles"
+    },
+    {
+     "text": "Ele disse que a receita da ferrovia não cobre as despesas.",
+     "pron": "Ele"
+    },
+    {
+     "text": "Você se acha louca?",
+     "pron": "Você"
+    },
+    {
+     "text": "A Suécia não se arriscou no ataque em nenhum momento da partida",
+     "pron": "se"
+    },
+    {
+     "text": "Ele voltou a ter crises de choro.",
+     "pron": "Ele"
+    },
+    {
+     "text": "Final de treino para ele e Schumacher.",
+     "pron": "ele"
+    },
+    {
+     "text": "As esculturas, ela diz que faz em seis meses.",
+     "pron": "ela"
+    },
+    {
+     "text": "Eles viajavam em sentido contrário.",
+     "pron": "Eles"
+    },
+    {
+     "text": "Eles servem para camuflar o improviso dos estádios da Copa.",
+     "pron": "Eles"
+    },
+    {
+     "text": "Ela subiu nos tamancos flamencos.",
+     "pron": "Ela"
+    },
+    {
+     "text": "Baixa o carcamano e você esquece a noção do ridículo»",
+     "pron": "você"
+    }
+   ],
+   "neg": [
+    {
+     "text": "PT no governo"
+    },
+    {
+     "text": "Tem sentido -- aliás, muitíssimo sentido."
+    },
+    {
+     "text": "«Confissões» chega a Portugal"
+    },
+    {
+     "text": "A série exibida aqui pela Cultura estreou na TVI de Portugal."
+    },
+    {
+     "text": "Manchete estréia novo jornalístico"
+    },
+    {
+     "text": "A direção do novo semanal será assinada por Ewaldo Ruy."
+    },
+    {
+     "text": "Free shops dos aeroportos internacionais também vendem o equipamento."
+    },
+    {
+     "text": "O preço de lista nas revendas brasileiras é de US$ 422."
+    },
+    {
+     "text": "Esse equilíbrio era tido como pré-condição para o sucesso do plano econômico."
+    },
+    {
+     "text": "O projeto original do governo destinava ao TSE R$ 334,9 milhões."
+    },
+    {
+     "text": "Telê -- Claro."
+    },
+    {
+     "text": "Telê -- Uma vergonha."
+    },
+    {
+     "text": "O top de linha custa US$ 30 mil."
+    },
+    {
+     "text": "JFK -- A PERGUNTA QUE NÃO QUER CALAR Telecine, 20h30."
+    },
+    {
+     "text": "Schwarzenegger está no HBO"
+    },
+    {
+     "text": "Os três estão presos desde 30 de julho de 93."
+    },
+    {
+     "text": "A batalha da Fifa"
+    },
+    {
+     "text": "Essa divisão gera algumas distorções terríveis."
+    },
+    {
+     "text": "O panorama sofre prejuízos demais em favor da tese."
+    },
+    {
+     "text": "Original: Cícero."
+    },
+    {
+     "text": "Recebeu a denúncia."
+    },
+    {
+     "text": "Segundo o médico, o caso não preocupa."
+    },
+    {
+     "text": "«Uma boa parte do público dos Stones hoje é yuppie."
+    },
+    {
+     "text": "«Escuto Stones desde os 13 anos de idade."
+    },
+    {
+     "text": "O fã daquela época vai ser fã sempre», acrescentou Costenaro."
+    },
+    {
+     "text": "«Não está havendo cancelamento de pedidos."
+    },
+    {
+     "text": "Seca afeta pouco a produção de grãos"
+    },
+    {
+     "text": "Foi utilizada técnica mista, incluindo desenho, pastel, ceragrafia e fotografismo."
+    },
+    {
+     "text": "Até 30 de março."
+    },
+    {
+     "text": "Preço das obras: de US$ 2.000 a US$ 4.000."
+    }
+   ],
+   "neg2": [
+    {
+     "text": "Nem Lula nem o partido ainda encontraram um discurso para se diferenciar.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Aqui só joga quem está bem.",
+     "prons": [
+      "quem"
+     ]
+    },
+    {
+     "text": "Talvez isto seja muito barulho por nada.",
+     "prons": [
+      "isto",
+      "nada"
+     ]
+    },
+    {
+     "text": "Romário não se exercitou nas cobranças de falta e pênalti.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "Outros profissionais brasileiros, que atuam nos EUA, também participam.",
+     "prons": [
+      "que"
+     ]
+    },
+    {
+     "text": "O que fizeram com o Pereira foi um absurdo», disse.",
+     "prons": [
+      "O",
+      "que"
+     ]
+    },
+    {
+     "text": "O máximo que consigo ficar com alguém é dois anos»)",
+     "prons": [
+      "que",
+      "alguém"
+     ]
+    },
+    {
+     "text": "Tem tamanho, peso intrínseco que dispensa volume alto.",
+     "prons": [
+      "que"
+     ]
+    },
+    {
+     "text": "Folha -- Quem vence?",
+     "prons": [
+      "Quem"
+     ]
+    },
+    {
+     "text": "Mas, mesmo que quisessem não conseguiriam fazer nada «menor».",
+     "prons": [
+      "nada"
+     ]
+    },
+    {
+     "text": "Tudo indica que os telejornais da Globo vão ganhar novo repórter especial.",
+     "prons": [
+      "Tudo"
+     ]
+    },
+    {
+     "text": "Lula cresceu e prosperou enquanto tudo dava errado no país.",
+     "prons": [
+      "tudo"
+     ]
+    },
+    {
+     "text": "A responsabilidade é a um só tempo de todos e de ninguém.",
+     "prons": [
+      "todos",
+      "ninguém"
+     ]
+    },
+    {
+     "text": "É o delírio que alimenta o Sendero Luminoso.",
+     "prons": [
+      "que"
+     ]
+    },
+    {
+     "text": "É a vigorosa história mexicana que surpreende em Chiapas.",
+     "prons": [
+      "que"
+     ]
+    },
+    {
+     "text": "«Isso ainda não ficou acertado pelo governo canadense», disse.",
+     "prons": [
+      "Isso"
+     ]
+    },
+    {
+     "text": "Nesta temporada, um dos mais visados foi o Brasil.",
+     "prons": [
+      "os"
+     ]
+    },
+    {
+     "text": "Por que não?",
+     "prons": [
+      "que"
+     ]
+    },
+    {
+     "text": "Pior é o Itamar que ficou intoxicado com o próprio pastelão!",
+     "prons": [
+      "que"
+     ]
+    },
+    {
+     "text": "Essa é a grande novidade do Carnaval 94: os peladões.",
+     "prons": [
+      "Essa"
+     ]
+    },
+    {
+     "text": "E tem gente que ainda fica na mão?",
+     "prons": [
+      "que"
+     ]
+    },
+    {
+     "text": "A gente precisa de reciclagem em geografia, pois tudo muda muito rápido.",
+     "prons": [
+      "tudo"
+     ]
+    },
+    {
+     "text": "TUDO PELO CLIENTE",
+     "prons": [
+      "TUDO"
+     ]
+    },
+    {
+     "text": "É tudo pelo cliente.",
+     "prons": [
+      "tudo"
+     ]
+    },
+    {
+     "text": "O time pode empatar a segunda partida para se classificar.",
+     "prons": [
+      "se"
+     ]
+    },
+    {
+     "text": "«Não aguento mais esse tal de' Olho Mágico",
+     "prons": [
+      "tal"
+     ]
+    },
+    {
+     "text": "O que faço?",
+     "prons": [
+      "O",
+      "que"
+     ]
+    },
+    {
+     "text": "«Mas todos serão demitidos», acrescentou.",
+     "prons": [
+      "todos"
+     ]
+    },
+    {
+     "text": "Consulado não revela quantos barra",
+     "prons": [
+      "quantos"
+     ]
+    },
+    {
+     "text": "Por enquanto, se dedica à preparação física.",
+     "prons": [
+      "se"
+     ]
+    }
+   ]
+  }
+ }
+}

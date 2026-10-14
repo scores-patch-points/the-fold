@@ -53,15 +53,25 @@ test("es and fr (no ethos pronoun prior) decide through the declared classes", (
   for (const q of ["pourquoi le ciel est-il bleu ?", "combien d'os y a-t-il dans le corps humain ?", "quand le mur de Berlin est-il tombé ?", "qu'est-ce que la photosynthèse ?"]) assert.equal(carry(q, "fr"), false, q);
 });
 
-test("a language with no closed-class prior is UNDECIDED: not carried, and the verdict says so", () => {
-  const v = anaphoraOf("Warum ist der Himmel blau", { lang: "de" });
-  assert.equal(v.carry, false); assert.equal(v.decided, false); assert.match(v.why, /undecided: no closed-class prior for de/);
-  const plan = followUp("er hat gewonnen", [{ role: "user", content: "x" }, { role: "assistant", content: "y" }], { lang: "de" });
+test("a language with NO class at all (no declared class, no treebank-derived class, no hints) is UNDECIDED: not carried, and the verdict says so", () => {
+  // Swahili: no declared class and no UD treebank pronoun class. (German was the example here until the classes were GENERATED from the
+  // treebanks: it is decided now — see the next test.)
+  const v = anaphoraOf("Kwa nini anga ni bluu", { lang: "sw" });
+  assert.equal(v.carry, false); assert.equal(v.decided, false); assert.match(v.why, /undecided: no closed-class prior for sw/);
+  const plan = followUp("alishinda", [{ role: "user", content: "x" }, { role: "assistant", content: "y" }], { lang: "sw" });
   assert.equal(plan.kind, "standalone"); assert.equal(plan.reason, "stands-alone-undecided");
   // Russian has no declared class but the ethos pronoun forms (all pronouns) are honoured: "он" carries, a noun ask does not
   const ru = hintsFor("ru");
   assert.equal(anaphoraOf("что он открыл", { lang: "ru", hints: ru }).carry, true);
   assert.equal(anaphoraOf("почему небо голубое", { lang: "ru", hints: ru }).carry, false);
+});
+
+test("a language with a treebank-derived pronoun class DECIDES: de, pt and ca carry on their own personal pronouns and not on a plain ask", () => {
+  for (const [L, pro, plain] of [["de", "Was hat er danach gemacht", "Warum ist der Himmel blau"], ["pt", "O que ele descobriu depois", "Por que o céu é azul"], ["ca", "Què va descobrir ell després", "Per què el cel és blau"]]) {
+    const a = anaphoraOf(pro, { lang: L }), b = anaphoraOf(plain, { lang: L });
+    assert.equal(a.decided, true, `${L} is decided`); assert.equal(a.carry, true, `${L}: ${pro}`); assert.equal(a.kind, "pronoun");
+    assert.equal(b.decided, true); assert.equal(b.carry, false, `${L}: ${plain}`);
+  }
 });
 
 test("every listed pronoun/connective is a function word of its language, bar the few that are open-class by the prior's own cut", () => {
