@@ -3687,7 +3687,9 @@ export function mount(root, opts = {}) {
         })();
       }
     } catch (err) {      // A stop is a stop; ANYTHING else that died is stored as a typed, retry-able note on its own
-      // message (failTurn) — whether or not this chat is the open one.      if (ac.signal.aborted) stopped(); else failTurn(err);
+      // message (failTurn) — whether or not this chat is the open one. (This body was swallowed into the comment above for
+      // days — one line, the statement after a `//` — so every turn that threw ended with no message and no notice: audit F, D1.)
+      if (ac.signal.aborted) stopped(); else failTurn(err);
     } finally {
       refreshMeter();
     }
