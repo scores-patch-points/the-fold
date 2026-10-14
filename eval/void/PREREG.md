@@ -165,3 +165,30 @@ The user's direction: "remember the work we did on induction for ALL terrains". 
 **Not built (typed gaps, declared):** an event's own time for light verbs (happen / occur / take place) has no organ, so it stays a gap.
 
 **Unchanged:** the battery, the scoring, V1–V6, and the universe-null. L2′ re-uses the recorded pages. New fetches, if any, get their own declared recording pass. L2′ is admitted only if it beats **L1**, the last admitted stack, on every bar.
+
+## Amendment 5 (2026-10-14): no hand-set thresholds; the Born rule and DMD all the way up and down. Written before L2′ is built or run.
+
+**The user's direction:** "no handset thresholds — born rule, dmd all the way up and down." It supersedes every numeric choice in Amendment 4.
+
+**Amplitudes, not scores.** Every layer holds an amplitude ψ_c for each of its candidates. A witness w that supports candidate c n_{w,c} times contributes amplitude √n_{w,c}. Amplitudes from different witnesses **add** (ψ_c = Σ_w √n_{w,c}), so independent witnesses that agree reinforce one another more than one witness repeating itself. Probability is the **Born rule**: p_c = |ψ_c|² / Σ_c′ |ψ_c′|².
+
+**Possible / probable, with no constant:**
+- **Possible:** p_c > 0, meaning some witness supports c.
+- **Probable:** p_c is greater than the top candidate's p in **every** draw of the Born null.
+- **The Born null:** the same layer, run on the same material with each witness's filler-to-clause links shuffled. It is built fresh per ask, from what that ask's universe actually holds.
+- The only declared quantities are the null's draws and seed (the null-arm's own discipline: the result's resolution is 1/draws), and they are never tuned. Draws: 200, seed 20261014. A null that cannot be built (fewer than 2 clauses or 2 candidates) is a typed gap. It never licenses anything.
+
+**Organs whose gates are declared numbers:**
+- `resolvePronouns` (minActivation, minMargin) and contest `adjudicate` / `nullAdjudicate` (minActivation, margins, alpha) are called with their gates **open**: 0 and 0, with alpha = 1/(draws+1), meaning "beats every draw".
+- Their **activations** are kept, and the decision is moved to the Born null above.
+- The engine's own constants (`PRONOUN_MIN_ACTIVATION = 0.05`, `PRONOUN_MIN_MARGIN = 0.2`) are **not** borrowed.
+
+**DMD, up and down (the recursion, V5):**
+- A recursive stack's state is the Born probability vector over every layer's candidates. One pass is up: L1 → L2′ → L3 …, each layer's probabilities feeding the next layer's amplitudes as a witness. One pass is down: each higher layer's probabilities re-weight the lower layer's amplitudes the same way.
+- The passes form a trajectory of states, which is decomposed by khora `kernel/dmd.js` (`dmd`, with rank `"numerical"`, derived from the spectrum, never declared).
+- **Stopping and standing come from the spectrum, not from a counter.**
+  - The loop stops when the trajectory's dominant mode has |λ| ≥ every other mode and the remaining modes have decayed (|λ|<1), as read from the decomposition.
+  - A recursion **has structure** only if its Born-rule coherent mass (|λ|² of the dominant mode, `for-whom.js` `coherentMass`) beats the order-shuffled null (`trajectoryNull`).
+  - A recursion without structure ships feed-forward, and is reported as such (V5).
+
+**Unchanged:** the battery, the scoring, V1–V6, the witnesses and organs of Amendment 4, and the universe-null. Wald §3.8 truncation is no longer the stopping rule for this stack; the spectrum is.
