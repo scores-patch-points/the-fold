@@ -64,3 +64,28 @@ Can the Fold define the void a slot ask names, both **the slot and what would sa
 - **V6 (no model):** every arm makes zero model calls, counted.
 
 No re-run after a look, except under an amendment written before that re-run. Held per-row results are not read until a stage's bars are computed; aggregates only.
+
+## Amendment 1 (2026-10-14): the full stack (perception, logos, pathos). Written before any L1–L4 arm has run.
+
+The user's direction, given mid-build: "remember to use the full stack of perception, logos and pathos". The layers above are built from the khora's **own organs**, all already vendored in `vendor/khora/native/`, and never from hand-rolled substitutes. A layer that needs an organ that is missing or broken reports it as a typed gap.
+
+**Perception** (the khora's perceiver: model-free, addressed). This is how L1 and L2 read.
+- **The ask:** `adapters/text/surfaces.js` (extractSurfaces) reads the ask's surfaces, beside askFrame's title door. This gives two witnesses for the anchor, not one.
+- **The pages:** `adapters/text/spans.js`, `surfaces.js` and `relations.js` (extractSurfaces, discoverRelationVocab, extractRelations) read every recorded page into addressed surfaces and relation notes. The universe is made only of these, each with a byte address.
+
+**Logos** (the reasoning organs). L2–L4 are these, wired:
+- `kernel/hyperlexicon.js` (Xushen): the edges, with standing (candidate / given).
+- `kernel/kind-induction.js` (Kanada): an entity's kind is induced from what its instances share. This is where "the building" is the Opera House, and where "a capital is a city" comes from. It replaces any role-to-kind table.
+- `kernel/gfp-claim.js` (Talmy): the void's open edge, figure against ground (`claimFromTriple`).
+- `organs/grounding.js` (Mozi): a filler stands only on what was witnessed.
+- `organs/corroboration.js` (Bukhari): competing fillers and independent chains.
+- `kernel/contest.js` (Tungara, `adjudicate` / `nullAdjudicate`): two fillers for one edge (1973 vs 1957) are settled by the contest organ against its own null, never by proximity.
+- `kernel/perspective.js` (Mahavira): standpoints kept apart.
+- `kernel/stigmergy.js` (Wilson): trails from the turn ledger, as a witness, later.
+
+**Pathos** (for whom the void exists).
+- `organs/experiencer.js` (Panini, requireExperiencer / withExperiencer): every declared void carries its experiencer, the person asking. A claim about an attitude ("X believed …") carries its holder.
+- `organs/pathos.js` (Abhinavagupta): the felt shape of the exchange.
+- In the recursion, pathos is the **top** layer. The person's next act on an answer (re-ask, source-ask, challenge, moving on, from the Wald turn ledger) is evidence passed down to every layer below. The frozen battery has no next acts, so pathos's down-going evidence is **wired and recorded on the battery but scored only live** (declared). Its battery contribution is the experiencer field, which is recorded, not scored, because gold carries no experiencer.
+
+**Unchanged:** the battery, the scoring, the arms, the nulls, bars V1–V6. The L1 grammar reader keeps its declared word tables only where no organ answers the question: measure adjectives, request verbs, time nouns. `admits` for a role noun ("capital" → city) is **not** in any table. It must come from kind-induction over the universe (L2/L3), or stay a typed gap.
