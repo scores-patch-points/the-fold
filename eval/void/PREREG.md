@@ -337,3 +337,29 @@ Draws: 200, seed 20261014. A universe with fewer than 2 attested verbs (or fewer
 **Reported:** per arm, passes by the strong form (anchor written, core, different argument) and the weak form; removals by rule; refusals by reason; each ask's top two fillers and whether the verdict is bound, contested or unbound. The number of **strong-form passes** is the arm's power, and an arm with fewer than **10** strong-form slots across dev and held is reported as underpowered and is not read as a refutation. (10 is the count that would let one in ten slots move a rate of 0.1; it is reported, not tuned.)
 
 **Admission.** An arm is admitted only if its Useful is at least L1.2's on dev and on held, and WRONG is no higher, with at least one set strictly better.
+
+## Amendment 14 (2026-10-14): L5, the keyed door. Written after the Wikidata feasibility probe (RESULTS.md, f2d14d4) and after the user's rule; before anything is built or run.
+
+**The user's direction:** "make it so", and: "kinds have specific parameters (keys) that's what makes them a kind."
+
+**Why.** The probe (property-label search over all of Wikidata, filtered by presence on the entity) held the gold for 26 of 55 answerable asks, against 12 answered by the best prose arm. Its failures were choice of property: a verb with no noun label (*wrote*), a wrong licensed property (*completed* → *inception*). The user's rule says what constrains that choice: **a kind is its parameters**. The anchor's kind licenses exactly the keys it has; a relation is a parameter of the kind or it is nothing.
+
+**The door, with no table and no constant.**
+1. **Identity.** L1.2's anchor title → its Wikipedia `pageprops.wikibase_item` (exact; no search) → the item's claims.
+2. **The kind's parameters** (khora `terrainInduction` evidence: `structural_feature`, `featureKey` = property id):
+   - the item's own keys (the property ids it carries); and
+   - the **declared parameters of each of its classes**: `P31` → class item → `P1963` ("properties for this type").
+   Their union is the kind's key set. A key the class declares and the item lacks is a **typed void**: *the kind has this parameter; this instance has no value*.
+3. **Matching the relation to a key.** Fetch labels and aliases of the key set. A relation word (the ask's relation words, its role noun, its question words) matches a key when it equals the key's label or an alias, or shares a lemma with a token of either (khora `sameAct` over the received morphology prior; EWT gold lemmas). **No derivation table**: *wrote* does not match *author* unless an alias says so, and that is a typed refusal, not a guess.
+4. **The property's own value type is the `admits` kind.** `time` for date/era/year asks; `quantity` for length/count/mass; `wikibase-item` for person/place/thing. A matched key of another datatype is refused.
+5. **Values and verdict (Nagarjuna's four corners, `hl.js`).** One value: bound. More than one value for a property Wikidata marks single-valued (a `P2302` single-value constraint, `Q19474404`): contested. More than one for a non-single-valued property: bound as the **set**. No value for a declared key: the typed void above (neither). No key matches: unbound, listing the kind's keys of the right datatype as the open void.
+6. **The answer line is mechanical.** `<anchor> — <property label>: <value>` (a time is rendered at its own recorded precision). Its grounds are the statement address (`Q…#P…`), not a source sentence: it is a claim, not a snip. Callimachus's `realizeClaim` is the paraphrase, later.
+
+**Arms (each replayed from a sha-pinned recording of the Wikipedia and Wikidata responses; additive: an L0 answer is never replaced):**
+- **L5-keyed**: the door as above.
+- **L5-open** (the ablation of the user's rule): the property candidates come from Wikidata's property-label search over **all** properties, not the kind's keys, then are filtered by presence on the entity (the probe's method). If L5-keyed does not beat L5-open, the rule "a kind is its keys" has not earned its place in this door.
+- **L5-keyed + L1.2** is what is scored; L5 only speaks where L0 had no answer.
+
+**Admission** against L1.2, as before: Useful at least L1.2's on dev and on held, WRONG no higher, at least one set strictly better. Reported besides: asks where the kind had the key but the instance no value; asks refused for no matching key (the lexical failures, by relation word); the gold-present ceiling from the probe, so the gap between "present" and "answered" is visible.
+
+**Declared limits:** one hop of classes (`P31`, not `P279`); English labels and aliases only; the encyclopedia's `wikibase_item` is the identity witness (a second one, a Wikidata `sitelink` check, is reported, not required).
