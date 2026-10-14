@@ -235,6 +235,19 @@ export function admitReferents(record, turn, { hints = null } = {}) {
       upsert(rec, r.surface, { weight: 2 + (inTitle ? 1 : 0), role, kind: role === "question" && turn?.slot === "person" ? "anchor" : undefined });
     }
   }
+  // THE SLOT LAYER'S OWN REFERENTS (nesting audit F, D3/D6): the slot pipeline resolved the ask's names to PAGES by the title door
+  // (`frame.referents`: { surface, title, aliases }). That is the referent as the encyclopedia knows it, in any script and in any case, and
+  // it used to be dropped: the record re-read the question by capitalisation alone, so a lower-case ask named nothing and a caseless script
+  // named only what a source title echoed. They are the PERSON'S words (role "question", an anchor in a who-ask), resolved; role "frame" marks
+  // where the resolution came from. Only referents (never the frame's attributes, which are not things to carry).
+  for (const r of Array.isArray(turn?.frame) ? turn.frame : []) {
+    const title = String(r?.title ?? "").trim();
+    if (!title) continue;
+    upsert(rec, title, { weight: 3, role: "question", kind: turn?.slot === "person" ? "anchor" : undefined });
+    upsert(rec, title, { weight: 0, role: "frame" });
+    const e = rec.entities.find((x) => fold(x.surface) === fold(title) || (x.forms || []).some((f) => fold(f) === fold(title)));
+    if (e) for (const al of [r.surface, ...(Array.isArray(r.aliases) ? r.aliases : [])]) { const a = String(al ?? "").trim(); if (a && fold(a) !== fold(e.surface) && !e.forms.some((f) => fold(f) === fold(a))) e.forms.push(a); }
+  }
   for (const c of cands) upsert(rec, c, { weight: 3, role: "answer", kind: "candidate" });
   const fl = turn?.filler && typeof turn.filler.text === "string" ? turn.filler.text.trim() : "";
   if (fl && !turn?.creative) upsert(rec, fl, { weight: 3, role: "filler", kind: turn.filler.slot === "person" ? "person" : "thing" });

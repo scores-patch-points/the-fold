@@ -10,6 +10,7 @@
 //   storeAnswerTurn(turn)     the plain-JSON copy that rides message.answerTurn (survives a reload and a session merge)
 //   answerLine(turn)          message.content for a slot turn: the realised answer line, or '' (a gap/contest is drawn, not said)
 //   traceFeed(tt, turn, lineEvent)  one feed row per trace line of the turn
+//   frameReferentsOf(turn)    the referents the slot layer resolved (title door), for the chat's referent record
 //   answerRecordNote(turn)    the short summary the "how this was answered" record carries, and its process line
 //
 // A slot turn is stored as `authored: "sources"` + `answerTurn` (never `snips`): its words are the source sentence's own words
@@ -202,6 +203,22 @@ export function traceFeed(tt, turn, lineEvent) {
   for (const l of asArr(turn && turn.trace)) {
     if (!l || !isStr(l.say)) continue;
     out.push(...lineEvent(tt, l.say, { tone: l.unmeasured ? "warn" : "info", note: isStr(l.detail) ? l.detail : "" }));
+  }
+  return out;
+}
+
+/** The referents the slot layer itself resolved for the turn (nesting audit F, D3): `frame.referents` of a single slot turn, or of every part of a compound,
+ *  as [{ surface, title, aliases }] — what the title door said the ask's names ARE. [] for a handoff, a gap with no frame, or no slot turn. The chat's
+ *  referent record admits these (fold-chat-mind.js admitReferents `frame`) instead of re-reading the question by capitalisation alone. Pure. */
+export function frameReferentsOf(turn) {
+  if (!turn || typeof turn !== "object") return [];
+  const frames = asArr(turn.parts).length ? asArr(turn.parts).map((p) => p && p.frame) : [turn.frame];
+  const out = [], seen = new Set();
+  for (const f of frames) for (const r of asArr(f && f.referents)) {
+    const title = r && isStr(r.title) ? r.title.trim() : "";
+    if (!title || seen.has(title)) continue;
+    seen.add(title);
+    out.push({ surface: isStr(r.surface) ? r.surface : title, title, aliases: asArr(r.aliases).filter(isStr) });
   }
   return out;
 }
