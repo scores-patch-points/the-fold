@@ -45,7 +45,7 @@ export function signalsOf(said, prior = []) {
   const activeGap = !!(producing && outType.voidIfMissing.some((g) => g.active === true));
   const urlAsk = (() => { try { return urlOf(String(said || "")); } catch { return null; } })();
   const live = liveAsk(question, { year: YEAR });
-  return { kind, follow, outType, producing, lookup, recall, srcRecall: null, primaryAsk: null, activeGap, hasMaterial: false, urlAsk, bookask: null, live, question };
+  return { kind, follow, outType, producing, lookup, recall, srcRecall: null, primaryAsk: null, activeGap, hasMaterial: false, urlAsk, bookask: null, live, lang: lang0, closedClass: !!(fw && fw.size), question };
 }
 
 /** fold-chat.js:2532, rebuilt from the same signals. */

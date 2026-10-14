@@ -102,6 +102,23 @@ Gold: 341 rows (`eval/cases.json` 73; G1 output asks 268). Ratios are leave-one-
 - 109 of 341 rows fall in the CONTINUE region. The current gate's α is small (1%), so the bars are wide and most decisions are made by the §3.8 truncation. The cheapest-further-pull loop is where a better decision would come from.
 - **Live (port 8824, 2026-10-14):** a factual turn recorded continue → truncated pull, matching the gate (3,498 ms, 3 passages kept). A poem turn recorded web *possible* (plan and lookup for, output against) and REFUSED at −4.35, also matching the gate. Bar S holds: Wald never assigns `wantWeb`.
 
+### Amendment 1: the language witness (re-run 2026-10-14)
+
+`eval/wald/PREREG.md` Amendment 1 was committed (9c12f18) before any code change and before the re-run. It adds one witness, `lang`. When `detectLang` names a language and `functionWordsOf` has no closed class for it, `lang` votes `web: for`. Its ratio is measured leave-one-out on the same gold: for = 2.32. The bars are unchanged.
+
+| | gate now | Wald, first run | Wald, Amendment 1 |
+|---|---|---|---|
+| cases.json: missed / wasted | 1 / 0 | 3 / 0 | **0** / 0 |
+| G1: missed / wasted | 8 / 2 | 0 / 2 | 0 / 2 (unchanged; no G1 row fires the witness) |
+| all: errors | 11 | 5 | 2 |
+| CONTINUE rows | | 109 | 100 |
+| shuffled-witness null, all (p05 / median) | | 149 / 167 | 146 / 168 |
+
+- **B1 HOLDS** (0 against 1). **B2 holds**, with no new wasted pulls. **B3 holds** (2 against a p05 of 146). **B4 holds** in Node (max 0.42 ms). The only rows that changed are the three Japanese misses, which now agree with the gate. Nothing regressed on G1.
+- **Declared weakness (chorus: Diaconis).** The witness fires on 12 cases.json rows: de ×3, pt ×2, ja ×3, hi ×3, and `e_wall_sw` (langid reads it as `id`). All 12 are labelled *search*. The gold has no non-English ask that should *not* search, so the witness's ratio has never met a counterexample, and this gold cannot falsify it. It encodes "a non-English cases.json ask wants search" exactly as far as the gold does. Before Wald gates, the gold needs non-English no-search rows. That is a gold change, so it needs its own pre-registration.
+- **Scope (chorus: Greenberg).** "No closed class" is a property of the surface's reader coverage, not of the language. de and pt fire because `functionWordsOf` has no set for them, not because they are hard to read. When a closed class is added for a language, this witness goes quiet for it, and the ratio must be re-measured.
+- **Bar S after the hook change was not re-checked live.** The preview slots were full. The one changed line in `fold-chat.js` adds `lang` and `closedClass` inside the shadow's own `try`, and it never assigns `wantWeb`.
+
 ## Calibration and scoring (no hand-set thresholds)
 
 - **Gold, already labelled:** the 73 cases in `eval/cases.json` (`expect.search`) and G1's 371 phrasings (`needsSources`, 268 output asks and 103 non-asks, in five languages).

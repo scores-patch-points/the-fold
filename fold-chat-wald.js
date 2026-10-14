@@ -6,7 +6,7 @@
 // beside it, so the two can be scored against each other (eval/wald/PREREG.md).
 //
 //   witnessVotes(signals) → [{ witness, pull, vote, why }]
-//     signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial, urlAsk, bookask, live }
+//     signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial, urlAsk, bookask, live, lang, closedClass }
 //     each is exactly the value fold-chat.js computed (null when the surface did not compute it — then that witness abstains)
 //   waldShadow({ signals, calibration, prices, gateNow }) → { decision, votes, gateNow, agrees, line }
 //
@@ -65,6 +65,9 @@ export function witnessVotes(sig = {}) {
   if (sig.bookask) out.push(v("shelf", PULLS.LOCAL, FOR, "a book on the shelf"));
   // live — liveAsk (fold-chat-gaps.js): weather, a price, today's news can only come from a live source
   if (sig.live) out.push(v("live", PULLS.WEB, FOR, `a live ask (${sig.live.what})`));
+  // lang — detectLang (fold-chat-lang.js) and the language's closed class (functionWordsOf): an ask in a named language that no
+  // closed-class reader reads is one observation of its own (PREREG Amendment 1). Its weight is measured on the gold, never declared.
+  if (sig.lang && sig.lang !== "unknown" && sig.closedClass === false) out.push(v("lang", PULLS.WEB, FOR, `an ask in ${sig.lang} that no closed-class reader reads`));
   return out;
 }
 

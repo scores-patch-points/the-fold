@@ -2537,7 +2537,7 @@ export function mount(root, opts = {}) {
     // It reads the gate's final answer (gateNow) and changes nothing; the record carries both, so the two are scored against each other turn by turn.
     const waldT0 = (typeof performance !== "undefined" ? performance.now() : Date.now());
     let waldRec = null;
-    try { waldRec = waldShadow({ signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial: materialOf(s).length > 0, urlAsk: urlAskDetect, bookask: bookask && follow.mode === "web" ? bookask : null, live: liveAsk(question) }, calibration: WALD_CALIBRATION, gateNow: !!wantWeb }); waldRec.decideMs = (typeof performance !== "undefined" ? performance.now() : Date.now()) - waldT0; } catch (e) { waldRec = { mode: "shadow", error: String(e?.message || e) }; }
+    try { waldRec = waldShadow({ signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial: materialOf(s).length > 0, urlAsk: urlAskDetect, bookask: bookask && follow.mode === "web" ? bookask : null, live: liveAsk(question), lang: lang0, closedClass: (() => { const f = functionWordsOf(lang0 === "unknown" ? "en" : lang0); return !!(f && f.size); })() }, calibration: WALD_CALIBRATION, gateNow: !!wantWeb }); waldRec.decideMs = (typeof performance !== "undefined" ? performance.now() : Date.now()) - waldT0; } catch (e) { waldRec = { mode: "shadow", error: String(e?.message || e) }; }
     // The animation is for a FOLLOW-UP that researches; a first turn or a no-research turn shows only the murmur.
     feedGate.on = s.messages.filter((x) => x.role === "user").length > 1 && !!wantWeb;
     if (!feedGate.on) { try { feed.dispose(); feed.root.remove(); } catch (e) {} }

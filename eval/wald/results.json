@@ -12,10 +12,10 @@
    },
    "wald": {
     "n": 73,
-    "missed": 3,
+    "missed": 0,
     "wasted": 0,
-    "errors": 3,
-    "continue": 70
+    "errors": 0,
+    "continue": 61
    }
   },
   "g1": {
@@ -44,41 +44,41 @@
    },
    "wald": {
     "n": 341,
-    "missed": 3,
+    "missed": 0,
     "wasted": 2,
-    "errors": 5,
-    "continue": 109
+    "errors": 2,
+    "continue": 100
    }
   }
  },
  "null": {
   "cases": {
    "shuffles": 200,
-   "p05": 18,
-   "median": 39,
+   "p05": 17,
+   "median": 37,
    "p95": 58
   },
   "g1": {
    "shuffles": 200,
-   "p05": 101,
-   "median": 129,
-   "p95": 172
+   "p05": 98,
+   "median": 132,
+   "p95": 173
   },
   "all": {
    "shuffles": 200,
-   "p05": 149,
-   "median": 167,
-   "p95": 207
+   "p05": 146,
+   "median": 168,
+   "p95": 198
   }
  },
  "restingCost": {
-  "medianMs": 0.014416999999866675,
-  "maxMs": 0.6207090000000335
+  "medianMs": 0.008666999999945801,
+  "maxMs": 0.4241660000000138
  },
  "bars": {
   "B1": {
-   "holds": false,
-   "wald": 3,
+   "holds": true,
+   "wald": 0,
    "gateNow": 1,
    "what": "missed pulls on cases.json"
   },
@@ -96,13 +96,13 @@
   },
   "B3": {
    "holds": true,
-   "wald": 5,
-   "nullP05": 149,
+   "wald": 2,
+   "nullP05": 146,
    "what": "fewer errors than 95% of shuffled-witness nulls (all gold)"
   },
   "B4": {
    "holds": true,
-   "maxMs": 0.6207090000000335,
+   "maxMs": 0.4241660000000138,
    "what": "decision time below the 1 ms stand-in price of a thread read"
   }
  },
@@ -113,30 +113,6 @@
    "label": true,
    "gateNow": false,
    "wald": true,
-   "verdict": "continue"
-  },
-  {
-   "set": "cases",
-   "id": "e_eiffel_ja",
-   "label": true,
-   "gateNow": true,
-   "wald": false,
-   "verdict": "continue"
-  },
-  {
-   "set": "cases",
-   "id": "e_wall_ja",
-   "label": true,
-   "gateNow": true,
-   "wald": false,
-   "verdict": "continue"
-  },
-  {
-   "set": "cases",
-   "id": "e_cap_ja",
-   "label": true,
-   "gateNow": true,
-   "wald": false,
    "verdict": "continue"
   },
   {

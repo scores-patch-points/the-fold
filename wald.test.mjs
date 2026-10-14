@@ -119,3 +119,12 @@ test("the calibration the surface ships is measured, separable, and decides (cho
   assert.equal(s.decision.pulls.web.verdict, VERDICT.REFUSED, "a creative piece that needs no sources is refused the web under the shipped calibration");
   assert.equal(s.agrees, true);
 });
+
+test("an ask in a language no closed-class reader reads is a vote of its own, not silence (PREREG Amendment 1)", () => {
+  // the Japanese asks of the first run: lookup unmeasured, kind chat, the plan's vote near 1 — the lang witness must still speak
+  const sig = { kind: "chat", follow: { mode: "web" }, lookup: { warranted: true, measured: false }, lang: "ja", closedClass: false };
+  assert.deepEqual(witnessVotes(sig).filter((x) => x.witness === "lang").map((x) => [x.pull, x.vote]), [["web", "for"]]);
+  assert.deepEqual(witnessVotes({ ...sig, closedClass: true }).filter((x) => x.witness === "lang"), [], "a language with a closed class is read by lookup, not this witness");
+  assert.deepEqual(witnessVotes({ ...sig, lang: "unknown" }).filter((x) => x.witness === "lang"), [], "an unknown language names nothing");
+  assert.deepEqual(witnessVotes({ ...sig, closedClass: undefined }).filter((x) => x.witness === "lang"), [], "not computed is an abstention");
+});
