@@ -69,11 +69,11 @@ export function renderTime(v) {
   return yy;
 }
 
-export async function keyedFill({ fields, anchor, relationWords = [], askWords = [], getJson, sameAct = null, lemmasOf = null, dominantOf = null, keyed = true, skipWords = null, lang = "en", edition = null } = {}) {
+export async function keyedFill({ fields, anchor, relationWords = [], askWords = [], getJson, sameAct = null, lemmasOf = null, dominantOf = null, keyed = true, skipWords = null, lang = "en", edition = null, slotFree = false } = {}) {
   const res = (verdict, extra = {}) => ({ verdict, ...extra });
-  if (!fields || !fields.admits) return res("unbound", { refused: "admits_undeclared" });
+  if (!fields || (!fields.admits && !slotFree)) return res("unbound", { refused: "admits_undeclared" });   // slotFree: no slot reader for this language; the property's own datatype stands
   if (!anchor || !anchor.title) return res("unbound", { refused: "no_anchor" });
-  const wantType = DATATYPE_OF_ADMITS[fields.admits] || (fields.admits ? "wikibase-item" : null);
+  const wantType = slotFree ? null : DATATYPE_OF_ADMITS[fields.admits] || (fields.admits ? "wikibase-item" : null);
   // 1. identity: the encyclopedia's own wikibase_item for the exact title
   const pp = await getJson(`${WP_OF(edition || lang)}?${qs({ action: "query", prop: "pageprops", ppprop: "wikibase_item", titles: anchor.title, redirects: "1" })}`);
   const page = Object.values(pp?.query?.pages || {})[0];
