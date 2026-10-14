@@ -254,3 +254,31 @@ The user's direction: "remember the work we did on induction for ALL terrains". 
    Both are reported on dev and held. The check is kept only if L2c's WRONG ≤ L2c-noorder's and its Useful ≥ L2c-noorder's on both sets. Otherwise it is dropped, and the stack ships without it (Callimachus measured chain closure over grammar-feature cells as non-discriminating; its arc-order check, `logosOrder` in khora PR #7, is a later candidate).
 
 L2c is admitted only against **L1.2** (or L1.1, if L1.2 is not admitted) on bars V1–V4. Unchanged: the battery, the scoring, the recording, and V1–V6.
+
+## Amendment 10 (2026-10-14): the recording froze rate limits. Every arm is re-recorded and re-run. Written before the re-record.
+
+**Found while tracing L2c's misses:** 88 of the recorded responses are not material. 84 are Wikipedia **429s** (rate limiting); the rest are 2 relay 500s and 2 403s. The 429s include title-door lookups ("capital of Australia", "Mars"), searches, and page reads (the Pride and Prejudice pages). A replay of a 429 is an environment failure dressed as evidence. It produced spurious `referents_unresolved` and `unreached` gaps in **every** arm from L0 on.
+
+**The fix (harness only; no arm changes):**
+- In record mode, a 429 or 5xx is **never saved**. It is retried, honoring `Retry-After` when sent, otherwise with exponential backoff from 1 s, up to 6 tries. Recording runs **one ask at a time**.
+- A 403 is the site's real refusal, so it is kept as material.
+- A response that still fails after the retries is left unrecorded, and its replay is a typed `unrecorded` miss, counted per arm.
+- Every non-200 file in `eval/void/recording/` is deleted except the 403s. Then L0, L1, L1.1, L1.2, L2, L2′, L2c and L2c-noorder are re-recorded **with their code unchanged**, then replayed offline.
+
+**Consequence, declared:** every figure in RESULTS.md before this amendment was measured on a contaminated recording. Those figures are superseded. The admission decisions (L1, L1.1, L1.2; L2 and L2′ not admitted) are **re-decided** on the clean numbers by the same bars, and RESULTS.md keeps both, marked.
+
+## Amendment 11 (2026-10-14): L2d, the relation-counterfactual Born null. Written before L2d is built or run.
+
+**Why:** the per-candidate filler-shuffle null (Amendment 9) removes the very signal the void asks for. The right filler is often the page's dominant value (1912 on the Titanic page), so shuffling fillers recreates its binding by chance, and nothing is ever probable. The void's question is *what fills **this** edge*, not *is this value unusual on the page*.
+
+**The counterfactual:** keep every filler where it is, and replace the **relation**.
+- Each null draw replaces the void's relation words with one verb drawn uniformly from the universe's **own attested verb vocabulary**: tokens in the anchor's pages whose EWT gold UPOS is majority VERB, other than the relation itself.
+- The bindings are recomputed with the same witnesses, the same reach, the same fillers, and the same Born mass.
+- A candidate c is **probable** iff its real mass M_c exceeds its own mass under the counterfactual relation in **every** draw.
+- This is the house's "matched counterfactual": does *sank* pick out 1912 more than *launched*, *built* or *departed* do?
+
+For **measure** slots the relation is the dimension. Their counterfactual swaps the admitted dimension for each other dimension the page's quantities carry ("length" against "mass", "time"…), with the same rule.
+
+Draws: 200, seed 20261014. A universe with fewer than 2 attested verbs (or fewer than 2 dimensions) cannot build the null: a typed gap that licenses nothing.
+
+**Everything else is L2c's:** L1.2, the strict engine co-reference and sentence instances, the order check (kept by Amendment 9's tie rule, with its value reported as unmeasured). L2d is scored on the clean recording against L1.2's clean numbers, on V1–V4.
