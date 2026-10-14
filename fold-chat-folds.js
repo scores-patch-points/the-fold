@@ -39,6 +39,9 @@ import { createProgressGuard, novelGround, stateOf, isConverging } from "./fold-
 // THE TRAILS, PER SOURCE: deposit · evaporate · follow, each key at ITS source's decay rate
 // (web ground outlives the climb; a soured read fades fast so it is retried). fold-chat-trails.js.
 import { deposit, pheromone as pheromoneOf } from "./fold-chat-trails.js";
+// THE REHEARSAL WITNESS (eval/agent/PREREG.md): the turn's own SATISFY sentence, turned MECHANICALLY into actions and an
+// expectation, rehearsed in the sandboxed frame. A failed rehearsal is a finding; an un-extractable sentence is a named gap.
+import { planRehearsal, judgeRehearsal, regressionFinding, OBSERVE_JS, rehearsalScript } from "./fold-chat-rehearse.js";
 
 const KEY = "fold-chat:folds@1";
 // THE WEAVE EXPERIMENT: ?stitch=1 makes the make stitch the page from what was
@@ -48,6 +51,8 @@ const STITCH = (typeof location !== "undefined") && new URLSearchParams(location
 // PROJECTED from it; an edit APPENDS a fill for only the unit it names — the whole
 // page is never redrawn. `?log=0` forces the old whole-page draw (the fallback).
 const UNIT_LOG = (typeof location === "undefined") ? true : new URLSearchParams(location.search).get("log") !== "0";
+// THE REHEARSAL WITNESS is ADDITIVE: `?rehearse=1` turns it on; off, the pipeline is exactly what it was.
+const REHEARSE = (typeof location !== "undefined") && new URLSearchParams(location.search).get("rehearse") === "1";
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const uid = () => "fd_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 // PHEROMONE TRAILS — the ant's memory over the log. A path that led to a held page
@@ -355,7 +360,9 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
       const frame = document.createElement("iframe");
       frame.setAttribute("sandbox", "allow-scripts");
       frame.style.cssText = "position:fixed;left:-9999px;top:0;width:800px;height:600px;border:0";
-      const inject = `<script>(function(){var e=[];window.onerror=function(m){e.push(String(m));};function snap(){try{return String((document.body&&document.body.innerText)||"");}catch(x){return "";}}function labs(){try{var q=document.querySelectorAll('button,a,[role=button],option,label');return Array.prototype.map.call(q,function(el){return (el.textContent||"").trim();}).slice(0,80);}catch(x){return [];}}window.addEventListener("load",function(){var a=snap();setTimeout(function(){try{parent.postMessage({__observe:1,err:e,t0:a,t1:snap(),nodes:document.getElementsByTagName("*").length,tags:(document.body&&document.body.innerHTML||"").length,labels:labs()},"*");}catch(x){}},${ms});});setTimeout(function(){try{parent.postMessage({__observe:1,err:e,t0:snap(),t1:snap(),nodes:document.getElementsByTagName("*").length,labels:labs()},"*");}catch(x){}},${ms + 800});})();<\/script>`;
+      // With the witness on, the observer also reports what the page OFFERS to do (its controls and inputs) — the rehearsal's join.
+      const offer = REHEARSE ? ",offer:__offer()" : "";
+      const inject = `<script>(function(){var e=[];window.onerror=function(m){e.push(String(m));};${REHEARSE ? OBSERVE_JS : ""}function snap(){try{return String((document.body&&document.body.innerText)||"");}catch(x){return "";}}function labs(){try{var q=document.querySelectorAll('button,a,[role=button],option,label');return Array.prototype.map.call(q,function(el){return (el.textContent||"").trim();}).slice(0,80);}catch(x){return [];}}window.addEventListener("load",function(){var a=snap();setTimeout(function(){try{parent.postMessage({__observe:1,err:e,t0:a,t1:snap(),nodes:document.getElementsByTagName("*").length,tags:(document.body&&document.body.innerHTML||"").length,labels:labs()${offer}},"*");}catch(x){}},${ms});});setTimeout(function(){try{parent.postMessage({__observe:1,err:e,t0:snap(),t1:snap(),nodes:document.getElementsByTagName("*").length,labels:labs()${offer}},"*");}catch(x){}},${ms + 800});})();<\/script>`;
       const srcdoc = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => m + inject) : /<body[^>]*>/i.test(html) ? html.replace(/<body[^>]*>/i, (m) => m + inject) : inject + html;
       const done = (d) => { window.removeEventListener("message", onMsg); clearTimeout(to); try { frame.remove(); } catch { /* gone */ } resolve(d); };
       const onMsg = (ev) => { if (ev.source !== frame.contentWindow) return; const d = ev.data || {}; if (d.__observe) done(d); };
@@ -363,6 +370,38 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
       const to = setTimeout(() => done({ err: ["observation timed out"], t0: "", t1: "", nodes: 0, labels: [] }), timeout);
       frame.srcdoc = srcdoc; document.body.appendChild(frame);
     });
+  }
+
+  // THE REHEARSAL, RUN: the same sandboxed frame, the plan injected as data; the executor acts step by step and reports.
+  function rehearsePage(html, plan, { ms = 1200 } = {}) {
+    const timeout = ms + 4000 + (plan.actions || []).length * 300 + Math.max(1200, Number(plan.wait) || 0);
+    return new Promise((resolve) => {
+      const frame = document.createElement("iframe");
+      // the SAME sandbox as the canvas the person uses (allow-forms too): a form that reloads the page is rehearsed as it would be
+      frame.setAttribute("sandbox", "allow-scripts allow-forms");
+      frame.style.cssText = "position:fixed;left:-9999px;top:0;width:800px;height:600px;border:0";
+      const inject = rehearsalScript(plan, { ms });
+      const srcdoc = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => m + inject) : /<body[^>]*>/i.test(html) ? html.replace(/<body[^>]*>/i, (m) => m + inject) : inject + html;
+      const done = (d) => { window.removeEventListener("message", onMsg); clearTimeout(to); try { frame.remove(); } catch { /* gone */ } resolve(d); };
+      const onMsg = (ev) => { if (ev.source !== frame.contentWindow) return; const d = ev.data || {}; if (d.__rehearse) done(d); };
+      window.addEventListener("message", onMsg);
+      const to = setTimeout(() => done(null), timeout);
+      frame.srcdoc = srcdoc; document.body.appendChild(frame);
+    });
+  }
+  /** THE WITNESS ON ONE PAGE: plan from the turn's SATISFY sentence + what the page offers, rehearse, judge, and hold the turn to
+   *  what an earlier version of the page already held (the regression check). Returns { finding, verdict }; logs one row. */
+  async function witnessCheck(html, obs, witness, required = []) {
+    const plan = planRehearsal(witness.satisfy, (obs && obs.offer) || {});
+    const verdict = plan.gap ? judgeRehearsal(plan, null) : judgeRehearsal(plan, await rehearsePage(html, plan));
+    const shown = [((obs && obs.labels) || []).join(" "), String((obs && obs.t0) || "")].join(" ").toLowerCase();
+    const regression = regressionFinding(witness.held, { shown, rehearsal: verdict });
+    const finding = verdict.finding || regression || null;
+    push({ kind: "think", by: "app", op: "EVA", text: finding ? `rehearsal: ${finding}` : verdict.ok ? verdict.line : `rehearsal — a named gap: ${verdict.gap}`, ok: !finding, rehearsal: { satisfy: witness.satisfy || null, ok: verdict.ok, gap: verdict.gap || null, finding: verdict.finding || null, regression: regression || null, actions: plan.actions ? plan.actions.length : 0, named: plan.named || [] } });
+    // what this page holds, the next version must keep: the required atoms it shows, and a rehearsal it passed
+    for (const a of required) if (shown.includes(String(a.text || "").toLowerCase())) witness.held.atoms.add(a.text);
+    if (verdict.ok === true) { witness.held.rehearsed = plan.named || []; for (const l of plan.named || []) witness.held.atoms.add(l); }
+    return { finding, verdict };
   }
 
   // READ THE ASK — the fold's real thinking, not a lookup. The model is asked to
@@ -424,7 +463,7 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
    *  gate every byte, and PROJECT the page from the log. Works with NO sources too (a
    *  widget like a tip calculator) — the gate is then structural, and the test decides.
    *  Returns the build ({ artifact, verdict, log }) or null. */
-  function stitchKit(material, ac, atoms = []) {
+  function stitchKit(material, ac, atoms = [], witness = null) {
     const hasMat = !!(material && material.length);
     const model = getModelId?.();
     return {
@@ -449,14 +488,15 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
         if (obs.nodes < 4) return { ok: false, reason: "the page rendered nothing" };
         const missing = missingAtoms(atoms, { labels: obs.labels, text: obs.t0 });
         if (missing.length) return { ok: false, reason: `the page does not show ${atomLine(missing)} — the ask names them` };
+        if (witness) { const w = await witnessCheck(code, obs, witness, atoms); if (w.finding) return { ok: false, reason: w.finding }; }
         return { ok: true, reason: `ran · ${obs.nodes} nodes · every required item shown` };
       },
     };
   }
-  async function tryStitch(text, material, outline, draw, ac, atoms = [], units = null) {
+  async function tryStitch(text, material, outline, draw, ac, atoms = [], units = null, witness = null) {
     const us = units || unitsFromOutline(outline, { max: 8 });
     if (!us.length) return null;
-    const kit = stitchKit(material, ac, atoms);
+    const kit = stitchKit(material, ac, atoms, witness);
     return createBuild({ units: us, field: kit.field, gate: kit.gate, draw: kit.draw, assemble: kit.assemble, test: kit.test });
   }
   /** AN EDIT TO A LOG-BUILT PAGE IS AN ATOMIC APPEND, NEVER A REDRAW. The unit(s) the
@@ -553,6 +593,8 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     const ground = new Set();
     const searchMemo = new Map();
     const progress = createProgressGuard();
+    // THE WITNESS'S MEMORY ACROSS THE TURN: what an earlier version of the page held, so a later one may not lose it.
+    const turnHeld = { atoms: new Set(), rehearsed: null };
     // THE ASK, FOLDED (one bounded local read per span — the model never holds the
     // whole ask). `required` is the join's ask-side; `unread` is the fold's own
     // named ignorance, said once.
@@ -673,6 +715,7 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     }
     // (6) WEAVE IT TOGETHER — and REC→NUL when the observation fails.
     let finding = atom.finding || null, html = null, held = false;
+    const witness = REHEARSE ? { satisfy: (want && want.satisfy) || (reading && reading.satisfy) || null, held: turnHeld } : null;
     // THE MEASURED RESIDUAL (the DMD observable): how far the page is from holding —
     // the real test's own output (observation errors + failing claims), never a text length.
     let residual = 1, obsErrors = 0, failedClaims = 0;
@@ -680,7 +723,7 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     // (the mouth draws only the residue — one fragment per unit, never the whole
     // page). A page that does not hold falls back to the whole-page draw below.
     if (UNIT_LOG && !finding && outline) {
-      const st = await tryStitch(text, material, outline, draw, ac, required);
+      const st = await tryStitch(text, material, outline, draw, ac, required, null, witness);
       if (st) {
         for (const c of st.log) {
           const by = c.source === "field" ? "library" : c.source === "hunt" ? "hunt" : "mouth";
@@ -747,6 +790,12 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
           paint();
         }
       }
+      // THE REHEARSAL (the witness on): do what the turn said a satisfying page would do, and see whether this page does it.
+      if (!finding && witness) {
+        const w = await witnessCheck(html, obs, witness, required);
+        if (w.finding) finding = w.finding;
+        paint();
+      }
       residual = finding ? (1 + obsErrors + failedClaims) : 0;
       if (!finding) { held = true; toast("Held — the sources hold and it runs."); break; }
       push({ kind: "note", by: "app", op: "REC", text: "", ok: false, errors: [{ code: "finding", msg: finding }] });
@@ -761,13 +810,14 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     // future). A settled or cycling turn is released as a NUL, not run to the cap.
     const turnGate = createTurnGate();
     const hist = [];   // the residual per pass, so a CONVERGING turn is left to the DMD
-    let dmdStop = null, progressStop = null;
+    let dmdStop = null, progressStop = null, passes = 0, refusedTurn = false;
     await runSpiral({
       atom: { text, finding: null }, grain: RUNGS[0], fuel: FUEL_TURN,
       step: async (cur, i) => {
         if (i > 0) { rungNow = RUNGS[0]; push({ kind: "think", by: "fold", op: "REC", text: `◉ re-opening the whole turn (pass ${i + 1}) — the finding: ${slice(cur.atom.finding).slice(0, 90)}` }); paint(); }
         const r = await onePass(cur.atom);
-        held = r.held;
+        passes += 1;
+        held = r.held; if (r.refused) refusedTurn = true;
         if (r.refused || r.held) return { done: true };
         // THE DMD FIRST (the measured stop): observe, then let the gate decide.
         hist.push(r.residual);
@@ -798,6 +848,8 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     if (!held && progressStop) toast("Left open — nothing new was found after " + progressStop.repeats + " tries; I stopped rather than loop.");
     else if (!held && dmdStop) toast("Left open — the turn's own modes " + (dmdStop.reason === "oscillating" ? "cycle" : "have settled") + " (measured, not the cap).");
     else if (!held) toast("Left open — the turn still does not hold after " + FUEL_TURN + " passes.");
+    // THE TURN'S OWN VERDICT, on the record (read by eval/agent; changes nothing the turn does).
+    cur.lastTurn = { held, passes, stop: held ? "held" : refusedTurn ? "refused" : progressStop ? "progress" : dmdStop ? "dmd" : "fuel" }; save();
     // LAY THE TRAIL: reinforce the path that held (the rungs climbed, the sources
     // read); sour the ground that gave nothing. The next turn follows the strongest.
     const srcKeys = (lastMaterial || []).map((m) => "src:" + domainKey(m)).filter((k) => k !== "src:");
@@ -1167,5 +1219,5 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
   if (newBtn) newBtn.onclick = () => create();
   if (railBtn) railBtn.onclick = () => (space.hidden ? (folds.length ? open([...folds].sort((a, b) => b.updated - a.updated)[0].id) : create()) : close());
   renderList();
-  return { create, setCodebase, open, close, isOpen: () => !space.hidden, list: () => folds.map((f) => ({ id: f.id, title: f.title, kind: f.kind })) };
+  return { create, setCodebase, open, close, isOpen: () => !space.hidden, isRunning: () => !!running, list: () => folds.map((f) => ({ id: f.id, title: f.title, kind: f.kind })) };
 }
