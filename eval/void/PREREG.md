@@ -386,3 +386,35 @@ Draws: 200, seed 20261014. A universe with fewer than 2 attested verbs (or fewer
 - **Declared, not measured:** `en` formats dates as en-GB (day month year, as the battery's gold shows), and the CJK punctuation set.
 - **Scored behaviour is unchanged:** L5-keyed replays identically (dev RIGHT 18 / WRONG 1 / Useful 23; held 15 / 2 / 22). `fold-chat-void-keyed.test.mjs` 9/9; mutants killed: datatype gate off, English host pinned, dates always English, open-class filter off, declared interrogatives ignored (one more, the label fallback, is equivalent: the claim's label is already in the language).
 - **Not measured, and said so:** no non-English ask has been run end to end; no SOV question has been read by the slot frame; the door's relation-to-key matching in another language uses that language's labels and aliases but, in the arm, still the EWT POS prior. The omnilingual battery (`eval/omnilingual`) covers es and fr only. The plan to change this is in VOID-WORK.md "Omnilingual".
+
+## Amendment 16 (2026-10-14): the door on a non-English battery. Written after the Wikidata label and alias spot-check of the gold ids and before any arm ran on `battery-intl.mjs`.
+
+**What this is.** The omnilingual falsification of the keyed door, in the shape `eval/omnilingual` set: a matrix of asks against languages, each fall assigned a **named cause**, and nothing tuned. It is a measurement, not an admission trial: no layer is admitted or refused by it.
+
+**Battery (`battery-intl.mjs`, frozen at the sha in `battery-intl.sha`).** Six asks (capital of Australia, capital of Canada, creator of the Mona Lisa, opening date of the Sydney Opera House, place of birth of Mozart, currency of Japan) in English as the control and in es, fr, de, ru, ja, ko, tr, hi: **54 rows**. Gold is language-free: a property id (`P36`…) and a value item id, or a year. The questions are the author's and not native-reviewed (declared). They use the noun form of the relation so that the language question is separated from the verb → noun derivation gap (a verb stratum is future work). The Sydney Opera House ask is dated, and Mozart is named by his full name so that no edition resolves a disambiguation page.
+
+**Scoring, on the EOT claim, never on the surface string.**
+- **RIGHT:** the door is bound, the claim's property id equals `goldP`, and the claim's value is an item in `goldQ` (or a time whose year equals `goldYear`).
+- **WRONG:** bound, and not RIGHT. Reported with whether the property was right.
+- **GAP, with a named cause**, assigned mechanically from the door's own refusal:
+  - **GRAMMAR**: no declared question grammar for the language (the production path);
+  - **ANCHOR**: no entity resolved for any candidate run of the ask in that language's edition (segmentation or title door);
+  - **LABEL**: the item has keys but none matches a word of the ask in the language (lexical coverage of Wikidata labels and aliases, or the language's morphology);
+  - **TYPE**: a key matched and its datatype is refused;
+  - **NOVAL**: the kind declares the key and the instance has no value;
+  - **CONTEST**: more than one value for a single-valued property.
+
+**Arms.**
+- **intl-L0:** the production path (`runSlotTurn` with the detected language): expected `no_grammar_for_language` for every non-English row. It is the baseline and the proof of the gap.
+- **intl-door:** the keyed door with no slot reader (the question's interrogative is not needed to know what kind of value a property holds), through:
+  - **segmentation:** ICU/CLDR `Intl.Segmenter(lang, word)`, a received facility, declared;
+  - **open-class words:** the language's own POS prior (`janus/priors/pos-<iso3>.json`: spa, fra, deu, rus, jpn, kor, tur, hin; eng for the control), dominant UPOS, closed class = ADP, DET, AUX, PRON, CCONJ, SCONJ, PART, PUNCT, SYM;
+  - **anchor:** candidate runs of up to five segments, content edges, whitespace or none between them, the longest non-overlapping run that the language's own edition's title door resolves; for the two agglutinative languages in the battery (**ko, tr**: declared), every prefix of two characters or more of a run is also a candidate, and the title door is the witness (the longest resolving prefix wins);
+  - **identity:** that edition's `wikibase_item`; **labels and aliases** in that language, English as fallback;
+  - **relation to key:** exact equality of the ask's open-class word with the key's label or alias, or with a token of one (casefolded, NFKC): **no lemmatizer for any language but English** (none is received for the others), so the English control uses the dominant EWT lemma and the others do not (declared asymmetry, reported as a cause when it bites);
+  - no admits gate (there is no slot reader): the property's own datatype stands.
+- **Control inside intl-door:** the six English rows, through the same code, so "slot-free" and "language" are separable.
+
+**Reported:** the language × ask matrix with the cause of every non-RIGHT cell; per language RIGHT / WRONG / GAP counts; per cause counts; for each LABEL gap, the open void (the kind's keys of the matching datatype), because that is the lexicon the door lacks; the `Intl` realization of every bound claim in its own language (so the out-grammar is visible on the same rows).
+
+**Not claimed:** nothing about verbs, about questions without the interrogative being read, or about native acceptability of the questions.
