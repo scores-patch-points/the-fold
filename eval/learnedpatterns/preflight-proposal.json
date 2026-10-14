@@ -1,0 +1,23 @@
+{
+  "_about": "eval/learnedpatterns: learn answer patterns (anchor→filler token paths) per Wikidata property from Wikipedia leads, Wikidata as referee; admitted by a max-T shuffled-label null; evaluated on the 162 modelvsrules pairs against the production binder. Declared 2026-10-13 before any harvest or run.",
+  "learner_form": "table",
+  "relation_on_distribution": true,
+  "negatives_include_counterfactual": true,
+  "rule_types": {"P50": 50, "P170": 50, "P86": 50, "P61": 50, "P19": 50, "P36": 50, "P37": 50, "P38": 50, "P35": 50, "P6": 50, "P169": 50},
+  "claims_error_below": false,
+  "claims_exact": false,
+  "metric": "correct_wrong_falsecommit_paired",
+  "result_scale": "full",
+  "reported_as_result": true,
+  "instrument_validated": false,
+  "test_sampler_conditions_on_outcome": false,
+  "criterion": "net_confirmations_vs_maxT_null",
+  "positive_rate": null,
+  "eval_kb": "per_sentence",
+  "null_for_pair_statistics": "bijection_of_value_sets",
+  "null_replicates": "fixed_count",
+  "test_positives_per_type": {"P50": 2, "P61": 3, "P86": 1, "P36": 1, "P37": 1, "P35": 2, "P170": 0, "P19": 0, "P38": 0, "P6": 0},
+  "target_recall_error": 0.5,
+  "probing": "constructive_harvest",
+  "learned_background_rule": false
+}

@@ -1,0 +1,12 @@
+PREFLIGHT: WARN
+  [warn] L10-instrument-not-validated
+      why: Two of this work's instrument bugs produced false results that no tool caught: a sampler that skipped states with no legal action (a false err=0), and a misclassification criterion blind to rare positives.
+      unless: a mutation check shows the test fails on a deliberately broken solver, or the oracle matches an independent reference (perft)
+  [warn] L15-per-type-test-resolution
+      why: The rule of three applies per rule type: a type with fewer than 3 / target_recall_error positives in the held-out set cannot have its recall certified, however many items the whole set has. Rare rules (multi-jump, crowning) are exactly the ones a global item count hides.
+      unless: more test positions are drawn for the rare types, or the claim for those types is stated as untested
+  [warn] L26-replicates-scale-with-tests
+      why: A claim 'below every replicate' has p = 1/(n+1). With 100 replicates and about 150 tests across nine worlds and three stream lengths, one false support appeared, as that resolution predicts. Setting replicates to tests / 0.1 (declared expected false supports) removed it.
+      unless: the replicate count is tied to the number of candidate claims tested
+  derived: {"min_expected_positives": 50, "starved_rule_types": [], "underpowered_types": ["P170", "P19", "P35", "P36", "P37", "P38", "P50", "P6", "P61", "P86"], "types_underpowered": true}
+  undeclared (a missing declaration is not a pass): backoff, domain, edit_features, eval_control, existential_unseen_policy, importer_method, locality_from, observability_witness, referee, stop_rule, stream_opportunity_unrefuted, symmetry_validated_on, table_origin_coverage, table_scope, uncertainty_source
