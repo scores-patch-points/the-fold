@@ -157,3 +157,29 @@ First run (before Clarification 14.1) is kept: L5-keyed dev RIGHT 19 / WRONG 3 /
 - **Generosity, declared:** the scorer counts an answer RIGHT if it *contains* an accepted filler. One RIGHT per set is a **set answer** (*who invented the telephone*: Reis; Gray; Bell; Meucci). That is the correct shape for a contested attribution, but it counts as RIGHT, and a stricter scorer would not.
 - **What still gaps (dev, typed, each informative):** 6 `no_matching_key` and 2 `datatype_mismatch`. The lexical failures are verbs and adjectives with no noun label: *sink* (the kind's open void lists *service retirement*, *dissolved, abolished or demolished*), *tall* (the open void lists **height**), *composed*, *located* for a country. Each is a derivation (*tall* → *height*, *compose* → *composer*) the door does not guess.
 - **The admission rule, as written, is not met** (V2: WRONG dev 0 → 1, held 1 → 2). Whether to relax it for this arm, add a labelled second gold with accepted-sets, or fix the matcher for *located* is the user's decision, not the arm's.
+
+## L5-intl: the omnilingual door (Amendment 16, Clarification 16.1). **38 of 54 RIGHT on 9 languages; no slot reader, no model, no per-language question grammar.**
+
+Battery: 6 asks × 9 languages (en es fr de ru ja ko tr hi), language-free gold (property + Q-id/year), frozen by `battery-intl.sha`. Both runs kept (`results-intl-run1.json`, `results-intl.json`). Replay offline: 1203 hits, 0 misses, 0 live.
+
+| lang | RIGHT | WRONG | GAP | non-RIGHT cells (traced cause) |
+|---|---|---|---|---|
+| en | 6 | 0 | 0 | control |
+| es | 6 | 0 | 0 | |
+| de | 6 | 0 | 0 | |
+| ja | 4 | 0 | 2 | LABEL creator (作者 matched the title page, not the key), LABEL opening (開館日 has no alias) |
+| hi | 4 | 0 | 2 | LABEL creator (रचयिता), LABEL opening (तिथि) |
+| ko | 4 | 2 | 0 | WRONG:PROPERTY creator (작가 matched external-id P2963, Goodreads author ID); WRONG:VALUE birthplace (prefix anchor 아마데 resolved to 알폰스 아마데) |
+| tr | 5 | 1 | 0 | WRONG:PROPERTY opening (anchor Sidney, P571 inception) |
+| fr | 3 | 1 | 2 | LABEL capital (elision l'Australie), ANCHOR creator (La Joconde), WRONG:PROPERTY opening (anchor Sydney, P571) |
+| ru | 0 | 1 | 5 | five LABEL/ANCHOR (genitive Австралии has no page; inflection needs a per-language lemma prior); WRONG:PROPERTY opening (Опера) |
+
+Causes: RIGHT 38, LABEL 9, PROPERTY 4, ANCHOR 2, VALUE 1. Production path (L0) on the same asks: answered 1, no_grammar_for_language 48, none 5. The door, not the old slot path, is what answers non-English.
+
+**What this settles.** EOT-as-pivot works at the front end: ICU segmentation + the title door + the kind's keys reach the right claim in es/de perfectly and in ja/hi/ko/tr mostly, with no question grammar. The 5 wrongs are one family, **anchor selection accepts any entity that has a matching key** (it returns the first title whose item has *some* key the rest of the ask names), plus one identifier-datatype leak. Neither is a slot-fill problem.
+
+**Declared asymmetries.** English uses EWT dominant-UPOS and the morphology lemmatizer; the other languages use exact-token match against their own POS prior and no lemmatizer. ru/fr/ja/hi losses are therefore partly the missing per-language morphology prior, not the door.
+
+**Not yet fixed (to pre-register, not built):** prefer the anchor whose title equals the longest run; exclude external-id datatype from relation matching; per-language lemma prior (ru, fr elision); relation lexicon by distant supervision; interrogatives received from UD PronType=Int.
+
+Front-end tests: `fold-chat-void-intl.test.mjs` 6/6 (with `fold-chat-void-keyed.test.mjs` 9/9).

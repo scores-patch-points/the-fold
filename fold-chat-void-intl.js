@@ -58,15 +58,16 @@ export async function intlDoor({ ask, lang, getJson, resolveTitles, dominantOf =
   const resolved = [];
   if (table instanceof Map) for (const [surface, r] of table) if (r && r.title && !r.disambiguation) resolved.push({ surface, title: r.title, ...runs.get(surface) });
   if (!resolved.length) return { verdict: "unbound", cause: "ANCHOR", tried: [], refused: "no_title_resolved" };
-  // longest first; a run contained in an already chosen longer run is not tried separately (the longest resolving prefix wins)
+  // Clarification 16.1: every distinct resolved TITLE is tried (a longer run may be a redirect to a different entity, e.g. "capital of Australia" ->
+  // Canberra); the entity whose kind has the key the rest of the ask names is the anchor. Longest run first, up to six.
   resolved.sort((x, y) => (y.end - y.start) - (x.end - x.start) || x.start - y.start);
-  const chosen = [];
-  for (const r of resolved) if (!chosen.some((c) => r.start >= c.start && r.end <= c.end)) chosen.push(r);
+  const chosen = [], seenTitles = new Set();
+  for (const r of resolved) { if (seenTitles.has(r.title)) continue; seenTitles.add(r.title); chosen.push(r); }
   const tried = [];
   const bound = [];
-  for (const anc of chosen.slice(0, 4)) {
+  for (const anc of chosen.slice(0, 6)) {
     const rest = segmentsOf(ask, lang).filter((s) => s.word && !(s.start >= anc.start && s.end <= anc.end) && !closedOf(s.text)).map((s) => s.text);
-    const r = await keyedFill({ fields: { slot: null, admits: null }, anchor: { title: anc.title, surface: anc.surface }, relationWords: rest, askWords: [], getJson, sameAct, lemmasOf, dominantOf, keyed: true, lang, edition: lang, slotFree: true });
+    const r = await keyedFill({ fields: { slot: null, admits: null }, anchor: { title: anc.title, surface: anc.surface }, relationWords: rest, askWords: [], getJson, sameAct, lemmasOf, dominantOf, keyed: true, lang, edition: lang, slotFree: true, rankByCoverage: true, suffixes: AGGLUTINATIVE.has(lang) });
     tried.push({ surface: anc.surface, title: anc.title, verdict: r.verdict, refused: r.refused || null, property: r.property && r.property.id, matched: r.matched || null });
     if (r.verdict === "bound" || r.verdict === "contested") bound.push({ anc, r });
   }

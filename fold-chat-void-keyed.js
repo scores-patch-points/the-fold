@@ -69,7 +69,7 @@ export function renderTime(v) {
   return yy;
 }
 
-export async function keyedFill({ fields, anchor, relationWords = [], askWords = [], getJson, sameAct = null, lemmasOf = null, dominantOf = null, keyed = true, skipWords = null, lang = "en", edition = null, slotFree = false } = {}) {
+export async function keyedFill({ fields, anchor, relationWords = [], askWords = [], getJson, sameAct = null, lemmasOf = null, dominantOf = null, keyed = true, skipWords = null, lang = "en", edition = null, slotFree = false, rankByCoverage = false, suffixes = false } = {}) {
   const res = (verdict, extra = {}) => ({ verdict, ...extra });
   if (!fields || (!fields.admits && !slotFree)) return res("unbound", { refused: "admits_undeclared" });   // slotFree: no slot reader for this language; the property's own datatype stands
   if (!anchor || !anchor.title) return res("unbound", { refused: "no_anchor" });
@@ -115,6 +115,7 @@ export async function keyedFill({ fields, anchor, relationWords = [], askWords =
   // open-class tokens only, and the DOMINANT lemma of each (EWT's whole lemma sets bridge closed-class words: where -> be, of -> have)
   const sameWord = (a, b) => {
     if (a === b) return true;
+    if (suffixes && b.length >= 2 && a.length > b.length && a.startsWith(b)) return true;   // Clarification 16.1: agglutinative — the label token is the witness
     const da = dominantOf ? dominantOf(a) : null, db = dominantOf ? dominantOf(b) : null;
     if (da && db) { if (!OPEN.has(da.upos) || !OPEN.has(db.upos)) return false; if (da.lemma && da.lemma === db.lemma) return true; }
     if (sameAct) { try { if (sameAct(a, b)) return true; } catch { /* unknown form */ } }
@@ -128,7 +129,18 @@ export async function keyedFill({ fields, anchor, relationWords = [], askWords =
       if (names.some((n) => fold(n) === w)) { how = `label/alias = "${w}"`; break; }
       if (names.some((n) => toksOf(n).some((t) => sameWord(w, t)))) { how = `shares a lemma with "${w}"`; break; }
     }
-    if (how) matches.push({ ...p, how });
+    if (how) {
+      // label coverage (Clarification 16.1): the share of the label's open-class tokens an ask word equals; the best over label and aliases
+      let cov = 0, hits = 0;
+      for (const n of names) {
+        const ts = toksOf(n).filter((t) => { const u = upos(t); return u == null || OPEN.has(u); });
+        if (!ts.length) continue;
+        const m = ts.filter((t) => words.some((w) => sameWord(w, t))).length;
+        const c = m / ts.length;
+        if (c > cov || (c === cov && m > hits)) { cov = c; hits = m; }
+      }
+      matches.push({ ...p, how, cov, hits });
+    }
   }
   if (!matches.length) {
     const open = [...props.values()].filter((p) => !wantType || p.datatype === wantType).map((p) => p.label);
@@ -165,10 +177,20 @@ export async function keyedFill({ fields, anchor, relationWords = [], askWords =
     for (const [id, e] of Object.entries(le?.entities || {})) labelOf.set(id, pick(e) || id);
   }
   for (const h of hit) for (const v of h.vals) if (v.id) v.text = labelOf.get(v.id) || v.id;
-  const best = hit.find((h) => h.vals.length) || null;
+  let best = hit.find((h) => h.vals.length) || null;
+  let propertyTie = false;
+  if (rankByCoverage) {
+    const withVals = hit.filter((h) => h.vals.length).sort((a, b) => (b.prop.cov - a.prop.cov) || (b.prop.hits - a.prop.hits));
+    if (withVals.length) {
+      best = withVals[0];
+      const tied = withVals.filter((h) => h.prop.cov === best.prop.cov && h.prop.hits === best.prop.hits);
+      const sig = (h) => h.vals.map((v) => v.text || v.id).sort().join("|");
+      propertyTie = tied.length > 1 && new Set(tied.map(sig)).size > 1;   // equal coverage, different values: a contest between properties
+    }
+  }
   if (!best) return res("unbound", { qid, refused: "no_value", matched: typed.map((p) => p.label) });
   const values = [...new Set(best.vals.map((v) => v.text))];
-  const verdict = verdictOfSupport(true, values.length > 1 && best.single);   // against = a second value for a single-valued property
+  const verdict = verdictOfSupport(true, (values.length > 1 && best.single) || propertyTie);   // against = a second value for a single-valued property, or a tie between properties
   // the EOT claim (language-free) and its realization for `lang`
   const claim = { schema: "EOClaim@1", anchor: { qid, title: anchor.title }, relation: { property: best.prop.id, label: best.prop.label, datatype: best.prop.datatype },
     values: best.vals.map((v) => (v.kind === "item" ? { kind: "item", qid: v.id, text: v.text } : v.kind === "time" ? { kind: "time", time: v.time, precision: v.precision } : v.kind === "quantity" ? { kind: "quantity", amount: v.amount, unit: v.unit } : { kind: "string", text: v.text })),
