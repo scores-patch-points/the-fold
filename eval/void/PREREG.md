@@ -363,3 +363,16 @@ Draws: 200, seed 20261014. A universe with fewer than 2 attested verbs (or fewer
 **Admission** against L1.2, as before: Useful at least L1.2's on dev and on held, WRONG no higher, at least one set strictly better. Reported besides: asks where the kind had the key but the instance no value; asks refused for no matching key (the lexical failures, by relation word); the gold-present ceiling from the probe, so the gap between "present" and "answered" is visible.
 
 **Declared limits:** one hop of classes (`P31`, not `P279`); English labels and aliases only; the encyclopedia's `wikibase_item` is the identity witness (a second one, a Wikidata `sitelink` check, is reported, not required).
+
+## Clarification 14.1 (2026-10-14): which words may name a key. Written after the first L5 run was read on dev rows (3 WRONG) and held aggregates only (1 → 5 WRONG); before any re-run.
+
+**First L5 run.** L5-keyed: RIGHT dev 7 → 19, held 5 → 15; WRONG dev 0 → 3, held 1 → 5; Useful dev 21 → 22, held 19 → 20. L5-open: RIGHT 16 / 13, WRONG 1 / 5. Admission fails on V2 (WRONG rose). The ablation holds: keyed has more RIGHT than open on both sets (19 vs 16, 15 vs 13).
+
+**Dev WRONG specimens, traced** (each a leak in which words may license a key, none a property-choice failure):
+1. *Where is Machu Picchu located?* → **instance of**, *Where was Albert Einstein born?* → **languages spoken**: the interrogative *where* licensed a key by "sharing a lemma". Cause: EWT's gold lemma set for *where* includes `be` (from *where's*) and for *of* includes `have`, `or`. A closed-class word is bridged to an unrelated label token through a closed-class lemma.
+2. *Who was the first president of Antarctica?* (a false premise) → **discoverer or inventor**: the bare modifier *first* shares a token with an alias.
+
+**The clarification (structural; no constant).**
+- **Content tokens only.** A word may name a key only if its EWT gold UPOS is majority open-class (NOUN, PROPN, VERB, ADJ, ADV, NUM); the key's label/alias tokens are held to the same rule. Interrogatives and the khora's closed-class words never name a key. The lemma overlap is taken **only between the dominant lemma of each content word** (the lemma of its majority-UPOS entry), not the whole lemma set.
+- **A modifier is not a relation.** When the relation words include a word that is majority NOUN or VERB, the words that are majority ADJ or NUM are dropped (*first*, *official*, *tallest*). If every relation word is ADJ (*tall*), it is kept.
+- The arms, the null, the admission rule and V1–V6 are unchanged. L5-keyed and L5-open are re-run once on the clarified matcher (the first run is kept in RESULTS beside it).
