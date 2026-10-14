@@ -57,12 +57,12 @@ test("FALSIFY: a pretend claim smuggled into the rungs is caught — try to make
 test("the wiring seam exists: the lattice rides ONLY an allowed model turn — imported, gated, appended last — and reads flowInfo only AFTER its declaration (the live TDZ, pinned)", () => {
   const src = fs.readFileSync(new URL("./fold-chat.js", import.meta.url), "utf8");
   assert.ok(/import \{ latticePrompt \} from "\.\/fold-chat-lattice\.js"/.test(src), "the lattice is imported");
-  assert.ok(/const latticePromptText = \(\(\) => \{/.test(src), "computed in one guarded pass");
+  assert.ok(/(?:const )?latticePromptText = \(\(\) => \{/.test(src), "computed in one guarded pass");   // declared (let) at run() scope, ASSIGNED here once the turn is read (2026-10-14: a const inside the try block was out of callModel's scope)
   assert.ok(/if \(!modelRule\.allowed \|\| !webPassages\.length\) return null/.test(src), "only an allowed turn with material");
   assert.ok(/latticePromptText && Array\.isArray\(msgs\)/.test(src), "the scaffold rides the doorway");
   assert.ok(/salientSentences\(String\(p\.text/.test(src), "L1 comes from the turn's own salient read sentences");
   const iFlow = src.indexOf("let flowInfo = null");
-  const iLat = src.indexOf("const latticePromptText = (() => {");
+  const iLat = src.indexOf("latticePromptText = (() => {");
   assert.ok(iFlow > 0 && iLat > iFlow, "ORDER GUARD: the lattice reads flowInfo only after its declaration — no TDZ crash");
   const iDoor = src.indexOf("if (latticePromptText && Array.isArray(msgs)");
   assert.ok(iDoor > 0 && iDoor < iLat, "the doorway reads it at CALL time (closure), declared before the first call");

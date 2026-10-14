@@ -145,6 +145,23 @@ export function composeShape(question) {
   return COMPOSE_VERB.test(q) && COMPOSE_NOUN.test(q) && PERSONAL.test(q) && !COMPOSE_FACTS.test(q);
 }
 
+// ── directive ───────────────────────────────────────────────────────────────
+// An instruction about the model's OWN words with no information need in it: "Say hello in five words.", "Say something nice.", "Reply with yes or no." Found live 2026-10-14:
+// it classified as "chat", which searches, so the model was handed a wikiHow page about greetings and the person got the page. There is nothing to look up: the object of the
+// verb is only greeting / filler / counting words. A topical object ("say hello to the Eiffel Tower", "tell me about X in three words") is NOT a directive and still searches.
+// English cues, DECLARED, not measured (II.11); another language falls through to the normal classification.
+const DIRECTIVE_VERB = /^\s*(?:(?:please|pls|just|can you|could you|will you)\s+)*(?:say|reply|respond|type|greet)\b(?:\s+me)?\s*(.*)$/i;
+const DIRECTIVE_OBJ = new Set(("hello hi hey hiya howdy something anything nice kind funny good cool it yes no or and thanks thank you me goodbye bye morning night evening a an the with in using " +
+  "word words sentence sentences line lines letter letters one two three four five six seven eight nine ten exactly only just less than at most more to back").split(" "));
+export function directiveShape(question) {
+  const q = String(question ?? "").trim();
+  if (!q || q.length > 80) return false;
+  const m = DIRECTIVE_VERB.exec(q);
+  if (!m) return false;
+  const toks = m[1].toLowerCase().replace(/[.!?,;:"'\u201c\u201d]+/g, " ").split(/\s+/).filter(Boolean);
+  return toks.length > 0 && toks.length <= 8 && toks.every((t) => DIRECTIVE_OBJ.has(t) || /^\d+$/.test(t));
+}
+
 // ── advice ─────────────────────────────────────────────────────────────────
 const ADVICE_EN = /\b(?:tips?|advice|suggestions?|recommendations?|ideas|strategies|itinerary|checklist|ways to|steps to|best way to|how (?:can|do|should|could|would) (?:i|we)\b|how to\b|should i\b|what should i\b|any (?:advice|tips|suggestions|ideas)|help me (?:to |with |decide|plan|choose|prepare|figure)|what do you (?:think|recommend)|would you recommend|i'?m (?:nervous|worried|anxious|stuck|struggling|confused)|(?:\d+|a|one|two|three|four|five|seven)[- ]day (?:itinerary|plan|trip))/i;
 const ADVICE_OTHER = /(?:consejos|recomendaciones|sugerencias|cómo puedo|cómo debo|qué debo|qué debería|conseils|comment puis-je|comment faire pour|que dois-je|que faire|tipps|ratschläge|empfehlungen|wie kann ich|was soll ich|wie soll ich|dicas|conselhos|como posso|devo|советы|совет|посоветуй|как мне|что мне делать|建议|建議|怎么办|怎麼辦|如何才能|怎样才能|有什么办法|アドバイス|コツ|どうすれば|نصائح|सलाह)/iu;
@@ -165,6 +182,7 @@ export function skipsSearch(kind) {
 export function noClaimsLabel(kind) {
   return ({
     generate: "creative — no claims checked",
+    smalltalk: "conversation — nothing asserted about the world, no claims checked",
     compose: "your own words and facts — nothing to look up, no claims checked",
     compute: "computed by the fold's evaluator — the model only worded it",
     transform: "a transformation of your own text — no outside claims checked",
