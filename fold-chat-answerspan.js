@@ -673,6 +673,13 @@ function candidatesOf(ask, ix, predWeight = SPAN.predWeight) {
       if (ask.want === "figure") atoms = atoms.map((a) => ({ ...a, fit: figureFit(ask, a, s.toks, termKs, cueKs) })).filter((a) => a.fit > 0);
       else atoms = atoms.map((a) => ({ ...a, fit: 1 }));
       if (ask.want === "figure") atoms = atoms.filter((a) => a.fit >= SPAN.minFit);
+      // a NAME that is made of the ask's own predicate is not the answer to it. "Who built it?" must not be answered by "Chrysler Building": the stemmer folds built/Building together,
+      // so the sentence was credited with a verb it never says and its capitalised run passed for a builder. (Only the page's non-subject terms count: "Gustave Eiffel" holds the
+      // subject word "eiffel", which is the very name asked about, and is still the answer.)
+      if (ask.want === "name") {
+        const predKs = new Set(ask.terms.filter((t) => !ix.given.has(t.k)).map((t) => t.k));
+        if (predKs.size) atoms = atoms.filter((a) => !s.toks.some((x) => x.start >= a.start && x.end <= a.end && predKs.has(x.k)));
+      }
       // a figure inside a parenthesis that directly follows another figure is that figure in another unit "330 metres (1,083 ft)": not a second answer
       if (ask.want === "figure") atoms = atoms.filter((a, i) => !atoms.some((b, j) => j !== i && b.end <= a.start && /^\s*\(\s*$/.test(st.slice(b.end, a.start))));
       for (const atom of atoms.slice(0, 8)) {
