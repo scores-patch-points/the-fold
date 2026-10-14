@@ -207,3 +207,19 @@ The user's direction: "remember the work we did on induction for ALL terrains". 
 **The paraphrase** (Amendment 3) gets the same check from the other side. The realized sentence's parsed features map to cells through `CELL_OF_GRAMMAR` (case, person, voice, tense…). A sentence whose cells fill a later operator without the earlier ones it depends on fails as ungrammatical. This check is passed to the Callimachus writer as part of `realizeClaim`'s reverse parse.
 
 **Reported:** the count of bindings refused by the order check, per witness. L1.1 and L2′ are scored with the check on; an "order off" arm on dev shows what it removes.
+
+## Amendment 7 (2026-10-14): the Born statistic is the coherent mass |ψ|², not the normalized p. Written while building L2′, before any L2′ run.
+
+**Found while writing the null, before any run:** Amendment 5's "p_c greater than the top candidate's p in every null draw" is degenerate. A lone candidate has normalized p = 1, and so does whatever the null drops into the same binding clause, so nothing could ever be probable.
+
+**The decision statistic is the unnormalized coherent mass** M_c = |ψ_c|² = (Σ_w √n_{w,c})². It is compared with the maximum, over the draws, of the null's top M.
+- Amplitudes from independent witnesses add before squaring. So agreement makes **more** mass than its parts (two agreeing single witnesses give 4; one gives 1).
+- A candidate is **probable** iff its M is greater than the null's top M in every draw. It follows that a candidate bound by one clause alone is **possible, never probable**: independent agreement is required. This is Bukhari's independent-chains rule, arising from the Born rule, not added as a rule.
+- p_c = M_c / Σ M is still reported, for reading only; it decides nothing.
+
+**Independence (chorus, Pearl):** two clauses from the **same sentence**, or the same sentence repeated on two pages (identical folded text), count as **one** witness instance.
+
+**The four corners** (khora `interpretation/hl.js` `verdictOfSupport(for, against)`; Nagarjuna, per the user's correction):
+- for = a probable candidate exists;
+- against = either (i) a second candidate is also probable, or (ii) candidates exist and every one was refused (by the order check or by its kind).
+- The outcomes are bound (is), contested (both), unbound (neither), and contradicted (is-not: every candidate refused, none probable).
