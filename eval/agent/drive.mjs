@@ -41,7 +41,9 @@ const jobs = asks.flatMap((a) => SEEDS.map((seed) => ({ ...a, seed }))).filter((
 const caches = new Map();
 const cacheOf = (id) => { if (!caches.has(id)) { const f = path.join(CACHE, id + ".json"); caches.set(id, fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : {}); } return caches.get(id); };
 const saveCache = (id) => fs.writeFileSync(path.join(CACHE, id + ".json"), JSON.stringify(cacheOf(id)));
-const keyOf = (req) => crypto.createHash("sha1").update(req.method() + " " + req.url() + " " + (req.postData() || "")).digest("hex");
+// The key is ORIGIN-FREE for the page's own server (the arms run on different ports; the app's /heimdall/api/search must replay).
+const keyOfUrl = (method, u, body = "") => crypto.createHash("sha1").update(method + " " + String(u).replace(/^http:\/\/127\.0\.0\.1:\d+\//, "ORIGIN/") + " " + body).digest("hex");
+const keyOf = (req) => keyOfUrl(req.method(), req.url(), req.postData() || "");
 
 async function runUnit(browser, job) {
   const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
@@ -86,12 +88,12 @@ async function runUnit(browser, job) {
     if (own) return route.continue();
     const k = keyOf(req);
     if (cache[k]) { stats.web.hit += 1; const c = cache[k]; return route.fulfill({ status: c.status, headers: c.headers, body: Buffer.from(c.body, "base64") }); }
-    stats.web.miss += 1;
+    stats.web.miss += 1; (stats.web.missed ||= []).push(u.replace(/^http:\/\/127\.0\.0\.1:\d+\//, "ORIGIN/").slice(0, 160));
     try {
       const resp = await route.fetch({ timeout: 60000 });
       const buf = await resp.body();
       const headers = Object.fromEntries(Object.entries(resp.headers()).filter(([h]) => !/^(content-encoding|content-length|transfer-encoding|set-cookie)$/i.test(h)));
-      if (/heimdall\/(status|api\/ps)/.test(u) === false) cache[k] = { status: resp.status(), headers, body: buf.toString("base64"), url: u.slice(0, 300) };
+      if (/heimdall\/(status|api\/ps)/.test(u) === false) cache[k] = { status: resp.status(), headers, body: buf.toString("base64"), url: u, method: req.method() };
       return route.fulfill({ status: resp.status(), headers, body: buf });
     } catch { return route.abort(); }
   });

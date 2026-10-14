@@ -132,3 +132,14 @@ no test that passes on the base may fail. Nothing is pushed.
   stitched unit without a field snip is "refused … empty draw". So the stitch path can only hold a page assembled from source snips;
   otherwise the whole-page draw does the work. It is reported in RESULTS.md as a follow-up, not fixed here.
 - Budget: 37 s for a trivial ask says nothing yet about real asks; the 15-minute rule above is applied to the median of B on dev.
+
+## Amendment A1 — 2026-10-13, during dev development, BEFORE any held-out run
+
+- **Replay key fixed.** The web cache key included the page server's port; the arms run on different ports, so the app's own
+  `/heimdall/api/search` never replayed and went live (dev countdown: B and A read different sources). The key is now origin-free for
+  the page's own server; dev caches were re-keyed. Misses are now listed per unit (`web.missed`).
+- **Concurrency 2** for every run from B on dev onward (Ollama on this machine serves 2 generations in parallel). N measures what
+  this does to run-to-run agreement.
+- **Budget rule applied:** B on dev, median unit 238 s (< 15 min) → held-out keeps seeds {1, 2, 3}.
+- **Servers:** B and N run against a frozen worktree of the base commit (`cfa09b2`, :8869); A against a frozen worktree of the
+  witness commit recorded in RESULTS.md. No arm is served from a tree that is being edited.
