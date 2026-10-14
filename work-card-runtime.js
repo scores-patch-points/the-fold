@@ -28,7 +28,7 @@ export function workCardPassages({ question, index, mode = "off", distance = 1 }
     if (!index || typeof question !== "string" || !question.trim()) return none;
     const q = question.length > 600 ? question.slice(0, 600) : question;
     const packet = packetFor(q, index, { distance });
-    if (!packet || packet.refusal || !packet.work) return { mode, packet: packet ?? null, passages: [] };
+    if (!packet || packet.refusal || !packet.work) return { mode, packet: packet ?? null, void: packet?.void ?? null, passages: [] };
     if (mode === "shadow") return { mode, packet, passages: [] };
     const w = packet.work;
     const passages = packet.keySpans.map((s) => ({
