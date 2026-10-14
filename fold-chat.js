@@ -57,7 +57,7 @@ import { modelCallRule } from "./fold-chat-model-rule.js";   // THE RULE: the mo
 import { judgeReachable, decisionSignature, needsJudge, sealJudge, Angelica, lessonOf, judgeOn, judgeLessonsOf, addJudgeLesson, anthropicJudge, browserJudgeKey, judgeModelName, JUDGE_KEY_STORE } from "./fold-chat-sealed-judge.js";   // ANGELICA: the sealed judge — advisory, sealed, typed, and learned (the same signature stops consulting her)
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
 import { castOf } from "./fold-chat-casts.js";
-import { claimsOfTurn, appendClaims, pointerOf } from "./fold-chat-record.js";
+import { claimsOfTurn, appendClaims, pointerOf, conversationMaterial, convoRefOf } from "./fold-chat-record.js";
 import { freshnessOf } from "./fold-chat-freshness.js";
 import { recallOf } from "./fold-chat-recall.js";
 import { askTerms, salientSources, continuesThread, salientHistory, salientSummary, salienceEnabled } from "./fold-chat-salience.js";
@@ -3266,23 +3266,16 @@ export function mount(root, opts = {}) {
       // neither the web nor the conversation is withheld; a follow-up is witnessed against the earlier answers
       // (fixing "none of it could be spoken" when the model quotes the thread); and a world question is not
       // hijacked — the thread can only ever ADD a witness, never stop the search. Bounded so a long chat fits.
-      const convoMaterial = (() => {
-        const prior = askAt > 0 ? s.messages.slice(0, askAt) : [];
-        const pairs = [];
-        let ask = null, n = 0;
-        for (const m of prior) {
-          if (m?.role === "user" && String(m.content || "").trim()) ask = String(m.content).replace(/\s+/g, " ").trim();
-          else if (m?.role === "assistant" && String(m.content || "").trim() && m.mode !== "agent") { n++; pairs.push({ turn: n, ask, text: String(m.content).replace(/\s+/g, " ").trim().slice(0, 3000) }); }
-        }
-        return pairs.slice(-4).map((p) => ({ ref: "earlier in this chat", source: "turn " + p.turn, text: (p.ask ? "You asked: " + p.ask + "\n" : "") + "I answered: " + p.text }));
-      })();
+      // each earlier turn is its OWN address ("earlier in this chat · turn N#start-end", fold-chat-record.js conversationMaterial): they used to
+      // share one ref, so a claim witnessed by turn 2 was "cited" with turn 1's bytes (nesting audit F, D1).
+      const convoMaterial = conversationMaterial(askAt > 0 ? s.messages.slice(0, askAt) : []);
       const material = [
         ...materialOf(s),        // a transform's material IS the person's own text: it is grounded against itself, not the web
         ...(kind === "transform" ? [{ ref: "your message", source: "your message", text: question }] : []),
         ...webPassages.map((p) => ({ ref: p.ref, source: p.source, text: String(p.text || "").slice(0, 12000) })),
         ...convoMaterial,        // the conversation is a source like any other (the gear)
         // a thread-grounded reply is also held against the one earlier turn it explicitly answers from
-        ...(threadTurn ? [{ ref: "earlier in this chat", source: "turn " + threadTurn.turn, text: threadTurn.answer }] : []),
+        ...(threadTurn ? [{ ref: convoRefOf(threadTurn.turn, "answer"), source: "turn " + threadTurn.turn, text: threadTurn.answer }] : []),
       ];
       // LIVE DATA: pages were read but nothing the model said is established by them (a weather page
       // is a snapshot, not a feed). The model's guess is not shown; the typed 'live' gap is drawn.
@@ -3336,7 +3329,7 @@ export function mount(root, opts = {}) {
         if (!rel.ok) {
           const answers = Array.isArray(threadTurn.answers) && threadTurn.answers.length ? threadTurn.answers : [{ answer: threadTurn.answer }];
           const own = answers.map((a) => String(a.answer || "")).join(" ").trim();
-          const fb = own ? snipsOf([{ ref: "earlier in this chat", source: "turn " + threadTurn.turn, text: own }], question) : null;
+          const fb = own ? snipsOf([{ ref: convoRefOf(threadTurn.turn, "own words"), source: "turn " + threadTurn.turn, text: own }], question) : null;
           if (fb && fb.snips.length) { strand = fb; text = strandText(fb.snips); }
           else text = "";
           notices.push({ kind: "fold", text: fb && fb.snips.length ? "The model's reply did not address the turn you asked about, so that turn's own words are shown instead." : "The model's reply did not address the turn you asked about, so no answer is shown." });
@@ -3428,8 +3421,12 @@ export function mount(root, opts = {}) {
       if (!text.trim() && !notices.length && !skipModel && !liveDrop && !genGate) notices.push(emptyNotice({ tokens: out.tokens, model: m.id }));      const turn = s.messages.filter((x) => x.role === "assistant").length + 1;
       const lastUser = [...s.messages].reverse().find((x) => x.role === "user");
       // Every turn but a greeting carries a grounding record — the fold is
-      // always grounded, and the material is ONLY attachments, pasted
-      // documents, and web passages. The conversation is never material.
+      // always grounded. The material is attachments, pasted documents and web
+      // passages, AND the recent exchanges (the gear above: the gate decides
+      // what is spoken). A sentence the conversation witnessed is addressed to
+      // THAT turn ("earlier in this chat · turn N#a-b"), so the record can tell
+      // the dialogue from a page; this comment used to say the conversation is
+      // never material, which the code above overturned (audit F, D1).
       // A strand is never SCORED: its words are the sources', not a claim of ours (turnRecord gets an empty answer).
       const record = recordable(kind) ? ground.turnRecord(strand ? "" : text, material, { turn, question: lastUser?.content || "", model: m.id, sealed: !!m.sealed, effort }) : null;
       if (record && webTrace) record.web = webTrace;

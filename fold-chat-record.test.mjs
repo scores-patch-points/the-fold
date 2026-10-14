@@ -73,3 +73,66 @@ test("basis.cited is the source's own bytes at the support span, read from the M
   const shown = claimsOfTurn({ turn: 2, pivot: null, record: { sources: [{ address: "r1#0-5", text: "ignored" }] }, material: [{ ref: "r1", text: "Page words." }] });
   assert.equal(shown[0].basis.cited, "Page ");
 });
+
+// ── D1 (nesting audit F, 2026-10-14): every earlier chat pair carried the SAME ref "earlier in this chat", so an address
+// `ref#start-end` named no turn and citedAt took the first item with the ref — another turn's bytes. Promoted from
+// nesting-audit-2026-10-14/F-probes/convo-collision.mjs; the material below is built by the SAME builder run() uses.
+import * as GROUND from "./fold-chat-ground.js";
+import { conversationMaterial, CONVO_REF, convoRefOf } from "./fold-chat-record.js";
+
+const CONVO_MSGS = [
+  { role: "user", content: "Who painted the Mona Lisa?" },
+  { role: "assistant", content: "The Mona Lisa was painted by Leonardo da Vinci in the early sixteenth century. It hangs in the Louvre in Paris, where it has been displayed since the nineteenth century and attracts millions of visitors each year from every country." },
+  { role: "user", content: "What is the capital of Australia?" },
+  { role: "assistant", content: "The capital city of Australia is Canberra, located in the Australian Capital Territory." },
+];
+
+test("D1: each earlier chat turn is its own address (turn index in the ref); citedAt returns the bytes the attribution matched, never another turn's", () => {
+  const material = conversationMaterial(CONVO_MSGS);
+  assert.equal(material.length, 2);
+  assert.equal(new Set(material.map((m) => m.ref)).size, 2, "no two earlier turns share a ref");
+  assert.ok(material.every((m) => m.ref.startsWith(CONVO_REF)), "the old ref stays readable as the prefix");
+  assert.deepEqual(material.map((m) => m.source), ["turn 1", "turn 2"], "the turn label is unchanged");
+  const draft = "The capital city of Australia is Canberra, located in the Australian Capital Territory.";
+  const e = GROUND.attribute(draft, material)[0];
+  assert.equal(e.source, "turn 2");
+  assert.match(e.address, /turn 2#\d+-\d+$/, "the address names the turn and the byte range");
+  const matched = material.find((m) => m.source === e.source).text.slice(e.span.start, e.span.end);
+  assert.equal(citedAt(e.address, material), matched, "citedAt resolves by the address, not the first item with the ref");
+  assert.notEqual(citedAt(e.address, material), material[0].text.slice(e.span.start, e.span.end));
+});
+
+test("D1: a claim witnessed by an earlier turn carries THAT turn's bytes as basis.cited", () => {
+  const material = conversationMaterial(CONVO_MSGS);
+  const draft = "The capital city of Australia is Canberra, located in the Australian Capital Territory.";
+  const rec = GROUND.turnRecord(draft, material, { turn: 3, question: "again?", model: "x" });
+  assert.equal(rec.sources.length, 1);
+  const cs = claimsOfTurn({ turn: 3, pivot: { units: [{ kind: "sentence", text: draft, support: rec.sources[0].address }] }, material, record: rec });
+  assert.equal(cs[0].basis.cited, material[1].text.slice(rec.sources[0].span.start, rec.sources[0].span.end));
+  assert.match(cs[0].basis.cited, /Canberra/);
+});
+
+test("D1: the legacy bare ref stays readable when it is unambiguous and is a typed null when it is not (never the first match)", () => {
+  const one = [{ ref: CONVO_REF, source: "turn 1", text: "0123456789" }];
+  assert.equal(citedAt(CONVO_REF + "#2-5", one), "234", "a stored legacy address into a single item still resolves");
+  const legacyTwo = [{ ref: CONVO_REF, source: "turn 1", text: "aaaaaaaaaa" }, { ref: CONVO_REF, source: "turn 2", text: "bbbbbbbbbb" }];
+  assert.equal(citedAt(CONVO_REF + "#2-5", legacyTwo), null, "two items answer to the legacy ref with different bytes: ambiguous, not guessed");
+  const newTwo = conversationMaterial(CONVO_MSGS);
+  assert.equal(citedAt(CONVO_REF + "#10-30", newTwo), null, "a legacy address over two turn-addressed items is ambiguous");
+  assert.equal(citedAt(CONVO_REF + "#0-4", [...newTwo, { ref: "https://x.org/p", text: "zzzz" }].slice(0, 1)), newTwo[0].text.slice(0, 4), "one turn present: the legacy address resolves to it");
+});
+
+test("D1 controls: web refs and bad ranges behave as before", () => {
+  const web = [{ ref: "https://x.org/p", text: "0123456789" }];
+  assert.equal(citedAt("https://x.org/p#1-4", web), "123");
+  assert.equal(citedAt("https://x.org/p#1-99", web), null);
+  assert.equal(citedAt("https://y.org/p#1-4", web), null);
+  assert.equal(citedAt("https://x.org/p", web), null);
+});
+
+test("D1: the one thread-grounded item and the conversation item for the same turn are different addresses", () => {
+  const convo = conversationMaterial(CONVO_MSGS);
+  const thread = { ref: convoRefOf(2, "answer"), source: "turn 2", text: CONVO_MSGS[3].content };
+  assert.notEqual(thread.ref, convo[1].ref);
+  assert.ok(thread.ref.startsWith(CONVO_REF));
+});
