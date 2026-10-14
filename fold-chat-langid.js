@@ -20,6 +20,8 @@
 //
 // DECLARED constants (Constitution II.11): effect measured on the labelled set in docs/LANGID-PREREG.md, not derived.
 import { PRIORS, GIVERS } from "./fold-chat-lang-priors.js";
+import { makeScorer as makeCreoleScorer, decide as decideCreole } from "./fold-chat-langid-creole.js";
+import { TAU as CREOLE_TAU } from "./fold-chat-creole-priors.js";
 
 // TIERS: the treebank priors (the sharp 40 the app was tuned on) are the CORE and always scored first; the UDHR-built
 // priors (470 more languages, scripts/build-udhr-priors.mjs) are a FALLBACK scored only when the core abstains — they
@@ -118,17 +120,20 @@ function groupOf(script, tier = "core") {
   const key = (tier === "udhr" ? "u|" : "") + script;
   if (INDEX[key]) return INDEX[key];
   const allowed = OVERRIDE ? null : tier === "udhr" ? UDHR_CODES : CORE_CODES;
+  const entries = Object.entries(OVERRIDE || PRIORS).filter(([key2, p]) => p.script === script && !DROP.has(key2) && (!allowed || allowed.has(key2)));
+  return (INDEX[key] = decodeGroup(entries, FWTOP || DECLARED.fwTop));
+}
+/** Decode [[key, prior], …] into one scoring group (null when empty). The creole tier decodes core + creole priors with it too. */
+export function decodeGroup(entries, fwTop = DECLARED.fwTop) {
   const g = { codes: [], keys: [], wf: [], gf: [], words: new Map(), grams: new Map(), fw: [] };
-  for (const [key2, p] of Object.entries(OVERRIDE || PRIORS)) {
-    if (p.script !== script || DROP.has(key2)) continue;
-    if (allowed && !allowed.has(key2)) continue;
+  for (const [key2, p] of entries) {
     const i = g.codes.length;
     g.codes.push(key2.split("#")[0]); g.keys.push(key2); g.wf.push(-p.wf / 10); g.gf.push(-p.gf / 10);
-    g.fw.push(new Set(p.fw.split(" ").slice(0, FWTOP || DECLARED.fwTop)));
+    g.fw.push(new Set(p.fw.split(" ").slice(0, fwTop)));
     for (const e of p.w.split(",")) { const k2 = e.lastIndexOf(":"); const w = e.slice(0, k2), q = +e.slice(k2 + 1); let a = g.words.get(w); if (!a) g.words.set(w, (a = [])); a.push(i, -q / 10 + p.wf / 10); }
     for (const e of p.g.split(",")) { const k = e.lastIndexOf(":"); const w = e.slice(0, k), q = +e.slice(k + 1); let a = g.grams.get(w); if (!a) g.grams.set(w, (a = [])); a.push(i, -q / 10 + p.gf / 10); }
   }
-  return (INDEX[key] = g.codes.length ? g : null);
+  return g.codes.length ? g : null;
 }
 
 /** Candidate languages the priors can tell apart in a script group, e.g. languagesOf("Latin"). */
@@ -151,7 +156,7 @@ function runsOf(text) {
   return out;
 }
 
-function scoreGroup(g, tokens, { wordWeight, gramWeight }, prior) {
+export function scoreGroup(g, tokens, { wordWeight, gramWeight }, prior) {
   const n = g.codes.length, s = new Float64Array(n);
   let words = 0, grams = 0, gramsAll = 0, fwHits = new Int32Array(n), gramHit = new Int32Array(n);
   for (const t of tokens) {
@@ -188,12 +193,22 @@ function scoreGroup(g, tokens, { wordWeight, gramWeight }, prior) {
   return { s, fwHits, words, grams, gramsAll, gramHit, known, vocabAll };
 }
 
+// ── the creole tier's handle on this module (fold-chat-langid-creole.js): the core Latin priors, the decoder, the scorer, the tokenizer ──
+export const CREOLE_CTX = Object.freeze({
+  decodeGroup, scoreGroup,
+  coreEntries: () => Object.entries(PRIORS).filter(([k, p]) => p.script === "Latin" && CORE_CODES.has(k)),
+  udhrEntries: (exclude = new Set()) => Object.entries(PRIORS).filter(([k, p]) => p.script === "Latin" && UDHR_CODES.has(k) && !exclude.has(k)),
+  tokenize: (text) => runsOf(text).filter((r) => r.fam === "Latin").map((r) => r.text),
+});
+let CREOLE = undefined;   // the scorer, built on the first Latin text (null when the creole priors are empty)
+const creoleScorer = () => (CREOLE === undefined ? (CREOLE = makeCreoleScorer(CREOLE_CTX, undefined, null, { screen: CREOLE_TAU })) : CREOLE);
+
 /** identify(text, { prior: { lang, bonus? } }) → { lang, script, confident, hits, margin, second, inherited, scores? }.
  *  lang is a language code, or 'unknown'. Never throws. Deterministic — so the verdict is MEMOISED (the pheromone
  *  rule: a lane already navigated is not recomputed); a changed prior (useIndex) clears the memo. */
 const ID_MEMO = new Map();
 export function identify(text, opts = {}) {
-  const key = String(text ?? "").trim() + "|" + (opts.prior?.lang || "");
+  const key = String(text ?? "").trim() + "|" + (opts.prior?.lang || "") + (opts.creole === false ? "|nocreole" : "");
   const hit = ID_MEMO.get(key);
   if (hit !== undefined) return hit;
   const out = computeIdentify(text, opts);
@@ -251,6 +266,18 @@ function computeIdentify(text, opts = {}) {
       return { ...base, lang, second, own, decisive };
     };
     const core = pick(g, priorFor(g));
+    // CREOLE TIER (fold-chat-langid-creole.js): above the base, after it. Only a text whose lead over every base language exceeds the
+    // largest lead any non-creole text reached (a derived table) is touched; otherwise this returns nothing and the base verdict stands.
+    // Off under useIndex() (experiments swap the priors) and with opts.creole === false (the A/B in eval/creole/langid-unchanged.mjs).
+    if (script === "Latin" && !OVERRIDE && opts.creole !== false) {
+      const sc = creoleScorer();
+      const d = sc ? decideCreole(sc.readings(text, P)) : null;
+      if (d) {
+        const extra = { tier: "creole", kind: d.kind, creole: d.creole, runner: d.runner, T: d.T, tau: d.tau, reading: d.reading };
+        if (d.lang === "unknown") return none(script, { hits: d.hits, margin: d.margin, second: d.second, ...extra });
+        return { lang: d.lang, script, confident: true, hits: d.hits, margin: d.T - d.tau, second: d.second, inherited: false, ...extra };
+      }
+    }
     if (core.own) return { ...core, lang: core.lang, confident: true, inherited: false };
     // UDHR FALLBACK TIER: only when the core abstains. A language the core has no prior for is named by its own
     // UDHR-built prior; the thread prior does not reach this tier. Conservative: the winner must actually account for

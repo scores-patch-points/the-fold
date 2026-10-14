@@ -48,12 +48,20 @@ export const LANG_NAMES = Object.freeze({
   ru: "Russian", uk: "Ukrainian", bg: "Bulgarian", zh: "Chinese", ja: "Japanese", ko: "Korean", ar: "Arabic", fa: "Persian", ur: "Urdu", he: "Hebrew",
   hi: "Hindi", mr: "Marathi", bn: "Bengali", pa: "Punjabi", gu: "Gujarati", or: "Odia", ta: "Tamil", te: "Telugu", kn: "Kannada", ml: "Malayalam",
   si: "Sinhala", th: "Thai", lo: "Lao", km: "Khmer", my: "Burmese", bo: "Tibetan", ka: "Georgian", hy: "Armenian", am: "Amharic", el: "Greek",
+  // the creole tier (fold-chat-langid-creole.js): ISO 639-3 codes of the creoles, and the 639-2 collectives it returns when it cannot
+  // tell members of one lexifier family apart
+  hat: "Haitian Creole", gcf: "Guadeloupean Creole", acf: "Saint Lucian Creole", mfe: "Mauritian Creole", crs: "Seychellois Creole",
+  pcm: "Nigerian Pidgin", jam: "Jamaican Creole", tpi: "Tok Pisin", bis: "Bislama", pis: "Pijin", kri: "Krio", djk: "Ndyuka", srn: "Sranan",
+  pap: "Papiamentu", kea: "Kabuverdianu", pov: "Upper Guinea Creole", sag: "Sango", lin: "Lingala",
+  cpf: "French-based creole", cpe: "English-based creole", cpp: "Portuguese-based creole", crp: "creole",
 });
 
 // Languages the detector cannot reliably tell apart on a short ask, and a reply in one is as good as in the other for
 // the purpose of "did the model answer in the person's language": sameLanguage treats a family as one language. The
 // Romance languages are NOT here (es/pt/it/ca/fr are distinct, and confusing them is the failure this module exists to stop).
-export const FAMILIES = Object.freeze([["no", "da"], ["hr", "sr", "bs"], ["id", "ms"], ["cs", "sk"], ["nl", "af"], ["hi", "ur"]]);
+// A creole family collective (cpf …) is the same language as any of its members: the tier returns it exactly when it cannot tell them apart.
+export const FAMILIES = Object.freeze([["no", "da"], ["hr", "sr", "bs"], ["id", "ms"], ["cs", "sk"], ["nl", "af"], ["hi", "ur"],
+  ["cpf", "hat", "gcf", "acf", "mfe", "crs"], ["cpe", "pcm", "jam", "tpi", "bis", "pis", "kri", "djk", "srn"], ["cpp", "kea", "pov"]]);
 export const sameFamily = (a, b) => a === b || FAMILIES.some((f) => f.includes(a) && f.includes(b));
 
 const SPLIT_BRACKET = /\[[WS]\d+\]/g;
