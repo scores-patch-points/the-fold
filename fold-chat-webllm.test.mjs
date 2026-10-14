@@ -10,6 +10,8 @@ import {
 } from "./fold-chat-webllm.js";
 
 const GEMMA = "gemma-2-2b-it-q4f16_1-MLC";
+const GEMMA3 = "gemma3-1b-it-q4f16_1-MLC";   // listed, not the default: ~500 tokens in all (see CHOICES)
+const LLAMA1B = "Llama-3.2-1B-Instruct-q4f16_1-MLC";   // the default (user, 2026-10-14: "lets use the 1b gemma" — Gemma 3 1B measured unusable, Llama 3.2 1B works)
 const GPU_OK = { available: true, f16: true, reason: "ok" };
 const GPU_F32 = { available: true, f16: false, reason: "ok" };
 const memStorage = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)) }; };
@@ -66,7 +68,9 @@ const MSGS = [{ role: "user", content: "hi" }];
 test("constants: pinned version and URL, default and fallback ids, tags", () => {
   assert.equal(WEBLLM_VERSION, "0.2.85");
   assert.ok(WEBLLM_ESM_URL.includes(`web-llm@${WEBLLM_VERSION}`) && WEBLLM_ESM_URL.endsWith("/+esm"));
-  assert.equal(DEFAULT_MODEL, GEMMA);
+  assert.equal(DEFAULT_MODEL, LLAMA1B);
+  assert.equal(MODEL_CHOICES.find((m) => m.id === GEMMA3).tag, "gemma3:1b");
+  assert.ok(!MODEL_CHOICES.find((m) => m.id === GEMMA3).default, "Gemma 3 1B must not be the default: it aborts past ~500 tokens");
   assert.equal(FALLBACK_MODEL, "Qwen2.5-0.5B-Instruct-q4f16_1-MLC");
   assert.ok(MODEL_CHOICES.some((m) => m.id === FALLBACK_MODEL));
   assert.equal(MODEL_CHOICES.find((m) => m.id === GEMMA).tag, "gemma2:2b");
@@ -87,13 +91,17 @@ test("tables agree with heimdall's models.js / llm.js when that checkout is on d
   const dir = new URL("../heimdall/src/", import.meta.url);
   if (!fs.existsSync(new URL("models.js", dir))) return t.skip("heimdall checkout not present");
   const hm = await import(new URL("models.js", dir).href);
-  for (const m of MODEL_CHOICES) {
+  // IN-TAB ONLY choices (the fold runs NO_HEIMDALL: nothing here is served through the bridge): not yet in heimdall's tables. Add the id to heimdall's models.js / llm.js
+  // (both quantizations) and delete it from this set when the bridge should know it too.
+  const APP_ONLY = new Set(["gemma3-1b-it-q4f16_1-MLC"]);
+  const shared = MODEL_CHOICES.filter((m) => !APP_ONLY.has(m.id));
+  for (const m of shared) {
     assert.equal(m.tag, hm.ollamaTagOf(m.id), m.id);
     assert.equal(f32Variant(m.id), hm.f32Variant(m.id), m.id);
     assert.equal(ollamaTagOf(f32Variant(m.id)), hm.ollamaTagOf(f32Variant(m.id)), m.id);
   }
   const src = fs.readFileSync(new URL("llm.js", dir), "utf8");
-  for (const m of MODEL_CHOICES) assert.ok(src.includes(`"${m.id}"`), `heimdall llm.js lacks ${m.id}`);
+  for (const m of shared) assert.ok(src.includes(`"${m.id}"`), `heimdall llm.js lacks ${m.id}`);
   assert.ok(src.includes(`FALLBACK_MODEL = "${FALLBACK_MODEL}"`));
   assert.ok(Object.keys(OLLAMA_TAG).length === MODEL_CHOICES.length);
 });
@@ -599,4 +607,18 @@ test("FALSIFIER (recheck 2026-10-05): a stale localStorage 'downloaded' hint is 
   const e2 = createPageEngine({ loader: async () => evicted.mod, makeWorker: null, gpu: GPU_OK, storage: hintStore });
   await assert.rejects(e2.load(GEMMA), (e) => e.kind === "load-failed" && e.fallbackAvailable === false);
   assert.deepEqual(evicted.calls.create, [GEMMA]);
+});
+
+// ── Gemma 3 1B: found live 2026-10-14 — the prebuilt record carries BOTH context_window_size and sliding_window_size, so the engine never starts ──
+test("Gemma 3 1B is created with the record overrides that let it start (sliding window only, attention sink 0)", async () => {
+  const fake = fakeWebLLM();
+  let seenCfg = null;
+  const orig = fake.mod.CreateMLCEngine;
+  fake.mod.CreateMLCEngine = async (id, cfg) => { seenCfg = { id, cfg }; return orig(id, cfg); };
+  const e = engineWith(fake);
+  await e.load(GEMMA3);
+  const rec = seenCfg.cfg.appConfig.model_list.find((m) => m.model_id === GEMMA3);
+  assert.deepEqual(rec.overrides, { context_window_size: -1, sliding_window_size: 512, attention_sink_size: 0 });
+  // and no other model is touched
+  assert.equal(seenCfg.cfg.appConfig.model_list.find((m) => m.model_id === GEMMA)?.overrides, undefined);
 });
