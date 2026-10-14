@@ -123,7 +123,7 @@ export function instancesOf(entity, sentences) {
  * Learn one table from `byPid` = { pid: { entities:[{qid, anchors, values:[surface], sentences}] } }.
  * `labelPerm` (mutation check) replaces the real referee by a fixed permutation. Returns admitted patterns with S and the null's max.
  */
-export function learn(byPid, { B = 199, seed = "learnedpatterns", labelPerm = null, onProgress = null } = {}) {
+export function learn(byPid, { B = 199, seed = "learnedpatterns", labelPerm = null, onProgress = null, diagnose = false } = {}) {
   const keyId = new Map(), keyName = [];
   const inst = [];                                           // { pid, e, kids:Int32Array, conf:Int32Array(entity idx), part:Int32Array }
   const pids = Object.keys(byPid);
@@ -152,7 +152,8 @@ export function learn(byPid, { B = 199, seed = "learnedpatterns", labelPerm = nu
   };
   const realPerm = labelPerm ? Object.fromEntries(pids.map((pid) => [pid, sattolo(nEnt[pid], rng(labelPerm + pid))])) : null;
   const real = score(realPerm);
-  const T = [];
+  const T = [], Tpid = [];
+  const pidOf = keyName.map((n) => n.slice(0, n.indexOf("|")));
   for (let b = 0; b < B; b++) {
     const r = rng(`${seed}:null:${b}`);
     const perm = Object.fromEntries(pids.map((pid) => {
@@ -161,6 +162,7 @@ export function learn(byPid, { B = 199, seed = "learnedpatterns", labelPerm = nu
     }));
     const { S } = score(perm); let mx = -Infinity; for (let k = 0; k < S.length; k++) if (S[k] > mx) mx = S[k];
     T.push(mx);
+    if (diagnose) { const m = {}; for (let k = 0; k < S.length; k++) if (!(m[pidOf[k]] >= S[k])) m[pidOf[k]] = S[k]; Tpid.push(m); }
     if (onProgress && (b + 1) % 20 === 0) onProgress(b + 1, B);
   }
   const bar = Math.max(0, Math.max(...T));
@@ -170,7 +172,9 @@ export function learn(byPid, { B = 199, seed = "learnedpatterns", labelPerm = nu
     admitted.push({ pid, key: rest.join("|"), S: real.S[k], conf: real.conf[k], ref: real.ref[k] });
   }
   admitted.sort((a, b) => b.S - a.S || (a.pid + a.key < b.pid + b.key ? -1 : 1));
-  return { admitted, bar, nullMax: T, instances: inst.length, patterns: keyName.length };
+  const out = { admitted, bar, nullMax: T, instances: inst.length, patterns: keyName.length };
+  if (diagnose) Object.assign(out, { keyName, real, nullMaxByPid: Tpid });   // post-hoc reading only; admission above is unchanged
+  return out;
 }
 /** { pid: Map(key -> S) } */
 export const tableOf = (admitted) => { const t = {}; for (const a of admitted) (t[a.pid] ||= new Map()).set(a.key, a.S); return t; };
