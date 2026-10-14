@@ -239,3 +239,18 @@ The user's direction: "remember the work we did on induction for ALL terrains". 
 - **G3 (logos):** the repaired sentence passes the `OPERATOR_CHAIN` / `CELL_OF_GRAMMAR` order check that its input failed, or passes as its input did.
 - **G4:** Useful does not fall and WRONG does not rise against the stack below (V1–V3). G5: prose-law lint passes (`lintSentence`) at least as often as below, against a null of identical inputs passed through unrepaired.
 - **The model** is the house's local small model (Huginn picks it; Gary builds its prompt, information not prohibition, the sentence last). It is the only layer allowed a model call, so V6 is reported per layer and is zero below L5.
+
+## Amendment 9 (2026-10-14): four fixes from the L1.1 / L2′ dev traces. Written after reading only dev rows and held aggregates, before any re-run.
+
+1. **L1.2, the longest name from the ask's own runs.** The khora perceiver splits names at function words, so L1.1 never fired. L1.2 builds candidate runs from the ask's own tokens: contiguous, whitespace-joined, content words at both edges, inner function words allowed, with no length cap other than the ask itself. Only runs that **strictly contain** the anchor's surface are kept, and they go to the **same title door** in one call. A run is taken when it resolves (not to a disambiguation page) and its title shares a content stem with the run (askFrame's own `agrees` discipline). If several resolve, the longest wins. The two witnesses are the ask's own contiguous bytes and the title door.
+2. **Engine witness discipline (Pearl, Holmes).**
+   - An edge end co-refers with the anchor only if its folded tokens **contain every content token of one of the anchor's aliases**. `namesCorefer`'s bare single-token subset is no longer enough.
+   - All edges from one source sentence are **one instance**. Edges carry their refs; edges sharing a ref and a sentence offset count once, and where an offset is missing, the edge's text is the key.
+   - Direction is not enforced, as declared: a relation token in the connector with the anchor at either end.
+3. **A per-candidate Born null.** The decision statistic stays M_c = (Σ_w √n_{w,c})², but each candidate is compared with **its own** null: M_c in every draw of the same shuffle (each witness's candidate lists permuted among its own slots). A candidate is **probable** iff its real M_c exceeds its null M_c in every draw. This asks whether c is bound more than its own frequency in this universe predicts, not whether it beats the luckiest placement of any candidate. Draws stay at 200, seed 20261014.
+4. **The order check's value is measured before it gates anything.** Two arms run on the same code:
+   - **L2c:** fixes 1–3, with the order check on;
+   - **L2c-noorder:** the same, with the order check off.
+   Both are reported on dev and held. The check is kept only if L2c's WRONG ≤ L2c-noorder's and its Useful ≥ L2c-noorder's on both sets. Otherwise it is dropped, and the stack ships without it (Callimachus measured chain closure over grammar-feature cells as non-discriminating; its arc-order check, `logosOrder` in khora PR #7, is a later candidate).
+
+L2c is admitted only against **L1.2** (or L1.1, if L1.2 is not admitted) on bars V1–V4. Unchanged: the battery, the scoring, the recording, and V1–V6.
