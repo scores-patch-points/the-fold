@@ -10,9 +10,10 @@ import { run, mutate, ruControl, verify, CASES } from "./eval/creole/battery.mjs
 import { GRAMMAR, grammarOf } from "./fold-chat-frame.js";
 
 // id → why it FALLS (the named cause; GRAMMAR-RESULTS.md). Every other case HOLDS.
+// H5b was recorded FALLS on 2026-10-13 and HOLDS after the creole salience merge (0c24dd1, bisected): fold-chat-snippets.js now counts the
+// Haitian prior's closed-class forms (`genyen`) as function words, so the long verb form no longer reads as a name the sentence must say.
 const FALLS = {
   H4: "clause-final copula `ye`: the name sits at the position the code reads as the relation (gap referents_unresolved); `se te` also reads present",
-  H5b: "verb allomorph genyen/gen: no field for long/short forms; the unresolved verb becomes a name the sentence must say",
   H6: "subject + TAM marker `te` + verb: the first name is read as the relation (the do-support list is English); wrong decomposition, filler ∅",
   H7: "passive with no auxiliary: no copula for the agent rule; `pa` is the agent marker AND the negator (polarity reads -); also falls in English (irregular participle)",
   H8: "postposed article glued to the filler (\"Pòtoprens la\")",

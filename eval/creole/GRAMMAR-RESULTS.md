@@ -166,3 +166,8 @@ suite (`fold-chat-omnilingual.test.mjs`) passes unchanged (2/2).
    (f) wh in situ; (g) the one-auxiliary trim, which also fails English ("will have been"). Each is a pre-registered Version 2 first.
 5. **Accepting the wrong-by-luck reads**: T6/T10 (Tok Pisin `i` as pivot, verb as an unresolved name) and H1/H2/M1 (the relation word as a
    verb) answer correctly through paths that were not designed for the language.
+
+
+## Addendum (2026-10-13, integration): H5b now HOLDS
+
+After merging the creole salience modules (0c24dd1, found by bisecting 5c7bfd5 → 0c24dd1) H5b `Konbyen eleman biyotòp la genyen?` reads `5`. Cause: `fold-chat-snippets.js` now includes the Haitian prior's closed-class forms in the function words; `genyen` (6 occurrences) is one, so the unresolved long form is no longer a name the sentence must say. The recorded status above (FALLS, predicted F ✓) is the pre-merge measurement and is left as measured; the standing test pins HOLDS. Not a table change: nothing is registered in production.
