@@ -4,55 +4,70 @@
  "at": "2026-10-14T12:00:00.000Z",
  "fetch": {
   "live": 0,
-  "hits": 575,
-  "misses": 0,
+  "hits": 768,
+  "misses": 6,
   "hosts": {
-   "en.wikipedia.org": 547,
+   "en.wikipedia.org": 730,
    "www.sfgate.com": 1,
    "www.onlinenevada.org": 1,
    "www.newspapers.com": 1,
    "holodeck-proxy.prometheoid.workers.dev": 24,
-   "news.bbc.co.uk": 1
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
   }
  },
  "dev": {
   "n": 29,
-  "RIGHT": 5,
+  "RIGHT": 7,
   "WRONG": 0,
-  "GAP": 24,
-  "informativeGap": 11,
-  "useful": 16
+  "GAP": 22,
+  "informativeGap": 13,
+  "useful": 20
  },
  "held": {
   "n": 29,
-  "RIGHT": 2,
+  "RIGHT": 5,
   "WRONG": 1,
-  "GAP": 26,
-  "informativeGap": 13,
-  "useful": 15
+  "GAP": 23,
+  "informativeGap": 14,
+  "useful": 19
  },
  "all": {
   "n": 58,
-  "RIGHT": 7,
+  "RIGHT": 12,
   "WRONG": 1,
-  "GAP": 50,
-  "informativeGap": 24,
-  "useful": 31
+  "GAP": 45,
+  "informativeGap": 27,
+  "useful": 39
  },
  "voidFields": {
   "dev": {
    "slot": 28,
-   "admits": 21,
-   "anchor": 22,
-   "relation": 15,
-   "cardinality": 28,
+   "admits": 20,
+   "anchor": 23,
+   "relation": 20,
+   "cardinality": 29,
    "n": 29
   },
   "held": {
    "slot": 28,
    "admits": 20,
-   "anchor": 22,
-   "relation": 17,
+   "anchor": 24,
+   "relation": 21,
    "cardinality": 24,
    "n": 29
   }
@@ -428,22 +443,41 @@
    "set": "dev",
    "q": "Who discovered penicillin?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Penicillin",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "discover"
+     ],
      "cardinality": 1
     },
-    "anchorBy": null,
-    "l2b": "no-anchor-or-admits"
+    "anchorBy": [
+     "title-door"
+    ],
+    "l2b": {
+     "verdict": "contradicted",
+     "bindings": 0,
+     "nullTopMax": 0,
+     "top": [],
+     "violations": 2,
+     "gaps": [],
+     "kinds": [
+      "group",
+      "mixtur",
+      "precursor",
+      "unit",
+      "spectrum",
+      "plant"
+     ]
+    }
    },
    "solvable": true
   },
@@ -452,63 +486,36 @@
    "set": "dev",
    "q": "Who wrote Pride and Prejudice?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "Prejudice",
+     "anchor": "Pride and Prejudice",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "writ"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "l2b": {
-     "verdict": "unbound",
-     "bindings": 65,
-     "nullTopMax": 8,
-     "top": [
-      {
-       "v": "dismissal",
-       "M": 4,
-       "probable": false,
-       "w": {
-        "engine": 4
-       }
-      },
-      {
-       "v": "feeling",
-       "M": 2,
-       "probable": false,
-       "w": {
-        "engine": 2
-       }
-      },
-      {
-       "v": "gordon allport",
-       "M": 2,
-       "probable": false,
-       "w": {
-        "engine": 2
-       }
-      }
-     ],
-     "violations": 0,
+     "verdict": "contradicted",
+     "bindings": 0,
+     "nullTopMax": 0,
+     "top": [],
+     "violations": 12,
      "gaps": [],
      "kinds": [
-      "natural",
-      "victim",
       "novel",
-      "meaning",
-      "dismissal",
-      "judgment"
+      "romanc",
+      "american"
      ]
     }
    },
@@ -522,57 +529,30 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "The",
+     "anchor": "4",
      "admits": "person",
      "extent": null,
-     "relation": null,
-     "cardinality": "many"
+     "relation": [
+      "compos"
+     ],
+     "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "l2b": {
-     "verdict": "unbound",
-     "bindings": 103,
-     "nullTopMax": 13,
-     "top": [
-      {
-       "v": "county",
-       "M": 5,
-       "probable": false,
-       "w": {
-        "engine": 5
-       }
-      },
-      {
-       "v": "city",
-       "M": 4,
-       "probable": false,
-       "w": {
-        "engine": 4
-       }
-      },
-      {
-       "v": "borough",
-       "M": 4,
-       "probable": false,
-       "w": {
-        "engine": 4
-       }
-      }
-     ],
-     "violations": 2,
+     "verdict": "contradicted",
+     "bindings": 0,
+     "nullTopMax": 0,
+     "top": [],
+     "violations": 14,
      "gaps": [],
-     "kinds": [
-      "articl",
-      "homograph"
-     ]
+     "kinds": []
     }
    },
    "solvable": true
@@ -582,22 +562,65 @@
    "set": "dev",
    "q": "Who invented the telephone?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Telephone",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "invent"
+     ],
      "cardinality": 1
     },
-    "anchorBy": null,
-    "l2b": "no-anchor-or-admits"
+    "anchorBy": [
+     "title-door"
+    ],
+    "l2b": {
+     "verdict": "unbound",
+     "bindings": 7,
+     "nullTopMax": 4,
+     "top": [
+      {
+       "v": "gray",
+       "M": 2,
+       "probable": false,
+       "w": {
+        "engine": 2
+       }
+      },
+      {
+       "v": "peru",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      },
+      {
+       "v": "robert hooke",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      }
+     ],
+     "violations": 10,
+     "gaps": [],
+     "kinds": [
+      "devic",
+      "transmitter",
+      "hungarian",
+      "landmark",
+      "microphon"
+     ]
+    }
    },
    "solvable": true
   },
@@ -609,69 +632,47 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "Pornography (album)",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "writ"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
      "perceiver",
-     "title-door"
+     "title-door",
+     "longest-name"
     ],
     "l2b": {
-     "verdict": "unbound",
-     "bindings": 48,
-     "nullTopMax": 10,
-     "top": [
-      {
-       "v": "album",
-       "M": 3,
-       "probable": false,
-       "w": {
-        "engine": 3
-       }
-      },
-      {
-       "v": "the cure",
-       "M": 3,
-       "probable": false,
-       "w": {
-        "engine": 3
-       }
-      },
-      {
-       "v": "release",
-       "M": 3,
-       "probable": false,
-       "w": {
-        "engine": 3
-       }
-      }
-     ],
-     "violations": 0,
+     "verdict": "contradicted",
+     "bindings": 0,
+     "nullTopMax": 0,
+     "top": [],
+     "violations": 16,
      "gaps": [],
      "kinds": []
     }
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v29",
    "set": "dev",
    "q": "What is the capital of Canada?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ottawa (,; Canadian French:) is the capital city of Canada.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Canada",
@@ -683,24 +684,10 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
-    "l2b": {
-     "verdict": "unbound",
-     "bindings": 0,
-     "nullTopMax": 0,
-     "top": [],
-     "violations": 0,
-     "gaps": [],
-     "kinds": [
-      "country",
-      "democracy",
-      "america",
-      "dominion",
-      "unit"
-     ]
-    }
+    "l2b": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -712,9 +699,9 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Japan",
@@ -726,8 +713,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
      "verdict": "unbound",
@@ -750,38 +737,24 @@
    "set": "dev",
    "q": "What is the largest planet in the Solar System?",
    "tier": "GAP",
-   "informative": true,
+   "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "Solar System",
-     "admits": "planet",
+     "anchor": "List of largest exoplanets",
+     "admits": null,
      "extent": null,
-     "relation": [
-      "planet"
-     ],
+     "relation": null,
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
-    "l2b": {
-     "verdict": "unbound",
-     "bindings": 0,
-     "nullTopMax": 0,
-     "top": [],
-     "violations": 0,
-     "gaps": [],
-     "kinds": [
-      "part",
-      "star"
-     ]
-    }
+    "l2b": "no-anchor-or-admits"
    },
    "solvable": true
   },
@@ -789,50 +762,25 @@
    "id": "v35",
    "set": "dev",
    "q": "What is the capital of New Zealand?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The capital of New Zealand has been Wellington since 1865.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "New Zealand",
-     "admits": "capital",
+     "anchor": "Capital of New Zealand",
+     "admits": null,
      "extent": null,
-     "relation": [
-      "capital"
-     ],
+     "relation": null,
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
-    "l2b": {
-     "verdict": "unbound",
-     "bindings": 1,
-     "nullTopMax": 1,
-     "top": [
-      {
-       "v": "city",
-       "M": 1,
-       "probable": false,
-       "w": {
-        "engine": 1
-       }
-      }
-     ],
-     "violations": 0,
-     "gaps": [],
-     "kinds": [
-      "country",
-      "dominion",
-      "plan",
-      "dependency"
-     ]
-    }
+    "l2b": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -844,9 +792,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Taj Mahal",
@@ -856,8 +804,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
      "verdict": "unbound",
@@ -912,52 +860,29 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Machu Picchu",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "locat"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
-     "verdict": "unbound",
-     "bindings": 48,
-     "nullTopMax": 5,
-     "top": [
-      {
-       "v": "one",
-       "M": 5,
-       "probable": false,
-       "w": {
-        "engine": 5
-       }
-      },
-      {
-       "v": "inca",
-       "M": 2,
-       "probable": false,
-       "w": {
-        "engine": 2
-       }
-      },
-      {
-       "v": "complex",
-       "M": 2,
-       "probable": false,
-       "w": {
-        "engine": 2
-       }
-      }
-     ],
-     "violations": 0,
+     "verdict": "contradicted",
+     "bindings": 0,
+     "nullTopMax": 0,
+     "top": [],
+     "violations": 4,
      "gaps": [],
      "kinds": [
       "citadel",
@@ -976,55 +901,48 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Albert Einstein",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "bear"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
      "verdict": "unbound",
-     "bindings": 142,
-     "nullTopMax": 10,
+     "bindings": 2,
+     "nullTopMax": 2,
      "top": [
       {
-       "v": "lieserl einstein",
-       "M": 9,
+       "v": "may",
+       "M": 1,
        "probable": false,
        "w": {
-        "engine": 9
+        "engine": 1
        }
       },
       {
-       "v": "marić",
-       "M": 7,
+       "v": "march",
+       "M": 1,
        "probable": false,
        "w": {
-        "engine": 7
-       }
-      },
-      {
-       "v": "brains",
-       "M": 5,
-       "probable": false,
-       "w": {
-        "engine": 5
+        "engine": 1
        }
       }
      ],
-     "violations": 10,
+     "violations": 8,
      "gaps": [],
      "kinds": [
-      "known",
       "fellowship",
       "zurich"
      ]
@@ -1292,13 +1210,14 @@
     "l2b": {
      "verdict": "unbound",
      "bindings": 0,
-     "nullTopMax": null,
+     "nullTopMax": 0,
      "top": [],
      "violations": 0,
-     "gaps": [
-      "null_unbuildable"
-     ],
-     "kinds": []
+     "gaps": [],
+     "kinds": [
+      "liner",
+      "american"
+     ]
     }
    },
    "solvable": true
@@ -1328,14 +1247,12 @@
      "title-door"
     ],
     "l2b": {
-     "verdict": "unbound",
+     "verdict": "contradicted",
      "bindings": 0,
-     "nullTopMax": null,
+     "nullTopMax": 0,
      "top": [],
-     "violations": 0,
-     "gaps": [
-      "null_unbuildable"
-     ],
+     "violations": 10,
+     "gaps": [],
      "kinds": []
     }
    },
@@ -1368,17 +1285,29 @@
     ],
     "l2b": {
      "verdict": "unbound",
-     "bindings": 0,
-     "nullTopMax": null,
-     "top": [],
-     "violations": 0,
-     "gaps": [
-      "null_unbuildable"
+     "bindings": 1,
+     "nullTopMax": 1,
+     "top": [
+      {
+       "v": "cervantes",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      }
      ],
-     "kinds": []
+     "violations": 4,
+     "gaps": [],
+     "kinds": [
+      "novel",
+      "fabrication",
+      "work",
+      "play"
+     ]
     }
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v57",
@@ -1388,30 +1317,31 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "Antarctica",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "first",
+      "president"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
-     "verdict": "unbound",
+     "verdict": "contradicted",
      "bindings": 0,
-     "nullTopMax": null,
+     "nullTopMax": 0,
      "top": [],
-     "violations": 0,
-     "gaps": [
-      "null_unbuildable"
-     ],
+     "violations": 28,
+     "gaps": [],
      "kinds": []
     }
    },

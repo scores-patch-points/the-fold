@@ -35,8 +35,18 @@ export function recordingFetch(mode, { dir = REC_DIR, log = null } = {}) {
     }
     if (mode !== "record") { stats.misses.push(u); const e = new Error(`unrecorded: ${u}`); e.kind = "unrecorded"; throw e; }
     stats.live++;
-    const res = await fetch(u, { ...o, headers: { "user-agent": "the-fold eval/void (michael.t.lacy@gmail.com)", ...(o.headers || {}) } });
-    const body = await res.text();
+    // Amendment 10: a 429 or 5xx is an environment failure, never material — retried (Retry-After, else exponential from 1 s; up to 6 tries)
+    // and NEVER saved; a 403 is the site's real refusal and is kept. Still failing after the retries: returned live, left unrecorded.
+    let res, body, tries = 0;
+    for (;;) {
+      res = await fetch(u, { ...o, headers: { "user-agent": "the-fold eval/void (michael.t.lacy@gmail.com)", ...(o.headers || {}) } });
+      body = await res.text();
+      const transient = res.status === 429 || res.status >= 500;
+      if (!transient) break;
+      if (++tries >= 6) { stats.transientFailed = (stats.transientFailed || 0) + 1; if (log) log(`gave-up ${res.status} ${u.slice(0, 120)}`); return new Response(body, { status: res.status }); }
+      const ra = Number(res.headers.get("retry-after"));
+      await new Promise((r) => setTimeout(r, Number.isFinite(ra) && ra > 0 ? ra * 1000 : 1000 * 2 ** (tries - 1)));
+    }
     fs.writeFileSync(file, JSON.stringify({ url: u, method: (o.method || "GET").toUpperCase(), status: res.status, contentType: res.headers.get("content-type"), sha256: crypto.createHash("sha256").update(body).digest("hex"), body }));
     if (log) log(`rec ${res.status} ${u.slice(0, 120)}`);
     return new Response(body, { status: res.status, headers: { "content-type": res.headers.get("content-type") || "text/plain" } });

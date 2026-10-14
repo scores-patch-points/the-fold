@@ -4,55 +4,70 @@
  "at": "2026-10-14T12:00:00.000Z",
  "fetch": {
   "live": 0,
-  "hits": 355,
-  "misses": 0,
+  "hits": 541,
+  "misses": 6,
   "hosts": {
-   "en.wikipedia.org": 345,
+   "en.wikipedia.org": 511,
    "www.sfgate.com": 1,
    "www.onlinenevada.org": 1,
    "www.newspapers.com": 1,
-   "holodeck-proxy.prometheoid.workers.dev": 6,
-   "news.bbc.co.uk": 1
+   "holodeck-proxy.prometheoid.workers.dev": 16,
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
   }
  },
  "dev": {
   "n": 29,
-  "RIGHT": 5,
+  "RIGHT": 7,
   "WRONG": 0,
-  "GAP": 24,
-  "informativeGap": 11,
-  "useful": 16
+  "GAP": 22,
+  "informativeGap": 13,
+  "useful": 20
  },
  "held": {
   "n": 29,
-  "RIGHT": 2,
+  "RIGHT": 5,
   "WRONG": 1,
-  "GAP": 26,
-  "informativeGap": 12,
-  "useful": 14
+  "GAP": 23,
+  "informativeGap": 13,
+  "useful": 18
  },
  "all": {
   "n": 58,
-  "RIGHT": 7,
+  "RIGHT": 12,
   "WRONG": 1,
-  "GAP": 50,
-  "informativeGap": 23,
-  "useful": 30
+  "GAP": 45,
+  "informativeGap": 26,
+  "useful": 38
  },
  "voidFields": {
   "dev": {
    "slot": 28,
-   "admits": 21,
-   "anchor": 22,
-   "relation": 15,
+   "admits": 20,
+   "anchor": 23,
+   "relation": 20,
    "cardinality": 28,
    "n": 29
   },
   "held": {
    "slot": 28,
    "admits": 20,
-   "anchor": 21,
-   "relation": 17,
+   "anchor": 23,
+   "relation": 21,
    "cardinality": 24,
    "n": 29
   }
@@ -364,21 +379,25 @@
    "set": "dev",
    "q": "Who discovered penicillin?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Penicillin",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "discover"
+     ],
      "cardinality": 1
     },
-    "anchorBy": null,
+    "anchorBy": [
+     "title-door"
+    ],
     "experiencer": {
      "who": "the person asking",
      "read": "ask#0-26",
@@ -393,22 +412,23 @@
    "set": "dev",
    "q": "Who wrote Pride and Prejudice?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "Prejudice",
+     "anchor": "Pride and Prejudice",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "writ"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "experiencer": {
@@ -418,7 +438,7 @@
     },
     "voidGap": null
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v23",
@@ -428,19 +448,20 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "The",
+     "anchor": "4",
      "admits": "person",
      "extent": null,
-     "relation": null,
-     "cardinality": "many"
+     "relation": [
+      "compos"
+     ],
+     "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "experiencer": {
@@ -450,28 +471,32 @@
     },
     "voidGap": null
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v25",
    "set": "dev",
    "q": "Who invented the telephone?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Telephone",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "invent"
+     ],
      "cardinality": 1
     },
-    "anchorBy": null,
+    "anchorBy": [
+     "title-door"
+    ],
     "experiencer": {
      "who": "the person asking",
      "read": "ask#0-27",
@@ -489,20 +514,22 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "Pornography (album)",
+     "anchor": "1",
      "admits": "person",
      "extent": null,
-     "relation": null,
-     "cardinality": 1
+     "relation": [
+      "writ"
+     ],
+     "cardinality": "many"
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -511,19 +538,19 @@
     },
     "voidGap": null
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v29",
    "set": "dev",
    "q": "What is the capital of Canada?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ottawa (,; Canadian French:) is the capital city of Canada.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Canada",
@@ -535,8 +562,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -555,9 +582,9 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Japan",
@@ -569,8 +596,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -586,24 +613,21 @@
    "set": "dev",
    "q": "What is the largest planet in the Solar System?",
    "tier": "GAP",
-   "informative": true,
+   "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "Solar System",
-     "admits": "planet",
+     "anchor": "List of largest exoplanets",
+     "admits": null,
      "extent": null,
-     "relation": [
-      "planet"
-     ],
+     "relation": null,
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "experiencer": {
@@ -619,25 +643,22 @@
    "id": "v35",
    "set": "dev",
    "q": "What is the capital of New Zealand?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The capital of New Zealand has been Wellington since 1865.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "New Zealand",
-     "admits": "capital",
+     "anchor": "Capital of New Zealand",
+     "admits": null,
      "extent": null,
-     "relation": [
-      "capital"
-     ],
+     "relation": null,
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "experiencer": {
@@ -657,9 +678,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Taj Mahal",
@@ -669,8 +690,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -689,20 +710,22 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Machu Picchu",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "locat"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -721,20 +744,22 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Albert Einstein",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "bear"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -940,7 +965,7 @@
     },
     "voidGap": null
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v55",
@@ -974,7 +999,7 @@
     },
     "voidGap": null
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v57",
@@ -984,20 +1009,23 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "Antarctica",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "first",
+      "president"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",

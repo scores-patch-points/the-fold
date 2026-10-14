@@ -4,55 +4,70 @@
  "at": "2026-10-14T12:00:00.000Z",
  "fetch": {
   "live": 0,
-  "hits": 569,
-  "misses": 0,
+  "hits": 764,
+  "misses": 6,
   "hosts": {
-   "en.wikipedia.org": 541,
+   "en.wikipedia.org": 726,
    "www.sfgate.com": 1,
    "www.onlinenevada.org": 1,
    "www.newspapers.com": 1,
    "holodeck-proxy.prometheoid.workers.dev": 24,
-   "news.bbc.co.uk": 1
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
   }
  },
  "dev": {
   "n": 29,
-  "RIGHT": 6,
+  "RIGHT": 8,
   "WRONG": 0,
-  "GAP": 23,
-  "informativeGap": 10,
-  "useful": 16
+  "GAP": 21,
+  "informativeGap": 12,
+  "useful": 20
  },
  "held": {
   "n": 29,
-  "RIGHT": 2,
-  "WRONG": 2,
-  "GAP": 25,
-  "informativeGap": 12,
-  "useful": 14
+  "RIGHT": 6,
+  "WRONG": 4,
+  "GAP": 19,
+  "informativeGap": 11,
+  "useful": 17
  },
  "all": {
   "n": 58,
-  "RIGHT": 8,
-  "WRONG": 2,
-  "GAP": 48,
-  "informativeGap": 22,
-  "useful": 30
+  "RIGHT": 14,
+  "WRONG": 4,
+  "GAP": 40,
+  "informativeGap": 23,
+  "useful": 37
  },
  "voidFields": {
   "dev": {
    "slot": 28,
-   "admits": 21,
-   "anchor": 22,
-   "relation": 15,
+   "admits": 20,
+   "anchor": 23,
+   "relation": 20,
    "cardinality": 28,
    "n": 29
   },
   "held": {
    "slot": 28,
    "admits": 20,
-   "anchor": 21,
-   "relation": 17,
+   "anchor": 23,
+   "relation": 21,
    "cardinality": 24,
    "n": 29
   }
@@ -331,39 +346,24 @@
    "id": "v18",
    "set": "held",
    "q": "Who designed the Sydney Opera House?",
-   "tier": "GAP",
-   "informative": true,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "When Danish architect Jørn Utzon submitted his concept for the Sydney Opera House design competition.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "Sydney Opera House",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "design"
+     ],
      "cardinality": 1
     },
-    "l2": {
-     "pages": [
-      "Sydney Opera House",
-      "Sydney Opera House Grand Organ",
-      "Opera House, Sydney",
-      "Peter Rice (structural engineer)"
-     ],
-     "kinds": [
-      "centr",
-      "famous",
-      "site",
-      "building"
-     ],
-     "edges": 0,
-     "fillers": [],
-     "answered": false,
-     "why": "no-edge"
-    }
+    "l2": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -395,21 +395,38 @@
    "set": "held",
    "q": "Who founded Microsoft?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Microsoft",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "found"
+     ],
      "cardinality": 1
     },
-    "l2": "no-anchor-or-admits"
+    "l2": {
+     "pages": [
+      "Microsoft",
+      "Microsoft Japan",
+      "Xbox Game Studios",
+      "Microsoft Copilot"
+     ],
+     "kinds": [
+      "headquarter",
+      "departur"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
    },
    "solvable": true
   },
@@ -421,23 +438,25 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "The Starry Night",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "paint"
+     ],
      "cardinality": 1
     },
     "l2": {
      "pages": [
       "The Starry Night",
       "Starry Night Over the Rhône",
-      "Vincent (Don McLean song)",
-      "Starry Night (disambiguation)"
+      "Café Terrace at Night",
+      "Starry Night (Millet)"
      ],
      "kinds": [
       "paint",
@@ -460,28 +479,28 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "Moon",
+     "anchor": "Person",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "first",
+      "walk"
+     ],
      "cardinality": 1
     },
     "l2": {
      "pages": [
-      "Moon",
-      "Moon (disambiguation)",
-      "Moon Moon Sen",
-      "Moon landing"
+      "Ash Dykes",
+      "Ffyona Campbell",
+      "Dave Kunst",
+      "The Long Walk (2025 film)"
      ],
-     "kinds": [
-      "planet",
-      "planet"
-     ],
+     "kinds": [],
      "edges": 0,
      "fillers": [],
      "answered": false,
@@ -498,9 +517,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Australia",
@@ -513,23 +532,12 @@
     },
     "l2": {
      "pages": [
-      "Australia",
-      "Australians",
-      "Taskmaster Australia",
-      "Australia (disambiguation)"
+      "Australian Capital Territory",
+      "Capital punishment in Australia",
+      "List of Australian capital cities",
+      "Canberra"
      ],
-     "kinds": [
-      "mainland",
-      "country",
-      "democracy",
-      "power",
-      "member",
-      "ally",
-      "peopl",
-      "cultur",
-      "empir",
-      "member"
-     ],
+     "kinds": [],
      "edges": 0,
      "fillers": [],
      "answered": false,
@@ -542,13 +550,13 @@
    "id": "v30",
    "set": "held",
    "q": "What is the capital of Turkey?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ankara is the capital city of Turkey.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Turkey",
@@ -559,26 +567,7 @@
      ],
      "cardinality": 1
     },
-    "l2": {
-     "pages": [
-      "Turkey",
-      "Turkish",
-      "Wild turkey",
-      "Ottoman Empire"
-     ],
-     "kinds": [
-      "mainly",
-      "upper-middle-incom",
-      "republic",
-      "member",
-      "member",
-      "exporter"
-     ],
-     "edges": 0,
-     "fillers": [],
-     "answered": false,
-     "why": "no-edge"
-    }
+    "l2": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -586,44 +575,24 @@
    "id": "v32",
    "set": "held",
    "q": "What is the official language of Brazil?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Brazilian Portuguese is the official language of Brazil and the primary language used in most schools and media.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "Brazil",
-     "admits": "languag",
+     "anchor": "Languages of Brazil",
+     "admits": "official",
      "extent": null,
      "relation": [
-      "languag"
+      "official"
      ],
      "cardinality": 1
     },
-    "l2": {
-     "pages": [
-      "Brazil",
-      "Brazilians",
-      "2026 Brazilian general election",
-      "Brazil (disambiguation)"
-     ],
-     "kinds": [
-      "compos",
-      "detat",
-      "regional",
-      "emerg",
-      "exporter",
-      "member",
-      "etymology"
-     ],
-     "edges": 0,
-     "fillers": [],
-     "answered": false,
-     "why": "no-edge"
-    }
+    "l2": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -635,9 +604,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Switzerland",
@@ -650,10 +619,10 @@
     },
     "l2": {
      "pages": [
+      "Capital punishment in Switzerland",
       "Switzerland",
-      "Swiss",
-      "Economy of Switzerland",
-      "Flag of Switzerland"
+      "Outline of Switzerland",
+      "Bern"
      ],
      "kinds": [
       "country",
@@ -673,15 +642,15 @@
    "set": "held",
    "q": "What is the chemical symbol for gold?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": null,
+     "anchor": "Gold",
      "admits": "symbol",
      "extent": null,
      "relation": [
@@ -689,7 +658,26 @@
      ],
      "cardinality": 1
     },
-    "l2": "no-anchor-or-admits"
+    "l2": {
+     "pages": [
+      "Gold",
+      "GOLD",
+      "Gold (color)",
+      "Gold Coast"
+     ],
+     "kinds": [
+      "element",
+      "bright-metallic-yellow",
+      "metal",
+      "element",
+      "used",
+      "conductor"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
    },
    "solvable": true
   },
@@ -701,30 +689,27 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Wolfgang Amadeus Mozart",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "bear"
+     ],
      "cardinality": 1
     },
     "l2": {
      "pages": [
-      "Wolfgang Amadeus Mozart",
-      "Death of Wolfgang Amadeus Mozart",
-      "List of compositions by Wolfgang Amadeus Mozart",
-      "Franz Xaver Wolfgang Mozart"
+      "Mozart family",
+      "Anna Maria Mozart",
+      "Franz Xaver Wolfgang Mozart",
+      "Leopold Mozart"
      ],
-     "kinds": [
-      "composer",
-      "composer",
-      "teacher",
-      "favourit"
-     ],
+     "kinds": [],
      "edges": 0,
      "fillers": [],
      "answered": false,
@@ -741,18 +726,33 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "place",
     "void": {
      "slot": "place",
-     "anchor": null,
+     "anchor": "Louvre",
      "admits": "place",
      "extent": null,
      "relation": null,
      "cardinality": 1
     },
-    "l2": "no-anchor-or-admits"
+    "l2": {
+     "pages": [
+      "Louvre",
+      "2025 Louvre heist",
+      "Louvre (disambiguation)",
+      "Louvre Pyramid"
+     ],
+     "kinds": [
+      "museum",
+      "revolution"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
    },
    "solvable": true
   },
@@ -801,27 +801,29 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Mars",
      "admits": "count",
      "extent": null,
-     "relation": [
-      "moon"
-     ],
+     "relation": null,
      "cardinality": "many"
     },
     "l2": {
      "pages": [
-      "Moons of Mars",
-      "List of missions to Mars",
-      "Martian Moons eXploration",
-      "Phobos (moon)"
+      "Mars",
+      "Mars (disambiguation)",
+      "Bruno Mars",
+      "Mars (mythology)"
      ],
-     "kinds": [],
+     "kinds": [
+      "planet",
+      "target",
+      "planet"
+     ],
      "edges": 0,
      "fillers": [],
      "answered": false,
@@ -838,9 +840,9 @@
    "informative": null,
    "answer": "== Players ==\nThis list is about Croatia national football team players with at least 20 appearances.",
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Football team",
@@ -880,54 +882,44 @@
    "id": "v48",
    "set": "held",
    "q": "How many strings does a violin have?",
-   "tier": "GAP",
-   "informative": true,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "2 Music Toggle Music subsection 2.1 Instruments\nA violin is a bowed string instrument with four strings tuned in perfect fifths.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Violin",
      "admits": "count",
      "extent": null,
-     "relation": [
-      "string"
-     ],
+     "relation": null,
      "cardinality": "many"
     },
     "l2": {
      "pages": [
       "Violin",
-      "Violin acoustics",
-      "Serenade after Plato's \"Symposium\"",
-      "Violin technique"
+      "Violin (disambiguation)",
+      "The Violin",
+      "The Red Violin"
      ],
      "kinds": [
       "chordophon"
      ],
-     "edges": 2,
+     "edges": 1,
      "fillers": [
       {
-       "key": "8.7 to 18.7",
-       "value": "8.7 to 18.7",
-       "n": 1,
-       "about": [
-        "name"
-       ]
-      },
-      {
-       "key": "1",
-       "value": "1",
+       "key": "2.1 instruments",
+       "value": "2.1 Instruments",
        "n": 1,
        "about": [
         "name"
        ]
       }
      ],
-     "answered": false,
-     "why": "contest"
+     "answered": true,
+     "at": "Wikipedia — Violin (disambiguation)#0-128"
     }
    },
    "solvable": true
@@ -1014,9 +1006,9 @@
    "id": "v54",
    "set": "held",
    "q": "The Eiffel Tower was finished in what year?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "WRONG",
+   "informative": null,
+   "answer": "== See also ==\nList of Eiffel Tower replicas\nList of towers\n== References ==\n== External links ==\nPetřínská rozhledna\nPetřínská rozhledna v Praze\nPetřínská rozhledna www.pis.cz\nArchived 18 June 2010 at the Wayback Machine\nPetrinska Rozhledna at Structurae\nDrawings of Petrin Tower\nHistory of Petrinska rozhledna Archived 10 May 2010 at the Wayback Machine\nPetrin Lookout 360° Virtual Panorama",
    "raw": {
     "handoff": "not_a_slot_ask",
     "gap": null,
@@ -1033,12 +1025,26 @@
      "cardinality": 1
     },
     "l2": {
-     "pages": [],
+     "pages": [
+      "Eiffel Tower",
+      "Petřín Lookout Tower",
+      "Gustave Eiffel",
+      "2024 Summer Olympics medal table"
+     ],
      "kinds": [],
-     "edges": 0,
-     "fillers": [],
-     "answered": false,
-     "why": "no-edge"
+     "edges": 1,
+     "fillers": [
+      {
+       "key": "2010",
+       "value": "18 June 2010",
+       "n": 1,
+       "about": [
+        "name"
+       ]
+      }
+     ],
+     "answered": true,
+     "at": "Wikipedia — Petřín Lookout Tower#2670-3062"
     }
    },
    "solvable": true
@@ -1047,28 +1053,45 @@
    "id": "v56",
    "set": "held",
    "q": "When did Shakespeare visit Australia?",
-   "tier": "GAP",
-   "informative": true,
-   "answer": null,
+   "tier": "WRONG",
+   "informative": null,
+   "answer": "Shakespeare continued to visit London during the years 1611–1614.",
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time",
     "void": {
      "slot": "time",
      "anchor": "William Shakespeare",
      "admits": "date",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "visit",
+      "australia"
+     ],
      "cardinality": 1
     },
     "l2": {
-     "pages": [],
+     "pages": [
+      "William Shakespeare",
+      "Anne Hathaway (wife of Shakespeare)",
+      "List of William Shakespeare screen adaptations",
+      "Reputation of William Shakespeare"
+     ],
      "kinds": [],
-     "edges": 0,
-     "fillers": [],
-     "answered": false,
-     "why": "no-edge"
+     "edges": 1,
+     "fillers": [
+      {
+       "key": "1611",
+       "value": "1611",
+       "n": 1,
+       "about": [
+        "name"
+       ]
+      }
+     ],
+     "answered": true,
+     "at": "Wikipedia — William Shakespeare#10731-10796"
     }
    },
    "solvable": null
@@ -1081,9 +1104,9 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Moon",
@@ -1096,10 +1119,10 @@
     },
     "l2": {
      "pages": [
+      "Moonbase",
       "Moon",
-      "Moon (disambiguation)",
-      "Moon Moon Sen",
-      "Moon landing"
+      "Natural satellite",
+      "Capital punishment"
      ],
      "kinds": [
       "planet",
