@@ -25,3 +25,19 @@ Void fields declared right (dev / held, of 29): slot 28 / 28 · admits 21 / 20 �
   - `admits` for a role noun stays the noun itself ("capital"), never a guessed kind; kind-induction over the universe is L2/L3's job.
   - A bare "⟨Name⟩ ⟨role⟩" ("Hamlet author") gets its slot but no anchor. This is a typed gap, pinned by a test that flips when L2 closes it.
 - **Tests:** `fold-chat-void-declare.test.mjs` 9/9; 5 mutants all killed (front-only interrogative, no measure words, a role→kind table sneaked in, no experiencer, no perceiver witness).
+
+## L2: the referent's universe (clause edges, kinds, sameAct). **Not admitted: V2 fails on held.**
+
+| | RIGHT | WRONG | GAP (informative) | Useful |
+|---|---|---|---|---|
+| dev | 6 (+1) | 0 | 23 (10) | 16 (=) |
+| held | 2 (=) | **2 (+1)** | 25 (12) | 14 (=) |
+
+- V2 (WRONG never rises) fails on held. Per the pre-registration, the held row is not read; aggregates only.
+- **Dev trace, why L2 earns so little:**
+  - Of the 22 dev asks L2 reached, 19 bound **no edge**.
+  - Its hand-built kinds are mostly noise ("choos", "known", "victim", "articl").
+  - The edge it did bind (Apollo 11 → 1969) is the one new RIGHT.
+  - The Titanic shows the contest working as designed: 15 April 1912 ×3 against 31 December 2025 ×1 stays a contest gap, not an answer.
+- **Diagnosis:** the kind and binding rules were written by hand (a copula regex, page-subject continuity, nearest argument), where the cube map (`fold-rules/cube-map/MAP.md`) already names a FILLED organ for each cell: SIG·Figure `cast.js`, NUL/SIG·Pattern `entity-kind-induction` with its null, CON·Figure `makeRelationReader`, EVA·Pattern `contest.adjudicate`, SIG·Ground `void-loop.whatWouldSettle`. The next amendment replaces the hand rules with those organs, induction across all terrains (the user's direction), before any re-run.
+- khora's `kind-induction` was renamed `terrainInduction` (khora `terrain-induction` @ c12416c2) and re-vendored. The L2 replay after the rename is identical.

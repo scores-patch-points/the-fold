@@ -10,7 +10,12 @@ import { runSlotTurn, answerLine } from "../../fold-chat-answerwire.js";
 import { makeMemo } from "../../fold-chat-web.js";
 import { slotDeps } from "../../fold-chat-answerwire.js";
 import { functionWordsOf } from "../../fold-chat-snippets.js";
-import { declareAskVoid } from "../../fold-chat-void-declare.js";   // the surface's own page memo (fold-chat.js: web.makeMemo())
+import { declareAskVoid } from "../../fold-chat-void-declare.js";
+import { universeOf, bindVoid } from "../../fold-chat-void-universe.js";
+import { morphologyFromPrior, createLemmatizer } from "../../vendor/khora/native/adapters/text/morphology.js";
+// the received morphology prior (khora reads it from the workspace's janus/priors; the browser surface must reach it through the khora's door)
+const MORPH = (() => { try { const p = morphologyFromPrior(JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../../../janus/priors/morphology-eng.json"), "utf8"))); return createLemmatizer(p.forms, { language: p.language }); } catch { return null; } })();
+const sameAct = MORPH ? (a, b) => MORPH.sameAct(a, b) : null;   // the surface's own page memo (fold-chat.js: web.makeMemo())
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const NOW = new Date("2026-10-14T12:00:00Z");   // the battery's date (passed to the probes; never the wall clock)
@@ -31,7 +36,21 @@ export const ARMS = {
     const v = await declareAskVoid(q, { fw: functionWordsOf("en"), lang: "en", resolveTitles: deps.resolveTitles });
     return { ...base, voidDecl: v.decl, anchorTitle: v.anchor ? v.anchor.title : base.anchorTitle, raw: { ...base.raw, void: v.fields, anchorBy: v.anchor ? v.anchor.by : null, experiencer: v.experiencer, voidGap: v.gap || null } };
   },
-  // the void-null: each ask carries ANOTHER ask's void (rotation by a seeded offset) — does an informative gap describe THIS ask?
+  // L2: the referent's universe — L1 plus, where L0 gave no answer, the void's open edge bound by clause (PREREG Amendment 2)
+  async L2(q, fetchImpl) {
+    const base = await ARMS.L0(q, fetchImpl);
+    const deps = slotDeps({ fetchImpl, memo: makeMemo(), lang: "en" });
+    const v = await declareAskVoid(q, { fw: functionWordsOf("en"), lang: "en", resolveTitles: deps.resolveTitles });
+    const out = { ...base, voidDecl: v.decl, anchorTitle: v.anchor ? v.anchor.title : base.anchorTitle, raw: { ...base.raw, void: v.fields } };
+    if (base.answer || !v.anchor || !v.fields.admits) return { ...out, raw: { ...out.raw, l2: base.answer ? "kept-L0-answer" : "no-anchor-or-admits" } };
+    let passages = [];
+    try { passages = await deps.searchPassages({ referents: [{ surface: v.anchor.surface, title: v.anchor.title }], predicate: (v.frame && v.frame.ok ? v.frame.predicate : []) }); } catch (e) { passages = []; }
+    const u = universeOf({ anchor: v.anchor, passages });
+    const b = bindVoid(v.fields, u, { sameAct, relationWords: v.relationWords });
+    const l2 = { pages: passages.map((p) => p.title), kinds: u.kinds.map((k) => k.kindKey), edges: b.edges.length, fillers: b.fillers.map((f) => ({ key: f.key, value: f.value, n: f.edges.length, about: [...new Set(f.edges.map((e) => e.about))] })) };
+    if (b.fillers.length === 1) return { ...out, answer: b.fillers[0].edges[0].text, raw: { ...out.raw, l2: { ...l2, answered: true, at: `${b.fillers[0].edges[0].ref}#${b.fillers[0].edges[0].start}-${b.fillers[0].edges[0].end}` } } };
+    return { ...out, raw: { ...out.raw, l2: { ...l2, answered: false, why: b.fillers.length ? "contest" : "no-edge" } } };
+  },
 };
 
 async function pool(items, n, fn) {

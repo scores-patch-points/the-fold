@@ -135,7 +135,8 @@ export async function declareAskVoid(question, { fw = null, lang = "en", resolve
   const decl = slot ? declareVoid(fields, { cellOf }) : null;
   const forWhom = experiencer || { who: "the person asking", read: `ask#0-${said.length}`, revision: null };
   const held = decl ? withExperiencer({ void: decl }, forWhom) : null;
-  return { decl, fields, anchor, perceived, experiencer: held ? held.experiencer : null, frame, ...(slot ? {} : { gap: { kind: "no_slot_read" } }) };
+  const relationWords = [...new Set([...(frame && frame.ok ? frame.predicate.map((p) => p.surface) : []), ...(role ? [role.text] : [])])];
+  return { decl, fields, anchor, perceived, relationWords, experiencer: held ? held.experiencer : null, frame, ...(slot ? {} : { gap: { kind: "no_slot_read" } }) };
 }
 
 /** The void, in plain words, for a gap card: "a date when the Sydney Opera House was opened". Fields it does not hold are left out. */
