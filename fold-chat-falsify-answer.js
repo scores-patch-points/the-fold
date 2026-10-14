@@ -363,6 +363,9 @@ export function roleConfusion(claim, sent, cnames) {
  *  `joined` marks a pair-joined evaluation (two adjacent source sentences as one): wording-level checks
  *  (runs, overlap, figures, polarity) read it whole, but ROLE confusion does not — roles live in clauses,
  *  clauses live in sentences, and windows spanning the join invent bindings ("deimos they were"). */
+// The debug trace is a Node convenience (FCFA_TRACE in the environment). This module also runs IN THE BROWSER, where there is no `process`:
+// the read below was unguarded and threw "process is not defined" on every falsify of a model-written answer (audit F/B, D2).
+const TRACE = () => { try { return typeof process !== "undefined" && !!(process.env && process.env.FCFA_TRACE); } catch { return false; } };
 function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const ss = new Set(contentStems(sent));
   const shared = cs.filter((k) => ss.has(k));
@@ -396,7 +399,7 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const about = overlap >= FALSIFY.ABOUT_OVERLAP && shared.length >= 1;
   const close = run.n >= FALSIFY.RUN || (overlap >= FALSIFY.STATE_OVERLAP && shared.length >= Math.min(FALSIFY.STATE_MIN_SHARED, cs.length));
   const role = about && !joined ? roleConfusion(claim, sent, cnames) : null;
-  if (process.env.FCFA_TRACE) console.error("DBG q=" + JSON.stringify(claim.slice(0,40)) + " s=" + JSON.stringify(sent.slice(0,50)) + " about=" + about + " pol=" + polarity + " ov=" + overlap.toFixed(2) + " sh=" + shared.length + " role=" + JSON.stringify(role) + " clashN=" + clash.length);
+  if (TRACE()) console.error("DBG q=" + JSON.stringify(claim.slice(0,40)) + " s=" + JSON.stringify(sent.slice(0,50)) + " about=" + about + " pol=" + polarity + " ov=" + overlap.toFixed(2) + " sh=" + shared.length + " role=" + JSON.stringify(role) + " clashN=" + clash.length);
   // a figure-clash counts only on its own event: the figure's nearest verb is the pair's shared verb.
   // "Fell in 1961" against fell-1989 fires; "born…1879 and died in 1955" against born-1879 does not —
   // the 1955 belongs to another clause (F2 S1 c06/c13 truthful, S2b r01 catches).
@@ -404,9 +407,9 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   // figure-clashes, like roles, live in single sentences: a pair-joined text mixes two events, so any
   // figure in it trivially "clashes" with the claim's (F2 S1 c04/c14 truthful). Single sentences only.
   const clashHere = !joined ? clash.filter((x) => pairVerb && nearestVerb(claim, x.c.start) === pairVerb) : [];
-  if (process.env.FCFA_TRACE && clash.length) console.error("DBGCL3 pv=" + pairVerb + " nv=" + JSON.stringify(clash.map((x) => [x.c.raw, nearestVerb(claim, x.c.start)])) + " joined=" + joined);
+  if (TRACE() && clash.length) console.error("DBGCL3 pv=" + pairVerb + " nv=" + JSON.stringify(clash.map((x) => [x.c.raw, nearestVerb(claim, x.c.start)])) + " joined=" + joined);
   let verdict = "silent", why = "", kind = null;
-  if (process.env.FCFA_TRACE && about) console.error("DBG role=" + JSON.stringify(role) + " clashN=" + clash.length + " clashHere=" + clashHere.length);
+  if (TRACE() && about) console.error("DBG role=" + JSON.stringify(role) + " clashN=" + clash.length + " clashHere=" + clashHere.length);
   if (about && !polarity) { verdict = "contradicts"; kind = "polarity"; why = "same subject, opposite polarity"; }
   else if (role && role.confused) { verdict = "contradicts"; kind = "role"; why = role.why; }
   else if (about && clashHere.length) { verdict = "contradicts"; kind = "figure"; why = `gives ${clashHere[0].w.raw} where the claim says ${clashHere[0].c.raw}`; }
