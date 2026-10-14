@@ -15,6 +15,31 @@ import { universeOf, bindVoid } from "../../fold-chat-void-universe.js";
 import { bornFill } from "../../fold-chat-void-born.js";
 import { resolvePronouns } from "../../vendor/khora/native/adapters/text/pronouns.js";
 import { ewt } from "./ewt.mjs";
+// L3's role witness (Amendment 12): Callimachus's readClause + the EWT parse, from a khora checkout (node-only; 16 MB prior, not vendored)
+const KP = "/Users/mlacy/Documents/3.0/khora-main-readclause/native/";
+const { loadModel } = await import(KP + "adapters/text/english-parser.js");
+const { readClause } = await import(KP + "organs/claim-realize.js");
+const PARSER = loadModel(JSON.parse(fs.readFileSync(KP + "priors/parser-eng-ewt.json", "utf8")));
+const inside = (sp, a, b) => !!sp && a >= sp.from && b <= sp.to;
+function makeRoleGate({ strict }) {
+  return (sl, f, aliases) => {
+    if (!sl.sent || !sl.relTok) return { ok: null, refused: "no_verb_relation", strictOnly: strict };
+    const rc = readClause(sl.sent, `${sl.ref}#${sl.start}`, { model: PARSER, predForm: sl.relTok });
+    if (process.env.ROLE_DEBUG) console.error("ROLE", JSON.stringify({ rel: sl.relTok, sent: sl.sent.slice(0, 110), refusal: rc.refusal ? String(typeof rc.refusal === "string" ? rc.refusal : rc.refusal.why).slice(0, 60) : null }));
+    if (rc.refusal) { const why = String(typeof rc.refusal === "string" ? rc.refusal : rc.refusal.why || rc.refusal.kind || "refused").replace(/[^a-z ]/gi, "").slice(0, 70); return { ok: null, refused: why, strictOnly: strict, keepOnRefuse: false }; }
+    const c = rc.claim; if (!c || c.untrusted) return { ok: null, refused: "untrusted_parse", strictOnly: strict };
+    const args = [c.subj, c.obj, ...(c.obls || [])].filter(Boolean);
+    const fa = sl.inSent + f.start, fb = fa + String(f.value).length;
+    const fi = args.findIndex((a) => inside(a, fa, fb));
+    if (fi < 0) return { ok: false };
+    // the anchor, as written in the sentence (longest alias occurrence)
+    const low = sl.sent.toLowerCase();
+    let ai = -1;
+    for (const al of aliases) { const at = low.indexOf(String(al).toLowerCase()); if (at >= 0) { ai = args.findIndex((a) => inside(a, at, at + String(al).length)); break; } }
+    if (ai < 0) return { ok: true, implied: true };       // the anchor is implied (kind / pronoun): the filler must lie in some argument
+    return { ok: ai !== fi };                             // anchor and filler are DIFFERENT arguments of the same predicate
+  };
+}
 // the khora's rich relation reader (S50) — node-only (reads the priors from disk); the browser surface reaches it through the khora's door
 const { engineRelationsFor } = await import("/Users/mlacy/Documents/3.0/khora-terrain-induction/native/the-fold/reader-bundle.js");
 import { morphologyFromPrior, createLemmatizer } from "../../vendor/khora/native/adapters/text/morphology.js";
@@ -73,6 +98,10 @@ export const ARMS = {
   },
   async L2c(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true }); },
   async L2c_noorder(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: false }); },
+  // L3 (Amendment 12): L2d + the role witness as a gate
+  async L3_soft(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: false }) }); },
+  async L3_strict(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: true }) }); },
+  async L3_noengine(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: false }), engineOn: false }); },
   // L2d (Amendment 11): L2c with the relation-counterfactual Born null
   async L2d(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation" }); },
   // L2: the referent's universe — L1 plus, where L0 gave no answer, the void's open edge bound by clause (PREREG Amendment 2)
@@ -93,7 +122,7 @@ export const ARMS = {
 };
 
 // L2c (Amendment 9): L1.2 + bornFill with strict engine co-reference, sentence instances, the per-candidate Born null; order on/off
-async function l2cArm(q, fetchImpl, { orderOn, nullMode = "filler" }) {
+async function l2cArm(q, fetchImpl, { orderOn, nullMode = "filler", roleGate = null, engineOn = true, tag = "l2c" }) {
   const l12 = await ARMS.L1_2(q, fetchImpl);
   const { _v: v, _deps: deps, ...out } = l12;
   if (out.answer || !v.anchor || !v.fields.admits) return { ...out, raw: { ...out.raw, l2c: out.answer ? "kept-L0-answer" : "no-anchor-or-admits" } };
@@ -102,9 +131,9 @@ async function l2cArm(q, fetchImpl, { orderOn, nullMode = "filler" }) {
   let engineEdges = [];
   try { engineEdges = engineRelationsFor(passages.map((p) => ({ ref: p.ref, text: p.text }))).edges || []; } catch { engineEdges = []; }
   const E = ewt();
-  const r = bornFill({ fields: v.fields, anchor: v.anchor, relationWords: v.relationWords, passages, strictCorefer: true, perCandidateNull: true, orderOn, nullMode,
+  const r = bornFill({ fields: v.fields, anchor: v.anchor, relationWords: v.relationWords, passages, strictCorefer: true, perCandidateNull: true, orderOn, nullMode, roleGate, engineOn,
     organs: { sameAct, lemmasOf: E.lemmasOf, ewtEntry: E.entry, resolvePronouns, engineEdges } });
-  const l2c = { verdict: r.verdict, bindings: r.bindings, top: r.candidates.slice(0, 3).map((c) => ({ v: String(c.value).slice(0, 30), M: c.mass, nullOwn: c.nullOwn, probable: c.probable, w: c.witnesses })), violations: r.orderViolations.length, gaps: r.gaps.map((g) => g.kind) };
+  const l2c = { verdict: r.verdict, bindings: r.bindings, top: r.candidates.slice(0, 3).map((c) => ({ v: String(c.value).slice(0, 30), M: c.mass, nullOwn: c.nullOwn, probable: c.probable, w: c.witnesses })), violations: r.orderViolations.length, gaps: r.gaps.map((g) => g.kind), role: r.role };
   if (r.verdict === "bound" && r.answer && r.answer.text) return { ...out, answer: r.answer.text, raw: { ...out.raw, l2c: { ...l2c, at: r.answer.at } } };
   return { ...out, raw: { ...out.raw, l2c } };
 }
