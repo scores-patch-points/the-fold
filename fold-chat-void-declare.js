@@ -49,7 +49,7 @@ export const VOID_GRAMMAR = Object.freeze({
 const SLOT_ADMITS = Object.freeze({ time: "date", person: "person", place: "place" });
 
 /** Read the void of one ask. → { decl: EOVoidDeclaration@1 | null, fields, anchor: {surface,title}|null, frame, gap? } */
-export async function declareAskVoid(question, { fw = null, lang = "en", resolveTitles = null, experiencer = null, longestName = false } = {}) {
+export async function declareAskVoid(question, { fw = null, lang = "en", resolveTitles = null, experiencer = null, longestName = false, longestRun = false } = {}) {
   const said = String(question ?? "");
   const G = grammarOf(lang), V = VOID_GRAMMAR[lang];
   if (!G || !V || !(fw instanceof Set) || !fw.size) return { decl: null, fields: {}, anchor: null, frame: null, gap: { kind: "no_grammar_for_language" } };
@@ -102,6 +102,29 @@ export async function declareAskVoid(question, { fw = null, lang = "en", resolve
       if (hit) { referents = [{ surface: hit.surface, title: hit.res.title, aliases: [hit.surface, hit.res.title] }, ...referents]; anchorBy = ["perceiver", "title-door", "longest-name"]; }
     }
   }
+  // L1.2 (eval/void Amendment 9): the LONGEST NAME FROM THE ASK'S OWN RUNS — contiguous whitespace-joined tokens, content words at both
+  // edges, inner function words allowed ("Pride and Prejudice", "One Hundred Years of Solitude"), strictly containing the door's anchor
+  // surface; one call to the same title door; taken when it resolves (no disambiguation) and its title shares a content stem with the run.
+  if (longestRun && referents.length && typeof resolveTitles === "function") {
+    const inner = String(referents[0].surface).toLowerCase();
+    const cands = [];
+    for (let i = 0; i < toks.length; i++) {
+      if (closed(toks[i].fold)) continue;
+      for (let j = i; j < toks.length; j++) {
+        if (j > i && !/^\s+$/.test(said.slice(toks[j - 1].end, toks[j].start))) break;
+        if (closed(toks[j].fold)) continue;
+        const run = said.slice(toks[i].start, toks[j].end);
+        if (run.toLowerCase() !== inner && run.toLowerCase().includes(inner)) cands.push({ run, content: toks.slice(i, j + 1).filter((t) => !closed(t.fold)).map((t) => stemOf(t.fold, lang)) });
+      }
+    }
+    if (cands.length) {
+      let table = null;
+      try { table = await resolveTitles([...new Set(cands.map((c) => c.run))]); } catch { table = null; }
+      const ok = table instanceof Map ? cands.filter((c) => { const r = table.get(c.run); if (!r || !r.title || r.disambiguation) return false; const have = new Set(tokensOf(r.title, lang).map((t) => stemOf(t.fold, lang))); return c.content.some((x) => have.has(x)); }) : [];
+      ok.sort((a, b) => b.run.length - a.run.length);
+      if (ok.length) { const r = table.get(ok[0].run); referents = [{ surface: ok[0].run, title: r.title, aliases: [ok[0].run, r.title] }, ...referents]; anchorBy = ["ask-run", "title-door", "longest-name"]; }
+    }
+  }
   const anchor = referents[0] ? { surface: referents[0].surface, title: referents[0].title, by: anchorBy } : null;
   const refFolds = new Set(referents.flatMap((r) => tokensOf(r.surface, lang).map((t) => t.fold)));
 
@@ -130,7 +153,7 @@ export async function declareAskVoid(question, { fw = null, lang = "en", resolve
 
   // 4. relation, cardinality, extent
   // with the longest name taken, a predicate word that now sits inside the anchor's own name is the name's, not the relation's
-  const inName = new Set(longestName && anchor ? tokensOf(anchor.surface, lang).map((t) => t.fold) : []);
+  const inName = new Set((longestName || longestRun) && anchor ? tokensOf(anchor.surface, lang).map((t) => t.fold) : []);
   const predicate = frame && frame.ok ? frame.predicate.filter((p) => !inName.has(String(p.surface).toLowerCase())) : [];
   const relation = [...new Set([...predicate.map((p) => p.stem), ...(roleFold && slot === "thing" ? [stemOf(roleFold, lang)] : [])])];
   const pluralRole = role && V.plural.test(roleFold) && stemOf(roleFold, lang) !== roleFold;
