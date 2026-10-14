@@ -1,0 +1,1 @@
+{"url":"https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&search=moon&language=en&type=property&limit=5","method":"GET","status":200,"contentType":"application/json; charset=utf-8","sha256":"1ea28edb0f1f5e9e1f051c2ba10c2313d87e631686ad34305250f4c5d0c07919","body":"{\"searchinfo\":{\"search\":\"moon\"},\"search\":[],\"success\":1}"}
