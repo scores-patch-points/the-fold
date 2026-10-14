@@ -17,7 +17,7 @@ import { detectLang } from "./fold-chat-lang.js";
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
 import { classifyTurn } from "./fold-chat-discourse.js";
 import { anaphoraOf } from "./fold-chat-anaphora.js";
-import { salienceOf, closedFormsOf, hasPrior } from "./fold-chat-salience-infer.js";
+import { salienceOf, closedFormsOf } from "./fold-chat-salience-infer.js";
 import { SALIENCE_PRIOR } from "./fold-chat-salience-prior.js";
 import { senseTerm } from "./fold-chat-senses.js";
 import { stemOf } from "./fold-chat-ground.js";
@@ -58,8 +58,12 @@ export function murmurOf({ question, carried = [], rejected = [], prior = null, 
   const d = (() => { try { return detectLang(q, { prior }); } catch { return { lang: "unknown", confident: false }; } })();
   const lang = d.lang && d.lang !== "unknown" ? d.lang : "en";
   const fw = new Set(FUNCTION_WORDS[lang] || closedFormsOf(lang) || FUNCTION_WORDS.en || []);
-  // A language with a received prior of its own (es, fr, the creoles) is read through it; every other language, as before, through English.
-  const salLang = lang !== "en" && hasPrior(lang) ? lang : null;
+  // A language the Fold holds a CLOSED CLASS for through a received creole pack (pcm, hat) is read through its own prior. es and fr, which have a
+  // salience prior but also a FUNCTION_WORDS entry and a murmur that has always read them through the English prior, are deliberately LEFT as they
+  // were: reading them through their own prior is correct for function words but turns an ask whose only topic word the prior does not know into
+  // a "hard" ask, and with no Spanish/French slot grammar registered that ask then dead-ends in "no source" (measured on the integration branch:
+  // "¿Qué es la fotosíntesis?" R0 → R1). That is a base-layer change for another day, not part of the creole layer.
+  const salLang = closedFormsOf(lang) ? lang : null;
   say("listen", "listening for what is being asked");
   say("language", `language: ${lang}` + (d.confident === false ? " (uncertain)" : ""), { lang });
 
