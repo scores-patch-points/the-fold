@@ -41,6 +41,7 @@ import { threadPrompt, threadNotice, coldFollowUpNotice, missingAnswerNotice, ad
 // order, question last, a refused fold withheld), the conversation's flow (follow-ups, push-backs and frame-asks are moves against
 // the thread), and the felt shape of the recent answers for a DECLARED experiencer.
 import { door as garyDoor, noteWindows } from "./fold-chat-gary.js";
+import { houdini as houdiniProject } from "./fold-chat-houdini.js";
 import { planTurn, cuesFor, actOf } from "./fold-chat-flow.js";
 import { readFelt } from "./fold-chat-pathos.js";
 import { hintsFor } from "./fold-chat-hints.js";
@@ -2699,8 +2700,12 @@ export function mount(root, opts = {}) {
           }
         }
       }
+      // HOUDINI (docs/HOUDINI.md, default ON; turn off with localStorage "fold-chat:houdini" = "off"): the context is projected by need, not position. It reads the WHOLE
+      // store and exchange (not the gated/salient copies above), so the upstream anaphora gate and salience do not filter first; the sources keep their own salience.
+      const houdiniOn = (() => { try { return localStorage.getItem("fold-chat:houdini") !== "off"; } catch { return true; } })() && (kind === "research" || kind === "chat" || kind === "advice");
       const composed = garyDoor.composeTurn({
-        basePrompt: turnBase, cues: flowInfo?.cues || [], summary: promptSummary, history: promptHistory, question, sourceBlock, recencyWindow,
+        basePrompt: turnBase, cues: flowInfo?.cues || [], summary: houdiniOn ? s.summary : promptSummary, history: houdiniOn ? history.slice(0, -1) : promptHistory, question, sourceBlock, recencyWindow,
+        ...(houdiniOn ? { project: houdiniProject, referents: s.referents, turn: { kind: follow.kind || null, act: follow.act || null, mode: follow.mode || null } } : {}),
         shrinkSource: fromWeb ? (maxChars) => sourcesPrompt(promptPassages.map((p) => ({ ...p, text: String(p.text || "").slice(0, maxChars) }))) + (webPassages.some((p) => p.recipe) ? "\n\n" + CARD_PROMPT : "") : null,
       }, { model: m.id, maxTokens: 1024, material: materialInView });
       messages = composed.messages;

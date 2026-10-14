@@ -1,0 +1,17 @@
+{
+  "note": "Held-out floors for Houdini, a margin under the measured numbers on seeds 201-203 (fresh: not looked at while the class rules were built). 100% = the oracle on every metric (docs/HOUDINI.md). semanticRecall is the declared gap: 0 without a reader organ; the real-reader number is eval/houdini/semantic-live.mjs.",
+  "houdini": {
+    "needRecall": 0.99,
+    "shapePrecision": 0.97,
+    "guard": 0.99,
+    "decoyRejection": 0.99,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "flatness": 0.98,
+    "worstScriptRecall": 0.99,
+    "latency": 1,
+    "semanticRecall": 0
+  }
+}

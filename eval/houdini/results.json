@@ -1,0 +1,1493 @@
+{
+ "generated": "deterministic; no clock in the numbers",
+ "calibration": [
+  {
+   "name": "oracle",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 1,
+    "guard": 1,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 1,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 1,
+     "n": 109
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 75
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 1,
+     "n": 75
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 1,
+     "n": 69
+    },
+    "pressure": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 1,
+     "n": 68
+    },
+    "semantic": {
+     "recall": 1,
+     "precision": 1,
+     "n": 15
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     1871,
+     2068,
+     1975,
+     1967
+    ],
+    "ratio": 1.051,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 1.08,
+    "worstMs": 3.4,
+    "score": 1
+   }
+  },
+  {
+   "name": "houdini",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 0.9995759117896523,
+    "guard": 1,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 0,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 1,
+     "n": 109
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 75
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 0.9955555555555556,
+     "n": 75
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 1,
+     "n": 69
+    },
+    "pressure": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 1,
+     "n": 68
+    },
+    "semantic": {
+     "recall": 0,
+     "precision": 1,
+     "n": 15
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     2109,
+     2308,
+     2161,
+     2065
+    ],
+    "ratio": 0.979,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 60.01,
+    "worstMs": 124.35,
+    "score": 1
+   }
+  },
+  {
+   "name": "houdini-lex",
+   "metrics": {
+    "needRecall": 0.989010989010989,
+    "shapePrecision": 0.9995759117896523,
+    "guard": 0.9787878787878788,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 0.9629629629629629,
+    "semanticRecall": 0,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 0.9733333333333334,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-near": {
+     "recall": 0.9733333333333334,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 1,
+     "n": 109
+    },
+    "callback-mid": {
+     "recall": 0.9866666666666667,
+     "precision": 1,
+     "n": 75
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 75
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 0.9955555555555556,
+     "n": 75
+    },
+    "multi-hop": {
+     "recall": 0.9855072463768116,
+     "precision": 1,
+     "n": 69
+    },
+    "pressure": {
+     "recall": 0.9866666666666667,
+     "precision": 1,
+     "n": 75
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 1,
+     "n": 68
+    },
+    "semantic": {
+     "recall": 0,
+     "precision": 1,
+     "n": 15
+    }
+   },
+   "perLang": {
+    "en": 0.9629629629629629,
+    "el": 0.9814814814814815,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     2109,
+     2308,
+     2161,
+     2065
+    ],
+    "ratio": 0.979,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 71.83,
+    "worstMs": 115.08,
+    "score": 1
+   }
+  },
+  {
+   "name": "positional",
+   "metrics": {
+    "needRecall": 0.30581719867434154,
+    "shapePrecision": 0.28951733934830026,
+    "guard": 0.14479797979797984,
+    "decoyRejection": 0.8404917049088917,
+    "budget": 1,
+    "honesty": 0,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 0.18258377425044095,
+    "semanticRecall": 0.24888888888888888,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 0.2271111111111111,
+     "precision": 0.2683954961751506,
+     "n": 75
+    },
+    "callback-near": {
+     "recall": 0.488126984126984,
+     "precision": 0.38890884545493937,
+     "n": 75
+    },
+    "callback-far": {
+     "recall": 0,
+     "precision": 0.17656367793462846,
+     "n": 109
+    },
+    "callback-mid": {
+     "recall": 0.2744444444444444,
+     "precision": 0.27695491258262195,
+     "n": 75
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 0.354165125552314,
+     "n": 75
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 0.1775530967141602,
+     "n": 75
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 0.1775530967141602,
+     "n": 75
+    },
+    "multi-hop": {
+     "recall": 0.25724637681159424,
+     "precision": 0.3689171657896797,
+     "n": 69
+    },
+    "pressure": {
+     "recall": 0.3,
+     "precision": 0.5783526545710046,
+     "n": 75
+    },
+    "verbatim": {
+     "recall": 0,
+     "precision": 0.17809999244133387,
+     "n": 68
+    },
+    "semantic": {
+     "recall": 0.24888888888888888,
+     "precision": 0.2738574550042916,
+     "n": 15
+    }
+   },
+   "perLang": {
+    "en": 0.21450617283950615,
+    "el": 0.18258377425044095,
+    "ru": 0.23733333333333334,
+    "zh": 0.2128930817610063,
+    "ar": 0.2625
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     2239,
+     2442,
+     2237,
+     2200
+    ],
+    "ratio": 0.983,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 0.05,
+    "worstMs": 0.1,
+    "score": 1
+   }
+  },
+  {
+   "name": "empty",
+   "metrics": {
+    "needRecall": 0,
+    "shapePrecision": 1,
+    "guard": 0,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 0,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 0,
+    "semanticRecall": 0,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 0,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-near": {
+     "recall": 0,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-far": {
+     "recall": 0,
+     "precision": 1,
+     "n": 109
+    },
+    "callback-mid": {
+     "recall": 0,
+     "precision": 1,
+     "n": 75
+    },
+    "thin": {
+     "recall": 0,
+     "precision": 1,
+     "n": 75
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 75
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 1,
+     "n": 75
+    },
+    "multi-hop": {
+     "recall": 0,
+     "precision": 1,
+     "n": 69
+    },
+    "pressure": {
+     "recall": 0,
+     "precision": 1,
+     "n": 75
+    },
+    "verbatim": {
+     "recall": 0,
+     "precision": 1,
+     "n": 68
+    },
+    "semantic": {
+     "recall": 0,
+     "precision": 1,
+     "n": 15
+    }
+   },
+   "perLang": {
+    "en": 0,
+    "el": 0,
+    "ru": 0,
+    "zh": 0,
+    "ar": 0
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     835,
+     833,
+     830,
+     833
+    ],
+    "ratio": 0.998,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 0.03,
+    "worstMs": 0.05,
+    "score": 1
+   }
+  },
+  {
+   "name": "everything",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 0.1034542186312959,
+    "guard": 1,
+    "decoyRejection": 0,
+    "budget": 0,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 1,
+    "flatness": 0.16602124945758656,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 0.11334202258366219,
+     "n": 75
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 0.1188064305180958,
+     "n": 75
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 0.07485817262950362,
+     "n": 109
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 0.12232173682743974,
+     "n": 75
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 0.07837571889034935,
+     "n": 75
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 0.02051768131965392,
+     "n": 75
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 0.02051768131965392,
+     "n": 75
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 0.17534659999115057,
+     "n": 69
+    },
+    "pressure": {
+     "recall": 1,
+     "precision": 0.2936942319956973,
+     "n": 75
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 0.02861634321704482,
+     "n": 68
+    },
+    "semantic": {
+     "recall": 1,
+     "precision": 0.10283236868952045,
+     "n": 15
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     16834,
+     32544,
+     63809,
+     126748
+    ],
+    "ratio": 7.529,
+    "score": 0.16602124945758656
+   },
+   "latency": {
+    "medianMs": 0.8,
+    "worstMs": 1.01,
+    "score": 1
+   }
+  },
+  {
+   "name": "+reader",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 0.9995759117896523,
+    "guard": 1,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 1,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 1,
+     "n": 109
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 75
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 0.9955555555555556,
+     "n": 75
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 1,
+     "n": 69
+    },
+    "pressure": {
+     "recall": 1,
+     "precision": 1,
+     "n": 75
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 1,
+     "n": 68
+    },
+    "semantic": {
+     "recall": 1,
+     "precision": 1,
+     "n": 15
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     2109,
+     2308,
+     2161,
+     2065
+    ],
+    "ratio": 0.979,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 46.16,
+    "worstMs": 92.98,
+    "score": 1
+   }
+  }
+ ],
+ "heldOut": [
+  {
+   "name": "oracle",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 1,
+    "guard": 1,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 1,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 1,
+     "n": 37
+    },
+    "pressure": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 1,
+     "n": 41
+    },
+    "semantic": {
+     "recall": 1,
+     "precision": 1,
+     "n": 9
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 1,
+     "n": 64
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     1871,
+     2068,
+     1975,
+     1967
+    ],
+    "ratio": 1.051,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 1.02,
+    "worstMs": 3.53,
+    "score": 1
+   }
+  },
+  {
+   "name": "houdini",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 1,
+    "guard": 1,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 0,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 1,
+     "n": 37
+    },
+    "pressure": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 1,
+     "n": 41
+    },
+    "semantic": {
+     "recall": 0,
+     "precision": 1,
+     "n": 9
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 1,
+     "n": 64
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     2109,
+     2308,
+     2161,
+     2065
+    ],
+    "ratio": 0.979,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 52.01,
+    "worstMs": 153.71,
+    "score": 1
+   }
+  },
+  {
+   "name": "houdini-lex",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 1,
+    "guard": 1,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 0,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 1,
+     "n": 37
+    },
+    "pressure": {
+     "recall": 0.9944444444444445,
+     "precision": 1,
+     "n": 45
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 1,
+     "n": 41
+    },
+    "semantic": {
+     "recall": 0,
+     "precision": 1,
+     "n": 9
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 1,
+     "n": 64
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     2109,
+     2308,
+     2161,
+     2065
+    ],
+    "ratio": 0.979,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 46.99,
+    "worstMs": 92.15,
+    "score": 1
+   }
+  },
+  {
+   "name": "positional",
+   "metrics": {
+    "needRecall": 0.32156536527654533,
+    "shapePrecision": 0.28488294295527616,
+    "guard": 0.19238578680203047,
+    "decoyRejection": 0.8362719977022915,
+    "budget": 1,
+    "honesty": 0,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 0.1708333333333333,
+    "semanticRecall": 0,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 0.25888888888888884,
+     "precision": 0.25764155058704313,
+     "n": 45
+    },
+    "callback-near": {
+     "recall": 0.48227513227513213,
+     "precision": 0.3945394548961021,
+     "n": 45
+    },
+    "callback-mid": {
+     "recall": 0.33481481481481484,
+     "precision": 0.2481902871981611,
+     "n": 45
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 0.3891606320898934,
+     "n": 45
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 0.1722381792635954,
+     "n": 45
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 0.1722381792635954,
+     "n": 45
+    },
+    "multi-hop": {
+     "recall": 0.27364864864864863,
+     "precision": 0.3628540232086733,
+     "n": 37
+    },
+    "pressure": {
+     "recall": 0.36666666666666675,
+     "precision": 0.5735772594833524,
+     "n": 45
+    },
+    "verbatim": {
+     "recall": 0,
+     "precision": 0.16972648401498674,
+     "n": 41
+    },
+    "semantic": {
+     "recall": 0,
+     "precision": 0.21882684105008948,
+     "n": 9
+    },
+    "callback-far": {
+     "recall": 0,
+     "precision": 0.17281680811240993,
+     "n": 64
+    }
+   },
+   "perLang": {
+    "en": 0.1708333333333333,
+    "el": 0.22291666666666665,
+    "ru": 0.27174603174603174,
+    "zh": 0.30977011494252876,
+    "ar": 0.22688172043010754
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     2239,
+     2442,
+     2237,
+     2200
+    ],
+    "ratio": 0.983,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 0.06,
+    "worstMs": 0.1,
+    "score": 1
+   }
+  },
+  {
+   "name": "empty",
+   "metrics": {
+    "needRecall": 0,
+    "shapePrecision": 1,
+    "guard": 0,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 0,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 0,
+    "semanticRecall": 0,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 0,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-near": {
+     "recall": 0,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-mid": {
+     "recall": 0,
+     "precision": 1,
+     "n": 45
+    },
+    "thin": {
+     "recall": 0,
+     "precision": 1,
+     "n": 45
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "multi-hop": {
+     "recall": 0,
+     "precision": 1,
+     "n": 37
+    },
+    "pressure": {
+     "recall": 0,
+     "precision": 1,
+     "n": 45
+    },
+    "verbatim": {
+     "recall": 0,
+     "precision": 1,
+     "n": 41
+    },
+    "semantic": {
+     "recall": 0,
+     "precision": 1,
+     "n": 9
+    },
+    "callback-far": {
+     "recall": 0,
+     "precision": 1,
+     "n": 64
+    }
+   },
+   "perLang": {
+    "en": 0,
+    "el": 0,
+    "ru": 0,
+    "zh": 0,
+    "ar": 0
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     835,
+     833,
+     830,
+     833
+    ],
+    "ratio": 0.998,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 0.03,
+    "worstMs": 0.04,
+    "score": 1
+   }
+  },
+  {
+   "name": "everything",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 0.09961362649785968,
+    "guard": 1,
+    "decoyRejection": 0,
+    "budget": 0,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 1,
+    "flatness": 0.16602124945758656,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 0.11010217365588228,
+     "n": 45
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 0.11167265126151754,
+     "n": 45
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 0.10233111603496287,
+     "n": 45
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 0.08745418993823292,
+     "n": 45
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 0.020926054419607695,
+     "n": 45
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 0.020926054419607695,
+     "n": 45
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 0.16691113344139188,
+     "n": 37
+    },
+    "pressure": {
+     "recall": 1,
+     "precision": 0.278802173610661,
+     "n": 45
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 0.028666659478610825,
+     "n": 41
+    },
+    "semantic": {
+     "recall": 1,
+     "precision": 0.08902914898044975,
+     "n": 9
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 0.08309365673285547,
+     "n": 64
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     16834,
+     32544,
+     63809,
+     126748
+    ],
+    "ratio": 7.529,
+    "score": 0.16602124945758656
+   },
+   "latency": {
+    "medianMs": 0.81,
+    "worstMs": 1.03,
+    "score": 1
+   }
+  },
+  {
+   "name": "+reader",
+   "metrics": {
+    "needRecall": 1,
+    "shapePrecision": 1,
+    "guard": 1,
+    "decoyRejection": 1,
+    "budget": 1,
+    "honesty": 1,
+    "integrity": 1,
+    "determinism": 1,
+    "worstScriptRecall": 1,
+    "semanticRecall": 1,
+    "flatness": 1,
+    "latency": 1
+   },
+   "byClass": {
+    "named-extra": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-near": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "callback-mid": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "thin": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "fresh": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "coincidence": {
+     "recall": null,
+     "precision": 1,
+     "n": 45
+    },
+    "multi-hop": {
+     "recall": 1,
+     "precision": 1,
+     "n": 37
+    },
+    "pressure": {
+     "recall": 1,
+     "precision": 1,
+     "n": 45
+    },
+    "verbatim": {
+     "recall": 1,
+     "precision": 1,
+     "n": 41
+    },
+    "semantic": {
+     "recall": 1,
+     "precision": 1,
+     "n": 9
+    },
+    "callback-far": {
+     "recall": 1,
+     "precision": 1,
+     "n": 64
+    }
+   },
+   "perLang": {
+    "en": 1,
+    "el": 1,
+    "ru": 1,
+    "zh": 1,
+    "ar": 1
+   },
+   "flat": {
+    "ladder": [
+     80,
+     160,
+     320,
+     640
+    ],
+    "size": [
+     2109,
+     2308,
+     2161,
+     2065
+    ],
+    "ratio": 0.979,
+    "score": 1
+   },
+   "latency": {
+    "medianMs": 56.48,
+    "worstMs": 110.12,
+    "score": 1
+   }
+  }
+ ],
+ "mutants": [
+  {
+   "mutant": "no-bearing",
+   "target": "needRecall",
+   "houdini": 1,
+   "mutantScore": 0.7577639751552795,
+   "killed": true
+  },
+  {
+   "mutant": "no-decoy-guard",
+   "target": "decoyRejection",
+   "houdini": 1,
+   "mutantScore": 0.8153820363204237,
+   "killed": true
+  },
+  {
+   "mutant": "unbounded",
+   "target": "budget",
+   "houdini": 1,
+   "mutantScore": 0.37553648068669526,
+   "killed": true
+  },
+  {
+   "mutant": "silent-omission",
+   "target": "honesty",
+   "houdini": 1,
+   "mutantScore": 0,
+   "killed": true
+  },
+  {
+   "mutant": "truncates-record",
+   "target": "integrity",
+   "houdini": 1,
+   "mutantScore": 0.4570815450643777,
+   "killed": true
+  },
+  {
+   "mutant": "nondeterministic",
+   "target": "determinism",
+   "houdini": 1,
+   "mutantScore": 0,
+   "killed": true
+  },
+  {
+   "mutant": "drops-pinned",
+   "target": "guard",
+   "houdini": 1,
+   "mutantScore": 0.3049069373942472,
+   "killed": true
+  },
+  {
+   "mutant": "writes-inputs",
+   "target": "integrity",
+   "houdini": 1,
+   "mutantScore": 0,
+   "killed": true
+  }
+ ]
+}
