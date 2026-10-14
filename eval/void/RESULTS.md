@@ -183,3 +183,7 @@ Causes: RIGHT 38, LABEL 9, PROPERTY 4, ANCHOR 2, VALUE 1. Production path (L0) o
 **Not yet fixed (to pre-register, not built):** prefer the anchor whose title equals the longest run; exclude external-id datatype from relation matching; per-language lemma prior (ru, fr elision); relation lexicon by distant supervision; interrogatives received from UD PronType=Int.
 
 Front-end tests: `fold-chat-void-intl.test.mjs` 6/6 (with `fold-chat-void-keyed.test.mjs` 9/9).
+
+### Amendment 17 (third replay): identifier keys held, nested-anchor rule refuted
+
+Same battery and recording. RIGHT 38 / WRONG 4 / GAP 12 (was 38 / 5 / 11). **Held:** excluding `external-id` keys turns ko creator-mona from a wrong answer (Goodreads ID) into a typed TYPE gap. **Refuted and reverted:** rejecting a run nested in a longer run whose title equals its surface lost fr currency-jp (RIGHT 38 → 37) and did not fix the opening-syd wrongs, whose anchors are unrelated entities the ask's words resolve to (Karstadt for *Quelle*, Опера, Sidney). Next lever, not built: rank candidate anchors by joint coverage of the ask by anchor + matched key. Tests 15/15.

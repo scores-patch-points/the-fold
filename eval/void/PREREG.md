@@ -429,3 +429,19 @@ Draws: 200, seed 20261014. A universe with fewer than 2 attested verbs (or fewer
 3. **A suffix glued to the noun** (ko 수도는, tr başkenti): the ask word is the label token plus a particle or possessive. **Fix, for the declared agglutinative languages only (ko, tr):** an ask word matches a label token when the word **begins with** the token (at least 2 characters). The label is the witness, exactly as the title door was for the anchor prefixes.
 
 Both runs are reported. The second run's arms, scoring and causes are unchanged. The Amendment's claim that the language question and the slot-free question are separable is now tested properly: the English control is read first.
+
+## Amendment 17 (2026-10-14): anchor-selection leak and the identifier key. Written after reading the second omnilingual run's five WRONG cells; before the third run. Same frozen battery, same recording (replay only; any miss is reported, not fetched).
+
+**Defects (named causes in `results-intl.json`):** (a) a run nested inside a longer run that itself names an entity (*Sydney* inside *Sydney Opera House*) is tried as an anchor when the longer entity's kind lacks the matched key, and the shorter entity answers a different question (fr/tr/ru opening-syd, P571 of Sydney); (b) an external-identifier property (datatype `external-id`, e.g. P2963 Goodreads author ID) matches an ask word by label (ko 작가).
+
+**Rules:**
+1. **Nested-anchor rejection.** A resolved anchor whose span lies strictly inside another resolved run's span is not tried when that longer run's title equals its own surface (casefolded, NFKC): the longer run names an entity, and the shorter one is a modifier of it. A longer run that redirects (title ≠ surface, e.g. *capital of Australia* → Canberra) does **not** reject the nested anchor.
+2. **Identifier keys are not relations.** In slot-free mode a key whose datatype is `external-id` is dropped from the match set before ranking. (A relation answered with an identifier string is never what a question asks for.)
+
+**Expected:** the 4 WRONG:PROPERTY cells become GAP or RIGHT; WRONG falls from 5 to ≤ 1; RIGHT does not fall (any RIGHT cell lost is reported with its cause). **No tuned parameters.** If RIGHT falls or WRONG does not, the rule is reported refuted and reverted.
+
+### Amendment 17 outcome (replay, same recording; 11 replay misses reported, not fetched)
+
+- **Rule 2 (identifier keys are not relations): HELD.** ko creator-mona WRONG:PROPERTY → GAP:TYPE. RIGHT 38 → 38, WRONG 5 → 4, no cell lost.
+- **Rule 1 (nested-anchor rejection): REFUTED, REVERTED**, as pre-registered. With it RIGHT fell 38 → 37 (fr currency-jp: *Japon* nested in the entity-page *Monnaie du Japon*, a relation phrase that is itself a page) and WRONG did not fall (fr/tr/ru opening-syd persist). Diagnosis from the traces: the leaking anchors are not nested in an equal-title longer run; they are **other entities the ask's words happen to resolve to** (fr *Quelle* → Karstadt, whose item has P571; ru *оперы* → Опера; tr *Sidney*, *Opera*). Containment is the wrong witness; what the right anchor has is that it is the entity that satisfies the *most* of the ask's words (anchor + key together), which is a coverage rank across anchors, not a nesting test.
+- **Open, not built:** rank candidate anchors by joint coverage (anchor surface ∪ matched key label tokens over the ask's open-class words); a closed-class-but-capitalised word (*Quelle*) is not an anchor candidate (needs the per-language closed-class prior, the same missing lemma/POS prior as ru/fr).
