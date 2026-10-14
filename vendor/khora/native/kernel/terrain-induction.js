@@ -12,7 +12,10 @@ Understanding.”
 // "remember the work we did on induction for ALL terrains"). THE MECHANISM IS UNCHANGED: a category is induced from what its members
 // share, against a null, with nothing declared in advance. The name now says what the members may be: the units of ANY terrain whose
 // features an evidence record carries (an entity, a link, a field, a frame…), not only an entity's Kind. Whether the induction EARNS
-// on a given terrain is measured elsewhere (native/eval/the-fold/falsification/terrain-arena-step*.mjs), never assumed by this name.
+// on a given terrain is measured elsewhere (native/eval/the-fold/falsification/terrain-arena-step*.mjs, which drive the inner inducer,
+// entity-kind-induction.js, directly), never assumed by this name. What THIS index emits is still Kind-tagged (EOKindProjection@1,
+// terrain: "Kind"); no other terrain's projection is produced here yet. Exported names carry "TerrainInduction" because the plain
+// indexTerrainEntries / snapshotTerrainState belong to terrain-state.js (re-exported from kernel/index.js).
 // Data contracts are kept as they were: the schema strings (EOKindEvidence@1, EOKindInductionIndex@1) and the record fields (kindKey,
 // kindSurface) are unchanged, so nothing persisted or vendored under the old shape breaks.
 
@@ -156,7 +159,7 @@ export function createTerrainInductionIndex(entries = [], options = {}) {
     earnedDiagnostics: freeze({ selectorNominations: 0, selectorAdmission: "disabled", earnedKinds: 0, withheldNoHoldout: 0, withheldNoConsequence: 0 }),
     graphStructure: createKindGraphStructureLedger({ depthThresholds: options.depthThresholds }), structuralDirty: false, snapshot: null, diagnostics: null,
   };
-  indexTerrainEntries(index, entries);
+  indexTerrainInductionEntries(index, entries);
   return index;
 }
 
@@ -177,8 +180,8 @@ function syncGraphStructure(index) {
   return changed;
 }
 
-export function indexTerrainEntries(index, entries = []) {
-  if (index?.schema !== "EOKindInductionIndex@1") throw new TypeError("indexTerrainEntries requires EOKindInductionIndex@1");
+export function indexTerrainInductionEntries(index, entries = []) {
+  if (index?.schema !== "EOKindInductionIndex@1") throw new TypeError("indexTerrainInductionEntries requires EOKindInductionIndex@1");
   let changed = 0;
   for (const entry of entries ?? []) if (ingestKindEvidence(index, entry)) changed += 1;
   if (index.graphStructure.ingest(entries) > 0) changed += syncGraphStructure(index);
@@ -341,7 +344,7 @@ function computeSnapshot(index) {
 // candidates are hypotheses, not findings: each is reported with its
 // releaseDecision standing, and by default a discovered basin is WITHHELD
 // (coherence alone earns nothing — the fold self-audit ruling). Consumers
-// that read terrainDiagnostics() inherit the discipline with no per-surface
+// that read terrainInductionDiagnostics() inherit the discipline with no per-surface
 // change; a pipeline that has independently validated a candidate promotes
 // it upstream (earned) and it alone is released.
 function gateCandidate(candidate) {
@@ -358,24 +361,24 @@ function gateCandidate(candidate) {
   return freeze({ released: verdict.released, standing: verdict.standing, releaseWhy: verdict.why });
 }
 
-export function snapshotTerrainState(index, { ids = null } = {}) {
-  if (index?.schema !== "EOKindInductionIndex@1") throw new TypeError("snapshotTerrainState requires EOKindInductionIndex@1");
+export function snapshotTerrainInductionState(index, { ids = null } = {}) {
+  if (index?.schema !== "EOKindInductionIndex@1") throw new TypeError("snapshotTerrainInductionState requires EOKindInductionIndex@1");
   const snapshot = index.snapshot ?? computeSnapshot(index);
   if (!ids) return snapshot;
   const allowed = ids instanceof Set ? ids : new Set(ids);
   return freeze(snapshot.filter((projection) => allowed.has(projection.id) || allowed.has(projection.kindKey) || (projection.memberRefs ?? []).some((id) => allowed.has(id)) || (projection.evidenceRefs ?? []).some((id) => allowed.has(id))));
 }
 
-export function terrainDiagnostics(index) {
-  if (index?.schema !== "EOKindInductionIndex@1") throw new TypeError("terrainDiagnostics requires EOKindInductionIndex@1");
+export function terrainInductionDiagnostics(index) {
+  if (index?.schema !== "EOKindInductionIndex@1") throw new TypeError("terrainInductionDiagnostics requires EOKindInductionIndex@1");
   if (!index.diagnostics) computeSnapshot(index);
   return index.diagnostics;
 }
 
-export function terrainCandidates(index) {
-  if (index?.schema !== "EOKindInductionIndex@1") throw new TypeError("terrainCandidates requires EOKindInductionIndex@1");
+export function terrainInductionCandidates(index) {
+  if (index?.schema !== "EOKindInductionIndex@1") throw new TypeError("terrainInductionCandidates requires EOKindInductionIndex@1");
   if (index.structuralDirty || !index.diagnostics) computeSnapshot(index);
   return index.populationKindCandidates;
 }
 
-export function projectTerrains(entries = [], options = {}) { return snapshotTerrainState(createTerrainInductionIndex(entries, options)); }
+export function projectTerrainInduction(entries = [], options = {}) { return snapshotTerrainInductionState(createTerrainInductionIndex(entries, options)); }
