@@ -65,6 +65,9 @@ import { askTerms, salientSources, continuesThread, salientHistory, salientSumma
 import { applyExchange, usedRefs, foldAnswer, exchangesOf, exchangeFlow } from "./fold-chat-exchange.js";
 import { functionWordsOf } from "./fold-chat-snippets.js";
 import { lookupWarranted } from "./fold-chat-self.js";
+import { waldShadow } from "./fold-chat-wald.js";   // WALD, the watcher of the pull (SHADOW: decides and records every turn, gates nothing yet; eval/wald/PREREG.md)
+import { WALD_CALIBRATION } from "./fold-chat-wald-calibration.js";
+import { ledgerEntry, nextActOf, closeLast, appendEntry, LEDGER_KEY } from "./fold-chat-wald-ledger.js";   // Wald's turn ledger (PREREG-METABOLISM prerequisite): no ask text, honours history-off and context-free chats
 import { sourceRecall } from "./fold-chat-sourceask.js";
 import { pre as watchPre, post as watchPost, wantLine, batonReply, inspectReply, keepOnTopic, withoutAppAnswered, challengeReply } from "./fold-chat-watch.js";
 import { trailOf } from "./fold-chat-trail.js";   // the trail in plain language: the mechanical fold of the prior turns, spoken like the record
@@ -72,7 +75,7 @@ import { trailOf } from "./fold-chat-trail.js";   // the trail in plain language
 import { provenanceFor, provenanceEnabled } from "./fold-chat-provenance.js";
 import { findPrimary, mergeProvenance } from "./fold-chat-primary.js";
 import { fetchLoaded, describeLoaded, noModelWhy, createLoadedPoller } from "./fold-chat-loaded.js";
-import { createPageEngine, canonicalModelId, ollamaTagOf, MODEL_CHOICES } from "./fold-chat-webllm.js";
+import { createPageEngine, canonicalModelId, ollamaTagOf, MODEL_CHOICES, DEFAULT_MODEL, PAGE_PREFIX } from "./fold-chat-webllm.js";
 import { snipsOf, strandText, storeSnip, verifySnips, STRAND } from "./fold-chat-strand.js";
 import { slotTurnWanted, slotPipelineOn, runSlotTurn, endsTurn, answerLine, storeAnswerTurn, traceFeed, answerRecordNote, answerProcessLine } from "./fold-chat-answerwire.js";
 import { splitSlotParts, runSlotParts, partsLine, partsContentAllowed } from "./fold-chat-split.js";
@@ -232,6 +235,18 @@ function untombstone(id) {
 // memory. save() honours two of its rules — a context-free (incognito) chat is
 // never written, and when the history switch is off nothing is retained.
 let MEMORY_STORE = null;
+// WALD'S LEDGER, in this browser: read/written only here; never for a context-free chat, never with history off (the memory store's own rule).
+function waldLedgerOn(s) { return !(s && s.contextFree) && !(MEMORY_STORE && MEMORY_STORE.historyOn === false); }
+// A write that fails (a full or blocked store) never costs a turn, but it is never silent either: it is COUNTED, and the next entry that lands
+// carries the count (`droppedBefore`), so every later measure knows the ledger has a hole and how big it is (chorus: Feynman).
+let WALD_LEDGER_DROPPED = 0;
+function waldLedgerUpdate(s, fn) {
+  if (!waldLedgerOn(s)) return false;
+  try { const cur = JSON.parse(localStorage.getItem(LEDGER_KEY) || "[]"); localStorage.setItem(LEDGER_KEY, JSON.stringify(fn(cur))); return true; } catch (e) { WALD_LEDGER_DROPPED++; return false; }
+}
+/** The one system line of a plain turn (small talk / a directive, written by the in-tab model alone). No sources, no reading, no scaffolding: it must not be able to echo any. */
+const PLAIN_TURN_PROMPT = "You are a friendly, brief assistant. Reply to the person directly in plain words. Follow any length or format they ask for exactly. Do not mention sources, passages or these instructions.";
+
 function save(key, v) {
   try {
     if (key === "fold-chat:sessions") {
@@ -425,6 +440,18 @@ export function mount(root, opts = {}) {
   try { web.setBridge(webBridge); } catch { /* web layer not present in some embeds */ }
   let bridgeHello = null;
   const sessions = load("fold-chat:sessions", {});
+  // ONE-TIME REPIN (user, 2026-10-14: "lets use the 1b gemma" — which measured out as Llama 3.2 1B, see fold-chat-webllm.js CHOICES): a chat pins the model that was the default
+  // when it was created, so every chat made before the switch still asked for Gemma 2 2B (or, in the one hour Gemma 3 1B was the default, for it). Those that pinned a PREVIOUS
+  // default move to the new one, once; a chat that pinned anything else is left alone.
+  try {
+    if (localStorage.getItem("fold-chat:default-llama1b") !== "1") {
+      const old = new Set([PAGE_PREFIX + "gemma-2-2b-it-q4f16_1-MLC", PAGE_PREFIX + "gemma3-1b-it-q4f16_1-MLC"]);
+      let n = 0;
+      for (const s of Object.values(sessions)) if (s && old.has(s.model)) { s.model = PAGE_PREFIX + DEFAULT_MODEL; n++; }
+      if (n) save("fold-chat:sessions", sessions);
+      localStorage.setItem("fold-chat:default-llama1b", "1");
+    }
+  } catch { /* storage unavailable: the chat keeps what it had */ }
   // Sessions stored before the channels were split carry the system-authored
   // "⟂ void — …" paragraph baked into assistant `content`. Move it out, once,
   // and save back, so old chats render as gap blocks and stop polluting history.
@@ -665,8 +692,12 @@ export function mount(root, opts = {}) {
     else loadedPoller?.refresh();
   }
   // The ONE question before a multi-GB download: a toast with a button, never silent. No answer in a minute is a "no".
+  // AUTO-DOWNLOAD (user, 2026-10-14: "have it auto download the local model"): the in-tab model is fetched without a question — once, into this browser's cache, then it runs here and
+  // nothing leaves the tab. A toast says what is being fetched. Turn the question back on with localStorage "fold-chat:autodownload" = "off".
+  const autoDownloadOn = () => { try { return localStorage.getItem("fold-chat:autodownload") !== "off"; } catch { return true; } };
   function askDownload({ id }) {
     const c = MODEL_CHOICES.find((x) => x.id === id);
+    if (autoDownloadOn()) { try { toast(`Downloading ${tabName(id)} (${c ? c.sizeLabel : "a large file"}) to run in this tab \u2014 saved in your browser, then nothing leaves it.`); } catch {} return Promise.resolve(true); }
     return new Promise((resolve) => {
       let done = false; const fin = (v) => { if (!done) { done = true; resolve(v); } };
       actionToast(`Download ${tabName(id)} (${c ? c.sizeLabel : "a large file"}) to run in this tab? It is saved in your browser; after that nothing leaves the tab.`, "Download", () => fin(true), { ms: 60000, onExpire: () => fin(false) });
@@ -2275,6 +2306,8 @@ export function mount(root, opts = {}) {
       ? castOf(askAt > 0 ? s.messages.slice(0, askAt) : [], s.referents || {})
       : null;
     const follow = planTurn(said, askAt > 0 ? s.messages.slice(0, askAt) : [], { referents: s.referents || null, rejected: rejectedSurfaces(s.minds), hints: hintsFor(lang0 === "unknown" ? "en" : lang0), lang: lang0, casts });
+    // the person's act on the LAST answer closes its ledger entry: a retry, a source-ask, a push-back, or moving on (fold-chat-wald-ledger.js nextActOf)
+    waldLedgerUpdate(s, (led) => closeLast(led, s.id, nextActOf(follow)));
     // A bare nudge ("well?") after an unanswered ask IS that ask again: the turn is read, searched and written as the earlier question
     // (follow.retry); the person's own "well?" stays what they said (the thread, the record's `said`).
     // A source-ask ("find a primary source") is answered by the SOURCES, never by the model: asked to "find a primary source" a small model writes a link
@@ -2318,6 +2351,9 @@ export function mount(root, opts = {}) {
     // is read, and read here only at CALL time. The interpret reading is the one lane that runs before the
     // bar exists: it alone skips the bar and is never dressed, and it carries its own guard (a real bridge
     // mouth, no plan, no strand). Only the MOUTH lane is dressed with the perfected context and the lattice.
+    // The three bindings the model lane reads at CALL time are declared HERE, in run()'s own scope, and ASSIGNED below once the turn is read. They used to be `const`s inside
+    // run()'s `try` block, so callModel (defined out here) died with "modelBarred is not defined" on every turn: no model was ever asked (found live 2026-10-14).
+    let modelBarred = false, doorRefusal = null, latticePromptText = null, plainTurnLive = false;   // plainTurnLive: set below when the turn is small talk written plainly (no dressing)
     const dressed = (msgs) => {
       // THE MODEL IS FED THE PERFECTED CONTEXT every call (user, 2026-10-11): past lessons + the fold's own
       // reading of the ask, appended to the system message through Gary/this door — so the mouth understands
@@ -2336,7 +2372,7 @@ export function mount(root, opts = {}) {
         if (modelBarred) throw new Error("the model is barred on this turn (it never speaks alone)");
         if (doorRefusal) throw doorRefusal;
       }
-      return client.chat(id, lane === "mouth" ? dressed(msgs) : msgs, opts);
+      return client.chat(id, lane === "mouth" && !plainTurnLive ? dressed(msgs) : msgs, opts);
     };
     // ANGELICA'S EXECUTOR: a sealed consult goes OUT over the same bridge as the mouth but as
     // sealed-external (a profile that never meets the thread's material), temperature 0, and the answer is
@@ -2531,6 +2567,11 @@ export function mount(root, opts = {}) {
     const mayWriteAlone = modelSpeaksAlone(kind) || (producing && !outType.needsSources && !activeGap && (kind === "generate" || kind === "compose"));
     let wantWeb = (!skipsSearch(kind) && !!question && follow.mode === "web" && !noLookup && !recall && !srcRecall && !primaryAsk && !needlessSearch && !activeGap) || !!urlAskDetect;   // a URL is always READ, never stopped by the search gates
     if (bookask && follow.mode === "web") wantWeb = true;   // a book ask is ALWAYS read from the shelf: the fold reads what it holds, it does not guess or defer to the web
+    // WALD, SHADOW (fold-chat-wald.js): what this prompt must pull, decided from the witnesses the surface already ran — beside the gate above, never instead of it.
+    // It reads the gate's final answer (gateNow) and changes nothing; the record carries both, so the two are scored against each other turn by turn.
+    const waldT0 = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    let waldRec = null;
+    try { waldRec = waldShadow({ signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial: materialOf(s).length > 0, urlAsk: urlAskDetect, bookask: bookask && follow.mode === "web" ? bookask : null, live: liveAsk(question), lang: lang0, want: watcherPre?.want ?? null, wantSub: watcherPre?.sub ?? null, closedClass: (() => { const f = functionWordsOf(lang0 === "unknown" ? "en" : lang0); return !!(f && f.size); })() }, calibration: WALD_CALIBRATION, gateNow: !!wantWeb }); waldRec.decideMs = (typeof performance !== "undefined" ? performance.now() : Date.now()) - waldT0; } catch (e) { waldRec = { mode: "shadow", error: String(e?.message || e) }; }
     // The animation is for a FOLLOW-UP that researches; a first turn or a no-research turn shows only the murmur.
     feedGate.on = s.messages.filter((x) => x.role === "user").length > 1 && !!wantWeb;
     if (!feedGate.on) { try { feed.dispose(); feed.root.remove(); } catch (e) {} }
@@ -2828,7 +2869,7 @@ export function mount(root, opts = {}) {
     // established. Every barred kind names its rule on the record; an allowed call is R0 — steer, residue,
     // prosify — never know, decide, or reason.
     const barReasons = { plan, strand, aloneBarred, clarify, gateRefused: !!(genGate && !genGate.ok) };
-    const modelBarred = !!(plan || strand || aloneBarred || clarify || (genGate && !genGate.ok));
+    modelBarred = !!(plan || strand || aloneBarred || clarify || (genGate && !genGate.ok));
     let modelRule = modelBarred ? modelCallRule(barReasons) : { allowed: true, rule: "R0_MOUTH", why: "the fold established the material; the model only phrases it — steer the perfected context, speak the small residue, prosify the result" };
     // ANGELICA, THE SEALED JUDGE (fold-chat-sealed-judge.js, user 2026-10-11): ONLY when the mouth will
     // speak does a sealed consult happen — she may judge topic adherence and propose a tool, never stand
@@ -2862,7 +2903,7 @@ export function mount(root, opts = {}) {
     // The reading panel's writing stage, fired once it is known who writes this turn: by:"mechanical" on a
     // Sources-only / no-model turn, so the panel never claims a model wrote the sources' own words.
     try { pvLive?.writing(modelBarred ? "mechanical" : "model"); } catch {}
-    let doorRefusal = null;   // set when Gary refuses the composed turn below: the model is then not asked (the turn falls back like any refused call)
+    doorRefusal = null;   // set when Gary refuses the composed turn below: the model is then not asked (the turn falls back like any refused call)
     // THE LATTICE (fold-chat-lattice.js, user 2026-10-11: "complex prompting with nested reasoning — it needs to
     // actually think, climb the abstraction lattice") is computed BELOW, after the turn's flow is read — the
     // scaffold consumes flowInfo?.cues, so it must run after `flowInfo` is assigned (a live TDZ failure,
@@ -2915,8 +2956,13 @@ export function mount(root, opts = {}) {
           }
         }
       }
+      // A PLAIN TURN (user, 2026-10-14): small talk answered by the in-tab model alone gets a plain prompt — one system line, the last few exchanges, the ask. The fold's research
+      // scaffolding (the source framing, the reading, the lessons) is for answering FROM material; a 1B model handed it for "Say hello in five words." echoed it back
+      // ("[Passages quoted from sources - not written by me:] …"). Gary's door still composes it (its rules still run).
+      const plainTurn = kind === "smalltalk" && mayWriteAlone && !webPassages.length && !threadTurn;
+      plainTurnLive = plainTurn;
       const composed = garyDoor.composeTurn({
-        basePrompt: turnBase, cues: flowInfo?.cues || [], summary: promptSummary, history: promptHistory, question, sourceBlock, recencyWindow,
+        basePrompt: plainTurn ? PLAIN_TURN_PROMPT : turnBase, cues: plainTurn ? [] : (flowInfo?.cues || []), summary: plainTurn ? null : promptSummary, history: plainTurn ? promptHistory.slice(-4) : promptHistory, question, sourceBlock: plainTurn ? null : sourceBlock, recencyWindow,
         shrinkSource: fromWeb ? (maxChars) => sourcesPrompt(promptPassages.map((p) => ({ ...p, text: String(p.text || "").slice(0, maxChars) }))) + (webPassages.some((p) => p.recipe) ? "\n\n" + CARD_PROMPT : "") : null,
       }, { model: m.id, maxTokens: 1024, material: materialInView });
       messages = composed.messages;
@@ -2929,7 +2975,7 @@ export function mount(root, opts = {}) {
     // Computed HERE, after the turn's flow is read: the scaffold consumes flowInfo?.cues, and reading it before
     // its `let` is a TDZ crash (found live 2026-10-11: "Cannot access 'flowInfo' before initialization").
     // It rides the model's doorway ONLY (below), never a barred or mechanical turn.
-    const latticePromptText = (() => {
+    latticePromptText = (() => {
       if (!modelRule.allowed || !webPassages.length) return null;
       const sentences = [...new Set(webPassages.flatMap((p) => salientSentences(String(p.text || ""), searchQ, 3)))].slice(0, 6);
       if (!sentences.length) return null;
@@ -3227,7 +3273,9 @@ export function mount(root, opts = {}) {
       // what each sentence says and which checks it passed, and what is SPOKEN is realised from the sentences that survived. A sentence
       // that failed a check is withheld, never reworded. A slot turn and a Sources-only turn have no model text, so there is nothing to read.
       let pivotRes = null;
-      if (pivotOn && !strand && !slotTurn && text.trim()) {
+      // A plain small-talk turn has no material and asserts nothing about the world: the pivot (a per-sentence grounding/experiencer gate) withheld every word of "Hello there!"
+      // (found live 2026-10-14), so it does not read a plain turn. What the model said is shown as it said it, labelled "no claims checked".
+      if (pivotOn && !strand && !slotTurn && !plainTurnLive && text.trim()) {
         const readLang = detectLang(text, { prior: lang0 === "unknown" ? null : lang0 }).lang;
         pivotRes = pivotText({ draft: text, ask: question, material, requireGrounding: !!wantWeb || !!threadTurn, computed: computed && computed.ok ? computed.text : null, read: readLang === "unknown" ? "en" : readLang, kind, experiencer: { who: m.id, read: `chat-draft:${runId}` } });
         const vp = verifyPivot(pivotRes, text);
@@ -3370,6 +3418,8 @@ export function mount(root, opts = {}) {
       if (record && reasonLint) record.reasonLint = reasonLint;
       // the model-call decision — the named rule this turn ran under, so every call or non-call is auditable
       if (record && modelRule) record.modelRule = modelRule;
+      // Wald's shadow decision, with what the turn actually spent and got back (the currency: measured ms; earned when a pull returns something kept)
+      if (record && waldRec) record.wald = { ...waldRec, turnMs: Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - waldT0), webTaken: !!wantWeb, passagesKept: webPassages.length };
       if (record && lang0) record.lang = lang0;
       // Angelica's consult — advisory, sealed, typed; a covered-by-lesson verdict is kept too, so the record
       // shows WHY she was not called again (the "needs her less and less" is auditable turn by turn)
@@ -3566,6 +3616,7 @@ export function mount(root, opts = {}) {
       if (pvLive) { try { const sealed = pvLive.finish(); if (record) record.tape = sealed.tape; armTailReplay(sealed.liveT); pvLive.close(); } catch (e) { try { pvLive.close(); } catch {} } }
       if (clarify && followup && !String(text || "").trim()) text = followup.question;   // the clarifying question IS the turn's words (app-authored)
       s.messages.push({ role: "assistant", content: text, at: now(), mode: "chat", answerMode, grounding: record, model: m.id, ...(murmur ? { murmur } : {}), ...(followup ? { followup } : {}), ...(pivotRes ? { pivot: storePivot(pivotRes) } : {}), ...(discourseWatch ? { watch: discourseWatch } : {}), ...(provenance ? { provenance } : {}), ...(strand ? { authored: "sources", ...(slotTurn ? { answerTurn: slotStored } : { snips: storedSnips }) } : {}), ...(fellBack ? { fellBackFrom: fellBack.fellBackFrom, answerMode: "snips" } : {}), ...(notices.length ? { notices } : {}) });
+      if (record && record.wald) { if (waldLedgerUpdate(s, (led) => appendEntry(led, ledgerEntry({ droppedBefore: WALD_LEDGER_DROPPED, sid: s.id, turn, at: now(), head: `${kind}:${outType?.type || "-"}`, wald: record.wald, usedBy: Array.isArray(record.cited) && record.cited.length > 0 ? "cited" : strand ? "sources" : null })))) WALD_LEDGER_DROPPED = 0; }
       s.sealed = !!m.sealed;
       s.updated = now();
       maybeName(s);
@@ -4531,7 +4582,15 @@ const s = sessions[activeId] || (newChat(), sessions[activeId]);
   // The tab's own models are listed FIRST, without waiting for any probe: the app boots and can answer with no bridge at all.
   // With NO_HEIMDALL there is NO probe at all — the in-tab models are the whole list. Otherwise the bridge is auto-detected
   // (a custom override, the same-origin embedded /heimdall, then the legacy local port) and whatever it serves is listed besides.
-  refreshModels({ pageOnly: true }).catch(() => {});
+  refreshModels({ pageOnly: true }).then(() => warmDefaultModel()).catch(() => {});
+  // The in-tab model is loaded (and downloaded, the first time) as soon as the page is up, so the first answer is not the slow one. Never fatal: the first turn reports a failure.
+  async function warmDefaultModel() {
+    if (!pageEngine || !autoDownloadOn() || !pageGpu.available || pageLoading || pageEngine.isLoaded()) return;
+    const sel = selectedModel();
+    if (!sel || !client.isPageModel(sel)) return;
+    try { await pageEngine.load(canonicalModelId(sel.id)); } catch { /* the first send says why */ }
+    refreshModels().catch(() => {});
+  }
   const openFirstChat = () => refreshModels().then(() => {
     // Husks first (never-used "New chat" rows older than ten minutes), then the
     // most recent chat. NO chats is the welcome state — a reload after deleting

@@ -39,6 +39,7 @@ export const WEBLLM_ESM_URL = `https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@${WE
 
 /** WebLLM id → Ollama tag (the names the rest of the suite uses). Both quantizations of a model map to one tag. */
 export const OLLAMA_TAG = Object.freeze({
+  "gemma3-1b-it-q4f16_1-MLC": "gemma3:1b",
   "gemma-2-2b-it-q4f16_1-MLC": "gemma2:2b",
   "Qwen2.5-0.5B-Instruct-q4f16_1-MLC": "qwen2.5:0.5b",
   "Qwen3-1.7B-q4f16_1-MLC": "qwen3:1.7b",
@@ -64,12 +65,17 @@ export function ollamaTagOf(id) {
 
 // sizeMB is APPROXIMATE (the download, from the model host's own sizes); it is shown as a "~" label, never as a promise.
 const CHOICES = [
-  { id: "gemma-2-2b-it-q4f16_1-MLC", label: "Gemma 2 2B — matches the computer's default (gemma2:2b)", sizeMB: 1900, default: true },
+  // The default (user, 2026-10-14: "lets use the 1b gemma" — then measured in a real adapter the same day): the 1B that WORKS for this app is Llama 3.2 1B (900 MB, window 4096:
+  // a 744-token prompt, the planted fact found, the answer written). Gemma 3 1B (the prebuilt gemma3-1b-it-q4f16_1-MLC, a sliding-window build compiled for ~1k tokens) starts
+  // only with RECORD_OVERRIDES and then aborts ("Program terminated with exit(1)") once prompt + answer pass ~500 tokens; the fold sends 1-2k-token prompts and asks for up to
+  // 1,024 tokens, so it is listed, honestly labelled, and NOT the default. Only a q4f16_1 build of it ships: an adapter without shader-f16 cannot run it.
+  { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", label: "Llama 3.2 1B — small and fast", sizeMB: 900, default: true },
+  { id: "gemma3-1b-it-q4f16_1-MLC", label: "Gemma 3 1B — tiny window (~500 tokens in all): short prompts only", sizeMB: 800 },
+  { id: "gemma-2-2b-it-q4f16_1-MLC", label: "Gemma 2 2B — larger (matches the computer's gemma2:2b)", sizeMB: 1900 },
   { id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", label: "Qwen 2.5 0.5B — fast, low-memory", sizeMB: 900 },
   { id: "Qwen3-1.7B-q4f16_1-MLC", label: "Qwen 3 1.7B", sizeMB: 2000 },
   { id: "SmolLM2-360M-Instruct-q4f16_1-MLC", label: "SmolLM2 360M — tiny", sizeMB: 400 },
   { id: "SmolLM2-1.7B-Instruct-q4f16_1-MLC", label: "SmolLM2 1.7B", sizeMB: 1800 },
-  { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", label: "Llama 3.2 1B — balanced", sizeMB: 900 },
   { id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", label: "Llama 3.2 3B — desktop only", sizeMB: 2300, desktopOnly: true },
   { id: "Qwen3-4B-q4f16_1-MLC", label: "Qwen 3 4B — desktop only", sizeMB: 3400, desktopOnly: true },
 ];
@@ -78,6 +84,14 @@ export const MODEL_CHOICES = Object.freeze(CHOICES.map((m) => Object.freeze({ ..
 export const DEFAULT_MODEL = MODEL_CHOICES.find((m) => m.default).id;
 /** The small model a device falls back to, ONCE, when the chosen one will not load. */
 export const FALLBACK_MODEL = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
+
+/** Fields the pinned web-llm 0.2.85 prebuilt record sets wrongly. Gemma 3 1B is a SLIDING-WINDOW model, but its record also carries context_window_size 4096, and the engine
+ *  refuses to start with both positive ("Only one of context_window_size and sliding_window_size can be positive"), then wants an attention sink ("Need to specify
+ *  non-negative attention_sink_size ... Use attention_sink_size=0"). Found live 2026-10-14: with the record as shipped the model downloads, then sits at "starting 100%"
+ *  forever. Verified in a real adapter (Apple Metal): ready in 8 s from cache, answers. The app's own prompt budget (PAGE_CONTEXT_TOKENS) is unchanged. */
+export const RECORD_OVERRIDES = Object.freeze({
+  "gemma3-1b-it-q4f16_1-MLC": Object.freeze({ context_window_size: -1, sliding_window_size: 512, attention_sink_size: 0 }),
+});
 
 export const PAGE_PREFIX = "webllm:";
 const CACHE_KEY = "fold.webllm.downloaded";
@@ -252,7 +266,9 @@ export function createPageEngine({ loader = null, makeWorker, onProgress = null,
     let appConfig = null;
     if (mod.prebuiltAppConfig?.model_list) {
       const known = new Set(MODEL_CHOICES.flatMap((m) => [m.id, f32Variant(m.id)]));
-      const list = mod.prebuiltAppConfig.model_list.filter((m) => known.has(m.model_id));
+      // RECORD_OVERRIDES: what the prebuilt record gets wrong for a model (see below). Everything else is the record as the build ships it.
+      const list = mod.prebuiltAppConfig.model_list.filter((m) => known.has(m.model_id))
+        .map((m) => (RECORD_OVERRIDES[m.model_id] ? { ...m, overrides: { ...(m.overrides || {}), ...RECORD_OVERRIDES[m.model_id] } } : m));
       if (list.some((m) => m.model_id === build)) appConfig = { ...mod.prebuiltAppConfig, model_list: list };
     }
     let r;

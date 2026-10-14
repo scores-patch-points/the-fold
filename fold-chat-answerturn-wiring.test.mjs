@@ -392,7 +392,7 @@ test("fold-chat.js is wired: the slot turn runs after the search and before the 
   assert.match(CHAT_SRC, /slotTurnWanted\(/);
   assert.match(CHAT_SRC, /wantWeb && !webPassages\.length && !slotTurn/, "the unsourced gap does not pre-empt a slot turn");
   assert.match(CHAT_SRC, /answerMode === "snips" && wantWeb && webPassages\.length && !slotTurn/, "a slot ask ignores the Sources-only mode");
-  assert.match(CHAT_SRC, /const modelBarred = !!\(plan \|\| strand \|\| aloneBarred[\s\S]{0,80}\(genGate && !genGate\.ok\)/, "the model is barred by the strand marker a slot turn sets (a failed writing gate may bar it too; a clarify gate may bar it too)");
+  assert.match(CHAT_SRC, /(?:const )?modelBarred = !!\(plan \|\| strand \|\| aloneBarred[\s\S]{0,80}\(genGate && !genGate\.ok\)/, "the model is barred by the strand marker a slot turn sets (a failed writing gate may bar it too; a clarify gate may bar it too)");
   assert.match(CHAT_SRC, /handoff/);
   assert.match(CHAT_SRC, /traceFeed\(tt, slotRes, lineEvent\)/);
   assert.match(CHAT_SRC, /answerTurn: slotStored/, "stored on the message");
