@@ -192,3 +192,18 @@ The user's direction: "remember the work we did on induction for ALL terrains". 
   - A recursion without structure ships feed-forward, and is reported as such (V5).
 
 **Unchanged:** the battery, the scoring, V1–V6, the witnesses and organs of Amendment 4, and the universe-null. Wald §3.8 truncation is no longer the stopping rule for this stack; the spectrum is.
+
+## Amendment 6 (2026-10-14): logos, the dependency order. Written before L2′ is built or run.
+
+**The user's direction:** "logos is good for catching grammar problems because they violate the dependency order of what makes sense."
+
+**The order** is khora `kernel/cube.js` `OPERATOR_CHAIN` (NUL → SIG → INS → SEG → CON → SYN → DEF → EVA → REC), derived from the cube's own tables. It is never restated here. The void's nine fields sit on those operators: slot = NUL, anchor = SIG, admits = INS, extent = SEG, relation = CON, composition = SYN, cardinality = DEF, admission = EVA, reopensOn = REC.
+
+**Every binding is checked against the order before it can carry any amplitude.** For each operator a binding fills, every earlier operator that the void **declared** must also be filled by that same binding.
+- A filler of the admitted kind (INS) whose anchor was reached by nothing (SIG empty) is a **dependency violation**, as is a relation token (CON) in a clause with no admitted filler (INS empty). Either way the binding is refused with a typed `order_violation` that names the first missing operator.
+- Operators the void left undeclared (typed gaps) are skipped, not counted as missing.
+- No number is involved: the check is structural (prefix closure over the chain).
+
+**The paraphrase** (Amendment 3) gets the same check from the other side. The realized sentence's parsed features map to cells through `CELL_OF_GRAMMAR` (case, person, voice, tense…). A sentence whose cells fill a later operator without the earlier ones it depends on fails as ungrammatical. This check is passed to the Callimachus writer as part of `realizeClaim`'s reverse parse.
+
+**Reported:** the count of bindings refused by the order check, per witness. L1.1 and L2′ are scored with the check on; an "order off" arm on dev shows what it removes.
