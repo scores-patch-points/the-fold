@@ -64,6 +64,17 @@ export const ARMS = {
     if (r.verdict === "bound" && r.answer && r.answer.text) return { ...out, answer: r.answer.text, raw: { ...out.raw, l2b: { ...l2b, at: r.answer.at } } };
     return { ...out, raw: { ...out.raw, l2b } };
   },
+  // L1.2: the longest name from the ask's own runs (Amendment 9)
+  async L1_2(q, fetchImpl) {
+    const base = await ARMS.L0(q, fetchImpl);
+    const deps = slotDeps({ fetchImpl, memo: makeMemo(), lang: "en" });
+    const v = await declareAskVoid(q, { fw: functionWordsOf("en"), lang: "en", resolveTitles: deps.resolveTitles, longestRun: true });
+    return { ...base, voidDecl: v.decl, anchorTitle: v.anchor ? v.anchor.title : base.anchorTitle, raw: { ...base.raw, void: v.fields, anchorBy: v.anchor ? v.anchor.by : null }, _v: v, _deps: deps };
+  },
+  async L2c(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true }); },
+  async L2c_noorder(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: false }); },
+  // L2d (Amendment 11): L2c with the relation-counterfactual Born null
+  async L2d(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation" }); },
   // L2: the referent's universe — L1 plus, where L0 gave no answer, the void's open edge bound by clause (PREREG Amendment 2)
   async L2(q, fetchImpl) {
     const base = await ARMS.L0(q, fetchImpl);
@@ -81,6 +92,23 @@ export const ARMS = {
   },
 };
 
+// L2c (Amendment 9): L1.2 + bornFill with strict engine co-reference, sentence instances, the per-candidate Born null; order on/off
+async function l2cArm(q, fetchImpl, { orderOn, nullMode = "filler" }) {
+  const l12 = await ARMS.L1_2(q, fetchImpl);
+  const { _v: v, _deps: deps, ...out } = l12;
+  if (out.answer || !v.anchor || !v.fields.admits) return { ...out, raw: { ...out.raw, l2c: out.answer ? "kept-L0-answer" : "no-anchor-or-admits" } };
+  let passages = [];
+  try { passages = await deps.searchPassages({ referents: [{ surface: v.anchor.surface, title: v.anchor.title }], predicate: (v.frame && v.frame.ok ? v.frame.predicate : []) }); } catch { passages = []; }
+  let engineEdges = [];
+  try { engineEdges = engineRelationsFor(passages.map((p) => ({ ref: p.ref, text: p.text }))).edges || []; } catch { engineEdges = []; }
+  const E = ewt();
+  const r = bornFill({ fields: v.fields, anchor: v.anchor, relationWords: v.relationWords, passages, strictCorefer: true, perCandidateNull: true, orderOn, nullMode,
+    organs: { sameAct, lemmasOf: E.lemmasOf, ewtEntry: E.entry, resolvePronouns, engineEdges } });
+  const l2c = { verdict: r.verdict, bindings: r.bindings, top: r.candidates.slice(0, 3).map((c) => ({ v: String(c.value).slice(0, 30), M: c.mass, nullOwn: c.nullOwn, probable: c.probable, w: c.witnesses })), violations: r.orderViolations.length, gaps: r.gaps.map((g) => g.kind) };
+  if (r.verdict === "bound" && r.answer && r.answer.text) return { ...out, answer: r.answer.text, raw: { ...out.raw, l2c: { ...l2c, at: r.answer.at } } };
+  return { ...out, raw: { ...out.raw, l2c } };
+}
+
 async function pool(items, n, fn) {
   const out = new Array(items.length); let next = 0;
   await Promise.all(Array.from({ length: n }, async () => { while (next < items.length) { const i = next++; out[i] = await fn(items[i], i); } }));
@@ -90,7 +118,7 @@ async function pool(items, n, fn) {
 export async function runArm(arm, { record = false, log = () => {} } = {}) {
   const rows = checkBattery();
   const fetchImpl = recordingFetch(record ? "record" : "replay", { log });
-  const outs = await pool(rows, record ? 3 : 6, async (r) => {
+  const outs = await pool(rows, record ? 1 : 6, async (r) => {   // Amendment 10: record one ask at a time
     try { return await ARMS[arm](r.q, fetchImpl); } catch (e) { return { answer: null, voidDecl: null, anchorTitle: null, raw: { error: String(e?.message || e) } }; }
   });
   const scores = rows.map((r, i) => score(r, outs[i]));

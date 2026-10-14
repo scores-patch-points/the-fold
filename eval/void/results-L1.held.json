@@ -4,55 +4,70 @@
  "at": "2026-10-14T12:00:00.000Z",
  "fetch": {
   "live": 0,
-  "hits": 355,
-  "misses": 0,
+  "hits": 541,
+  "misses": 6,
   "hosts": {
-   "en.wikipedia.org": 345,
+   "en.wikipedia.org": 511,
    "www.sfgate.com": 1,
    "www.onlinenevada.org": 1,
    "www.newspapers.com": 1,
-   "holodeck-proxy.prometheoid.workers.dev": 6,
-   "news.bbc.co.uk": 1
+   "holodeck-proxy.prometheoid.workers.dev": 16,
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
   }
  },
  "dev": {
   "n": 29,
-  "RIGHT": 5,
+  "RIGHT": 7,
   "WRONG": 0,
-  "GAP": 24,
-  "informativeGap": 11,
-  "useful": 16
+  "GAP": 22,
+  "informativeGap": 13,
+  "useful": 20
  },
  "held": {
   "n": 29,
-  "RIGHT": 2,
+  "RIGHT": 5,
   "WRONG": 1,
-  "GAP": 26,
-  "informativeGap": 12,
-  "useful": 14
+  "GAP": 23,
+  "informativeGap": 13,
+  "useful": 18
  },
  "all": {
   "n": 58,
-  "RIGHT": 7,
+  "RIGHT": 12,
   "WRONG": 1,
-  "GAP": 50,
-  "informativeGap": 23,
-  "useful": 30
+  "GAP": 45,
+  "informativeGap": 26,
+  "useful": 38
  },
  "voidFields": {
   "dev": {
    "slot": 28,
-   "admits": 21,
-   "anchor": 22,
-   "relation": 15,
+   "admits": 20,
+   "anchor": 23,
+   "relation": 20,
    "cardinality": 28,
    "n": 29
   },
   "held": {
    "slot": 28,
    "admits": 20,
-   "anchor": 21,
-   "relation": 17,
+   "anchor": 23,
+   "relation": 21,
    "cardinality": 24,
    "n": 29
   }
@@ -89,7 +104,7 @@
     },
     "voidGap": null
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v04",
@@ -332,24 +347,26 @@
    "id": "v18",
    "set": "held",
    "q": "Who designed the Sydney Opera House?",
-   "tier": "GAP",
-   "informative": true,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "When Danish architect Jørn Utzon submitted his concept for the Sydney Opera House design competition.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "Sydney Opera House",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "design"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -394,21 +411,26 @@
    "set": "held",
    "q": "Who founded Microsoft?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Microsoft",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "found"
+     ],
      "cardinality": 1
     },
-    "anchorBy": null,
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
     "experiencer": {
      "who": "the person asking",
      "read": "ask#0-22",
@@ -426,19 +448,20 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "The Starry Night",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "paint"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "experiencer": {
@@ -448,7 +471,7 @@
     },
     "voidGap": null
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v26",
@@ -458,19 +481,21 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "Moon",
+     "anchor": "Person",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "first",
+      "walk"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "experiencer": {
@@ -490,9 +515,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Australia",
@@ -504,8 +529,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -520,13 +545,13 @@
    "id": "v30",
    "set": "held",
    "q": "What is the capital of Turkey?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ankara is the capital city of Turkey.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Turkey",
@@ -538,8 +563,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -554,25 +579,24 @@
    "id": "v32",
    "set": "held",
    "q": "What is the official language of Brazil?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Brazilian Portuguese is the official language of Brazil and the primary language used in most schools and media.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "Brazil",
-     "admits": "languag",
+     "anchor": "Languages of Brazil",
+     "admits": "official",
      "extent": null,
      "relation": [
-      "languag"
+      "official"
      ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "experiencer": {
@@ -592,9 +616,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Switzerland",
@@ -606,8 +630,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -623,15 +647,15 @@
    "set": "held",
    "q": "What is the chemical symbol for gold?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": null,
+     "anchor": "Gold",
      "admits": "symbol",
      "extent": null,
      "relation": [
@@ -639,7 +663,9 @@
      ],
      "cardinality": 1
     },
-    "anchorBy": null,
+    "anchorBy": [
+     "title-door"
+    ],
     "experiencer": {
      "who": "the person asking",
      "read": "ask#0-37",
@@ -657,20 +683,22 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Wolfgang Amadeus Mozart",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "bear"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -679,7 +707,7 @@
     },
     "voidGap": null
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v40",
@@ -689,18 +717,21 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "place",
     "void": {
      "slot": "place",
-     "anchor": null,
+     "anchor": "Louvre",
      "admits": "place",
      "extent": null,
      "relation": null,
      "cardinality": 1
     },
-    "anchorBy": null,
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
     "experiencer": {
      "who": "the person asking",
      "read": "ask#0-20",
@@ -750,17 +781,15 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Mars",
      "admits": "count",
      "extent": null,
-     "relation": [
-      "moon"
-     ],
+     "relation": null,
      "cardinality": "many"
     },
     "anchorBy": [
@@ -784,9 +813,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Football team",
@@ -817,17 +846,15 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Violin",
      "admits": "count",
      "extent": null,
-     "relation": [
-      "string"
-     ],
+     "relation": null,
      "cardinality": "many"
     },
     "anchorBy": [
@@ -951,20 +978,23 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time",
     "void": {
      "slot": "time",
      "anchor": "William Shakespeare",
      "admits": "date",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "visit",
+      "australia"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",
@@ -983,9 +1013,9 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Moon",
@@ -997,8 +1027,8 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "experiencer": {
      "who": "the person asking",

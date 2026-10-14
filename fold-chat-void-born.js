@@ -67,7 +67,7 @@ const keyOf = (f) => {
 const yearIn = (f) => { const y = String(f.value).match(/\b(\d{3,4})\b/); return y ? Number(y[1]) : null; };
 
 /** L2′. */
-export function bornFill({ fields, anchor, relationWords = [], passages = [], organs = {}, draws = 200, seed = 20261014 } = {}) {
+export function bornFill({ fields, anchor, relationWords = [], passages = [], organs = {}, draws = 200, seed = 20261014, strictCorefer = false, perCandidateNull = false, orderOn = true, nullMode = "filler" } = {}) {
   const gaps = [];
   const out = (verdict, extra = {}) => ({ verdict, candidates: [], nullTopMax: null, bindings: 0, orderViolations: [], gaps, ...extra });
   if (!fields || !fields.slot) return out("unbound", { gaps: [{ kind: "no_void" }] });
@@ -77,6 +77,10 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
   const { sameAct = null, lemmasOf = null, ewtEntry = null, resolvePronouns = null, engineEdges = null } = organs;
   const aliases = aliasesFor(anchor);
   const isAnchorName = (s) => aliases.some((a) => { try { return namesCorefer(a, s); } catch { return fold(a) === fold(s); } }) || aliases.some((a) => fold(s).includes(fold(a)));
+  // Amendment 9 (2): an engine end is the anchor only if it holds EVERY content token of one alias (no bare single-token subset)
+  const contentToks = (x) => fold(x).split(/[^\p{L}\p{N}]+/u).filter((t) => t.length > 2);
+  const fullAlias = (s) => { const have = new Set(contentToks(s)); return aliases.some((a) => { const need = contentToks(a); return need.length > 0 && need.every((t) => have.has(t)); }); };
+  const engineIsAnchor = (s) => (strictCorefer ? fullAlias(s) : isAnchorName(s));
   const own = (p) => fold(p.title) === fold(anchor.title);
   const isMeasure = !!QUANT_DIM[fields.admits] || fields.admits === "count" || fields.admits === "amount";
   const rel = relationWords.map(fold).filter(Boolean);
@@ -100,7 +104,7 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
     if (head) kinds.push(terrainEvidence({ id: `kind:sentence:${p.ref}#${s.start}`, entityRef: anchor.title, evidenceType: "explicit_classification", kindKey: stemOf(head, "en"), kindSurface: np.join(" ") }));
   }
   for (const e of engineEdges || []) {
-    if (!(isAnchorName(e.end1)) || !/^(?:is|was|are|were|became)\b.*\b(?:a|an|one of the)\b/u.test(fold(e.label))) continue;
+    if (!(engineIsAnchor(e.end1)) || !/^(?:is|was|are|were|became)\b.*\b(?:a|an|one of the)\b/u.test(fold(e.label))) continue;
     const head = fold(e.end2).split(" ").pop();
     if (head) kinds.push(terrainEvidence({ id: `kind:engine:${e.end1}|${e.label}|${e.end2}`, entityRef: anchor.title, evidenceType: "explicit_classification", kindKey: stemOf(head, "en"), kindSurface: fold(e.end2) }));
   }
@@ -148,7 +152,7 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
         if (!cands.length) return;
         const relation = isMeasure ? true : toks.some(isRel);
         const seg = fields.extent ? cands.some((f) => { const y = yearIn(f); return y != null && y >= fields.extent.from && y <= fields.extent.to; }) : null;
-        slots.push({ witness: "clause", instance: `${fold(s.text)}`, ref: p.ref, start: absStart, end: absEnd, text, reach, relation, seg, cands });
+        slots.push({ witness: "clause", instance: `${fold(s.text)}`, ref: p.ref, start: absStart, end: absEnd, text, reach, relation, seg, cands, toks, allQ: isMeasure ? quantitiesIn(text) : null });
       });
     }
   }
@@ -157,10 +161,12 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
     const ends = [[e.end1, e.end2], [e.end2, e.end1]];
     for (const [a, other] of ends) {
       const span = `${e.label} ${other}`;
-      const cands = DATE_ADMITS.has(fields.admits) || isMeasure ? fillersIn(span, fields.admits, isAnchorName) : (isAnchorName(other) ? [] : [{ value: other, start: 0, type: "name" }]);
+      if (strictCorefer && !engineIsAnchor(a)) continue;
+      const cands = DATE_ADMITS.has(fields.admits) || isMeasure ? fillersIn(span, fields.admits, engineIsAnchor) : (engineIsAnchor(other) ? [] : [{ value: other, start: 0, type: "name" }]);
       if (!cands.length) continue;
       const toks = [...String(e.label).matchAll(/[\p{L}\p{N}'’-]+/gu)].map((m) => m[0]);
-      slots.push({ witness: "engine", instance: `engine:${fold(e.end1)}|${fold(e.label)}|${fold(e.end2)}`, ref: e.refs ? [...e.refs][0] : "engine", text: `${e.end1} —${e.label}→ ${e.end2}`, reach: isAnchorName(a) ? "name" : null, relation: isMeasure ? true : toks.some(isRel), seg: null, cands });
+      const sentKey = strictCorefer ? `engine-sentence:${e.refs ? [...e.refs].join(",") : ""}|${e.sentence ?? e.offset ?? e.at ?? `${fold(e.end1)}|${fold(e.label)}|${fold(e.end2)}`}` : `engine:${fold(e.end1)}|${fold(e.label)}|${fold(e.end2)}`;
+      slots.push({ witness: "engine", instance: sentKey, ref: e.refs ? [...e.refs][0] : "engine", text: `${e.end1} —${e.label}→ ${e.end2}`, reach: engineIsAnchor(a) ? "name" : null, relation: isMeasure ? true : toks.some(isRel), seg: null, cands, toks, allQ: null });
     }
   }
   // ── score a placement: bindings → n_{w,c} (one unit per independent instance, split over its candidates) → Born mass
@@ -177,7 +183,7 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
       if (cands.length) filled.add("INS");
       if (sl.seg) filled.add("SEG");
       if (sl.relation) filled.add("CON");
-      const oc = orderCheck(filled);
+      const oc = orderOn ? orderCheck(filled) : { ok: true, complete: chain.every((op) => filled.has(op)) };
       if (!oc.ok) { if (record && filled.has("CON")) orderViolations.push({ witness: sl.witness, missing: oc.missing, text: String(sl.text).slice(0, 100) }); return; }
       if (!oc.complete) return;
       const inst = `${sl.witness}|${sl.instance}`;
@@ -199,7 +205,39 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
   const byWitness = (w) => slots.map((s, i) => [s, i]).filter(([s]) => s.witness === w);
   const shuffleable = ["clause", "engine"].filter((w) => byWitness(w).length >= 2);
   let nullTopMax = null;
-  if (!shuffleable.length) gaps.push({ kind: "null_unbuildable", why: "fewer than 2 slots for every witness" });
+  const nullOwnMax = new Map();   // Amendment 9 (3): each candidate's own maximum mass across the null's draws
+  if (nullMode === "relation") {
+    // Amendment 11: fillers FIXED; the relation replaced by one of the universe's own attested verbs (EWT gold UPOS majority VERB), drawn
+    // uniformly; for a measure, the admitted dimension replaced by another dimension the page's quantities carry. Per-candidate: c is
+    // probable iff its real mass exceeds its own counterfactual mass in every draw.
+    const ownToks = new Set();
+    for (const p of passages.filter(own)) for (const m of String(p.text).matchAll(/[\p{L}'’-]+/gu)) ownToks.add(fold(m[0]));
+    const verbs = [...ownToks].filter((t) => { const e = ewtEntry ? ewtEntry(t) : null; if (!e) return false; const v = e.upos.VERB || 0; return v > 0 && v >= Math.max(...Object.values(e.upos)) && !isRel(t); });
+    const dims = isMeasure ? [...new Set(slots.flatMap((sl) => (sl.allQ || []).map((q) => q.dim)).filter((d) => d && d !== QUANT_DIM[fields.admits]))] : [];
+    const pool = isMeasure ? dims : verbs;
+    if (pool.length < 2) gaps.push({ kind: "null_unbuildable", why: isMeasure ? "fewer than 2 other dimensions" : "fewer than 2 attested verbs" });
+    else {
+      let st = seed >>> 0; const rnd = () => ((st = (st * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+      nullTopMax = 0;
+      for (let d = 0; d < draws; d++) {
+        const pick = pool[Math.floor(rnd() * pool.length)];
+        const placement = slots.map((sl) => {
+          if (isMeasure) {
+            const cands = (sl.allQ || []).filter((q) => q.dim === pick).map((q) => ({ value: q.text, start: q.start, type: "quantity", v: q.v, unit: q.unit }));
+            return { ...sl, cands };
+          }
+          const lem = new Set([pick, ...(lemmasOf ? [...lemmasOf(pick)] : [])]);
+          const rel2 = (sl.toks || []).some((t) => { const f = fold(t); if (f === pick) return true; if (sameAct) { try { if (sameAct(pick, f)) return true; } catch {} } return lemmasOf ? [...lemmasOf(f)].some((l) => lem.has(l)) : false; });
+          return { ...sl, relation: rel2 };
+        }).filter((sl) => sl.cands.length);
+        const sc = score(placement);
+        const top = Math.max(0, ...sc.mass.values());
+        if (top > nullTopMax) nullTopMax = top;
+        for (const [k, M] of sc.mass) if (M > (nullOwnMax.get(k) || 0)) nullOwnMax.set(k, M);
+      }
+      gaps.push({ kind: "null_mode", mode: "relation", pool: pool.length });
+    }
+  } else if (!shuffleable.length) gaps.push({ kind: "null_unbuildable", why: "fewer than 2 slots for every witness" });
   else {
     let st = seed >>> 0; const rnd = () => ((st = (st * 1664525 + 1013904223) >>> 0) / 2 ** 32);
     nullTopMax = 0;
@@ -214,12 +252,14 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
       const sc = score(placement);
       const top = Math.max(0, ...sc.mass.values());
       if (top > nullTopMax) nullTopMax = top;
+      for (const [k, M] of sc.mass) if (M > (nullOwnMax.get(k) || 0)) nullOwnMax.set(k, M);
     }
   }
   const total = [...real.mass.values()].reduce((a, x) => a + x, 0) || 1;
   const candidates = [...real.mass].map(([key, M]) => ({
     key, value: real.values.get(key)?.f.value, mass: +M.toFixed(4), p: +(M / total).toFixed(4),
-    probable: nullTopMax != null && M > nullTopMax,
+    probable: nullTopMax != null && (perCandidateNull ? M > (nullOwnMax.get(key) || 0) : M > nullTopMax),
+    nullOwn: +(nullOwnMax.get(key) || 0).toFixed(4),
     witnesses: Object.fromEntries([...real.n.get(key)].map(([w, x]) => [w, +x.toFixed(3)])),
     at: real.values.get(key)?.sl,
   })).sort((a, b) => b.mass - a.mass);

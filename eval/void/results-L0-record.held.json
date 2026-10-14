@@ -1,0 +1,483 @@
+{
+ "arm": "L0",
+ "record": true,
+ "at": "2026-10-14T12:00:00.000Z",
+ "fetch": {
+  "live": 263,
+  "hits": 227,
+  "misses": 0,
+  "hosts": {
+   "en.wikipedia.org": 450,
+   "www.sfgate.com": 1,
+   "www.onlinenevada.org": 1,
+   "www.newspapers.com": 1,
+   "holodeck-proxy.prometheoid.workers.dev": 20,
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.theartnewspaper.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
+  }
+ },
+ "dev": {
+  "n": 29,
+  "RIGHT": 7,
+  "WRONG": 0,
+  "GAP": 22,
+  "informativeGap": 1,
+  "useful": 8
+ },
+ "held": {
+  "n": 29,
+  "RIGHT": 5,
+  "WRONG": 1,
+  "GAP": 23,
+  "informativeGap": 2,
+  "useful": 7
+ },
+ "all": {
+  "n": 58,
+  "RIGHT": 12,
+  "WRONG": 1,
+  "GAP": 45,
+  "informativeGap": 3,
+  "useful": 15
+ },
+ "voidFields": {
+  "dev": {
+   "slot": 0,
+   "admits": 0,
+   "anchor": 17,
+   "relation": 0,
+   "cardinality": 0,
+   "n": 29
+  },
+  "held": {
+   "slot": 0,
+   "admits": 0,
+   "anchor": 21,
+   "relation": 0,
+   "cardinality": 0,
+   "n": 29
+  }
+ },
+ "rows": [
+  {
+   "id": "v02",
+   "set": "held",
+   "q": "When did construction of the Great Wall of China begin?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v04",
+   "set": "held",
+   "q": "When was Harvard University founded?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v06",
+   "set": "held",
+   "q": "When was the Golden Gate Bridge opened?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v08",
+   "set": "held",
+   "q": "When was the Berlin Wall built?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v10",
+   "set": "held",
+   "q": "When was the Statue of Liberty dedicated?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "A large statue by Frédéric Auguste Bartholdi that was dedicated in 1886.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v12",
+   "set": "held",
+   "q": "When was Isaac Newton born?",
+   "tier": "WRONG",
+   "informative": null,
+   "answer": "Nathaniel Isaac Newton (born December 20, 1961) is an American former professional football player.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v14",
+   "set": "held",
+   "q": "When was the Panama Canal opened?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "On 14 August 1914, seven years after Goethals' arrival, the Panama Canal opened to world commerce.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v16",
+   "set": "held",
+   "q": "Who wrote Hamlet?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v18",
+   "set": "held",
+   "q": "Who designed the Sydney Opera House?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "When Danish architect Jørn Utzon submitted his concept for the Sydney Opera House design competition.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v20",
+   "set": "held",
+   "q": "Who directed Jaws?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "referents_unresolved",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": false
+  },
+  {
+   "id": "v22",
+   "set": "held",
+   "q": "Who founded Microsoft?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v24",
+   "set": "held",
+   "q": "Who painted The Starry Night?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v26",
+   "set": "held",
+   "q": "Who was the first person to walk on the Moon?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v28",
+   "set": "held",
+   "q": "What is the capital of Australia?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v30",
+   "set": "held",
+   "q": "What is the capital of Turkey?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ankara is the capital city of Turkey.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v32",
+   "set": "held",
+   "q": "What is the official language of Brazil?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Brazilian Portuguese is the official language of Brazil and the primary language used in most schools and media.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v34",
+   "set": "held",
+   "q": "What is the capital of Switzerland?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v36",
+   "set": "held",
+   "q": "What is the chemical symbol for gold?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v38",
+   "set": "held",
+   "q": "Where was Mozart born?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v40",
+   "set": "held",
+   "q": "Where is the Louvre?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "place"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v42",
+   "set": "held",
+   "q": "How tall is Mount Everest?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v44",
+   "set": "held",
+   "q": "How many moons does Mars have?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "quantity"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v46",
+   "set": "held",
+   "q": "How many players are on a soccer team?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "quantity"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v48",
+   "set": "held",
+   "q": "How many strings does a violin have?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "quantity"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v50",
+   "set": "held",
+   "q": "Hamlet author",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v52",
+   "set": "held",
+   "q": "Tell me who painted the Mona Lisa",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v54",
+   "set": "held",
+   "q": "The Eiffel Tower was finished in what year?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null
+   },
+   "solvable": true
+  },
+  {
+   "id": "v56",
+   "set": "held",
+   "q": "When did Shakespeare visit Australia?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time"
+   },
+   "solvable": null
+  },
+  {
+   "id": "v58",
+   "set": "held",
+   "q": "What is the capital of the Moon?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing"
+   },
+   "solvable": null
+  }
+ ]
+}

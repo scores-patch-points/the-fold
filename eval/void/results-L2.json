@@ -4,55 +4,70 @@
  "at": "2026-10-14T12:00:00.000Z",
  "fetch": {
   "live": 0,
-  "hits": 569,
-  "misses": 0,
+  "hits": 764,
+  "misses": 6,
   "hosts": {
-   "en.wikipedia.org": 541,
+   "en.wikipedia.org": 726,
    "www.sfgate.com": 1,
    "www.onlinenevada.org": 1,
    "www.newspapers.com": 1,
    "holodeck-proxy.prometheoid.workers.dev": 24,
-   "news.bbc.co.uk": 1
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
   }
  },
  "dev": {
   "n": 29,
-  "RIGHT": 6,
+  "RIGHT": 8,
   "WRONG": 0,
-  "GAP": 23,
-  "informativeGap": 10,
-  "useful": 16
+  "GAP": 21,
+  "informativeGap": 12,
+  "useful": 20
  },
  "held": {
   "n": 29,
-  "RIGHT": 2,
-  "WRONG": 2,
-  "GAP": 25,
-  "informativeGap": 12,
-  "useful": 14
+  "RIGHT": 6,
+  "WRONG": 4,
+  "GAP": 19,
+  "informativeGap": 11,
+  "useful": 17
  },
  "all": {
   "n": 58,
-  "RIGHT": 8,
-  "WRONG": 2,
-  "GAP": 48,
-  "informativeGap": 22,
-  "useful": 30
+  "RIGHT": 14,
+  "WRONG": 4,
+  "GAP": 40,
+  "informativeGap": 23,
+  "useful": 37
  },
  "voidFields": {
   "dev": {
    "slot": 28,
-   "admits": 21,
-   "anchor": 22,
-   "relation": 15,
+   "admits": 20,
+   "anchor": 23,
+   "relation": 20,
    "cardinality": 28,
    "n": 29
   },
   "held": {
    "slot": 28,
    "admits": 20,
-   "anchor": 21,
-   "relation": 17,
+   "anchor": 23,
+   "relation": 21,
    "cardinality": 24,
    "n": 29
   }
@@ -364,21 +379,41 @@
    "set": "dev",
    "q": "Who discovered penicillin?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Penicillin",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "discover"
+     ],
      "cardinality": 1
     },
-    "l2": "no-anchor-or-admits"
+    "l2": {
+     "pages": [
+      "Penicillin",
+      "Penicillin (cocktail)",
+      "History of penicillin",
+      "Alexander Fleming"
+     ],
+     "kinds": [
+      "group",
+      "mixtur",
+      "precursor",
+      "mixtur",
+      "unit"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
    },
    "solvable": true
   },
@@ -387,30 +422,32 @@
    "set": "dev",
    "q": "Who wrote Pride and Prejudice?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "Prejudice",
+     "anchor": "Pride and Prejudice",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "writ"
+     ],
      "cardinality": 1
     },
     "l2": {
      "pages": [
-      "Prejudice",
-      "Pride and Prejudice",
       "Pride and Prejudice and Zombies (film)",
-      "Prejudice (legal term)"
+      "Pride & Prejudice (2005 film)",
+      "Pride and Prejudice",
+      "Pride and Prejudice and Zombies"
      ],
      "kinds": [
-      "natural",
-      "victim"
+      "novel",
+      "plot"
      ],
      "edges": 0,
      "fillers": [],
@@ -428,28 +465,27 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "The",
+     "anchor": "4",
      "admits": "person",
      "extent": null,
-     "relation": null,
-     "cardinality": "many"
+     "relation": [
+      "compos"
+     ],
+     "cardinality": 1
     },
     "l2": {
      "pages": [
-      "The",
-      "The (disambiguation)",
-      "The Bronx",
-      "The Walt Disney Company"
+      "Dhamaal 4",
+      "Streets of Rage 4",
+      "Compose key",
+      "Persona 4 Revival"
      ],
-     "kinds": [
-      "articl",
-      "homograph"
-     ],
+     "kinds": [],
      "edges": 0,
      "fillers": [],
      "answered": false,
@@ -463,21 +499,38 @@
    "set": "dev",
    "q": "Who invented the telephone?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Telephone",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "invent"
+     ],
      "cardinality": 1
     },
-    "l2": "no-anchor-or-admits"
+    "l2": {
+     "pages": [
+      "History of the telephone",
+      "Telephone",
+      "Elisha Gray and Alexander Bell telephone controversy",
+      "Invention of the telephone"
+     ],
+     "kinds": [
+      "devic",
+      "transmitter"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
    },
    "solvable": true
   },
@@ -489,46 +542,46 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "Pornography (album)",
+     "anchor": "1",
      "admits": "person",
      "extent": null,
-     "relation": null,
-     "cardinality": 1
+     "relation": [
+      "writ"
+     ],
+     "cardinality": "many"
     },
     "l2": {
      "pages": [
-      "Pornography (album)",
-      "Pornography in Germany",
-      "Pornography (disambiguation)",
-      "Mezmerize"
+      "List of Murder, She Wrote episodes",
+      "Wrote a Song About You",
+      "Murder, She Wrote",
+      "187 He Wrote"
      ],
-     "kinds": [
-      "mileston"
-     ],
+     "kinds": [],
      "edges": 0,
      "fillers": [],
      "answered": false,
      "why": "no-edge"
     }
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v29",
    "set": "dev",
    "q": "What is the capital of Canada?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ottawa (,; Canadian French:) is the capital city of Canada.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Canada",
@@ -539,23 +592,7 @@
      ],
      "cardinality": 1
     },
-    "l2": {
-     "pages": [
-      "Canada",
-      "Thanksgiving (Canada)",
-      "Canadians",
-      "Cañada"
-     ],
-     "kinds": [
-      "country",
-      "democracy",
-      "divers"
-     ],
-     "edges": 0,
-     "fillers": [],
-     "answered": false,
-     "why": "no-edge"
-    }
+    "l2": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -567,9 +604,9 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Japan",
@@ -607,37 +644,21 @@
    "set": "dev",
    "q": "What is the largest planet in the Solar System?",
    "tier": "GAP",
-   "informative": true,
+   "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "Solar System",
-     "admits": "planet",
+     "anchor": "List of largest exoplanets",
+     "admits": null,
      "extent": null,
-     "relation": [
-      "planet"
-     ],
+     "relation": null,
      "cardinality": 1
     },
-    "l2": {
-     "pages": [
-      "Solar System",
-      "Formation and evolution of the Solar System",
-      "Photovoltaic system",
-      "Exoplanet"
-     ],
-     "kinds": [
-      "part"
-     ],
-     "edges": 0,
-     "fillers": [],
-     "answered": false,
-     "why": "no-edge"
-    }
+    "l2": "no-anchor-or-admits"
    },
    "solvable": true
   },
@@ -645,40 +666,22 @@
    "id": "v35",
    "set": "dev",
    "q": "What is the capital of New Zealand?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The capital of New Zealand has been Wellington since 1865.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "New Zealand",
-     "admits": "capital",
+     "anchor": "Capital of New Zealand",
+     "admits": null,
      "extent": null,
-     "relation": [
-      "capital"
-     ],
+     "relation": null,
      "cardinality": 1
     },
-    "l2": {
-     "pages": [
-      "New Zealand",
-      "2026 New Zealand general election",
-      "Opinion polling for the 2026 New Zealand general election",
-      "Australasia"
-     ],
-     "kinds": [
-      "country",
-      "dominion",
-      "plan"
-     ],
-     "edges": 0,
-     "fillers": [],
-     "answered": false,
-     "why": "no-edge"
-    }
+    "l2": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -690,9 +693,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Taj Mahal",
@@ -730,23 +733,25 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Machu Picchu",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "locat"
+     ],
      "cardinality": 1
     },
     "l2": {
      "pages": [
-      "Machu Picchu",
       "Huayna Picchu",
+      "Machu Picchu",
       "Historic Sanctuary of Machu Picchu",
-      "Aguas Calientes, Peru"
+      "Inca Trail to Machu Picchu"
      ],
      "kinds": [
       "citadel"
@@ -767,27 +772,27 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Albert Einstein",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "bear"
+     ],
      "cardinality": 1
     },
     "l2": {
      "pages": [
-      "Albert Einstein",
       "Hans Albert Einstein",
-      "Einstein family",
-      "Brain of Albert Einstein"
+      "Elsa Einstein",
+      "Bernhard Einstein",
+      "Einstein family"
      ],
-     "kinds": [
-      "known"
-     ],
+     "kinds": [],
      "edges": 0,
      "fillers": [],
      "answered": false,
@@ -973,8 +978,15 @@
      "cardinality": 1
     },
     "l2": {
-     "pages": [],
-     "kinds": [],
+     "pages": [
+      "Titanic",
+      "Titanic (1997 film)",
+      "Sinking of the Titanic",
+      "Wreck of the Titanic"
+     ],
+     "kinds": [
+      "liner"
+     ],
      "edges": 0,
      "fillers": [],
      "answered": false,
@@ -1005,7 +1017,12 @@
      "cardinality": 1
     },
     "l2": {
-     "pages": [],
+     "pages": [
+      "Tallest mountain",
+      "List of highest mountains on Earth",
+      "List of mountain peaks by prominence",
+      "List of tallest mountains in the Solar System"
+     ],
      "kinds": [],
      "edges": 0,
      "fillers": [],
@@ -1037,15 +1054,25 @@
      "cardinality": 1
     },
     "l2": {
-     "pages": [],
-     "kinds": [],
+     "pages": [
+      "Don Quixote",
+      "Don Quixote (character)",
+      "List of works influenced by Don Quixote",
+      "Miguel de Cervantes"
+     ],
+     "kinds": [
+      "novel",
+      "work",
+      "book",
+      "fabrication"
+     ],
      "edges": 0,
      "fillers": [],
      "answered": false,
      "why": "no-edge"
     }
    },
-   "solvable": false
+   "solvable": true
   },
   {
    "id": "v57",
@@ -1055,19 +1082,27 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "Antarctica",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "first",
+      "president"
+     ],
      "cardinality": 1
     },
     "l2": {
-     "pages": [],
+     "pages": [
+      "Territorial claims in Antarctica",
+      "History of Antarctica",
+      "2025 in Antarctica",
+      "Argentine Antarctica"
+     ],
      "kinds": [],
      "edges": 0,
      "fillers": [],

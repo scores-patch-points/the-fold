@@ -5,7 +5,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { BATTERY } from "./battery.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const rows = [...JSON.parse(fs.readFileSync(path.join(HERE, "results-L1.json"))).rows, ...JSON.parse(fs.readFileSync(path.join(HERE, "results-L1.held.json"))).rows];
+const ARM = process.argv[2] || "L1";   // which arm's replayed results to score against shuffled voids
+const rows = [...JSON.parse(fs.readFileSync(path.join(HERE, `results-${ARM}.json`))).rows, ...JSON.parse(fs.readFileSync(path.join(HERE, `results-${ARM}.held.json`))).rows];
 const gold = new Map(BATTERY.map((r) => [r.id, r]));
 const fold = (s) => String(s ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 const inf = (g, v) => !!v && v.slot === g.void.slot && v.admits === g.void.admits && fold(v.anchor) === fold(g.void.anchor);

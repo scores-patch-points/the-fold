@@ -4,55 +4,70 @@
  "at": "2026-10-14T12:00:00.000Z",
  "fetch": {
   "live": 0,
-  "hits": 575,
-  "misses": 0,
+  "hits": 768,
+  "misses": 6,
   "hosts": {
-   "en.wikipedia.org": 547,
+   "en.wikipedia.org": 730,
    "www.sfgate.com": 1,
    "www.onlinenevada.org": 1,
    "www.newspapers.com": 1,
    "holodeck-proxy.prometheoid.workers.dev": 24,
-   "news.bbc.co.uk": 1
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
   }
  },
  "dev": {
   "n": 29,
-  "RIGHT": 5,
+  "RIGHT": 7,
   "WRONG": 0,
-  "GAP": 24,
-  "informativeGap": 11,
-  "useful": 16
+  "GAP": 22,
+  "informativeGap": 13,
+  "useful": 20
  },
  "held": {
   "n": 29,
-  "RIGHT": 2,
+  "RIGHT": 5,
   "WRONG": 1,
-  "GAP": 26,
-  "informativeGap": 13,
-  "useful": 15
+  "GAP": 23,
+  "informativeGap": 14,
+  "useful": 19
  },
  "all": {
   "n": 58,
-  "RIGHT": 7,
+  "RIGHT": 12,
   "WRONG": 1,
-  "GAP": 50,
-  "informativeGap": 24,
-  "useful": 31
+  "GAP": 45,
+  "informativeGap": 27,
+  "useful": 39
  },
  "voidFields": {
   "dev": {
    "slot": 28,
-   "admits": 21,
-   "anchor": 22,
-   "relation": 15,
-   "cardinality": 28,
+   "admits": 20,
+   "anchor": 23,
+   "relation": 20,
+   "cardinality": 29,
    "n": 29
   },
   "held": {
    "slot": 28,
    "admits": 20,
-   "anchor": 22,
-   "relation": 17,
+   "anchor": 24,
+   "relation": 21,
    "cardinality": 24,
    "n": 29
   }
@@ -403,64 +418,28 @@
    "id": "v18",
    "set": "held",
    "q": "Who designed the Sydney Opera House?",
-   "tier": "GAP",
-   "informative": true,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "When Danish architect Jørn Utzon submitted his concept for the Sydney Opera House design competition.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "Sydney Opera House",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "design"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
-    "l2b": {
-     "verdict": "unbound",
-     "bindings": 51,
-     "nullTopMax": 8,
-     "top": [
-      {
-       "v": "venues",
-       "M": 3,
-       "probable": false,
-       "w": {
-        "engine": 3
-       }
-      },
-      {
-       "v": "organ",
-       "M": 2,
-       "probable": false,
-       "w": {
-        "engine": 2
-       }
-      },
-      {
-       "v": "february",
-       "M": 2,
-       "probable": false,
-       "w": {
-        "engine": 2
-       }
-      }
-     ],
-     "violations": 4,
-     "gaps": [],
-     "kinds": [
-      "centr",
-      "site",
-      "multi",
-      "new"
-     ]
-    }
+    "l2b": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -493,22 +472,65 @@
    "set": "held",
    "q": "Who founded Microsoft?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": null,
+     "anchor": "Microsoft",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "found"
+     ],
      "cardinality": 1
     },
-    "anchorBy": null,
-    "l2b": "no-anchor-or-admits"
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l2b": {
+     "verdict": "unbound",
+     "bindings": 3,
+     "nullTopMax": 3,
+     "top": [
+      {
+       "v": "february",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      },
+      {
+       "v": "bill gates",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      },
+      {
+       "v": "japan",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      }
+     ],
+     "violations": 2,
+     "gaps": [],
+     "kinds": [
+      "headquarter",
+      "departur",
+      "american",
+      "generativ"
+     ]
+    }
    },
    "solvable": true
   },
@@ -520,56 +542,51 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "person",
     "void": {
      "slot": "person",
      "anchor": "The Starry Night",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "paint"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
      "perceiver",
-     "title-door"
+     "title-door",
+     "longest-name"
     ],
     "l2b": {
      "verdict": "unbound",
-     "bindings": 47,
-     "nullTopMax": 9,
+     "bindings": 2,
+     "nullTopMax": 2,
      "top": [
       {
+       "v": "june",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      },
+      {
        "v": "van gogh",
-       "M": 4,
+       "M": 1,
        "probable": false,
        "w": {
-        "engine": 4
-       }
-      },
-      {
-       "v": "one",
-       "M": 3,
-       "probable": false,
-       "w": {
-        "engine": 3
-       }
-      },
-      {
-       "v": "canvas",
-       "M": 2,
-       "probable": false,
-       "w": {
-        "engine": 2
+        "engine": 1
        }
       }
      ],
-     "violations": 10,
+     "violations": 18,
      "gaps": [],
      "kinds": [
       "paint",
-      "canva"
+      "symbolist"
      ]
     }
    },
@@ -583,57 +600,31 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
     "void": {
      "slot": "person",
-     "anchor": "Moon",
+     "anchor": "Person",
      "admits": "person",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "first",
+      "walk"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
     "l2b": {
-     "verdict": "unbound",
-     "bindings": 114,
-     "nullTopMax": 9,
-     "top": [
-      {
-       "v": "satellite",
-       "M": 7,
-       "probable": false,
-       "w": {
-        "engine": 7
-       }
-      },
-      {
-       "v": "luna",
-       "M": 5,
-       "probable": false,
-       "w": {
-        "engine": 5
-       }
-      },
-      {
-       "v": "velocity",
-       "M": 4,
-       "probable": false,
-       "w": {
-        "engine": 4
-       }
-      }
-     ],
-     "violations": 0,
+     "verdict": "contradicted",
+     "bindings": 0,
+     "nullTopMax": 0,
+     "top": [],
+     "violations": 14,
      "gaps": [],
-     "kinds": [
-      "planet",
-      "satellit"
-     ]
+     "kinds": []
     }
    },
    "solvable": true
@@ -646,9 +637,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Australia",
@@ -660,26 +651,17 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
-     "verdict": "unbound",
+     "verdict": "contradicted",
      "bindings": 0,
      "nullTopMax": 0,
      "top": [],
-     "violations": 0,
+     "violations": 26,
      "gaps": [],
-     "kinds": [
-      "mainland",
-      "democracy",
-      "power",
-      "peopl",
-      "cultur",
-      "empir",
-      "australian",
-      "hemispher"
-     ]
+     "kinds": []
     }
    },
    "solvable": true
@@ -688,13 +670,13 @@
    "id": "v30",
    "set": "held",
    "q": "What is the capital of Turkey?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ankara is the capital city of Turkey.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Turkey",
@@ -706,34 +688,10 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
-    "l2b": {
-     "verdict": "unbound",
-     "bindings": 1,
-     "nullTopMax": 1,
-     "top": [
-      {
-       "v": "city",
-       "M": 1,
-       "probable": false,
-       "w": {
-        "engine": 1
-       }
-      }
-     ],
-     "violations": 4,
-     "gaps": [],
-     "kinds": [
-      "mainly",
-      "upper-middle-incom",
-      "member",
-      "oecd",
-      "nato",
-      "grass"
-     ]
-    }
+    "l2b": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -741,55 +699,27 @@
    "id": "v32",
    "set": "held",
    "q": "What is the official language of Brazil?",
-   "tier": "GAP",
-   "informative": false,
-   "answer": null,
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Brazilian Portuguese is the official language of Brazil and the primary language used in most schools and media.",
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": "Brazil",
-     "admits": "languag",
+     "anchor": "Languages of Brazil",
+     "admits": "official",
      "extent": null,
      "relation": [
-      "languag"
+      "official"
      ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
      "title-door"
     ],
-    "l2b": {
-     "verdict": "unbound",
-     "bindings": 1,
-     "nullTopMax": 1,
-     "top": [
-      {
-       "v": "guarani",
-       "M": 1,
-       "probable": false,
-       "w": {
-        "engine": 1
-       }
-      }
-     ],
-     "violations": 0,
-     "gaps": [],
-     "kinds": [
-      "compos",
-      "detat",
-      "regional",
-      "emerg",
-      "exporter",
-      "member",
-      "federation",
-      "found",
-      "colony"
-     ]
-    }
+    "l2b": "kept-L0-answer"
    },
    "solvable": true
   },
@@ -801,9 +731,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Switzerland",
@@ -815,15 +745,15 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
-     "verdict": "unbound",
+     "verdict": "contradicted",
      "bindings": 0,
      "nullTopMax": 0,
      "top": [],
-     "violations": 0,
+     "violations": 4,
      "gaps": [],
      "kinds": [
       "country",
@@ -839,15 +769,15 @@
    "set": "held",
    "q": "What is the chemical symbol for gold?",
    "tier": "GAP",
-   "informative": false,
+   "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
-     "anchor": null,
+     "anchor": "Gold",
      "admits": "symbol",
      "extent": null,
      "relation": [
@@ -855,8 +785,26 @@
      ],
      "cardinality": 1
     },
-    "anchorBy": null,
-    "l2b": "no-anchor-or-admits"
+    "anchorBy": [
+     "title-door"
+    ],
+    "l2b": {
+     "verdict": "unbound",
+     "bindings": 0,
+     "nullTopMax": 0,
+     "top": [],
+     "violations": 0,
+     "gaps": [],
+     "kinds": [
+      "element",
+      "metal",
+      "used",
+      "conductor",
+      "university",
+      "lithuanian",
+      "tone"
+     ]
+    }
    },
    "solvable": true
   },
@@ -868,59 +816,59 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
     "void": {
      "slot": "place",
      "anchor": "Wolfgang Amadeus Mozart",
      "admits": "place",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "bear"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
      "verdict": "unbound",
-     "bindings": 149,
-     "nullTopMax": 10,
+     "bindings": 4,
+     "nullTopMax": 2,
      "top": [
       {
+       "v": "january",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      },
+      {
+       "v": "composer",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      },
+      {
        "v": "vienna",
-       "M": 8,
+       "M": 1,
        "probable": false,
        "w": {
-        "engine": 8
-       }
-      },
-      {
-       "v": "salzburg",
-       "M": 6,
-       "probable": false,
-       "w": {
-        "engine": 6
-       }
-      },
-      {
-       "v": "piano concertos",
-       "M": 5,
-       "probable": false,
-       "w": {
-        "engine": 5
+        "engine": 1
        }
       }
      ],
-     "violations": 2,
+     "violations": 6,
      "gaps": [],
      "kinds": [
-      "composer",
-      "teacher",
-      "favourit",
-      "court",
-      "musician"
+      "musician",
+      "violinist",
+      "biographer"
      ]
     }
    },
@@ -934,19 +882,58 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "place",
     "void": {
      "slot": "place",
-     "anchor": null,
+     "anchor": "Louvre",
      "admits": "place",
      "extent": null,
      "relation": null,
      "cardinality": 1
     },
-    "anchorBy": null,
-    "l2b": "no-anchor-or-admits"
+    "anchorBy": [
+     "title-door",
+     "perceiver"
+    ],
+    "l2b": {
+     "verdict": "unbound",
+     "bindings": 92,
+     "nullTopMax": 13,
+     "top": [
+      {
+       "v": "museum",
+       "M": 10,
+       "probable": false,
+       "w": {
+        "engine": 10
+       }
+      },
+      {
+       "v": "french",
+       "M": 3,
+       "probable": false,
+       "w": {
+        "engine": 3
+       }
+      },
+      {
+       "v": "entrance",
+       "M": 3,
+       "probable": false,
+       "w": {
+        "engine": 3
+       }
+      }
+     ],
+     "violations": 0,
+     "gaps": [],
+     "kinds": [
+      "museum",
+      "revolution"
+     ]
+    }
    },
    "solvable": true
   },
@@ -1018,17 +1005,15 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Mars",
      "admits": "count",
      "extent": null,
-     "relation": [
-      "moon"
-     ],
+     "relation": null,
      "cardinality": "many"
     },
     "anchorBy": [
@@ -1037,11 +1022,11 @@
     ],
     "l2b": {
      "verdict": "unbound",
-     "bindings": 26,
-     "nullTopMax": 9.899,
+     "bindings": 42,
+     "nullTopMax": 10.9772,
      "top": [
       {
-       "v": "2001 Lander",
+       "v": "16 Grammy",
        "M": 4,
        "probable": false,
        "w": {
@@ -1050,27 +1035,33 @@
        }
       },
       {
-       "v": "2020 rover",
-       "M": 4,
-       "probable": false,
-       "w": {
-        "clause": 1,
-        "engine": 1
-       }
-      },
-      {
-       "v": "5M",
+       "v": "9 entered",
        "M": 2.9142,
        "probable": false,
        "w": {
         "clause": 0.5,
         "engine": 1
        }
+      },
+      {
+       "v": "6 People",
+       "M": 2.25,
+       "probable": false,
+       "w": {
+        "clause": 0.25,
+        "engine": 1
+       }
       }
      ],
-     "violations": 173,
+     "violations": 166,
      "gaps": [],
-     "kinds": []
+     "kinds": [
+      "planet",
+      "target",
+      "futur",
+      "producer",
+      "festival"
+     ]
     }
    },
    "solvable": true
@@ -1083,9 +1074,9 @@
    "informative": false,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Football team",
@@ -1128,17 +1119,15 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
+    "handoff": null,
     "gap": null,
-    "slot": null,
+    "slot": "quantity",
     "void": {
      "slot": "quantity",
      "anchor": "Violin",
      "admits": "count",
      "extent": null,
-     "relation": [
-      "string"
-     ],
+     "relation": null,
      "cardinality": "many"
     },
     "anchorBy": [
@@ -1146,8 +1135,8 @@
     ],
     "l2b": {
      "verdict": "unbound",
-     "bindings": 16,
-     "nullTopMax": 12.9807,
+     "bindings": 13,
+     "nullTopMax": 13.9282,
      "top": [
       {
        "v": "16",
@@ -1159,15 +1148,6 @@
        }
       },
       {
-       "v": "30",
-       "M": 4,
-       "probable": false,
-       "w": {
-        "clause": 1,
-        "engine": 1
-       }
-      },
-      {
        "v": "£9.8 million",
        "M": 2.9142,
        "probable": false,
@@ -1175,16 +1155,23 @@
         "clause": 0.5,
         "engine": 1
        }
+      },
+      {
+       "v": "18",
+       "M": 1.5,
+       "probable": false,
+       "w": {
+        "clause": 1.5
+       }
       }
      ],
-     "violations": 54,
+     "violations": 35,
      "gaps": [],
      "kinds": [
       "chordophon",
       "luthier",
       "fiddl",
-      "acoustic",
-      "ital"
+      "bow"
      ]
     }
    },
@@ -1342,31 +1329,52 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time",
     "void": {
      "slot": "time",
      "anchor": "William Shakespeare",
      "admits": "date",
      "extent": null,
-     "relation": null,
+     "relation": [
+      "visit",
+      "australia"
+     ],
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
      "verdict": "unbound",
-     "bindings": 0,
-     "nullTopMax": null,
-     "top": [],
-     "violations": 0,
-     "gaps": [
-      "null_unbuildable"
+     "bindings": 1,
+     "nullTopMax": 1,
+     "top": [
+      {
+       "v": "1611",
+       "M": 0.5,
+       "probable": false,
+       "w": {
+        "clause": 0.5
+       }
+      },
+      {
+       "v": "1614",
+       "M": 0.5,
+       "probable": false,
+       "w": {
+        "clause": 0.5
+       }
+      }
      ],
-     "kinds": []
+     "violations": 0,
+     "gaps": [],
+     "kinds": [
+      "end",
+      "protestant"
+     ]
     }
    },
    "solvable": null
@@ -1379,9 +1387,9 @@
    "informative": true,
    "answer": null,
    "raw": {
-    "handoff": "referents_unresolved",
-    "gap": null,
-    "slot": null,
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
     "void": {
      "slot": "thing",
      "anchor": "Moon",
@@ -1393,19 +1401,28 @@
      "cardinality": 1
     },
     "anchorBy": [
-     "perceiver",
-     "title-door"
+     "title-door",
+     "perceiver"
     ],
     "l2b": {
      "verdict": "unbound",
-     "bindings": 0,
-     "nullTopMax": 0,
-     "top": [],
-     "violations": 0,
+     "bindings": 1,
+     "nullTopMax": 1,
+     "top": [
+      {
+       "v": "earth",
+       "M": 1,
+       "probable": false,
+       "w": {
+        "engine": 1
+       }
+      }
+     ],
+     "violations": 8,
      "gaps": [],
      "kinds": [
       "planet",
-      "satellit"
+      "planetary"
      ]
     }
    },
