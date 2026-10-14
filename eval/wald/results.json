@@ -1,0 +1,223 @@
+{
+ "prereg": "eval/wald/PREREG.md",
+ "n": 341,
+ "by": {
+  "cases": {
+   "gateNow": {
+    "n": 73,
+    "missed": 1,
+    "wasted": 0,
+    "errors": 1,
+    "continue": 0
+   },
+   "wald": {
+    "n": 73,
+    "missed": 3,
+    "wasted": 0,
+    "errors": 3,
+    "continue": 70
+   }
+  },
+  "g1": {
+   "gateNow": {
+    "n": 268,
+    "missed": 8,
+    "wasted": 2,
+    "errors": 10,
+    "continue": 0
+   },
+   "wald": {
+    "n": 268,
+    "missed": 0,
+    "wasted": 2,
+    "errors": 2,
+    "continue": 39
+   }
+  },
+  "all": {
+   "gateNow": {
+    "n": 341,
+    "missed": 9,
+    "wasted": 2,
+    "errors": 11,
+    "continue": 0
+   },
+   "wald": {
+    "n": 341,
+    "missed": 3,
+    "wasted": 2,
+    "errors": 5,
+    "continue": 109
+   }
+  }
+ },
+ "null": {
+  "cases": {
+   "shuffles": 200,
+   "p05": 18,
+   "median": 39,
+   "p95": 58
+  },
+  "g1": {
+   "shuffles": 200,
+   "p05": 101,
+   "median": 129,
+   "p95": 172
+  },
+  "all": {
+   "shuffles": 200,
+   "p05": 149,
+   "median": 167,
+   "p95": 207
+  }
+ },
+ "restingCost": {
+  "medianMs": 0.014416999999866675,
+  "maxMs": 0.6207090000000335
+ },
+ "bars": {
+  "B1": {
+   "holds": false,
+   "wald": 3,
+   "gateNow": 1,
+   "what": "missed pulls on cases.json"
+  },
+  "B2": {
+   "holds": true,
+   "wald": [
+    0,
+    2
+   ],
+   "gateNow": [
+    0,
+    2
+   ],
+   "what": "wasted pulls on cases.json and G1"
+  },
+  "B3": {
+   "holds": true,
+   "wald": 5,
+   "nullP05": 149,
+   "what": "fewer errors than 95% of shuffled-witness nulls (all gold)"
+  },
+  "B4": {
+   "holds": true,
+   "maxMs": 0.6207090000000335,
+   "what": "decision time below the 1 ms stand-in price of a thread read"
+  }
+ },
+ "disagreements": [
+  {
+   "set": "cases",
+   "id": "e_eiffel_zh",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "cases",
+   "id": "e_eiffel_ja",
+   "label": true,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "continue"
+  },
+  {
+   "set": "cases",
+   "id": "e_wall_ja",
+   "label": true,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "continue"
+  },
+  {
+   "set": "cases",
+   "id": "e_cap_ja",
+   "label": true,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "write an essay on this",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "write an essay",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "write a letter about the extinction of dolphins to my congressman",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "create a landing page for my bakery",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "proofread this please",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "write the intro paragraph for my essay on gun control",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "Thanks! Now write an essay on that.",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "write a persuasive email to my city council asking for more bike lanes",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "write an essay about the telephone and put it in a pdf",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "write an essay",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  }
+ ]
+}

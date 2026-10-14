@@ -65,6 +65,8 @@ import { askTerms, salientSources, continuesThread, salientHistory, salientSumma
 import { applyExchange, usedRefs, foldAnswer, exchangesOf, exchangeFlow } from "./fold-chat-exchange.js";
 import { functionWordsOf } from "./fold-chat-snippets.js";
 import { lookupWarranted } from "./fold-chat-self.js";
+import { waldShadow } from "./fold-chat-wald.js";   // WALD, the watcher of the pull (SHADOW: decides and records every turn, gates nothing yet; eval/wald/PREREG.md)
+import { WALD_CALIBRATION } from "./fold-chat-wald-calibration.js";
 import { sourceRecall } from "./fold-chat-sourceask.js";
 import { pre as watchPre, post as watchPost, wantLine, batonReply, inspectReply, keepOnTopic, withoutAppAnswered, challengeReply } from "./fold-chat-watch.js";
 import { trailOf } from "./fold-chat-trail.js";   // the trail in plain language: the mechanical fold of the prior turns, spoken like the record
@@ -2531,6 +2533,11 @@ export function mount(root, opts = {}) {
     const mayWriteAlone = modelSpeaksAlone(kind) || (producing && !outType.needsSources && !activeGap && (kind === "generate" || kind === "compose"));
     let wantWeb = (!skipsSearch(kind) && !!question && follow.mode === "web" && !noLookup && !recall && !srcRecall && !primaryAsk && !needlessSearch && !activeGap) || !!urlAskDetect;   // a URL is always READ, never stopped by the search gates
     if (bookask && follow.mode === "web") wantWeb = true;   // a book ask is ALWAYS read from the shelf: the fold reads what it holds, it does not guess or defer to the web
+    // WALD, SHADOW (fold-chat-wald.js): what this prompt must pull, decided from the witnesses the surface already ran — beside the gate above, never instead of it.
+    // It reads the gate's final answer (gateNow) and changes nothing; the record carries both, so the two are scored against each other turn by turn.
+    const waldT0 = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    let waldRec = null;
+    try { waldRec = waldShadow({ signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial: materialOf(s).length > 0, urlAsk: urlAskDetect, bookask: bookask && follow.mode === "web" ? bookask : null, live: liveAsk(question) }, calibration: WALD_CALIBRATION, gateNow: !!wantWeb }); waldRec.decideMs = (typeof performance !== "undefined" ? performance.now() : Date.now()) - waldT0; } catch (e) { waldRec = { mode: "shadow", error: String(e?.message || e) }; }
     // The animation is for a FOLLOW-UP that researches; a first turn or a no-research turn shows only the murmur.
     feedGate.on = s.messages.filter((x) => x.role === "user").length > 1 && !!wantWeb;
     if (!feedGate.on) { try { feed.dispose(); feed.root.remove(); } catch (e) {} }
@@ -3370,6 +3377,8 @@ export function mount(root, opts = {}) {
       if (record && reasonLint) record.reasonLint = reasonLint;
       // the model-call decision — the named rule this turn ran under, so every call or non-call is auditable
       if (record && modelRule) record.modelRule = modelRule;
+      // Wald's shadow decision, with what the turn actually spent and got back (the currency: measured ms; earned when a pull returns something kept)
+      if (record && waldRec) record.wald = { ...waldRec, turnMs: Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - waldT0), webTaken: !!wantWeb, passagesKept: webPassages.length };
       if (record && lang0) record.lang = lang0;
       // Angelica's consult — advisory, sealed, typed; a covered-by-lesson verdict is kept too, so the record
       // shows WHY she was not called again (the "needs her less and less" is auditable turn by turn)
