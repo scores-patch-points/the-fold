@@ -32,6 +32,7 @@ fs.mkdirSync(PAGES, { recursive: true }); fs.mkdirSync(CACHE, { recursive: true 
 
 export const splitOf = (id) => (parseInt(crypto.createHash("sha256").update("eval/agent:" + id).digest("hex")[0], 16) < 8 ? "held" : "dev");
 const H = loadHidden();
+const SHIM = fs.readFileSync(path.join(HERE, "webllm-shim.mjs"), "utf8");
 const asks = JSON.parse(fs.readFileSync(ASKS, "utf8")).asks.filter((a) => (SPLIT === "all" || splitOf(a.id) === SPLIT) && (!ONLY.length || ONLY.includes(a.id)));
 const done = new Set(fs.existsSync(OUT) ? fs.readFileSync(OUT, "utf8").split("\n").filter(Boolean).map((l) => { const r = JSON.parse(l); return r.id + "#" + r.seed; }) : []);
 const jobs = asks.flatMap((a) => SEEDS.map((seed) => ({ ...a, seed }))).filter((j) => !done.has(j.id + "#" + j.seed));
@@ -48,8 +49,27 @@ async function runUnit(browser, job) {
   const origin = new URL(URL_).origin;
   const stats = { calls: 0, modelMs: 0, web: { hit: 0, miss: 0 } };
   const cache = cacheOf(job.id);
+  // THE IN-TAB MODEL, HEADLESS: the page is in-browser-only (fold-chat.js NO_HEIMDALL) and headless Chromium has no WebGPU, so the
+  // harness gives the page an adapter, marks the default in-tab model as downloaded, and serves webllm-shim.mjs at the pinned web-llm
+  // URL; every generation then reaches /__harness/chat, answered by the in-tab model's computer counterpart (gemma2:2b) with the seed.
+  await ctx.addInitScript(() => {
+    try { const fake = { requestAdapter: async () => ({ features: new Set(["shader-f16"]), limits: {} }) }; Object.defineProperty(Navigator.prototype, "gpu", { get: () => fake, configurable: true }); } catch {}
+    try { localStorage.setItem("fold.webllm.downloaded", JSON.stringify(["gemma-2-2b-it-q4f16_1-MLC"])); } catch {}
+  });
   await ctx.route("**/*", async (route) => {
     const req = route.request(), u = req.url();
+    if (/cdn\.jsdelivr\.net\/npm\/@mlc-ai\/web-llm@/.test(u)) return route.fulfill({ status: 200, contentType: "text/javascript", body: SHIM });
+    if (/\/__harness\/chat(\?|$)/.test(u)) {
+      const body = JSON.parse(req.postData() || "{}");
+      const t0 = Date.now();
+      try {
+        const r = await fetch(`${OLLAMA}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ model: MODEL, messages: body.messages, temperature: body.temperature, max_tokens: body.max_tokens, top_p: body.top_p, stream: false, seed: job.seed }) });
+        const j = await r.json();
+        stats.calls += 1; stats.modelMs += Date.now() - t0;
+        const c = j.choices && j.choices[0];
+        return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ content: c ? c.message.content : "", finish: c ? c.finish_reason : "stop", tokens: j.usage ? j.usage.completion_tokens : 0 }) });
+      } catch (e) { return route.fulfill({ status: 502, contentType: "application/json", body: JSON.stringify({ error: String(e.message || e) }) }); }
+    }
     if (/\/api\/tags(\?|$)/.test(u)) return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ models: [{ name: MODEL, heimdall: {} }] }) });
     if (/\/v1\/chat\/completions(\?|$)/.test(u)) {
       const body = JSON.parse(req.postData() || "{}");
@@ -101,7 +121,7 @@ async function runUnit(browser, job) {
     rec.htmlHash = html ? crypto.createHash("sha1").update(html).digest("hex").slice(0, 12) : null;
     if (html) fs.writeFileSync(path.join(PAGES, `${TAG}-${job.id}-${job.seed}.html`), html);
     fs.writeFileSync(path.join(PAGES, `${TAG}-${job.id}-${job.seed}.log.json`), JSON.stringify(log));
-    const ht = await runHidden(browser, html, H.tests[job.id], H.act);
+    const ht = H.tests[job.id] ? await runHidden(browser, html, H.tests[job.id], H.act) : { pass: null, whys: ["no hidden test (smoke)"] };
     rec.pass = ht.pass; rec.hiddenWhy = ht.whys;
     rec.falseHeld = rec.held && !rec.pass; rec.trueHeld = rec.held && rec.pass;
   } catch (e) { rec.error = String(e.message || e).slice(0, 300); }

@@ -117,3 +117,18 @@ no test that passes on the base may fail. Nothing is pushed.
 - **27 held-out units is small.** With no reverse discordance, the primary test needs at least 5 units moved from false-Held to not
   false-Held to reach p < 0.05; a real but small effect can be missed.
 - The witness's extra checks cost re-draws (more model calls, more time); this is reported, not judged.
+
+## Amendment A0 — 2026-10-13, after the smoke test, BEFORE any measured run
+
+- **The page is in-browser-only.** `fold-chat.js` sets `NO_HEIMDALL = true`: the only model is the in-tab WebLLM engine, and headless
+  Chromium has no WebGPU, so the first smoke run made zero model calls. The harness now gives the page a GPU adapter object, marks the
+  default in-tab model (`gemma-2-2b-it-q4f16_1-MLC`) as downloaded, and serves `eval/agent/webllm-shim.mjs` at the pinned web-llm URL.
+  The app's engine (`fold-chat-webllm.js`), client, prompts, temperature and token limits are unchanged; the shim answers each
+  generation from that model's computer counterpart named by the app itself (`OLLAMA_TAG`: → `gemma2:2b`, Ollama, the unit's seed).
+  This replaces the `/v1/chat/completions` proxy described above (the page never calls it).
+- **Smoke result (not a measure):** 1 unit, 37 s, 4 model calls, Held; the plumbing works.
+- **A base defect seen in the smoke log, left in place because it is part of what is measured:** `stitchKit`'s `draw` calls an
+  identifier `draw` that is not in its scope (`fold-chat-folds.js`), the ReferenceError is swallowed by `createBuild`, and every
+  stitched unit without a field snip is "refused … empty draw". So the stitch path can only hold a page assembled from source snips;
+  otherwise the whole-page draw does the work. It is reported in RESULTS.md as a follow-up, not fixed here.
+- Budget: 37 s for a trivial ask says nothing yet about real asks; the 15-minute rule above is applied to the median of B on dev.
