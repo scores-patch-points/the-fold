@@ -43,7 +43,7 @@ export function transcriptOf(messages) {
   for (const m of messages || []) {
     if (m?.role === "user") ask = m.attachment || /^continue\.?$/i.test(String(m.content || "").trim()) ? null : m;
     else if (m?.role === "assistant" && ask && String(m.content || "").trim()) {
-      const refs = (m.grounding?.sources || []).map((r) => r?.address).filter(Boolean);
+      const refs = [...(m.grounding?.sources || []), ...(m.grounding?.showed || [])].map((r) => r?.address).filter(Boolean);   // what a model turn cited, and what a mechanical turn showed (fold-chat-record.js mechanicalUnits)
       out.push({ turn: out.length + 1, question: String(ask.content || ""), answer: String(m.content), refs });
       ask = null;
     }

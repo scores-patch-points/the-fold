@@ -48,13 +48,50 @@ export function citedAt(support, material) {
   return bytes.length === 1 ? bytes[0] : null;
 }
 
+/** THE MECHANICAL TURN'S UNITS (nesting audit F, D2). A slot answer and a sources strand carry no model text, so the Pivot has no spoken units and
+ *  `turnRecord("")` has no sources: both used to end with 0 claims, and recall/freshness read an empty store. What such a turn SHOWED is still
+ *  addressed: the slot answer's `row.span` into its source page, a strand snip's `range` into its page. This resolves each to the chat's own passage
+ *  (by url, then by the pipeline's `S<n>` index into the read passages) and returns `[{ text, address, kind }]`, `address` = `<chat ref>#<from>-<to>`, the
+ *  same shape and namespace as a model turn's record.sources (so citedAt and freshness read it unchanged). A gap, a contest, a handoff, a snip with no
+ *  range (a card, a recipe) or a span that does not fit its page is no unit: nothing is invented. `line` is the line the turn showed (the realised slot
+ *  answer); without it the source sentence is the text. Pure. */
+export function mechanicalUnits({ slotTurn = null, strand = null, webPassages = [], line = "" } = {}) {
+  const pages = Array.isArray(webPassages) ? webPassages : [];
+  const urlOf = (p) => String((p && (p.url || p.source)) || "");
+  const fits = (p, a, b) => p && typeof p.text === "string" && p.ref && Number.isInteger(a) && Number.isInteger(b) && a >= 0 && b > a && b <= p.text.length;
+  const out = [];
+  const row = slotTurn?.answer?.row;
+  if (row && Array.isArray(row.span) && row.source) {
+    const [a, b] = row.span;
+    const byUrl = row.source.url ? pages.filter((p) => urlOf(p) === String(row.source.url)) : [];
+    const k = /^S(\d+)$/.exec(String(row.source.ref || ""));
+    const page = byUrl.find((p) => fits(p, a, b)) || (k ? [pages[Number(k[1]) - 1]].find((p) => fits(p, a, b)) : null);
+    const text = String(line || "").trim() || String(row.sentence || "").trim();
+    if (page && text) out.push({ text, address: `${page.ref}#${a}-${b}`, kind: "slot" });
+  }
+  for (const sn of Array.isArray(strand?.snips) ? strand.snips : []) {
+    const r = sn && sn.range;
+    if (!r || !sn.source || !String(sn.text || "").trim()) continue;
+    const page = pages.find((p) => urlOf(p) === String(sn.source) && fits(p, r.start, r.end));
+    if (page) out.push({ text: String(sn.text).trim(), address: `${page.ref}#${r.start}-${r.end}`, kind: "strand" });
+  }
+  return out;
+}
+
 /** The claims one finished turn makes, in order.
  *  Spoken sentences (the Pivot's kept sentence/code units) are what the fold SAID, verbatim; when it spoke none, the sources it showed are claims it SHOWED.
+ *  A MECHANICAL turn (`mechanical` from mechanicalUnits: a slot answer, a strand) has no model words at all, so its units are the claims it SHOWED, at
+ *  the address of the span it carried; they take the place of the pivot's, which read a draft that was not spoken.
  *  `basis.cited` = the source's bytes at `support` from `material` (see citedAt); `basis.support` is the address the claim stands on. */
-export function claimsOfTurn({ turn, pivot = null, record = null, material = [] } = {}) {
+export function claimsOfTurn({ turn, pivot = null, record = null, material = [], mechanical = [] } = {}) {
   const out = [];
   const add = (rel, text, basis) => { const c = claimAt(turn, out.length + 1, rel, text, basis); if (c) out.push(c); };
   const withCited = (support) => { const cited = citedAt(support, material); return { support: String(support), source: holonOfSource(support), ...(cited != null ? { cited } : {}) }; };
+  const mech = (Array.isArray(mechanical) ? mechanical : []).filter((u) => u && u.address && String(u.text || "").trim());
+  if (mech.length) {
+    for (const u of mech) add("showed", u.text, { turn, kind: u.kind || "source", ...withCited(u.address) });
+    return out;
+  }
   const units = (pivot?.units || []).filter((u) => u && (u.kind === "sentence" || u.kind === "code"));
   if (units.length) {
     for (const u of units) add("said", u.text, { turn, kind: u.kind, ...(u.support ? withCited(u.support) : {}) });

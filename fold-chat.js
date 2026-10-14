@@ -57,7 +57,7 @@ import { modelCallRule } from "./fold-chat-model-rule.js";   // THE RULE: the mo
 import { judgeReachable, decisionSignature, needsJudge, sealJudge, Angelica, lessonOf, judgeOn, judgeLessonsOf, addJudgeLesson, anthropicJudge, browserJudgeKey, judgeModelName, JUDGE_KEY_STORE } from "./fold-chat-sealed-judge.js";   // ANGELICA: the sealed judge — advisory, sealed, typed, and learned (the same signature stops consulting her)
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
 import { castOf } from "./fold-chat-casts.js";
-import { claimsOfTurn, appendClaims, pointerOf, conversationMaterial, convoRefOf } from "./fold-chat-record.js";
+import { claimsOfTurn, appendClaims, pointerOf, conversationMaterial, convoRefOf, mechanicalUnits } from "./fold-chat-record.js";
 import { freshnessOf } from "./fold-chat-freshness.js";
 import { recallOf } from "./fold-chat-recall.js";
 import { askTerms, salientSources, continuesThread, salientHistory, salientSummary, salienceEnabled } from "./fold-chat-salience.js";
@@ -3429,6 +3429,11 @@ export function mount(root, opts = {}) {
       // never material, which the code above overturned (audit F, D1).
       // A strand is never SCORED: its words are the sources', not a claim of ours (turnRecord gets an empty answer).
       const record = recordable(kind) ? ground.turnRecord(strand ? "" : text, material, { turn, question: lastUser?.content || "", model: m.id, sealed: !!m.sealed, effort }) : null;
+      // What a MECHANICAL turn showed (a slot answer's carried span, a strand snip's byte range) is addressed to the page it came from, in the chat's own
+      // ref namespace: the record keeps it and the claim store gets it as claims. Before this the strand's "" answer left 0 sources and 0 claims, so recall
+      // and freshness read an empty store on every mechanical turn (audit F, D2).
+      const mechShown = slotTurn || strand ? mechanicalUnits({ slotTurn, strand, webPassages, line: slotTurn ? answerLine(slotTurn) : "" }) : [];
+      if (record && mechShown.length) record.showed = mechShown.map((u) => ({ address: u.address, kind: u.kind, text: u.text.slice(0, 300) }));
       if (record && webTrace) record.web = webTrace;
       // the modelless reason lint of this turn's read — what the Kelsen linter actually found (or did not find)
       if (record && reasonLint) record.reasonLint = reasonLint;
@@ -3538,14 +3543,14 @@ export function mount(root, opts = {}) {
       } catch {}
       // FoldRecord@1: the turn's spoken sentences become claims at /t<turn>/c<i> in the append-only store (s.claims); the record
       // carries a pointer into it, so the 100-char gist is a view and nothing is lost at the cut.
-      const turnClaims = claimsOfTurn({ turn, pivot: pivotRes, record, material });
+      const turnClaims = claimsOfTurn({ turn, pivot: pivotRes, record, material, mechanical: mechShown });
       s.claims = appendClaims(s.claims, turnClaims);
       const warrant = { ...FOLD.buildWarrantRecord({
         turn,
         plane: "world",
         gist: foldLine,
         channels: [webPassages.length ? "web" : null, material.length ? "material" : null, "model"].filter(Boolean),
-        refs: (record?.sources || []).map((r) => r.address),
+        refs: [...(record?.sources || []).map((r) => r.address), ...mechShown.map((u) => u.address)],
         unsupported: record?.creative ? [] : [...(record?.unsupported?.numbers || []), ...(record?.unsupported?.names || [])],
         open: [],
       }), ...pointerOf({ turn, claims: turnClaims, forWhom: question }) };   // the pointer rides beside the vendored record: vendor/the-fold/fold.js stays byte-identical to khora's
