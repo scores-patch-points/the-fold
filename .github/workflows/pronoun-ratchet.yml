@@ -1,0 +1,22 @@
+name: Pronoun stack ratchet
+
+# The pronoun path (does the gate see an anaphor; is a referent given its kind; does the binding use them) may only get better.
+# eval/pronoun/baseline.json is the floor; fixtures are committed, so this needs no local corpus and no secret.
+# Raise the floor on purpose with `node scripts/pronoun-baseline.mjs` and review the diff.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  pronoun-ratchet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: The ratchet and the modules it stands on
+        run: node --test fold-chat-pronoun-levels.test.mjs fold-chat-anaphora.test.mjs fold-chat-casts.test.mjs fold-chat-thread.test.mjs fold-chat-mind.test.mjs fold-chat-minds.test.mjs fold-chat-lang.test.mjs

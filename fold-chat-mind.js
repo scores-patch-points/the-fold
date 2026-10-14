@@ -286,7 +286,14 @@ export function personLike(surface, hints = null) {
   const script = scriptOf(surface);
   const segs = segments(surface, script);
   if (hints?.titles?.some((t) => fold(segs[0]?.text) === fold(t))) return true;
-  return capitalisationIsSignificant(script) && segs.length >= 2 && !/[,，]/u.test(surface);
+  if (!capitalisationIsSignificant(script) || segs.length < 2 || /[,，]/u.test(surface)) return false;
+  // A NAME is capitalised word by word: "Donald Trump", "Simón de Bolívar". The earlier test returned true for ANY multi-word string in a
+  // cased script ("elección presidencial de 2020"), so the kind was decided downstream by an English-only inanimate list. A lowercase
+  // word is allowed only BETWEEN capitalised ones and only if it is a short particle (de, van, von, bin, al, da).
+  const words = segs.map((x) => x.text);
+  const cap = (w) => { const c = [...w][0]; return !!c && c !== c.toLocaleLowerCase(); };
+  if (!cap(words[0]) || !cap(words[words.length - 1])) return false;
+  return words.every((w, i) => cap(w) || (i > 0 && i < words.length - 1 && [...w].length <= 3));
 }
 
 /** Does the question mention any referent the record already holds? → those, most active first. */

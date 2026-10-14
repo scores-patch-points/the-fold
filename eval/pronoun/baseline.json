@@ -1,0 +1,104 @@
+{
+ "schema": "PronounBaseline@1",
+ "at": "2026-10-14",
+ "measured": {
+  "L0": {
+   "ca": {
+    "recall": 0.967,
+    "falseCarryNoPronoun": 0,
+    "falseCarryNonPointing": 0
+   },
+   "de": {
+    "recall": 1,
+    "falseCarryNoPronoun": 0,
+    "falseCarryNonPointing": 0.067
+   },
+   "en": {
+    "recall": 0.733,
+    "falseCarryNoPronoun": 0,
+    "falseCarryNonPointing": 0.167
+   },
+   "es": {
+    "recall": 0.533,
+    "falseCarryNoPronoun": 0,
+    "falseCarryNonPointing": 0.067
+   },
+   "pt": {
+    "recall": 0.967,
+    "falseCarryNoPronoun": 0,
+    "falseCarryNonPointing": 0
+   }
+  },
+  "L2": {
+   "en": {
+    "personOK": true,
+    "thingOK": true
+   },
+   "es": {
+    "personOK": true,
+    "thingOK": true
+   },
+   "pt": {
+    "personOK": true,
+    "thingOK": true
+   },
+   "de": {
+    "personOK": true,
+    "thingOK": true
+   },
+   "ca": {
+    "personOK": true,
+    "thingOK": true
+   }
+  },
+  "L4": {
+   "en": {
+    "personNotThing": true,
+    "noSourceOnly": true,
+    "noRefused": true
+   },
+   "es": {
+    "personNotThing": true,
+    "noSourceOnly": true,
+    "noRefused": true
+   },
+   "pt": {
+    "personNotThing": true,
+    "noSourceOnly": true,
+    "noRefused": true
+   },
+   "de": {
+    "personNotThing": true,
+    "noSourceOnly": true,
+    "noRefused": true
+   },
+   "ca": {
+    "personNotThing": true,
+    "noSourceOnly": true,
+    "noRefused": true
+   }
+  },
+  "S": {
+   "ca": {
+    "falseStemRate": 0.001,
+    "words": 356
+   },
+   "de": {
+    "falseStemRate": 0.001,
+    "words": 332
+   },
+   "en": {
+    "falseStemRate": 0,
+    "words": 327
+   },
+   "es": {
+    "falseStemRate": 0,
+    "words": 387
+   },
+   "pt": {
+    "falseStemRate": 0.001,
+    "words": 336
+   }
+  }
+ }
+}
