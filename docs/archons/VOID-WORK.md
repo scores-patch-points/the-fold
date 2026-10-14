@@ -2,23 +2,27 @@
 
 2026-10-14. This is the record of the work on defining the void a question names and finding what satisfies it, so none of it is reinvented. Its sources are the pre-registration `eval/void/PREREG.md` (Amendments 1–6), the results `eval/void/RESULTS.md`, and the commits on the-fold branch `void/universe`.
 
-## The archon in charge: Koestler
+## The archon in charge: Nagarjuna (corrected by the user, 2026-10-14)
 
-khora `organs/void-holarchy.js` (Handle: Koestler; compendium `archon-compendium.js` "koestler"; dossier `docs/archons/dossier/koestler.json`).
+The user: "no Nagarjuna should be about the void, koestler is about holons."
 
-> "Low sets possibility for high; high sets probability for low." (the compendium's own entry for Koestler)
+**Nagarjuna owns the void** (śūnyatā: emptiness as the ground a filler must be shown to depend on). In Solon's register Nagarjuna is already "the four corners", the one lattice for every mechanical verdict (khora `hl.js`'s Belnap-Dunn FDE: is / is-not / both / neither). A void's outcome lives on exactly that lattice:
+- **is:** filled. A filler is admitted, probable past its Born null.
+- **is-not:** refuted. A candidate is shown not to fill it (the wrong kind, an order violation).
+- **both:** contested. Two fillers stand, and the contest does not crown one.
+- **neither:** a gap. Nothing is shown either way, and that is a typed void, never a guess.
 
-That sentence is this work's design:
-- **The void is a holon recursion.** Every level is a whole-and-part, declared over the nine operators: khora `the-fold/void-shape.js` `declareVoid`, where every omission is a typed gap.
-- **The layers are levels of that holarchy.** A lower layer makes a candidate *possible*; a higher layer makes it *probable*. Higher layers recursively re-weight the lower layers' candidates (PREREG "Recursion", Amendment 5).
-- Koestler also owns `organs/output-holograph.js`: every generated sentence is a pointer, either a byte address in the record or a marked `self:model`. Both the verbatim snip and the net-new paraphrase answer to that typing.
+The void's declaration is khora `the-fold/void-shape.js` `declareVoid` (nine operators, every omission typed). Its verdicts are Nagarjuna's four corners, checked against `hl.js`'s real values, never a second lattice under another name.
+
+**Koestler owns the holons:** khora `organs/void-holarchy.js`, the void laid out as a recursion of levels, every level a whole-and-part. His compendium entry carries the recursion rule this work runs on: "Low sets possibility for high; high sets probability for low." A lower layer makes a candidate *possible*; a higher layer makes it *probable* and re-weights the lower layers' candidates (PREREG "Recursion", Amendment 5). Koestler also owns `organs/output-holograph.js`: every generated sentence is a pointer (a byte address in the record or a marked `self:model`), so both the snip and the paraphrase answer to that typing.
 
 ## Who else, and the seams
 
 | archon / organ | owns | seam with the void |
 |---|---|---|
-| **Koestler**, `void-holarchy.js`, `void-shape.js` | the void: its declaration, its levels, possible → probable | this work |
-| **Callimachus**, khora `organs/callimachus.js`, `pinax.js`, `prose-laws.js`, `cube-telling.js`, `question-void.js`, `answer-ladder.js`, `telling-grammar.*` (merged in khora#6) | **the record** (sources pinned by sha256 in the Pinax; atoms, chains, standing) and **the telling** (lenses at sizes; `realizeClaim`, in progress) | Callimachus **reads a question into Koestler's void** (`question-void.js`: slot, anchor, admits-as-asked, relation; nothing else) and **tells what the void's fill holds** (snip plus paraphrase). It never admits fillers and never reads kind edges: that is the fill, owned here. **Not yet a registered archon:** there is no Handle line and no Solon or compendium entry, so it needs a proposal ratified by the person (Solon's amendment rule). |
+| **Nagarjuna**, `hl.js` four corners; `void-shape.js` `declareVoid` | **the void**: its declaration and its verdicts (is / is-not / both / neither) | this work |
+| **Koestler**, `void-holarchy.js`, `output-holograph.js` | the holons: levels, possible → probable across them; sentences as pointers | the layers, and the recursion between them |
+| **Callimachus**, khora `organs/callimachus.js`, `pinax.js`, `prose-laws.js`, `cube-telling.js`, `question-void.js`, `answer-ladder.js`, `telling-grammar.*` (merged in khora#6) | **the record** (sources pinned by sha256 in the Pinax; atoms, chains, standing) and **the telling** (lenses at sizes; `realizeClaim`, in progress) | Callimachus **reads a question into Nagarjuna's void** (`question-void.js`: slot, anchor, admits-as-asked, relation; nothing else) and **tells what the void's fill holds** (snip plus paraphrase). It never admits fillers and never reads kind edges: that is the fill, owned here. **Not yet a registered archon:** there is no Handle line and no Solon or compendium entry, so it needs a proposal ratified by the person (Solon's amendment rule). |
 | **Wald**, `organs/wald.js` (shadow) | what a prompt must **pull**: none / thread / local / structured / web | supplies the pages the void's universe is read from |
 | **Huginn** | which model, if any | none here: no layer calls a model (V6) |
 | **Gary / Kondo** | what a model is handed | only if a model is ever the mouth |
