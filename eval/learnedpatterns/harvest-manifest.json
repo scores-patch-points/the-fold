@@ -1,0 +1,768 @@
+{
+  "written": "2026-10-14T04:24:07.761Z",
+  "file": "/Users/mlacy/Documents/3.0/learnedpatterns-cache/harvest.json",
+  "sha256": "206ba683d5c95677abbb7c02a927e2f9028409b4f9917d1bb4a9510f0543516b",
+  "bytes": 10960434,
+  "N": 500,
+  "cue": {
+    "P50": [
+      "author",
+      "creator",
+      "maker",
+      "playwright",
+      "poet",
+      "writ",
+      "writer"
+    ],
+    "P170": [
+      "art",
+      "artist",
+      "artwork",
+      "author",
+      "creat",
+      "creator",
+      "draw",
+      "drawer",
+      "made",
+      "non-musical",
+      "original",
+      "paint",
+      "painter",
+      "photographer",
+      "realis",
+      "realiz",
+      "sculpt",
+      "sculptor",
+      "visual",
+      "work"
+    ],
+    "P86": [
+      "compos",
+      "composer",
+      "film",
+      "music",
+      "musical",
+      "original",
+      "scor",
+      "songwriter",
+      "soundtrack",
+      "writ"
+    ],
+    "P61": [
+      "creat",
+      "describ",
+      "develop",
+      "developer",
+      "devis",
+      "discover",
+      "discoverer",
+      "first",
+      "introduc",
+      "invent",
+      "inventor",
+      "study"
+    ],
+    "P19": [
+      "bear",
+      "birth",
+      "birthplac",
+      "city",
+      "location",
+      "plac",
+      "pob"
+    ],
+    "P36": [
+      "administrativ",
+      "capital",
+      "center",
+      "centr",
+      "chef-lieu",
+      "city",
+      "county",
+      "court",
+      "government",
+      "headquarter",
+      "location",
+      "plac",
+      "principal",
+      "residenc",
+      "seat",
+      "town"
+    ],
+    "P37": [
+      "languag",
+      "official",
+      "speak"
+    ],
+    "P38": [
+      "base",
+      "currency",
+      "money",
+      "used"
+    ],
+    "P35": [
+      "chief",
+      "emperor",
+      "governor",
+      "head",
+      "king",
+      "leader",
+      "monarch",
+      "president",
+      "queen",
+      "stat"
+    ],
+    "P6": [
+      "chancellor",
+      "executiv",
+      "first",
+      "government",
+      "governor",
+      "head",
+      "mayor",
+      "minister",
+      "national",
+      "power",
+      "premier",
+      "president",
+      "prim"
+    ],
+    "P169": [
+      "ceo",
+      "chief",
+      "director",
+      "executiv",
+      "officer"
+    ]
+  },
+  "askReadings": {
+    "Who wrote Pride and Prejudice?": {
+      "pids": [
+        "P50",
+        "P86"
+      ],
+      "anchors": [
+        "Pride and Prejudice"
+      ],
+      "referents": [
+        {
+          "surface": "Pride and Prejudice",
+          "title": "Pride and Prejudice",
+          "repairedFrom": null
+        }
+      ],
+      "note": "person"
+    },
+    "Who painted The Starry Night?": {
+      "pids": [
+        "P170"
+      ],
+      "anchors": [
+        "Starry Night",
+        "The Starry Night"
+      ],
+      "referents": [
+        {
+          "surface": "Starry Night",
+          "title": "The Starry Night",
+          "repairedFrom": null
+        }
+      ],
+      "note": "person"
+    },
+    "Who developed the theory of general relativity?": {
+      "pids": [
+        "P61"
+      ],
+      "anchors": [
+        "theory of general relativity",
+        "General relativity"
+      ],
+      "referents": [
+        {
+          "surface": "theory of general relativity",
+          "title": "General relativity",
+          "repairedFrom": null
+        }
+      ],
+      "note": "person"
+    },
+    "Who was the first president of the United States?": {
+      "pids": [
+        "P61",
+        "P35",
+        "P6"
+      ],
+      "anchors": [
+        "United States"
+      ],
+      "referents": [
+        {
+          "surface": "United States",
+          "title": "United States",
+          "repairedFrom": null
+        }
+      ],
+      "note": "person"
+    },
+    "Who composed the Moonlight Sonata?": {
+      "pids": [
+        "P86"
+      ],
+      "anchors": [
+        "Moonlight Sonata",
+        "Piano Sonata No. 14 (Beethoven)",
+        "Piano Sonata No. 14"
+      ],
+      "referents": [
+        {
+          "surface": "Moonlight Sonata",
+          "title": "Piano Sonata No. 14 (Beethoven)",
+          "repairedFrom": null
+        }
+      ],
+      "note": "person"
+    },
+    "When did the Berlin Wall fall?": {
+      "pids": [],
+      "anchors": [
+        "Berlin Wall fall",
+        "Fall of the Berlin Wall"
+      ],
+      "referents": [
+        {
+          "surface": "Berlin Wall fall",
+          "title": "Fall of the Berlin Wall",
+          "repairedFrom": null
+        }
+      ],
+      "note": "time"
+    },
+    "When did the Titanic sink?": {
+      "pids": [],
+      "anchors": [
+        "Titanic"
+      ],
+      "referents": [
+        {
+          "surface": "Titanic",
+          "title": "Titanic",
+          "repairedFrom": null
+        }
+      ],
+      "note": "time"
+    },
+    "When was the Magna Carta signed?": {
+      "pids": [],
+      "anchors": [
+        "Magna Carta"
+      ],
+      "referents": [
+        {
+          "surface": "Magna Carta",
+          "title": "Magna Carta",
+          "repairedFrom": null
+        }
+      ],
+      "note": "time"
+    },
+    "In what year did humans first land on the Moon?": {
+      "pids": [
+        "P61",
+        "P6"
+      ],
+      "anchors": [
+        "humans",
+        "Human",
+        "land",
+        "Land"
+      ],
+      "referents": [
+        {
+          "surface": "humans",
+          "title": "Human",
+          "repairedFrom": null
+        },
+        {
+          "surface": "land",
+          "title": "Land",
+          "repairedFrom": null
+        }
+      ],
+      "note": "time"
+    },
+    "Where is the Great Barrier Reef?": {
+      "pids": [],
+      "anchors": [
+        "Great Barrier Reef"
+      ],
+      "referents": [
+        {
+          "surface": "Great Barrier Reef",
+          "title": "Great Barrier Reef",
+          "repairedFrom": null
+        }
+      ],
+      "note": "place"
+    },
+    "Where was Mozart born?": {
+      "pids": [
+        "P19"
+      ],
+      "anchors": [
+        "Mozart",
+        "Wolfgang Amadeus Mozart"
+      ],
+      "referents": [
+        {
+          "surface": "Mozart",
+          "title": "Wolfgang Amadeus Mozart",
+          "repairedFrom": null
+        }
+      ],
+      "note": "place"
+    },
+    "Where is the Taj Mahal?": {
+      "pids": [],
+      "anchors": [
+        "Taj Mahal"
+      ],
+      "referents": [
+        {
+          "surface": "Taj Mahal",
+          "title": "Taj Mahal",
+          "repairedFrom": null
+        }
+      ],
+      "note": "place"
+    },
+    "What is the capital of Kenya?": {
+      "pids": [
+        "P36"
+      ],
+      "anchors": [
+        "Kenya"
+      ],
+      "referents": [
+        {
+          "surface": "Kenya",
+          "title": "Kenya",
+          "repairedFrom": null
+        }
+      ],
+      "note": "thing"
+    },
+    "What is the capital of Egypt?": {
+      "pids": [
+        "P36"
+      ],
+      "anchors": [
+        "Egypt"
+      ],
+      "referents": [
+        {
+          "surface": "Egypt",
+          "title": "Egypt",
+          "repairedFrom": "capital of Egypt"
+        }
+      ],
+      "note": "thing"
+    },
+    "How many bones are in the adult human body?": {
+      "pids": [],
+      "anchors": [
+        "adult human",
+        "Adult"
+      ],
+      "referents": [
+        {
+          "surface": "adult human",
+          "title": "Adult",
+          "repairedFrom": null
+        }
+      ],
+      "note": "quantity"
+    },
+    "How many continents are there?": {
+      "pids": [],
+      "anchors": [
+        "continents",
+        "Continent"
+      ],
+      "referents": [
+        {
+          "surface": "continents",
+          "title": "Continent",
+          "repairedFrom": null
+        }
+      ],
+      "note": "quantity"
+    },
+    "How many strings does a violin have?": {
+      "pids": [],
+      "anchors": [
+        "violin",
+        "Violin"
+      ],
+      "referents": [
+        {
+          "surface": "violin",
+          "title": "Violin",
+          "repairedFrom": null
+        }
+      ],
+      "note": "quantity"
+    },
+    "What is the chemical symbol for sodium?": {
+      "pids": [],
+      "anchors": [
+        "sodium",
+        "Sodium"
+      ],
+      "referents": [
+        {
+          "surface": "sodium",
+          "title": "Sodium",
+          "repairedFrom": null
+        }
+      ],
+      "note": "thing"
+    },
+    "What is the largest ocean on Earth?": {
+      "pids": [],
+      "anchors": [
+        "ocean",
+        "Ocean",
+        "Earth"
+      ],
+      "referents": [
+        {
+          "surface": "ocean",
+          "title": "Ocean",
+          "repairedFrom": null
+        },
+        {
+          "surface": "Earth",
+          "title": "Earth",
+          "repairedFrom": null
+        }
+      ],
+      "note": "thing"
+    },
+    "What is the longest river in Africa?": {
+      "pids": [],
+      "anchors": [
+        "longest river",
+        "List of river systems by length",
+        "Africa"
+      ],
+      "referents": [
+        {
+          "surface": "longest river",
+          "title": "List of river systems by length",
+          "repairedFrom": null
+        },
+        {
+          "surface": "Africa",
+          "title": "Africa",
+          "repairedFrom": null
+        }
+      ],
+      "note": "thing"
+    },
+    "What is the tallest mountain in the world?": {
+      "pids": [],
+      "anchors": [
+        "tallest mountain",
+        "Tallest mountain",
+        "world",
+        "World"
+      ],
+      "referents": [
+        {
+          "surface": "tallest mountain",
+          "title": "Tallest mountain",
+          "repairedFrom": null
+        },
+        {
+          "surface": "world",
+          "title": "World",
+          "repairedFrom": null
+        }
+      ],
+      "note": "thing"
+    },
+    "Who invented the telephone?": {
+      "pids": [
+        "P61"
+      ],
+      "anchors": [
+        "telephone",
+        "Telephone"
+      ],
+      "referents": [
+        {
+          "surface": "telephone",
+          "title": "Telephone",
+          "repairedFrom": null
+        }
+      ],
+      "note": "person"
+    },
+    "What language is spoken in Brazil?": {
+      "pids": [
+        "P37"
+      ],
+      "anchors": [
+        "Brazil"
+      ],
+      "referents": [
+        {
+          "surface": "Brazil",
+          "title": "Brazil",
+          "repairedFrom": null
+        }
+      ],
+      "note": "thing"
+    },
+    "What currency is used in Japan?": {
+      "pids": [
+        "P38"
+      ],
+      "anchors": [
+        "Japan"
+      ],
+      "referents": [
+        {
+          "surface": "Japan",
+          "title": "Japan",
+          "repairedFrom": null
+        }
+      ],
+      "note": "thing"
+    },
+    "Who is the chancellor of Germany?": {
+      "pids": [
+        "P6"
+      ],
+      "anchors": [
+        "Germany"
+      ],
+      "referents": [
+        {
+          "surface": "Germany",
+          "title": "Germany",
+          "repairedFrom": "chancellor of Germany"
+        }
+      ],
+      "note": "person"
+    },
+    "Who is the president of Brazil?": {
+      "pids": [
+        "P35",
+        "P6"
+      ],
+      "anchors": [
+        "Brazil"
+      ],
+      "referents": [
+        {
+          "surface": "Brazil",
+          "title": "Brazil",
+          "repairedFrom": "president of Brazil"
+        }
+      ],
+      "note": "person"
+    },
+    "Who is the president of Mexico?": {
+      "pids": [
+        "P35",
+        "P6"
+      ],
+      "anchors": [
+        "Mexico"
+      ],
+      "referents": [
+        {
+          "surface": "Mexico",
+          "title": "Mexico",
+          "repairedFrom": "president of Mexico"
+        }
+      ],
+      "note": "person"
+    },
+    "Who is the king of Spain?": {
+      "pids": [
+        "P35"
+      ],
+      "anchors": [
+        "Spain"
+      ],
+      "referents": [
+        {
+          "surface": "Spain",
+          "title": "Spain",
+          "repairedFrom": "king of Spain"
+        }
+      ],
+      "note": "person"
+    }
+  },
+  "excludedCount": 70,
+  "perPid": {
+    "P50": {
+      "kept": 158,
+      "drops": {
+        "excluded": 0,
+        "noEnwiki": 9814,
+        "claimsFailed": 0,
+        "noValue": 23,
+        "noLead": 0,
+        "leadFailed": 1,
+        "labelsFailed": 4
+      },
+      "sentences": 1084
+    },
+    "P170": {
+      "kept": 493,
+      "drops": {
+        "excluded": 1,
+        "noEnwiki": 156,
+        "claimsFailed": 0,
+        "noValue": 1,
+        "noLead": 1,
+        "leadFailed": 0,
+        "labelsFailed": 5
+      },
+      "sentences": 5036
+    },
+    "P86": {
+      "kept": 497,
+      "drops": {
+        "excluded": 2,
+        "noEnwiki": 8,
+        "claimsFailed": 0,
+        "noValue": 1,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 2
+      },
+      "sentences": 5141
+    },
+    "P61": {
+      "kept": 490,
+      "drops": {
+        "excluded": 4,
+        "noEnwiki": 6,
+        "claimsFailed": 0,
+        "noValue": 6,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 4
+      },
+      "sentences": 5599
+    },
+    "P19": {
+      "kept": 489,
+      "drops": {
+        "excluded": 1,
+        "noEnwiki": 109,
+        "claimsFailed": 0,
+        "noValue": 1,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 10
+      },
+      "sentences": 2952
+    },
+    "P36": {
+      "kept": 496,
+      "drops": {
+        "excluded": 8,
+        "noEnwiki": 14,
+        "claimsFailed": 0,
+        "noValue": 4,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 0
+      },
+      "sentences": 8520
+    },
+    "P37": {
+      "kept": 482,
+      "drops": {
+        "excluded": 9,
+        "noEnwiki": 0,
+        "claimsFailed": 0,
+        "noValue": 18,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 0
+      },
+      "sentences": 8972
+    },
+    "P38": {
+      "kept": 446,
+      "drops": {
+        "excluded": 8,
+        "noEnwiki": 2,
+        "claimsFailed": 0,
+        "noValue": 7,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 47
+      },
+      "sentences": 7857
+    },
+    "P35": {
+      "kept": 492,
+      "drops": {
+        "excluded": 8,
+        "noEnwiki": 47,
+        "claimsFailed": 0,
+        "noValue": 2,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 6
+      },
+      "sentences": 7975
+    },
+    "P6": {
+      "kept": 495,
+      "drops": {
+        "excluded": 9,
+        "noEnwiki": 3,
+        "claimsFailed": 0,
+        "noValue": 2,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 3
+      },
+      "sentences": 9358
+    },
+    "P169": {
+      "kept": 488,
+      "drops": {
+        "excluded": 0,
+        "noEnwiki": 21,
+        "claimsFailed": 0,
+        "noValue": 2,
+        "noLead": 0,
+        "leadFailed": 0,
+        "labelsFailed": 10
+      },
+      "sentences": 4421
+    }
+  },
+  "http": {
+    "requests": 37,
+    "cached": 590,
+    "failures": 0,
+    "net": {
+      "calls": 71,
+      "throttled": 6,
+      "failed": 0
+    },
+    "failedUrls": []
+  }
+}
