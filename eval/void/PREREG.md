@@ -282,3 +282,29 @@ For **measure** slots the relation is the dimension. Their counterfactual swaps 
 Draws: 200, seed 20261014. A universe with fewer than 2 attested verbs (or fewer than 2 dimensions) cannot build the null: a typed gap that licenses nothing.
 
 **Everything else is L2c's:** L1.2, the strict engine co-reference and sentence instances, the order check (kept by Amendment 9's tie rule, with its value reported as unmeasured). L2d is scored on the clean recording against L1.2's clean numbers, on V1–V4.
+
+## Amendment 12 (2026-10-14): L3, the slot-fill role witness. Written after the L2d clean results and after probing `readClause` on seven specimen sentences by hand; before any L3 arm runs.
+
+**What was learned before this amendment.** The clean results (RESULTS.md) say a null can license fillers but cannot choose between them. Callimachus (khora PR #12) found the same from the other end. A hand probe of `readClause` (khora `native/organs/claim-realize.js`, main @ d7a71d4d, the English-EWT parser with the two-parse agreement check) on seven sentences showed:
+- a passive verb reading (*opened*): subject *the building*, agent *by Queen Elizabeth II*, date *on 20 October 1973* as three separate obliques;
+- refusals, typed: an adjectival predicate (*tall*, *long*), a verb EWT does not attest as a verb in that form (*sank*), a nominal predicate (*painting*), and a sentence-parse versus clause-parse disagreement (*designed*).
+
+**The witness is a GATE, not a second amplitude (Callimachus's two-reader rule).** The clause witness's bindings and this parse are both EWT-derived, so they are not independent. The role witness therefore removes bindings. It never adds amplitude. The independent witness in this repo stays `relations.js` (the engine witness).
+
+**The rule, structural, with no constant.** For a clause slot with a sentence `S`, the relation token `r` in it (the token the relation test accepted, as it stands in `S`), and a candidate filler `f`:
+1. `readClause(S, address, { model, predForm: r })`.
+2. A **refusal** or an `untrusted` claim is typed `role_refused`, with its reason counted.
+3. Otherwise the arguments are `A = [subj, obj, ...obls]` (UTF-16 spans into `S`). The filler's span must lie **inside** one argument `a_f`.
+4. The anchor must lie in a **different** argument `a_a`. If the anchor is not written in `S`, it was reached by kind or pronoun, so it is *implied* by the predicate's subject; then the filler need only lie inside **some** argument. The count of such slots is reported separately.
+5. A filler that passes 3 and 4 is **co-argument** with the anchor of the relation's predicate: it fills a role of the same predicate and not a neighbour clause.
+
+**Arms (each against L1.2, on V1–V4; replayed on the clean recording; relation-counterfactual Born null as in L2d):**
+- **L3-soft** (the additive reading): a binding is removed only on **positive** evidence: a successful parse in which the filler is *not* a co-argument. A refusal leaves the binding as L2d had it.
+- **L3-strict**: a refusal also removes the binding. Reported as the ablation: it measures what the parse's refusals cost.
+- **L3-noengine**: L3-soft with the engine witness removed.
+
+**Reported, not decided on:** refusals by typed reason; slots passed / removed / refused; for each ask the filler with the greatest mass and whether it is gold (a diagnostic only; the decision is made by the null).
+
+**Honest expectation, stated now:** every adjectival or measure relation (*tall*, *long*) refuses, so the measure asks will stay informative gaps under L3-strict, and under L3-soft will behave as in L2d (contested). The experiment may therefore move only the person, date and thing asks. A null result (identical to L1.2) is as informative as a gain and will be reported as such.
+
+**Vendoring:** the parse prior is 16 MB, node-only, and the eval is node-only. L3 imports `readClause` and `loadModel` from a khora checkout (the commit above) and does not vendor them into the-fold. The browser surface would reach this witness through the khora's door.
