@@ -77,6 +77,7 @@ import { findPrimary, mergeProvenance } from "./fold-chat-primary.js";
 import { fetchLoaded, describeLoaded, noModelWhy, createLoadedPoller } from "./fold-chat-loaded.js";
 import { createPageEngine, canonicalModelId, ollamaTagOf, MODEL_CHOICES, DEFAULT_MODEL, PAGE_PREFIX } from "./fold-chat-webllm.js";
 import { snipsOf, strandText, storeSnip, verifySnips, STRAND } from "./fold-chat-strand.js";
+import { ensureFoundation, mindPassagesFor, mergeMind } from "./fold-chat-foundation.js";
 import { slotTurnWanted, slotPipelineOn, runSlotTurn, endsTurn, answerLine, storeAnswerTurn, traceFeed, answerRecordNote, answerProcessLine } from "./fold-chat-answerwire.js";
 import { splitSlotParts, runSlotParts, partsLine, partsContentAllowed } from "./fold-chat-split.js";
 import { mountAnswerCard } from "./fold-chat-answercard.js";
@@ -2663,6 +2664,7 @@ export function mount(root, opts = {}) {
             feedPush(lineEvent(tt, `Couldn't open ${onShelf.title}`, { tone: "bad", note: String(e?.message || e).slice(0, 90) + " — searching the web instead" }));
           }
         }
+        const foundationReady = ensureFoundation();   // THE MIND: the foundation index loads alongside the search; a page without one has no mind yet
         if (!bookFound) try {
           if (searchQ !== question) feedPush(lineEvent(tt, follow.kind === "carried" ? "Followed on from the last answer" : "Followed on from the conversation", { tone: "info", note: `searching for \u201c${searchQ.slice(0, 90)}\u201d` }));
           feedPush(lineEvent(tt, "The query", { tone: "info", note: `searching for \u201c${String(searchQ).slice(0, 90)}\u201d` }));   // what was asked of the web, in the record the watcher reads (a later "what did you search for?" opens it)
@@ -2697,6 +2699,16 @@ export function mount(root, opts = {}) {
           return { pages: [], passages: [], results: [], trace: [{ scope: "url", ok: false, why }] };
         })();
           webPassages = w.passages || [];
+          // THE MIND, CONSULTED (fold-chat-foundation.js): what the fold has already read and kept joins the turn's material, in
+          // front of the web's, each sentence verbatim at its file byte address. An ask the mind has nothing licensed to say
+          // about (its content words are not more than chance shares) adds nothing and the turn is exactly what it was.
+          try {
+            const mp = mindPassagesFor({ question: searchQ || question, index: await foundationReady, lang: lang0 && lang0 !== "unknown" ? lang0 : "en" });
+            if (mp.passages.length) {
+              webPassages = mergeMind(webPassages, mp);
+              feedPush(lineEvent(tt, `The mind held ${mp.passages.length} passage${mp.passages.length === 1 ? "" : "s"} that bear on this`, { tone: "info", note: mp.passages.map((p) => p.title).slice(0, 3).join(" \u00b7 ") }));
+            }
+          } catch {}
           if (genOt) {
             // pages ABOUT writing the output (tutorials, samples, templates, writing services, bot walls, pages that never mention the topic) are not material for it
             const g0 = genVoid({ outputType: genOt, webPassages, question });
@@ -2726,6 +2738,13 @@ export function mount(root, opts = {}) {
           webTrace = [{ scope: "web", ok: false, why: String(e?.message || e) }];
           feedPush(lineEvent(tt, "The search failed", { tone: "bad", note: String(e?.message || e).slice(0, 90) }));
           say(`turn · ${kindWord} · web search failed (${String(e?.message || e).slice(0, 40)}) · writing the answer…`);
+          try {   // the web is down: the mind is still here
+            const mp = mindPassagesFor({ question: searchQ || question, index: await foundationReady, lang: lang0 && lang0 !== "unknown" ? lang0 : "en" });
+            if (mp.passages.length && !webPassages.length) {
+              webPassages = mergeMind([], mp); sourceBlock = sourcesPrompt(webPassages);
+              feedPush(lineEvent(tt, `Answering from what the fold already read`, { tone: "info", note: `${mp.passages.length} passage${mp.passages.length === 1 ? "" : "s"} from the foundation` }));
+            }
+          } catch {}
         }
       }
     } else {
