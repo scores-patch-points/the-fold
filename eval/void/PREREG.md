@@ -89,3 +89,35 @@ The user's direction, given mid-build: "remember to use the full stack of percep
 - In the recursion, pathos is the **top** layer. The person's next act on an answer (re-ask, source-ask, challenge, moving on, from the Wald turn ledger) is evidence passed down to every layer below. The frozen battery has no next acts, so pathos's down-going evidence is **wired and recorded on the battery but scored only live** (declared). Its battery contribution is the experiencer field, which is recorded, not scored, because gold carries no experiencer.
 
 **Unchanged:** the battery, the scoring, the arms, the nulls, bars V1–V6. The L1 grammar reader keeps its declared word tables only where no organ answers the question: measure adjectives, request verbs, time nouns. `admits` for a role noun ("capital" → city) is **not** in any table. It must come from kind-induction over the universe (L2/L3), or stay a typed gap.
+
+## Amendment 2 (2026-10-14): L2's unit is the clause. Written before L2 is built or run.
+
+**Measured before this amendment.** The engine's own rich relation reader (khora `native/the-fold/reader-bundle.js` `engineRelationsFor`: S50 attestedVerbs, UniMorph, the POS prior, clause-aware GFP mode) read the Sydney Opera House lead into 27 edges, and every one is **name → name**. The date and the referring expression land inside connector text ("peter hall —, the building was formally opened by→ queen elizabeth"; "queen elizabeth —ii on 20→ october"). So the hypergraph alone cannot hold "anchor —opened→ date". L2's unit is therefore the **clause**, read with these organs:
+
+- **Perception:** khora `splitSentences` (spans.js) and `extractSurfaces` (surfaces.js) over the anchor's pages.
+- **Clauses and fillers:** the-fold's shipped readers `clausesOf`, `datesIn` and `quantitiesIn` (fold-chat-answerspan.js).
+  - `admits` date / era → `datesIn`.
+  - A measure → `quantitiesIn`.
+  - person / place / thing → the perceived surfaces in the clause, other than the anchor's own.
+- **Relation identity:** khora's lemmatizer (`morphology.js` `createLemmatizer(...).sameAct`, over the received `janus/priors/morphology-eng.json`), so "sank" is "sink" and "written" is "write". This is never a stemmer and never a word list.
+- **Kinds:** a copula sentence on the anchor's own page ("⟨anchor⟩ is a / an / one of the … K") is recorded as khora `kindEvidence` (`explicit_classification`, kindKey K, entityRef the anchor, witnessed by its address). The anchor's kinds are exactly those witnessed records.
+- **Reference by kind:** on the anchor's own pages, a definite description "the K" / "this K", with K among the anchor's witnessed kinds, refers to the anchor.
+
+**An edge** is one clause that holds all three:
+- the anchor, by name, alias or kind-description;
+- a token that is `sameAct` with one of the void's relation words;
+- a filler from the reader for the void's `admits`.
+
+The edge's address is `ref#clauseStart-clauseEnd`.
+
+**L2's answer (feed-forward, additive):**
+- L2 speaks only where L0 gave no answer.
+- If the edges hold **exactly one** distinct filler (case- and space-folded), the answer is that clause's verbatim text.
+- If they hold two or more, L2 gives a **contest gap**, never an answer. Choosing between them is L3/L4's job, or the recursion's.
+- An L0 answer is never replaced at L2 (V3).
+
+**Pages:** the surface's own `searchPassages({ referents: [anchor], predicate })` for L1's anchor, recorded in a declared L2 pass.
+
+**universe-null:** each ask's edges keep their clauses, but the fillers are drawn from another ask's universe (a seeded derangement, 200 shuffles). RIGHT must collapse.
+
+**Declared limits:** English only; number words ("eleven", "two") are not quantities to `quantitiesIn`; the morphology prior is read from the workspace's `janus/priors`, which the browser surface must reach through the khora's door, never ship.
