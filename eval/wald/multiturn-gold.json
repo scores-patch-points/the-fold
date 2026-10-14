@@ -1,0 +1,1070 @@
+{
+ "schema": "WaldMultiTurnGold@1",
+ "frozen": "2026-10-14",
+ "prereg": "eval/wald/PREREG.md Amendment 2",
+ "priorsFrom": {
+  "live": "eval/wald/multiturn-live-2026-10-14.json (sessions[].messages)",
+  "watch": "eval/ants/watch-fixture-before-fix.json (turns[] → {user: ask}, {assistant: spoken, provenance, authored})",
+  "g2": "eval/ants/g2/repro-control-1791355297096.json (turns[] → same)"
+ },
+ "priors": {
+  "P1": {
+   "from": "live",
+   "session": "mv7nf9yli7mx",
+   "upto": 2,
+   "note": "Eiffel completed: answered, sources-authored, no provenance, watch detail stored"
+  },
+  "P2": {
+   "from": "live",
+   "session": "mv7nf9yli7mx",
+   "upto": 4,
+   "note": "P1 + a poem turn the model did not answer (empty content)"
+  },
+  "P3": {
+   "from": "live",
+   "session": "mv7o6ovcju1q",
+   "upto": 2,
+   "note": "Great Wall: refused (unwitnessed), empty content — THE Clarification 1 prior"
+  },
+  "P4": {
+   "from": "live",
+   "session": "mv7o8fbnnkkt",
+   "upto": 2,
+   "note": "capital of Australia: sources-authored, no provenance"
+  },
+  "P5": {
+   "from": "live",
+   "session": "mv7o8fbnnkkt",
+   "upto": 4,
+   "note": "P4 + Kilimanjaro: sources fallback after the model declined; off-topic flag"
+  },
+  "P6": {
+   "from": "watch",
+   "upto": 1,
+   "note": "king of the UK: verified 2, every pointer tertiary"
+  },
+  "P7": {
+   "from": "watch",
+   "upto": 2,
+   "note": "P6 + find a primary source: verified 1, bbc.com primary (not tertiary)"
+  },
+  "P8": {
+   "from": "watch",
+   "upto": 6,
+   "note": "… when did he become king: verified 1, britannica (tertiary)"
+  },
+  "P9": {
+   "from": "watch",
+   "upto": 8,
+   "note": "… capital of Australia: verified 2, all tertiary"
+  },
+  "P10": {
+   "from": "g2",
+   "upto": 1,
+   "note": "who invented the telephone: verified 0, no pointers"
+  },
+  "P11": {
+   "from": "watch",
+   "upto": 4,
+   "note": "P6..are you sure? (empty answer): last written answer is the searched where-did-you-get-that, verified 0"
+  }
+ },
+ "rules": {
+  "L1": "an ask about the last turn itself (where its answer came from, what it searched or read, whether it is sure) is answered from the record: search false, whether or not the record holds a verified source",
+  "L2": "an ask for NEW evidence is a search, unless the last written answer already stored a primary-tier pointer on a non-tertiary host (then it is read back): search true / false",
+  "L3": "a new fact about the thread topic is a search: true",
+  "L4": "an ask for the fold s own earlier words is a read of the record: false"
+ },
+ "rows": [
+  {
+   "id": "P1_R_0",
+   "prior": "P1",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P1_R_1",
+   "prior": "P1",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P1_R_2",
+   "prior": "P1",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P1_I_0",
+   "prior": "P1",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P1_I_1",
+   "prior": "P1",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P1_C_0",
+   "prior": "P1",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P1_N_0",
+   "prior": "P1",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P1_F_0",
+   "prior": "P1",
+   "cat": "F",
+   "ask": "how tall is it?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P1_M_0",
+   "prior": "P1",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P2_R_0",
+   "prior": "P2",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P2_R_1",
+   "prior": "P2",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P2_R_2",
+   "prior": "P2",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P2_I_0",
+   "prior": "P2",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P2_I_1",
+   "prior": "P2",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P2_C_0",
+   "prior": "P2",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P2_N_0",
+   "prior": "P2",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P2_F_0",
+   "prior": "P2",
+   "cat": "F",
+   "ask": "how tall is the Eiffel Tower?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P2_M_0",
+   "prior": "P2",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P3_R_0",
+   "prior": "P3",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P3_R_1",
+   "prior": "P3",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P3_R_2",
+   "prior": "P3",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P3_I_0",
+   "prior": "P3",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P3_I_1",
+   "prior": "P3",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P3_C_0",
+   "prior": "P3",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P3_N_0",
+   "prior": "P3",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P3_F_0",
+   "prior": "P3",
+   "cat": "F",
+   "ask": "who built it?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P3_M_0",
+   "prior": "P3",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P4_R_0",
+   "prior": "P4",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P4_R_1",
+   "prior": "P4",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P4_R_2",
+   "prior": "P4",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P4_I_0",
+   "prior": "P4",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P4_I_1",
+   "prior": "P4",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P4_C_0",
+   "prior": "P4",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P4_N_0",
+   "prior": "P4",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P4_F_0",
+   "prior": "P4",
+   "cat": "F",
+   "ask": "what is its population?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P4_M_0",
+   "prior": "P4",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P5_R_0",
+   "prior": "P5",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P5_R_1",
+   "prior": "P5",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P5_R_2",
+   "prior": "P5",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P5_I_0",
+   "prior": "P5",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P5_I_1",
+   "prior": "P5",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P5_C_0",
+   "prior": "P5",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P5_N_0",
+   "prior": "P5",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P5_F_0",
+   "prior": "P5",
+   "cat": "F",
+   "ask": "how long does it take to climb it?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P5_M_0",
+   "prior": "P5",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P6_R_0",
+   "prior": "P6",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P6_R_1",
+   "prior": "P6",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P6_R_2",
+   "prior": "P6",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P6_I_0",
+   "prior": "P6",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P6_I_1",
+   "prior": "P6",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P6_C_0",
+   "prior": "P6",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P6_N_0",
+   "prior": "P6",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P6_F_0",
+   "prior": "P6",
+   "cat": "F",
+   "ask": "how old is he?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P6_M_0",
+   "prior": "P6",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P7_R_0",
+   "prior": "P7",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P7_R_1",
+   "prior": "P7",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P7_R_2",
+   "prior": "P7",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P7_I_0",
+   "prior": "P7",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P7_I_1",
+   "prior": "P7",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P7_C_0",
+   "prior": "P7",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P7_N_0",
+   "prior": "P7",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": false
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P7_F_0",
+   "prior": "P7",
+   "cat": "F",
+   "ask": "when was he crowned?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P7_M_0",
+   "prior": "P7",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P8_R_0",
+   "prior": "P8",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P8_R_1",
+   "prior": "P8",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P8_R_2",
+   "prior": "P8",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P8_I_0",
+   "prior": "P8",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P8_I_1",
+   "prior": "P8",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P8_C_0",
+   "prior": "P8",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P8_N_0",
+   "prior": "P8",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P8_F_0",
+   "prior": "P8",
+   "cat": "F",
+   "ask": "who is next in line?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P8_M_0",
+   "prior": "P8",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P9_R_0",
+   "prior": "P9",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P9_R_1",
+   "prior": "P9",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P9_R_2",
+   "prior": "P9",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P9_I_0",
+   "prior": "P9",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P9_I_1",
+   "prior": "P9",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P9_C_0",
+   "prior": "P9",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P9_N_0",
+   "prior": "P9",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P9_F_0",
+   "prior": "P9",
+   "cat": "F",
+   "ask": "when was it founded?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P9_M_0",
+   "prior": "P9",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P10_R_0",
+   "prior": "P10",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P10_R_1",
+   "prior": "P10",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P10_R_2",
+   "prior": "P10",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P10_I_0",
+   "prior": "P10",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P10_I_1",
+   "prior": "P10",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P10_C_0",
+   "prior": "P10",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P10_N_0",
+   "prior": "P10",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P10_F_0",
+   "prior": "P10",
+   "cat": "F",
+   "ask": "where was he born?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P10_M_0",
+   "prior": "P10",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  },
+  {
+   "id": "P11_R_0",
+   "prior": "P11",
+   "cat": "R",
+   "ask": "where did you get that?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P11_R_1",
+   "prior": "P11",
+   "cat": "R",
+   "ask": "source?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P11_R_2",
+   "prior": "P11",
+   "cat": "R",
+   "ask": "how do you know?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P11_I_0",
+   "prior": "P11",
+   "cat": "I",
+   "ask": "what did you search for?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P11_I_1",
+   "prior": "P11",
+   "cat": "I",
+   "ask": "which pages did you read?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P11_C_0",
+   "prior": "P11",
+   "cat": "C",
+   "ask": "are you sure?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L1"
+  },
+  {
+   "id": "P11_N_0",
+   "prior": "P11",
+   "cat": "N",
+   "ask": "find a primary source",
+   "expect": {
+    "search": true
+   },
+   "rule": "L2"
+  },
+  {
+   "id": "P11_F_0",
+   "prior": "P11",
+   "cat": "F",
+   "ask": "who was the monarch before him?",
+   "expect": {
+    "search": true
+   },
+   "rule": "L3"
+  },
+  {
+   "id": "P11_M_0",
+   "prior": "P11",
+   "cat": "M",
+   "ask": "what did you tell me earlier?",
+   "expect": {
+    "search": false
+   },
+   "rule": "L4"
+  }
+ ]
+}

@@ -8,7 +8,8 @@ import { pivotText, verifyPivot } from "./fold-chat-pivot.js";
 
 // each claim: the words in SELF_LINE, and the thing that must be true for them to stand
 const CLAIMS = [
-  { says: /don't answer from memory/i, witness: "the model is barred from speaking alone", holds: () => ALONE_KINDS.length === 0 && !modelSpeaksAlone("research") },
+  { says: /don't answer from memory/i, witness: "the model is barred from speaking alone on anything that asserts a fact (only smalltalk may — user, 2026-10-14)", holds: () => ALONE_KINDS.every((k) => k === "smalltalk") && !modelSpeaksAlone("research") && !modelSpeaksAlone("advice") },
+  { says: /only small talk, like a greeting, is the small model's own words/i, witness: "smalltalk is the one kind the model may write alone", holds: () => modelSpeaksAlone("smalltalk") && ALONE_KINDS.length === 1 },
   { says: /a name or a figure no source gives, I leave out/i, witness: "the Pivot withholds a sentence whose FIGURE no source gives (a HARD failure, withheld in the default mode too)", holds: () => {
       const pv = pivotText({ draft: "The tower is in Paris. It attracts 7 million visitors a year.", ask: "where is the tower", material: [{ ref: "p", text: "The tower is in Paris, France." }], kind: "research", requireGrounding: true });
       return typeof verifyPivot === "function" && !/7 million/.test(String(pv?.text ?? "")); } },
@@ -25,10 +26,9 @@ test("every capability SELF_LINE claims is witnessed", () => {
 test("the guard bites: if the model could speak alone, the 'from memory' claim would fail", () => {
   const c = CLAIMS[0];
   assert.ok(c.says.test(SELF_LINE), "the line still makes this claim");
-  const orig = ALONE_KINDS.length;
-  assert.equal(orig, 0);                                   // today it stands
+  assert.deepEqual([...ALONE_KINDS], ["smalltalk"]);        // today it stands: only small talk
   assert.equal(c.holds.call(null), true);
-  assert.equal([].concat(ALONE_KINDS, ["research"]).length === 0, false);   // the predicate over a non-empty list is false
+  assert.equal([].concat(ALONE_KINDS, ["research"]).every((k) => k === "smalltalk"), false);   // the predicate over a list that lets research speak alone is false
 });
 
 test("the fold's self-ask is recognised", () => { assert.equal(selfAsk("who are you?"), true); });

@@ -1,0 +1,51 @@
+{
+ "schema": "WaldCalibration@1",
+ "measuredAt": "2026-10-14",
+ "gold": {
+  "rows": 440,
+  "needed": 173,
+  "notNeeded": 267
+ },
+ "web": {
+  "lr": {
+   "kind": {
+    "for": 1.8984375,
+    "against": 0.09833916083916085,
+    "abstain": 0.9862012987012988
+   },
+   "plan": {
+    "for": 1.087695603576751,
+    "against": 0.12272727272727274,
+    "abstain": 1.5340909090909092
+   },
+   "lookup": {
+    "for": 1.467391304347826,
+    "against": 3.0681818181818183,
+    "abstain": 0.28409090909090906
+   },
+   "lang": {
+    "for": 2.876420454545454,
+    "against": 1.5340909090909092,
+    "abstain": 0.9404388714733541
+   },
+   "output": {
+    "for": 136.5340909090909,
+    "against": 0.010295912141549726,
+    "abstain": 1.0994318181818183
+   },
+   "gap": {
+    "for": 1.5340909090909092,
+    "against": 0.8522727272727273,
+    "abstain": 1.0030594405594406
+   },
+   "source": {
+    "for": 15.34090909090909,
+    "against": 0.02739448051948052,
+    "abstain": 1.188380281690141
+   }
+  },
+  "alpha": 0.09363295880149813,
+  "beta": 0.10982658959537572,
+  "giver": "eval/wald/calibrate.mjs; alpha/beta = the current gate's own error rates (PREREG arm 2)"
+ }
+}

@@ -1,0 +1,503 @@
+{
+ "prereg": "eval/wald/PREREG.md",
+ "n": 440,
+ "by": {
+  "cases": {
+   "gateNow": {
+    "n": 73,
+    "missed": 1,
+    "wasted": 0,
+    "errors": 1,
+    "continue": 0
+   },
+   "wald": {
+    "n": 73,
+    "missed": 0,
+    "wasted": 0,
+    "errors": 0,
+    "continue": 64
+   }
+  },
+  "g1": {
+   "gateNow": {
+    "n": 268,
+    "missed": 8,
+    "wasted": 2,
+    "errors": 10,
+    "continue": 0
+   },
+   "wald": {
+    "n": 268,
+    "missed": 0,
+    "wasted": 2,
+    "errors": 2,
+    "continue": 2
+   }
+  },
+  "mt": {
+   "gateNow": {
+    "n": 99,
+    "missed": 10,
+    "wasted": 23,
+    "errors": 33,
+    "continue": 0
+   },
+   "wald": {
+    "n": 99,
+    "missed": 1,
+    "wasted": 17,
+    "errors": 18,
+    "continue": 35
+   }
+  },
+  "all": {
+   "gateNow": {
+    "n": 341,
+    "missed": 9,
+    "wasted": 2,
+    "errors": 11,
+    "continue": 0
+   },
+   "wald": {
+    "n": 341,
+    "missed": 0,
+    "wasted": 2,
+    "errors": 2,
+    "continue": 66
+   }
+  }
+ },
+ "null": {
+  "cases": {
+   "shuffles": 200,
+   "p05": 17,
+   "median": 34,
+   "p95": 57
+  },
+  "g1": {
+   "shuffles": 200,
+   "p05": 102,
+   "median": 134,
+   "p95": 167
+  },
+  "mt": {
+   "shuffles": 200,
+   "p05": 29,
+   "median": 48,
+   "p95": 73
+  },
+  "all": {
+   "shuffles": 200,
+   "p05": 147,
+   "median": 168,
+   "p95": 197
+  }
+ },
+ "restingCost": {
+  "medianMs": 0.024499999999989086,
+  "maxMs": 1.3614999999999782
+ },
+ "bars": {
+  "B1": {
+   "holds": true,
+   "wald": 0,
+   "gateNow": 1,
+   "what": "missed pulls on cases.json"
+  },
+  "B2": {
+   "holds": true,
+   "wald": [
+    0,
+    2
+   ],
+   "gateNow": [
+    0,
+    2
+   ],
+   "what": "wasted pulls on cases.json and G1"
+  },
+  "B3": {
+   "holds": true,
+   "wald": 2,
+   "nullP05": 147,
+   "what": "fewer errors than 95% of shuffled-witness nulls (all gold)"
+  },
+  "B4": {
+   "holds": false,
+   "maxMs": 1.3614999999999782,
+   "what": "decision time below the 1 ms stand-in price of a thread read"
+  }
+ },
+ "oldRowsWithReadback": [],
+ "clarification1": {
+  "id": "P3_R_0",
+  "label": false,
+  "gateNow": false,
+  "wald": false,
+  "verdict": "refused",
+  "mode": "cold-gap",
+  "want": "source",
+  "wantSub": "recall",
+  "votes": [
+   "kind web:for",
+   "plan none:for",
+   "plan web:against",
+   "source local:for",
+   "source web:against"
+  ]
+ },
+ "disagreements": [
+  {
+   "set": "cases",
+   "id": "e_eiffel_zh",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "write an essay on this",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "write an essay",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "write a letter about the extinction of dolphins to my congressman",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "create a landing page for my bakery",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "proofread this please",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "g1",
+   "id": "write the intro paragraph for my essay on gun control",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "Thanks! Now write an essay on that.",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "write a persuasive email to my city council asking for more bike lanes",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "write an essay about the telephone and put it in a pdf",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "g1",
+   "id": "write an essay",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P1_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P1_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P2_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P2_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P3_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": false,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P3_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P4_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P4_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P5_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P5_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P6_I_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P6_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P6_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P7_I_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P7_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P8_I_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P8_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P8_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P9_I_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P9_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P9_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P10_R_0",
+   "label": false,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "refused"
+  },
+  {
+   "set": "mt",
+   "id": "P10_R_1",
+   "label": false,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "refused"
+  },
+  {
+   "set": "mt",
+   "id": "P10_R_2",
+   "label": false,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "refused"
+  },
+  {
+   "set": "mt",
+   "id": "P10_I_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P10_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P10_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P11_R_0",
+   "label": false,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "refused"
+  },
+  {
+   "set": "mt",
+   "id": "P11_R_1",
+   "label": false,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "refused"
+  },
+  {
+   "set": "mt",
+   "id": "P11_R_2",
+   "label": false,
+   "gateNow": true,
+   "wald": false,
+   "verdict": "refused"
+  },
+  {
+   "set": "mt",
+   "id": "P11_I_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  },
+  {
+   "set": "mt",
+   "id": "P11_N_0",
+   "label": true,
+   "gateNow": false,
+   "wald": true,
+   "verdict": "probable"
+  },
+  {
+   "set": "mt",
+   "id": "P11_M_0",
+   "label": false,
+   "gateNow": true,
+   "wald": true,
+   "verdict": "continue"
+  }
+ ]
+}
