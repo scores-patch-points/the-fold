@@ -212,9 +212,9 @@ test("listAllModels: the bridge is down, the in-tab models are listed anyway —
   assert.match(all.bridgeError, /ECONNREFUSED/);
   assert.equal(all.page.available, true);
   assert.equal(all.models.length, MODEL_CHOICES.length);
-  const m = all.models.find((x) => x.id === "webllm:" + GEMMA);
+  const m = all.models.find((x) => x.id === "webllm:" + DEFAULT_MODEL);
   assert.deepEqual([m.kind, m.tier, m.location, m.sealed, m.default, m.cached, m.loaded, m.contextWindow], ["webllm-page", "local", "tab", false, true, false, false, 4096]);
-  assert.match(m.sizeLabel, /^~1\.9 GB$/);
+  assert.match(m.sizeLabel, /^~900 MB$/);
   assert.equal(fake.calls.module, 0, "listing never loads the library");
   assert.equal(fake.calls.create.length, 0, "listing never loads a model");
   assert.ok(all.models.every((x) => client.isChatModel(x) && client.isPageModel(x)), "each is a chat model the app may pick");
