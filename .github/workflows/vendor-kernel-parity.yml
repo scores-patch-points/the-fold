@@ -50,7 +50,11 @@ jobs:
           done < <(find vendor/khora/native/kernel -name '*.js')
           if [ "$drifts" -ne 0 ]; then echo "::error::the vendored khora kernel drifted from scores-patch-points/khora main"; exit 1; fi
           echo "vendored kernel identical to khora main"
-      - name: Vendored kernel import smoke (node --check + one consumer)
+      - name: Vendored kernel import smoke (node --check on every vendored file + one consumer)
         run: |
-          for f in vendor/khora/native/kernel/cube.js vendor/khora/native/kernel/hyperlexicon-abstraction.js vendor/khora/native/kernel/kind-induction.js vendor/khora/native/kernel/index.js; do node --check "$f"; done
-          node --test fold-chat-cube.test.mjs 2>&1 | tail -n 3
+          set -euo pipefail
+          # every vendored file, not a hand-kept list: a name that was never vendored cannot fail this step by existing in it
+          n=0; while IFS= read -r -d '' f; do node --check "$f"; n=$((n+1)); done < <(find vendor/khora/native -name '*.js' -print0)
+          echo "node --check: $n vendored files"
+          test "$n" -gt 0
+          node --test fold-chat-cube.test.mjs
