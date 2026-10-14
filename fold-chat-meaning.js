@@ -27,7 +27,8 @@ export const MEANING = Object.freeze({
   maxChars: 200000,   // a source longer than this is read up to here
 });
 
-const fold = (s) => String(s ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13)
+const fold = (s) => foldText(s).replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 
 /** The reading's ledger over `sources` ([{ ref, text }]). The verb vocabulary is measured on all of them pooled; each source's own notes keep their `ref`
  *  (so a decision can set the sources under test aside). Never throws: a reader failure is an empty ledger. */

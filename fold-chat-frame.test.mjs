@@ -80,7 +80,8 @@ test("FALSIFIER: an ask with no frame, and a language with no prior, make ONE Wi
 const FIX = JSON.parse(fs.readFileSync(new URL("./eval/falsify/fixtures/tierA/rows.json", import.meta.url), "utf8"));
 const resolverFrom = (table, spy = []) => async (cands) => { spy.push(cands.slice()); return new Map(cands.map((c) => [c, table[caseless(c)] ?? null])); };
 const resolveEverything = (spy = []) => async (cands) => { spy.push(cands.slice()); return new Map(cands.map((c) => [c, { title: c, redirectedFrom: null, disambiguation: false }])); };
-const shape = (f) => ({ slot: f.slot, referents: f.referents.map((r) => [r.surface, r.title]), predicate: f.predicate.map((p) => p.stem) });
+// 2026-10-12: a role/attribute word the anchor governs ("king OF the UK", "how many LEGS") is an attribute, not a referent
+const shape = (f) => ({ slot: f.slot, referents: f.referents.map((r) => [r.surface, r.title]), predicate: f.predicate.map((p) => p.stem), ...((f.attributes || []).length ? { attributes: f.attributes.map((a) => a.surface) } : {}) });
 const frameOf = (c, spy) => askFrame(c.ask, { fw: FW, lang: "en", resolveTitles: resolverFrom(c.titles, spy) });
 const tokensIn = (s) => s.match(/[\p{L}\p{N}]+/gu) || [];
 

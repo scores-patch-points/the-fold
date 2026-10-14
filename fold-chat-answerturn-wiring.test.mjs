@@ -373,7 +373,8 @@ test("the record's summary and process line say what happened in plain words and
 test("slotDeps hands the pipeline ONLY the declared deps, over the one fetch it was given (nothing global, nothing a model could be)", () => {
   const seen = [];
   const deps = slotDeps({ fetchImpl: async (u) => { seen.push(u); return json({}); }, onStatus: () => {} });
-  assert.deepEqual(Object.keys(deps).sort(), ["fetchLead", "fw", "resolveTitles", "searchPassages", "signal"]);
+  // suggestQuery (2026-10-13, survive typing): the encyclopedia's own spelling suggestion, asked only when an ask's names do not resolve
+  assert.deepEqual(Object.keys(deps).sort(), ["fetchLead", "fw", "resolveTitles", "searchPassages", "signal", "suggestQuery"]);
   assert.equal(typeof deps.fw, "function");
   assert.ok(deps.fw("en") instanceof Set); assert.equal(deps.fw("xx"), null);
   assert.doesNotMatch(WIRE_SRC.replace(/\/\/[^\n]*/g, ""), /\bfetch\(|Date\.now|Math\.random|client\.chat|callModel|chat\/completions/);
@@ -382,14 +383,16 @@ test("slotDeps hands the pipeline ONLY the declared deps, over the one fetch it 
 // ── 7. the chat really calls the seams (a static check: nobody may quietly unwire the slice) ────────────────────────────────
 test("fold-chat.js is wired: the slot turn runs after the search and before the unsourced plan, bars the model, and is stored + drawn + reloaded", () => {
   const at = (re, from = 0) => { const m = re.exec(CHAT_SRC.slice(from)); return m ? from + m.index : -1; };
-  const search = at(/const w = await raceAbort\(web\.searchWeb\(/);
+  // The main search (run()'s one search-for-the-turn): the URL-read restructure (2026-10-11) folded it into an IIFE, so the pattern
+  // anchors on the search call itself, inside that block, not on the old `const w = await raceAbort(web.searchWeb(` spelling.
+  const search = at(/return raceAbort\(web\.searchWeb\(searchQ/);
   const call = at(/raceAbort\(runSlotTurn\(\{ question/);
   const plan = at(/plan = unsourcedPlan\(UNSOURCED_ANSWERS, \{ live: !!liveHit \}\)/);
   assert.ok(search > 0 && call > search && plan > call, `order: search ${search} < runSlotTurn ${call} < unsourced plan ${plan}`);
   assert.match(CHAT_SRC, /slotTurnWanted\(/);
   assert.match(CHAT_SRC, /wantWeb && !webPassages\.length && !slotTurn/, "the unsourced gap does not pre-empt a slot turn");
   assert.match(CHAT_SRC, /answerMode === "snips" && wantWeb && webPassages\.length && !slotTurn/, "a slot ask ignores the Sources-only mode");
-  assert.match(CHAT_SRC, /const modelBarred = !!\(plan \|\| strand \|\| aloneBarred(?: \|\| \(genGate && !genGate\.ok\))?\)/, "the model is barred by the strand marker a slot turn sets (a failed writing gate may bar it too)");
+  assert.match(CHAT_SRC, /(?:const )?modelBarred = !!\(plan \|\| strand \|\| aloneBarred[\s\S]{0,80}\(genGate && !genGate\.ok\)/, "the model is barred by the strand marker a slot turn sets (a failed writing gate may bar it too; a clarify gate may bar it too)");
   assert.match(CHAT_SRC, /handoff/);
   assert.match(CHAT_SRC, /traceFeed\(tt, slotRes, lineEvent\)/);
   assert.match(CHAT_SRC, /answerTurn: slotStored/, "stored on the message");
@@ -407,13 +410,15 @@ test("THE SWITCH: the pipeline is OFF unless enabled — a turn that would quali
   assert.equal(slotTurnWanted({ ...would, enabled: true }), true);
 });
 
-test("slotPipelineOn reads localStorage 'fold-chat:answerPipeline' === 'on'; anything else, a missing store or a throwing store is off", () => {
+test("slotPipelineOn reads localStorage 'fold-chat:answerPipeline' — ON unless it says 'off' (2026-10-11): a missing store or a throwing store is ON (the no-model path is the safe default)", () => {
   const store = (v) => ({ getItem: (k) => (k === SLOT_PIPELINE_KEY ? v : null) });
   assert.equal(SLOT_PIPELINE_KEY, "fold-chat:answerPipeline");
   assert.equal(slotPipelineOn(store("on")), true);
-  for (const v of [null, "off", "1", "true", "ON", ""]) assert.equal(slotPipelineOn(store(v)), false, JSON.stringify(v));
-  assert.equal(slotPipelineOn(null), false);
-  assert.equal(slotPipelineOn({ getItem() { throw new Error("blocked"); } }), false);
+  assert.equal(slotPipelineOn(store(null)), true, "missing store: on");
+  assert.equal(slotPipelineOn(store("off")), false, "explicitly off");
+  for (const v of ["", "1", "true", "ON"]) assert.equal(slotPipelineOn(store(v)), true, JSON.stringify(v));
+  assert.equal(slotPipelineOn(null), true, "no storage at all: on");
+  assert.equal(slotPipelineOn({ getItem() { throw new Error("blocked"); } }), true, "a throwing store: on");
 });
 
 test("WIRING: fold-chat.js passes the switch to slotTurnWanted (a call without it would be off for everyone, a hard-coded true would be on for everyone)", () => {

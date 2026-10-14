@@ -1,0 +1,41 @@
+{
+  "_about": "Held-out chat set for the MVP gate, written 2026-10-13 BEFORE any gate run and never used to tune the fold. Gold regexes are world knowledge as of 2026-10 (holder golds can go stale). 'refuse' = a false premise: any outcome but a confident answer passes.",
+  "categories": [
+    { "id": "h-slot", "label": "held-out single facts", "turns": [
+      ["Who wrote Pride and Prejudice?"], ["Who painted The Starry Night?"], ["Who developed the theory of general relativity?"],
+      ["Who was the first president of the United States?"], ["Who composed the Moonlight Sonata?"], ["When did the Berlin Wall fall?"],
+      ["When did the Titanic sink?"], ["When was the Magna Carta signed?"], ["In what year did humans first land on the Moon?"],
+      ["Where is the Great Barrier Reef?"], ["Where was Mozart born?"], ["Where is the Taj Mahal?"],
+      ["What is the capital of Japan?"], ["What is the capital of Kenya?"], ["What is the capital of Brazil?"], ["What is the capital of Egypt?"],
+      ["How many bones are in the adult human body?"], ["How many players does a football team have on the field?"], ["How many continents are there?"],
+      ["How many strings does a violin have?"], ["What is the chemical symbol for sodium?"], ["What is the largest ocean on Earth?"],
+      ["What is the longest river in Africa?"], ["What is the tallest mountain in the world?"], ["Who invented the telephone?"],
+      ["What language is spoken in Brazil?"], ["What currency is used in Japan?"] ] },
+    { "id": "h-holder", "label": "held-out office holders", "turns": [
+      ["Who is the chancellor of Germany?"], ["Who is the president of Brazil?"], ["Who is the prime minister of India?"],
+      ["Who is the president of Mexico?"], ["Who is the king of Spain?"], ["Who is the CEO of Tesla?"] ] },
+    { "id": "h-compute", "label": "held-out computation", "turns": [
+      ["What is 12 squared?"], ["Convert 100 kilograms to pounds"], ["What is 7% of 350?"], ["How many minutes are in a week?"] ] },
+    { "id": "h-compound", "label": "held-out compound asks", "turns": [
+      ["Who wrote Pride and Prejudice and when was it published?"], ["What is the capital of Japan and what is its population?"],
+      ["Who painted The Starry Night and where was he born?"], ["Who is the prime minister of India and when did he take office?"] ] },
+    { "id": "h-followup", "label": "held-out follow-ups", "turns": [
+      ["What is the capital of Kenya?", "What is its population?"], ["Who wrote Pride and Prejudice?", "When was she born?"],
+      ["Who was the first president of the United States?", "When was he born?"], ["Who composed the Moonlight Sonata?", "Where was he born?"] ] },
+    { "id": "h-false", "label": "held-out false premises", "turns": [
+      ["Who was the first woman to walk on the Moon?"], ["What is the capital of the Moon?"],
+      ["When did Canada win the men's football World Cup?"], ["Who is the current king of Germany?"] ] }
+  ],
+  "gold": {
+    "h-slot#0": "Austen", "h-slot#1": "Gogh", "h-slot#2": "Einstein", "h-slot#3": "Washington", "h-slot#4": "Beethoven",
+    "h-slot#5": "1989", "h-slot#6": "1912", "h-slot#7": "1215", "h-slot#8": "1969", "h-slot#9": "Australia|Queensland|Coral Sea",
+    "h-slot#10": "Salzburg", "h-slot#11": "Agra|India", "h-slot#12": "Tokyo", "h-slot#13": "Nairobi", "h-slot#14": "Bras[ií]lia", "h-slot#15": "Cairo",
+    "h-slot#16": "\\b206\\b", "h-slot#17": "\\b(11|eleven)\\b", "h-slot#18": "\\b(7|seven)\\b", "h-slot#19": "\\b(4|four)\\b", "h-slot#20": "\\bNa\\b",
+    "h-slot#21": "Pacific", "h-slot#22": "Nile", "h-slot#23": "Everest", "h-slot#24": "Bell", "h-slot#25": "Portuguese", "h-slot#26": "\\byen\\b",
+    "h-holder#0": "Merz", "h-holder#1": "Lula", "h-holder#2": "Modi", "h-holder#3": "Sheinbaum", "h-holder#4": "Felipe", "h-holder#5": "Musk",
+    "h-compute#0": "\\b144\\b", "h-compute#1": "220\\.4", "h-compute#2": "24\\.5", "h-compute#3": "10[, ]?080",
+    "h-compound#0": "Austen[\\s\\S]*1813", "h-compound#1": "Tokyo[\\s\\S]*(million|\\d[\\d,. ]{4,})", "h-compound#2": "Gogh[\\s\\S]*Zundert", "h-compound#3": "Modi[\\s\\S]*2014",
+    "h-followup#0": "million|\\d{1,3}[,.]\\d{3}", "h-followup#1": "1775", "h-followup#2": "1732", "h-followup#3": "Bonn",
+    "h-false#0": "refuse", "h-false#1": "refuse", "h-false#2": "refuse", "h-false#3": "refuse"
+  }
+}

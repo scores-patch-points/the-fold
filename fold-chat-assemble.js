@@ -46,7 +46,8 @@ const TERMINATOR = /[.!?。！？…]["')\]”’」』]*$/u;
 const norm = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
 
 // ── words (fast path for spaced scripts; the script's own segmenter only where words are not spaced) ──────────
-const foldTok = (s) => s.normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase();
+import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13): Latin vowel accents only
+const foldTok = (s) => foldText(s);
 const ASCII_LETTERS = /^[a-z]+$/;
 const stem = (t) => (ASCII_LETTERS.test(t) ? stemOf(t) : t);
 const scriptOfSample = (text) => scriptOf(String(text ?? "").slice(0, 400));

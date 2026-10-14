@@ -21,7 +21,7 @@
 // Pure. The lookup itself is done by the surface (fold-chat-web.js `search`),
 // through the audited fetch, and handed here as plain results.
 
-const fold = (s) => String(s ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase().trim();
+import { foldText as fold } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13)
 const tokensOf = (s) => fold(s).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
 
 // DECLARED stems (II.11): what leads a "tell me about X" ask, per language.

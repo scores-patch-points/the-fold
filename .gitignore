@@ -113,3 +113,10 @@ eval/ants/e2/out/
 
 # ant D1 recorded wire for the discourse replay (30 MB); regenerate with the harness in eval/ants/d1/
 eval/ants/d1/corpus/store.json
+
+# supervised loop runtime state (regenerated every run; never commit)
+wildchat-lessons.jsonl
+wildchat-proposals.jsonl
+wildchat-results.jsonl
+wildchat-night.log
+tools/wildchat-learned.json

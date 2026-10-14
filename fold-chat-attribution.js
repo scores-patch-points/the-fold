@@ -36,7 +36,8 @@
 import { attribute, tokenize } from "./fold-chat-ground.js";
 import { isTertiary } from "./fold-chat-tertiary.js";
 
-const fold = (s) => String(s ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
+import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13)
+const fold = (s) => foldText(s).replace(/\s+/g, " ").trim();
 const clean = (s) => fold(s).replace(/^the\s+/, "").replace(/[.,;:!?'’"“”]+$/g, "").trim();
 
 // ── scaffolding markers ────────────────────────────────────────────────────

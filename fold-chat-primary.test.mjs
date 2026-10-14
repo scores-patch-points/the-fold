@@ -350,7 +350,7 @@ test("mergeProvenance: an index-tier provenance plus a found primary page → th
   assert.equal(pr.pointers[0].tier, "index");
   const found = await run({ search: searching([{ title: "The monument", url: "https://www.toureiffel.paris/m" }]), readPage: reading({ "https://www.toureiffel.paris/m": page(OFFICIAL, PAD) }), point: pointer("330 metres") });
   const m = mergeProvenance(pr, found, { indexHost: "en.wikipedia.org" });
-  assert.match(m.narr.parts[0].text, /^I checked this on Wikipedia, but I treat that as an index to primary sources, so I followed it to toureiffel\.paris and verified it there\./);
+  assert.match(m.narr.parts[0].text, /^I checked this on Wikipedia for the answer's first sentence, but I treat that as an index to primary sources, so I followed it to toureiffel\.paris and verified it there\./);
   assert.equal(m.narr.parts[1].kind, "quote"); assert.match(m.narr.parts[1].text, /330 metres tall/);
   assert.ok(verifyNarration(m.narr, m.ps, m.pointers.filter((p) => p.tier === "origin"), { indexHost: "en.wikipedia.org" }).ok);
   assert.equal(m.ps[0].origin, true); assert.equal(m.ps[1].url, WIKI_URL);

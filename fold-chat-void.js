@@ -22,7 +22,7 @@
 //   verdict      { standing, filler?, survived:[…], unmeasured:[…], refuters:[…] }
 //   closed       — appended by close() only
 
-const KINDS = Object.freeze(["ask", "referents", "frame-gap", "read", "widen", "candidate", "no-witness", "past-only", "probes", "probe-result", "verdict"]);
+const KINDS = Object.freeze(["ask", "read-as", "set-aside", "referents", "frame-gap", "read", "widen", "candidate", "no-witness", "past-only", "probes", "probe-result", "verdict"]);
 const STANDINGS = Object.freeze(["survived", "contested", "refuted", "unmeasured"]);
 const LOCAL_KINDS = Object.freeze(["rival-holder", "negation", "later-date"]);
 
@@ -66,12 +66,20 @@ const GAP_SAY = Object.freeze({
   referents_unresolved: "I couldn't match the names in the question to pages, so I'm not guessing.",
 });
 
+const SET_ASIDE_WHY = Object.freeze({ closed: "it is a function word, not a name", numeral: "it is a bare number, not a name", adverb: "it is an adverb, not a name", kind: "it names a kind of place, not a place" });
+
 /** The trace templates, keyed by event kind. (data, state) -> [{ say, detail?, probe?, result? }]. English; replace to translate. */
 export const TRACE_TEMPLATES = Object.freeze({
   ask: (d) => (d.slot
     ? [{ say: `It looks like a question of fact: ${askPhrase(d)}.` }, { say: "I can't answer that from memory, so I'm reading sources." }]
     : [{ say: "I can't tell what single fact is being asked." }]),
   referents: () => [],
+  // SURVIVE TYPING (fold-chat-typing.js): a word read differently from how it was typed is said, in the app's own voice, never silent
+  "read-as": (d) => (Array.isArray(d.changes) && d.changes.length
+    ? [{ say: `I read ${andList(d.changes.map((c) => `${q(c.typed)} as ${q(c.read)}`))}.` }] : []),
+  // a filler that could not be an answer (a function word, a bare number, an adverb, a kind of place) is set aside and SAID, never silent
+  "set-aside": (d) => (Array.isArray(d.fillers) && d.fillers.length
+    ? d.fillers.map((f) => ({ say: `I set aside ${q(f.text)} as an answer: ${SET_ASIDE_WHY[f.why] || SET_ASIDE_WHY.closed}.` })) : []),
   "frame-gap": (d) => [{ say: GAP_SAY[d.kind] || GAP_SAY.frame_unread }],
   read: (d) => (d.found === false && d.source
     ? [{ say: `I read ${d.source.title || "a page"}${site(d.source)}, but no sentence in it states the answer.` }] : []),
@@ -162,7 +170,12 @@ export function hasEvidence(ev) {
 const clone = (x) => (x === undefined ? undefined : JSON.parse(JSON.stringify(x)));
 const deepFreeze = (o) => { if (o && typeof o === "object" && !Object.isFrozen(o)) { Object.freeze(o); for (const k of Object.keys(o)) deepFreeze(o[k]); } return o; };
 
-const roleOf = (frame) => (frame && Array.isArray(frame.predicate) ? frame.predicate.map((p) => p.surface || p.stem).filter(Boolean).join(" ") : "");
+const roleOf = (frame) => {
+  if (!frame) return "";
+  const attrs = Array.isArray(frame.attributes) ? frame.attributes.map((a) => a.surface).filter(Boolean) : [];   // "king" of "king of the UK" (MF21)
+  const pred = Array.isArray(frame.predicate) ? frame.predicate.map((p) => p.surface || p.stem).filter(Boolean) : [];
+  return [...attrs, ...pred].join(" ");
+};
 
 /** Open the turn's record for a Frame. events[0] is the 'ask'; the referents (and a frame gap) follow, from the frame's own fields. */
 export function createTurnVoid(frame) {

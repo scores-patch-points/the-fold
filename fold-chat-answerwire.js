@@ -17,9 +17,10 @@
 
 import { runAnswerTurn, HANDOFF_WHY } from "./fold-chat-answerturn.js";
 import { functionWordsOf } from "./fold-chat-snippets.js";
-import { resolveTitlesWikipedia } from "./fold-chat-titles.js";
+import { resolveTitlesWikipedia, suggestQueryWikipedia } from "./fold-chat-titles.js";
 import { wikiLead, referentPassages } from "./fold-chat-web.js";
 import { originateTurn, ORIGIN } from "./fold-chat-origin.js";
+import { expandAskAbbreviations } from "./fold-chat-frame.js";
 
 import { answerSpan } from "./fold-chat-answerspan.js";
 /** Declared, not measured (Constitution II.11). Giver: the WIRE task of the answer-pipeline contract (2026-10-06). */
@@ -43,14 +44,17 @@ export function slotTurnWanted({ kind, wantWeb, liveHit = null, answerMode = "fa
   return enabled === true && !!wantWeb && !liveHit && WIRE.kinds.includes(kind) && (answerMode === "facing" || answerMode === "snips");
 }
 
-/** THE SWITCH. OFF unless the person (or a test) turns it on: localStorage "fold-chat:answerPipeline" === "on".
- *  Why off by default (2026-10-06): an adversarial verifier ran the pipeline on the REAL Monarchy-of-the-UK page and it returned a
- *  "the sources disagree" contest between "the British national anthem" and "Legislative power" instead of Charles III; the old path
- *  answered the same ask correctly. Its tests pass on hand-written pages; real pages are the unmet falsifier. It goes on by default
- *  only after the real-page corpus (eval/falsify/fixtures/tierB) stands. Never throws (storage may be blocked). */
+/** THE SWITCH. ON by default (2026-10-11, operator decision): a factual one-fact question is answered MECHANICALLY — the model is
+ *  only called when the pipeline truly hands off (not a slot ask, a language with no grammar, names that match no page, too slow).
+ *  The person can still turn it off with localStorage "fold-chat:answerPipeline" = "off" (anything else, a missing store or a
+ *  throwing store is ON: the no-model path is the safe default for a grounded surface). Why it was off by default (2026-10-06):
+ *  an adversarial verifier ran the pipeline on the REAL Monarchy-of-the-UK page and it returned a "the sources disagree" contest
+ *  between "the British national anthem" and "Legislative power" instead of Charles III; the old path answered the same ask
+ *  correctly. Its tests pass on hand-written pages; the real-page corpus (eval/falsify/fixtures/tierB) is the standing falsifier
+ *  that would flip it back off. Never throws (storage may be blocked). */
 export const SLOT_PIPELINE_KEY = "fold-chat:answerPipeline";
 export function slotPipelineOn(storage = (typeof localStorage !== "undefined" ? localStorage : null)) {
-  try { return storage?.getItem?.(SLOT_PIPELINE_KEY) === "on"; } catch { return false; }
+  try { return storage?.getItem?.(SLOT_PIPELINE_KEY) !== "off"; } catch { return true; }
 }
 
 const hostOf = (u) => { try { return new URL(String(u)).hostname.replace(/^www\./, ""); } catch { return ""; } };
@@ -82,6 +86,7 @@ export function slotDeps({ fetchImpl, signal = null, memo = null, lang = "en", o
     fw: functionWordsOf,
     signal,
     resolveTitles: (candidates) => resolveTitlesWikipedia(candidates, { fetchImpl, edition: lang }),
+    suggestQuery: (q) => suggestQueryWikipedia(q, { fetchImpl, edition: lang, signal }),
     fetchLead: (query) => { tell(`looking up “${query}”…`); return wikiLead(query, { fetchImpl, lang }); },
     searchPassages: (frame) => { tell(`reading the pages the names in the question lead to…`); return referentPassages(frame, { fetchImpl, memo, lang }); },
   };
@@ -115,11 +120,15 @@ function bound(fetchImpl, signal) {
  *  → AnswerTurn@1 with aborted    the person pressed Stop: draw nothing (the chat treats it like any stopped turn) */
 export async function runSlotTurn({ question, lang, webPassages, searchQ = null, now = new Date(), fetchImpl, signal = null, memo = null, onStatus = null, timeBoxMs = WIRE.timeBoxMs } = {}) {
   const code = lang && typeof lang === "object" ? lang.code : lang;
+  // ASK-SIDE ABBREVIATIONS (fold-chat-frame.js, 2026-10-11): "the US president" frames as
+  // "the United States president" — the country the ask must name to resolve; guarded so
+  // "tell us who…" is never expanded.
+  const q = expandAskAbbreviations(question);
   const box = boxed(signal, timeBoxMs);
   try {
     const deps = slotDeps({ fetchImpl: bound(fetchImpl, box.signal), signal: box.signal, memo, lang: isStr(code) && code !== "unknown" ? code : "en", onStatus });
     const turn = await runAnswerTurn({
-      question,
+      question: q,
       lang: isStr(code) && code !== "unknown" ? { code, by: "function words" } : undefined,
       passages: passagesForTurn(webPassages, { query: searchQ }),
       now, deps,
