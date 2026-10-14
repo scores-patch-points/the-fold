@@ -1,5 +1,11 @@
 name: Vendored khora kernel parity
 
+# Two checks, because khora is a PRIVATE repo and the default CI token cannot read it:
+#   1. SELF-CHECK (always, no credentials): every vendored file still hashes to what vendor/khora/VENDOR-KHORA.json pins.
+#   2. UPSTREAM PARITY (only when the repo secret KHORA_READ_TOKEN exists): the vendored kernel is byte-identical to khora main.
+# Without the secret check 2 is skipped with a visible notice — never a silent pass, never the old red "could not read Username".
+# To turn check 2 on: add a fine-grained token with Contents:read on scores-patch-points/khora as the secret KHORA_READ_TOKEN.
+
 on:
   pull_request:
     branches: [main]
@@ -11,22 +17,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # The vendored kernel must BE the canonical khora — khora is the base,
-      # vendored, never a second definition. Fetch main byte-identical and
-      # compare the whole subtree; any drift is a red gate (never a silent
-      # divergence the surfaces then run on).
-      - name: Fetch canonical khora main
-        run: git clone --depth 1 https://github.com/scores-patch-points/khora.git "${GITHUB_WORKSPACE}/../khora"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Vendored files still match their pin (no credentials needed)
+        run: node scripts/vendor-self-check.mjs
+      - name: Is the upstream-read token configured?
+        id: tok
+        env:
+          T: ${{ secrets.KHORA_READ_TOKEN }}
+        run: |
+          if [ -n "$T" ]; then echo "have=true" >> "$GITHUB_OUTPUT"
+          else echo "have=false" >> "$GITHUB_OUTPUT"; echo "::notice title=upstream parity not checked::KHORA_READ_TOKEN is not set and khora is private; only the pin's own hashes were verified."; fi
+      - name: Fetch canonical khora main (private)
+        if: steps.tok.outputs.have == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: scores-patch-points/khora
+          token: ${{ secrets.KHORA_READ_TOKEN }}
+          path: _khora
+          fetch-depth: 1
       - name: Compare the vendored kernel with canonical khora (byte-identical)
+        if: steps.tok.outputs.have == 'true'
         run: |
           set -euo pipefail
           drifts=0
           while IFS= read -r f; do
             rel="${f#vendor/khora/native/kernel/}"
-            want="${GITHUB_WORKSPACE}/../khora/native/kernel/${rel}"
+            want="${GITHUB_WORKSPACE}/_khora/native/kernel/${rel}"
             if [ ! -f "$want" ]; then printf 'VENDOR-ONLY %s (no upstream)\n' "$f"; drifts=1; continue; fi
             if ! diff -q "$f" "$want" >/dev/null; then printf 'DRIFT %s\n' "$f"; drifts=1; fi
           done < <(find vendor/khora/native/kernel -name '*.js')
