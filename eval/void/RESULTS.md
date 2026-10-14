@@ -136,3 +136,24 @@ What fails, and why (each is a lexical or choice problem, not a retrieval one):
 4. **Entity resolution** needs L1.2's anchor, not the gold title (done here only to isolate the property step).
 
 **What this settles:** the hang-up is not witnesses or nulls. The prose tiers choose among co-present values with no way to know which value is the *property's*; the structured door has the typed value already, and the open problem is choosing the **property**, a closed, small, label-addressed space. That is a different and far more tractable gap than the one L2–L4 were attacking.
+
+## L4 (anchor must be a core argument, morphology backoff, verbal relation words): **not admitted, identical to L1.2** (`L3m`, `L4`, `L4r`)
+
+All three arms: dev RIGHT 7 / WRONG 0 / Useful 21, held 5 / 1 / 19. Gate: passed 15 (12 the weak "implied anchor" form), removed 3, refused 30. **Strong-form passes: 3**, below the pre-registered 10, so the arms are **underpowered** and the null is not a refutation. The morphology backoff made *sank* parse; the L1 relation-word fix (Amendment 13's L1.3) changed nothing in outcome.
+
+## L5: the keyed door (Amendment 14, Clarification 14.1). **Not admitted under the rule as written: WRONG is one higher on each set. RIGHT more than doubles.**
+
+First run (before Clarification 14.1) is kept: L5-keyed dev RIGHT 19 / WRONG 3 / Useful 22, held 15 / 5 / 20; L5-open 16 / 1 / 23 and 13 / 5 / 20. Its wrongs were closed-class lemma leaks (`where` → `be`, `of` → `have` in EWT's gold lemma sets) and a bare modifier (*first*).
+
+| arm | dev RIGHT / WRONG / inf. gap / **Useful** | held RIGHT / WRONG / inf. gap / **Useful** |
+|---|---|---|
+| L1.2 (last admitted) | 7 / 0 / 14 / **21** | 5 / 1 / 14 / **19** |
+| **L5-keyed** (14.1) | **18** / 1 / 5 / **23** | **15** / 2 / 7 / **22** |
+| L5-open (the ablation) | 15 / 1 / 8 / **23** | 13 / 3 / 8 / **21** |
+
+- **The user's rule holds in the ablation:** keyed beats open on RIGHT on both sets (18 vs 15, 15 vs 13) and on held WRONG (2 vs 3). A kind is its parameters, and restricting a relation to the kind's own keys is better than searching all properties.
+- **Where the gain is:** 11 of 12 changed dev rows went from a gap to RIGHT: *capital* (Canberra), *creator* (Leonardo), *author* (Austen, García Márquez, Cervantes), *discoverer or inventor* (Fleming; Bell), *place of birth* (Ulm), *currency* (yen), *length* (6650 km), *UTC date of spacecraft landing* (24 July 1969). 11 of 18 dev RIGHTs and 10 of 15 held RIGHTs are the door's.
+- **The one dev WRONG is the battery's gold being narrower than the truth, not a false claim:** *Where is Machu Picchu located?* → "located in the administrative territorial entity: Urubamba Province; Cusco Department; Machupicchu District", while gold is "Peru" (property *country*, which the ask's word *located* does not name). It is a correct, finer-grained answer scored WRONG by a frozen single-filler gold. The gold is not edited.
+- **Generosity, declared:** the scorer counts an answer RIGHT if it *contains* an accepted filler. One RIGHT per set is a **set answer** (*who invented the telephone*: Reis; Gray; Bell; Meucci). That is the correct shape for a contested attribution, but it counts as RIGHT, and a stricter scorer would not.
+- **What still gaps (dev, typed, each informative):** 6 `no_matching_key` and 2 `datatype_mismatch`. The lexical failures are verbs and adjectives with no noun label: *sink* (the kind's open void lists *service retirement*, *dissolved, abolished or demolished*), *tall* (the open void lists **height**), *composed*, *located* for a country. Each is a derivation (*tall* → *height*, *compose* → *composer*) the door does not guess.
+- **The admission rule, as written, is not met** (V2: WRONG dev 0 → 1, held 1 → 2). Whether to relax it for this arm, add a labelled second gold with accepted-sets, or fix the matcher for *located* is the user's decision, not the arm's.

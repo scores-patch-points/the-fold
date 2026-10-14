@@ -1,0 +1,1 @@
+{"url":"https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&search=sink&language=en&type=property&limit=5","method":"GET","status":200,"contentType":"application/json; charset=utf-8","sha256":"ec8608b95ddf00fdfb89a181af7fd792b84e582de5632a143ddce2a556a3a8ea","body":"{\"searchinfo\":{\"search\":\"sink\"},\"search\":[],\"success\":1}"}

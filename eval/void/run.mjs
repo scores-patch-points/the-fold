@@ -15,16 +15,23 @@ import { universeOf, bindVoid } from "../../fold-chat-void-universe.js";
 import { bornFill } from "../../fold-chat-void-born.js";
 import { resolvePronouns } from "../../vendor/khora/native/adapters/text/pronouns.js";
 import { ewt } from "./ewt.mjs";
+import { keyedFill } from "../../fold-chat-void-keyed.js";
+import { grammarOf } from "../../fold-chat-frame.js";
+// the ask grammar's own declared interrogatives never name a key (Clarification 14.1)
+const INTERROGATIVES = new Set((grammarOf("en")?.interrogatives || []).flatMap((i) => i.words));
 // L3's role witness (Amendment 12): Callimachus's readClause + the EWT parse, from a khora checkout (node-only; 16 MB prior, not vendored)
 const KP = "/Users/mlacy/Documents/3.0/khora-main-readclause/native/";
 const { loadModel } = await import(KP + "adapters/text/english-parser.js");
 const { readClause } = await import(KP + "organs/claim-realize.js");
-const PARSER = loadModel(JSON.parse(fs.readFileSync(KP + "priors/parser-eng-ewt.json", "utf8")));
+const PARSER_JSON = JSON.parse(fs.readFileSync(KP + "priors/parser-eng-ewt.json", "utf8"));
+const PARSER = loadModel(PARSER_JSON);
+const PARSER_M = loadModel(PARSER_JSON, { morphology: JSON.parse(fs.readFileSync(KP + "priors/morphology-eng.json", "utf8")) });   // Amendment 13: the morphology backoff (Callimachus)
 const inside = (sp, a, b) => !!sp && a >= sp.from && b <= sp.to;
-function makeRoleGate({ strict }) {
+function makeRoleGate({ strict, morph = false, core = false }) {
+  const MODEL = morph ? PARSER_M : PARSER;
   return (sl, f, aliases) => {
     if (!sl.sent || !sl.relTok) return { ok: null, refused: "no_verb_relation", strictOnly: strict };
-    const rc = readClause(sl.sent, `${sl.ref}#${sl.start}`, { model: PARSER, predForm: sl.relTok });
+    const rc = readClause(sl.sent, `${sl.ref}#${sl.start}`, { model: MODEL, predForm: sl.relTok });
     if (process.env.ROLE_DEBUG) console.error("ROLE", JSON.stringify({ rel: sl.relTok, sent: sl.sent.slice(0, 110), refusal: rc.refusal ? String(typeof rc.refusal === "string" ? rc.refusal : rc.refusal.why).slice(0, 60) : null }));
     if (rc.refusal) { const why = String(typeof rc.refusal === "string" ? rc.refusal : rc.refusal.why || rc.refusal.kind || "refused").replace(/[^a-z ]/gi, "").slice(0, 70); return { ok: null, refused: why, strictOnly: strict, keepOnRefuse: false }; }
     const c = rc.claim; if (!c || c.untrusted) return { ok: null, refused: "untrusted_parse", strictOnly: strict };
@@ -37,7 +44,20 @@ function makeRoleGate({ strict }) {
     let ai = -1;
     for (const al of aliases) { const at = low.indexOf(String(al).toLowerCase()); if (at >= 0) { ai = args.findIndex((a) => inside(a, at, at + String(al).length)); break; } }
     if (ai < 0) return { ok: true, implied: true };       // the anchor is implied (kind / pronoun): the filler must lie in some argument
-    return { ok: ai !== fi };                             // anchor and filler are DIFFERENT arguments of the same predicate
+    if (ai === fi) return { ok: false };                  // anchor and filler are DIFFERENT arguments of the same predicate
+    if (core) {
+      // Amendment 13: the anchor must be inside a CORE argument (subject, object; the passive's by-oblique is the agent) and NOT inside
+      // that argument's adjuncts or appositives: the claim must be ABOUT the anchor, not mention it from an adjunct.
+      const arg = args[ai];
+      const isCore = arg === c.subj || arg === c.obj || (c.voice === "passive" && (c.obls || [])[0] === arg && /^by\b/i.test(String(arg.text || "")));
+      if (!isCore) return { ok: false, notCore: true };
+      const al = aliases.find((x) => low.indexOf(String(x).toLowerCase()) >= 0);
+      const at = low.indexOf(String(al).toLowerCase()), bt = at + String(al).length;
+      const nested = [...(arg.adjuncts || []), ...(arg.appositives || [])].some((x) => inside(x, at, bt));
+      if (nested) return { ok: false, notCore: true };
+      return { ok: true, strong: true };
+    }
+    return { ok: true, strong: true };
   };
 }
 // the khora's rich relation reader (S50) — node-only (reads the priors from disk); the browser surface reaches it through the khora's door
@@ -102,6 +122,13 @@ export const ARMS = {
   async L3_soft(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: false }) }); },
   async L3_strict(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: true }) }); },
   async L3_noengine(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: false }), engineOn: false }); },
+  // Amendment 13
+  // Amendment 14: L5, the keyed door (a kind is its parameters); L5_open is the ablation (property-label search over all properties)
+  async L5_keyed(q, fetchImpl) { return l5Arm(q, fetchImpl, { keyed: true }); },
+  async L5_open(q, fetchImpl) { return l5Arm(q, fetchImpl, { keyed: false }); },
+  async L3m(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: false, morph: true }) }); },
+  async L4(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: false, morph: true, core: true }) }); },
+  async L4r(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation", roleGate: makeRoleGate({ strict: false, morph: true, core: true }), verbalRelations: true }); },
   // L2d (Amendment 11): L2c with the relation-counterfactual Born null
   async L2d(q, fetchImpl) { return l2cArm(q, fetchImpl, { orderOn: true, nullMode: "relation" }); },
   // L2: the referent's universe — L1 plus, where L0 gave no answer, the void's open edge bound by clause (PREREG Amendment 2)
@@ -122,7 +149,7 @@ export const ARMS = {
 };
 
 // L2c (Amendment 9): L1.2 + bornFill with strict engine co-reference, sentence instances, the per-candidate Born null; order on/off
-async function l2cArm(q, fetchImpl, { orderOn, nullMode = "filler", roleGate = null, engineOn = true, tag = "l2c" }) {
+async function l2cArm(q, fetchImpl, { orderOn, nullMode = "filler", roleGate = null, engineOn = true, verbalRelations = false, tag = "l2c" }) {
   const l12 = await ARMS.L1_2(q, fetchImpl);
   const { _v: v, _deps: deps, ...out } = l12;
   if (out.answer || !v.anchor || !v.fields.admits) return { ...out, raw: { ...out.raw, l2c: out.answer ? "kept-L0-answer" : "no-anchor-or-admits" } };
@@ -131,11 +158,37 @@ async function l2cArm(q, fetchImpl, { orderOn, nullMode = "filler", roleGate = n
   let engineEdges = [];
   try { engineEdges = engineRelationsFor(passages.map((p) => ({ ref: p.ref, text: p.text }))).edges || []; } catch { engineEdges = []; }
   const E = ewt();
-  const r = bornFill({ fields: v.fields, anchor: v.anchor, relationWords: v.relationWords, passages, strictCorefer: true, perCandidateNull: true, orderOn, nullMode, roleGate, engineOn,
+  // L1.3 (Amendment 13): a leftover word that is majority NOUN/PROPN in EWT is a participant, not a relation
+  let relWords = v.relationWords;
+  if (verbalRelations) {
+    const roleNoun = v.relationWords.slice(-1);   // declareAskVoid appends the role noun last
+    const kept = v.relationWords.filter((w) => { const e = E.entry(w); if (!e) return true; const best = Math.max(...Object.values(e.upos)); return !((e.upos.NOUN || 0) >= best || (e.upos.PROPN || 0) >= best); });
+    relWords = kept.length ? kept : roleNoun;
+  }
+  const r = bornFill({ fields: v.fields, anchor: v.anchor, relationWords: relWords, passages, strictCorefer: true, perCandidateNull: true, orderOn, nullMode, roleGate, engineOn,
     organs: { sameAct, lemmasOf: E.lemmasOf, ewtEntry: E.entry, resolvePronouns, engineEdges } });
   const l2c = { verdict: r.verdict, bindings: r.bindings, top: r.candidates.slice(0, 3).map((c) => ({ v: String(c.value).slice(0, 30), M: c.mass, nullOwn: c.nullOwn, probable: c.probable, w: c.witnesses })), violations: r.orderViolations.length, gaps: r.gaps.map((g) => g.kind), role: r.role };
   if (r.verdict === "bound" && r.answer && r.answer.text) return { ...out, answer: r.answer.text, raw: { ...out.raw, l2c: { ...l2c, at: r.answer.at } } };
   return { ...out, raw: { ...out.raw, l2c } };
+}
+
+// L5 (Amendment 14): L1.2's anchor and relation, then Wikidata's typed statements. Additive: an L0 answer is never replaced.
+async function l5Arm(q, fetchImpl, { keyed }) {
+  const l12 = await ARMS.L1_2(q, fetchImpl);
+  const { _v: v, _deps: deps, ...out } = l12;
+  if (out.answer) return { ...out, raw: { ...out.raw, l5: "kept-L0-answer" } };
+  if (!v.anchor || !v.fields.admits) return { ...out, raw: { ...out.raw, l5: "no-anchor-or-admits" } };
+  const E = ewt();
+  const fw = functionWordsOf("en");
+  const anchorToks = new Set(String(v.anchor.surface + " " + v.anchor.title).toLowerCase().split(/[^\p{L}\p{N}]+/u));
+  const askWords = q.toLowerCase().split(/[^\p{L}\p{N}']+/u).filter((w) => w && !fw.has(w) && !anchorToks.has(w));
+  const getJson = async (url) => { try { const r = await fetchImpl(url); return await r.json(); } catch (e) { return { _unrecorded: String(e?.message || e).slice(0, 80) }; } };
+  let r;
+  try { r = await keyedFill({ fields: v.fields, anchor: v.anchor, relationWords: v.relationWords, askWords, getJson, sameAct, lemmasOf: E.lemmasOf, dominantOf: E.dominantOf, keyed, skipWords: INTERROGATIVES }); }
+  catch (e) { r = { verdict: "unbound", refused: "error", why: String(e?.message || e).slice(0, 100) }; }
+  const l5 = { verdict: r.verdict, qid: r.qid, property: r.property && r.property.label, how: r.property && r.property.how, values: (r.values || []).slice(0, 4), refused: r.refused || null, alternatives: r.alternatives || null, nKeys: r.nKeys, declaredNoValue: r.declaredNoValue || (r.void && r.void.declaredNoValue) || null, openVoid: r.openVoid || null, matched: r.matched || null };
+  if (r.verdict === "bound" && r.answer) return { ...out, answer: r.answer.text, raw: { ...out.raw, l5: { ...l5, grounds: r.answer.grounds } } };
+  return { ...out, raw: { ...out.raw, l5 } };
 }
 
 async function pool(items, n, fn) {

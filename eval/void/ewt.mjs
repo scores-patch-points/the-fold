@@ -19,9 +19,10 @@ export function ewt() {
       if (!m.has(form)) m.set(form, { lemmas: new Set(), upos: {}, part: 0 });
       const e = m.get(form);
       e.lemmas.add(lemma); e.upos[upos] = (e.upos[upos] || 0) + 1;
+      (e.byUpos ||= {}); ((e.byUpos[upos] ||= {})[lemma] = (e.byUpos[upos][lemma] || 0) + 1);   // for the DOMINANT lemma (Clarification 14.1)
       if (/VerbForm=Part/.test(c[5])) e.part++;
     }
   }
-  cache = { size: m.size, lemmasOf: (w) => { const e = m.get(String(w).toLowerCase()); return e ? e.lemmas : new Set(); }, entry: (w) => m.get(String(w).toLowerCase()) || null, giver: "UD English-EWT r2.14 (CC BY-SA 4.0), gold LEMMA/UPOS/FEATS" };
+  cache = { size: m.size, dominantOf: (w) => { const e = m.get(String(w).toLowerCase()); if (!e) return null; const best = Object.entries(e.upos).sort((a, b) => b[1] - a[1])[0]; if (!best) return null; const ls = Object.entries(e.byUpos[best[0]] || {}).sort((a, b) => b[1] - a[1]); return { upos: best[0], lemma: ls[0] ? ls[0][0] : null }; }, lemmasOf: (w) => { const e = m.get(String(w).toLowerCase()); return e ? e.lemmas : new Set(); }, entry: (w) => m.get(String(w).toLowerCase()) || null, giver: "UD English-EWT r2.14 (CC BY-SA 4.0), gold LEMMA/UPOS/FEATS" };
   return cache;
 }

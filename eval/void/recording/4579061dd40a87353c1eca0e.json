@@ -1,0 +1,1 @@
+{"url":"https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&search=hamlet&language=en&type=property&limit=5","method":"GET","status":200,"contentType":"application/json; charset=utf-8","sha256":"70205de076999164c95108a73fe5825e9c95f31135110bef45bf3fd9e8d0edca","body":"{\"searchinfo\":{\"search\":\"hamlet\"},\"search\":[],\"success\":1}"}
