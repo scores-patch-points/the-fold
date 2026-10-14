@@ -134,3 +134,34 @@ The edge's address is `ref#clauseStart-clauseEnd`.
   - **P3 same claim:** `chaseParaphrase` equates it to the edge's claim row.
   - **P4 net new:** it is not character-identical to the snip. A paraphrase that only copies the snip is reported, not counted.
 - **Until `realizeClaim` lands,** paraphrases are a declared, unbuilt arm. L2–L4 are scored on snips only, as pre-registered.
+
+## Amendment 4 (2026-10-14): L2′, the universe rebuilt on organs (induction across terrains). Written after L2 failed V2, before L2′ is built or run.
+
+**Why.** L2 failed V2 on held (WRONG 1 → 2). On the dev rows, which may be read, 19 of the 22 asks it reached bound no edge. Six dev specimens were traced to their causes, and each was a hand rule standing in for a cell organ:
+- Mona Lisa: the relation is nominal ("a portrait **painting by** … Leonardo da Vinci").
+- Pride and Prejudice: L1 anchored "Prejudice".
+- Eiffel Tower, how tall: a quantity slot had no relation word.
+- Einstein, born: "Born in Ulm" has an elided subject.
+- Chernobyl, happen: a light verb, and the event is the page.
+- Canada, capital: under investigation.
+
+The user's direction: "remember the work we did on induction for ALL terrains". Its organ was renamed `terrainInduction` (khora).
+
+**L1.1, the anchor (SIG·Figure).** When the khora perceiver's surface of the ask **strictly contains** the title door's anchor surface, and the same door resolves that longer surface, the longer name is the anchor ("Pride and Prejudice" ⊃ "Prejudice"). The longest name wins, and only with both witnesses. L1.1 is re-scored against bars V1–V4 as its own row, and must not lose anything L1 had.
+
+**L2′, three witnesses (a parliament; disagreements typed, never averaged):**
+1. **Clause witness** (L2's clause unit, with its hand rules replaced):
+   - **Relation identity:** khora `sameAct` (inflection), **or** shared gold lemma in UD English-EWT r2.14 (khora `native/eval/fixtures/ud-english-ewt`). A clause token and the relation word are one relation when the treebank attests a form of each with the same lemma (painting → paint).
+   - **Quantity slots:** for a measure ask, the measure's dimension **is** the relation. A quantity of the admitted dimension in a clause about the anchor witnesses it.
+   - **Reference:** khora `resolvePronouns` (pronouns.js) over the anchor's own pages replaces the "page-subject continuity" rule. A participial clause with no subject ("Born in Ulm, …") takes its sentence's main subject; this is declared grammar.
+2. **Engine witness** (CON·Figure): khora `engineRelationsFor` (reader-bundle.js, the rich S50 reader). An edge with one end co-referring with the anchor (`namesCorefer`) and a connector holding a relation-identical token (as in 1) offers its other end as the filler, if it is of the admitted kind.
+3. **Kind witness** (terrainInduction): the anchor's kinds remain witnessed `terrainEvidence` records. When a kind's lemma is relation-identical to the void's relation (painting ~ paint), the kind phrase's "by"-agent is a filler. This is the relation carried by the anchor's own kind, a composition of the Kind and Link terrains.
+
+**Contest (EVA·Pattern):**
+- Two or more distinct fillers go to khora `contest.js` `adjudicate`, against its own `nullAdjudicate`.
+- A filler stands only if the contest crowns it above its null. Otherwise it stays a contest gap.
+- One distinct filler, with at least one witness, answers as before.
+
+**Not built (typed gaps, declared):** an event's own time for light verbs (happen / occur / take place) has no organ, so it stays a gap.
+
+**Unchanged:** the battery, the scoring, V1–V6, and the universe-null. L2′ re-uses the recorded pages. New fetches, if any, get their own declared recording pass. L2′ is admitted only if it beats **L1**, the last admitted stack, on every bar.
