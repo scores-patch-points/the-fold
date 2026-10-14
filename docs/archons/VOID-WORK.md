@@ -64,6 +64,37 @@ The gain is informative gaps (the void says WHAT is missing), not new correct an
 
 Identity by Wikidata item (the encyclopedia's own `wikibase_item`), the kind's key set = the item's own keys ∪ its classes' declared `P1963`, a relation matches a key by label, alias or dominant lemma (open-class words only), the property's own datatype is the `admits` kind, verdicts on hl.js's four corners. **L5-keyed: RIGHT dev 7 → 18, held 5 → 15 (11 and 10 from the door); WRONG +1 each, so not admitted under the written rule.** Ablation L5-open (property-label search over all properties) is worse, so the rule holds. See RESULTS.md. Open: verb/adjective → noun-label derivation (*tall* → *height*), the admission rule's treatment of finer-grained true answers and set answers.
 
+## Omnilingual: how it was solved before, and what the keyed door inherits (read 2026-10-14)
+
+**The user's ask:** make whatever we do "englished and SOV shaped as needed", and do things that improve general omnilingual reading.
+
+**What exists, measured:**
+- **The record is GFP, not English** (khora `relations-language.js`): `{end1, label, end2}` typed by cube cell. "English-SVO" comes online per language **only** when a `RoleConfig@1` is declared, built from that language's own treebank by `build-role-config.mjs`. About **50 languages** have one (`janus/priors/role-config-*.json`: jpn, kor, tur, hin, fas, arb, heb, cmn, lzh, fin, hun, eus, …), plus POS priors for **200+** languages.
+- **SOV is a measured parameter, not a rule.** `role-config-jpn`: subject before its head 7149 / 7149, object before 4606 / 4606, with the case markers が (precision 0.75 against a shuffled-null ceiling of 0.19) and を (0.92 against 0.15). Order is a measured per-language property of each relation.
+- **"Englished" is a projection of the meaning layer** (khora `eot-realize.js`, `eot-rich.js` `linearize`): the EOT meaning layer holds content nodes, cube-addressed arcs and absorbed function words with **no word order and no surface form**; a language's grammar projects it to words (order from `before / meanLeft / meanRight` per relation|UPOS; form from a measured irregular table; function words re-realized). Model-free, "measured honestly, never a claim the original is recoverable". Callimachus's realizer is the same shape.
+- **Omnilingual falsification** (`eval/omnilingual/RESULTS.md`): with only declared es/fr tables, **11 of 16** English-built improvements hold in es and fr; 5 fall with **named causes**: (PRIOR, 3) the received priors were English (no stemmer or POS prior for es/fr), (RULE: fold, 2) stripping diacritics makes *né* the function word *ne*, (RULE: tokenizer, 1) the French inversion *y a-t-il*. Fixed in code: every accented table word had silently never matched, and English shapes had been spelled in rules instead of tables. The creole work (`eval/creole`) added measured tables for hat/pcm/tpi/mfe/jam, and POS packs by **alignment projection** from a parallel text.
+- **Language of the ask** comes from `detectLang` (40 languages' priors); `askFrame`'s production `GRAMMAR` has **one language, English**. Wikipedia editions for the title door: 17 (`WIKI_EDITIONS`: en es fr de pt it nl ru uk zh ja ko ar he hi th el).
+
+**What the keyed door already has for free:**
+- Q-ids and P-ids are language-free, and **a property id is the interlingua**: it is exactly the GFP label. "Englished" is `P…` → its English label.
+- A kind's keys (`P1963`, the item's own keys) are language-free.
+- Matching a relation to a key is a **bag of open-class words**: **word order does not matter**, so SOV does not break it. The door only needs the language's labels (`languages=xx`), the question language's Wikipedia edition for identity, and that language's open-class test (its POS prior, 200+ languages, in place of EWT).
+
+**What SOV does touch** (the slot frame and the anchor, not the door):
+- The interrogative stands **in situ before the verb** (ja *いつ…か*, ko, tr, hi): L1 already finds the interrogative anywhere, which is why it was written that way.
+- Anchor candidates are whitespace runs: Japanese and Chinese need the language ear (`language-context.js`, which the chat already has for Chinese and Arabic).
+- Interrogative **tables**: only `en` is declared in production, by the author's reading. They could be **received** instead of declared: every UD treebank carries `PronType=Int`, and the PUD parallel treebanks (20 languages) give an alignment-projected slot type, the same technique the creole POS packs used.
+
+**What doing the door would teach the general reader** (each reusable beyond the void):
+1. **An omnilingual relation lexicon.** Wikidata property labels and aliases exist in hundreds of languages: every one is a (surface word → P-id) pair in that language, with the language's lemma from its morphology prior. That is a relation vocabulary the reader does not have today (its relation vocabulary is induced per text, by recurrence).
+2. **The verb → noun derivation gap, learned instead of tabled.** For an item whose page states a typed value, the sentence on the page that holds both the anchor and the value carries the surface relation (*wrote*, *was born*, *completed*). Aggregated over the items of a kind and a language, against a shuffled null, that is a measured *verb → property* lexicon (*wrote* → P50, *completed* → P1619), per language, with no derivation table. It is the open failure of the door (*sank*, *tall*, *compose*), and it is distant supervision the reader already has the pieces for (khora `kind-functional-induction.js`, `hl-acquire.js`).
+3. **Interrogatives and role markers per language**, received from treebank features and projected by alignment, replacing the declared English table.
+
+**Proposed order (each a pre-registered arm; none built yet):**
+1. The door in the question's language, on a labelled non-English battery (es, fr, de, ja, ko, tr, hi, ru), with identity through that edition's `wikibase_item`, the language's POS prior, and the language's labels. The declared English-only pieces are listed as typed gaps (`no_grammar_for_language`, as now).
+2. The distant-supervision relation lexicon (above, item 2), English first, with its null; then the same code on es and ja.
+3. Interrogative tables received from `PronType=Int` and PUD alignment, scored against the omnilingual battery's es/fr declared tables.
+
 ## Settled findings (so they are not rediscovered)
 
 - **The cause, located.**
