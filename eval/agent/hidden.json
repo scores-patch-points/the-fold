@@ -1,0 +1,112 @@
+{
+  "note": "HIDDEN behavioural tests for eval/agent (PREREG.md). Never read by app code; the agent never sees them. Each test is a list of alternatives (any one passing = pass); each alternative runs on a fresh load of the produced page. Step and expect grammar: eval/agent/hidden.mjs. 're:' marks a case-insensitive whole-label regex; a plain string is an exact, case-insensitive label.",
+  "act": "re:^(=|equals?|calc\\w*|calculate .*|convert\\w*|convert .*|compute|go|submit|check|check .*|count|count .*|get .*|show .*|result|enter|ok|apply|find .*|run|reverse|reverse .*|transform|uppercase|to uppercase|make uppercase|generate|generate .*|→)$",
+  "tests": {
+    "calc": [
+      { "steps": [{ "click": ["7"] }, { "click": ["+"] }, { "click": ["3"] }, { "click": ["=", "re:^(equals?|calc\\w*|enter)$"] }],
+        "expect": [{ "text": "(^|[^\\d.])10(\\.0+)?([^\\d.]|$)", "absentBefore": true }] },
+      { "steps": [{ "fill": "7", "nth": 0 }, { "fill": "3", "nth": 1 }, { "choose": ["re:^\\s*(\\+|add\\w*|plus|sum)"], "optional": true },
+                  { "click": ["re:^(=|equals?|calc\\w*|compute|result|go|enter)$", "+", "re:^(add|plus|sum)$"] }],
+        "expect": [{ "moreOf": "(^|[^\\d.])10(\\.0+)?([^\\d.]|$)" }] }
+    ],
+    "tip": [
+      { "steps": [{ "fill": "50", "nth": 0 }, { "fill": "20", "nth": 1 }, { "click": ["@act"], "optional": true }],
+        "expect": [{ "moreOf": "(^|[^\\d.])(10|60)(\\.0+)?([^\\d.%]|$)" }] },
+      { "steps": [{ "fill": "50", "nth": 0 }, { "click": ["20%", "re:^20\\s*%?$"] }, { "click": ["@act"], "optional": true }],
+        "expect": [{ "moreOf": "(^|[^\\d.])(10|60)(\\.0+)?([^\\d.%]|$)" }] },
+      { "steps": [{ "fill": "50", "nth": 0 }, { "choose": ["re:^\\s*20\\s*%?"] }, { "click": ["@act"], "optional": true }],
+        "expect": [{ "moreOf": "(^|[^\\d.])(10|60)(\\.0+)?([^\\d.%]|$)" }] }
+    ],
+    "km-m": [
+      { "steps": [{ "fill": "1", "nth": 0 }, { "click": ["@act"], "optional": true }],
+        "expect": [{ "moreOf": "(^|[^\\d.,])1,?000(\\.0+)?([^\\d]|$)" }] }
+    ],
+    "c-f": [
+      { "steps": [{ "fill": "100", "nth": 0 }, { "click": ["@act"], "optional": true }],
+        "expect": [{ "moreOf": "(^|[^\\d.])212(\\.0+)?([^\\d]|$)" }] }
+    ],
+    "countdown": [
+      { "steps": [{ "click": ["re:^(start|begin|go|start timer|start countdown|▶|▶️|play)$"], "optional": true }, { "wait": 12000 }],
+        "expect": [{ "text": "(^|[^\\d:.])0{1,2}(:00){0,2}(\\.0+)?\\s*(s|sec|secs|seconds)?(?=[^\\d:.]|$)|time'?s up|done!|finished", "absentBefore": true }] },
+      { "steps": [{ "fill": "10", "nth": 0 }, { "click": ["re:^(start|begin|go|start timer|start countdown|▶|▶️|play)$"], "optional": true }, { "wait": 12000 }],
+        "expect": [{ "text": "(^|[^\\d:.])0{1,2}(:00){0,2}(\\.0+)?\\s*(s|sec|secs|seconds)?(?=[^\\d:.]|$)|time'?s up|done!|finished", "absentBefore": true }] }
+    ],
+    "stopwatch": [
+      { "steps": [{ "click": ["re:^(start|begin|go|start/stop|start / stop|▶|▶️|play)$"] }, { "wait": 2500 }],
+        "expect": [{ "changed": true }, { "moreOf": "[1-9]" }, { "not": "NaN|undefined" }] }
+    ],
+    "todo": [
+      { "steps": [{ "fill": "buy oat milk", "nth": 0 }, { "click": ["re:^(\\+|add|add task|add item|add todo|add to-do|add to do|submit|save|create|enter|new|add new|add new task)$"] }],
+        "expect": [{ "text": "buy oat milk", "textOnly": true, "absentBefore": true }] },
+      { "steps": [{ "fill": "buy oat milk", "nth": 0 }, { "press": "Enter" }],
+        "expect": [{ "text": "buy oat milk", "textOnly": true, "absentBefore": true }] }
+    ],
+    "counter": [
+      { "steps": [{ "click": ["re:^(\\+|\\+1|increment|increase|click|click me!?|count|add|tap|tap me|press|press me|plus|up)$"], "times": 3 }],
+        "expect": [{ "moreOf": "(^|[^\\d])3([^\\d]|$)" }] },
+      { "steps": [{ "click": ["re:^(?!.*(reset|clear|decrement|decrease|minus|^-$|^−$)).+$"], "times": 3 }],
+        "expect": [{ "moreOf": "(^|[^\\d])3([^\\d]|$)" }] }
+    ],
+    "bmi": [
+      { "steps": [{ "fill": "70", "nth": 0 }, { "fill": "175", "nth": 1 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "22\\.[89]" }] },
+      { "steps": [{ "fill": "175", "nth": 0 }, { "fill": "70", "nth": 1 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "22\\.[89]" }] },
+      { "steps": [{ "fill": "70", "nth": 0 }, { "fill": "1.75", "nth": 1 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "22\\.[89]" }] },
+      { "steps": [{ "fill": "1.75", "nth": 0 }, { "fill": "70", "nth": 1 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "22\\.[89]" }] }
+    ],
+    "wordcount": [
+      { "steps": [{ "fill": "one two three four five", "nth": 0 }, { "click": ["@act"], "optional": true }],
+        "expect": [{ "moreOf": "(^|[^\\d])5([^\\d]|$)" }] }
+    ],
+    "password": [
+      { "steps": [{ "click": ["re:^(generate|generate password|generate new password|new password|create|create password|get password|go|refresh|new|regenerate|↻|🔄)$", "re:generat"] }],
+        "expect": [{ "newMatch": "[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:,.?/~]{8,}" }] },
+      { "steps": [{ "fill": "12", "nth": 0 }, { "click": ["re:^(generate|generate password|generate new password|new password|create|create password|get password|go|refresh|new|regenerate|↻|🔄)$", "re:generat"] }],
+        "expect": [{ "newMatch": "[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};:,.?/~]{8,}" }] }
+    ],
+    "dice": [
+      { "steps": [{ "click": ["re:^(roll|roll dice|roll the dice|roll die|roll the die|🎲|throw|go)$", "re:roll"], "times": 3 }],
+        "expect": [{ "changed": true }, { "text": "[1-6]|[\\u2680-\\u2685]" }] }
+    ],
+    "lb-kg": [
+      { "steps": [{ "fill": "10", "nth": 0 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "4\\.5[34]" }] }
+    ],
+    "percent": [
+      { "steps": [{ "fill": "20", "nth": 0 }, { "fill": "50", "nth": 1 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "(^|[^\\d.])(10|40)(\\.0+)?([^\\d.]|$)" }] },
+      { "steps": [{ "fill": "50", "nth": 0 }, { "fill": "20", "nth": 1 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "(^|[^\\d.])(10|40)(\\.0+)?([^\\d.]|$)" }] }
+    ],
+    "charcount": [
+      { "steps": [{ "fill": "hello", "nth": 0 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "(^|[^\\d])(5|275)([^\\d]|$)" }] }
+    ],
+    "upper": [
+      { "steps": [{ "fill": "hello world", "nth": 0 }, { "click": ["@act"], "optional": true }], "expect": [{ "text": "HELLO WORLD", "flags": "", "absentBefore": true }] }
+    ],
+    "reverse": [
+      { "steps": [{ "fill": "stressed", "nth": 0 }, { "click": ["@act"], "optional": true }], "expect": [{ "text": "desserts", "absentBefore": true }] }
+    ],
+    "interest": [
+      { "steps": [{ "fill": "1000", "nth": 0 }, { "fill": "5", "nth": 1 }, { "fill": "2", "nth": 2 }, { "click": ["@act"], "optional": true }],
+        "expect": [{ "moreOf": "(^|[^\\d.,])(100|1,?100)(\\.0+)?([^\\d.]|$)" }] }
+    ],
+    "mi-km": [
+      { "steps": [{ "fill": "10", "nth": 0 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "16\\.0?9" }] }
+    ],
+    "darkmode": [
+      { "steps": [{ "click": ["re:(dark|light|mode|theme|toggle|switch|🌙|☀️|☀|🌞|🌓)"] }], "expect": [{ "bgChanged": true }] },
+      { "steps": [{ "checkbox": 0 }], "expect": [{ "bgChanged": true }] }
+    ],
+    "traffic": [
+      { "steps": [{ "click": ["re:^(start|go|begin|play|▶|▶️|start cycle|cycle)$"], "optional": true }], "expect": [{ "sigChangesWithin": 10000 }] },
+      { "steps": [{ "click": ["re:^(next|change|switch|cycle|next light|change light)$"] }], "expect": [{ "sigChanged": true }] }
+    ],
+    "oddeven": [
+      { "steps": [{ "fill": "7", "nth": 0 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "\\bodd\\b" }] }
+    ],
+    "timestable": [
+      { "steps": [{ "fill": "7", "nth": 0 }, { "click": ["@act"], "optional": true }],
+        "expect": [{ "moreOf": "(^|[^\\d])63([^\\d]|$)" }, { "moreOf": "(^|[^\\d])49([^\\d]|$)" }] }
+    ],
+    "circle": [
+      { "steps": [{ "fill": "2", "nth": 0 }, { "click": ["@act"], "optional": true }], "expect": [{ "moreOf": "12\\.5[67]" }] }
+    ]
+  }
+}

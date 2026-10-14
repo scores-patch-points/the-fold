@@ -761,13 +761,14 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     // future). A settled or cycling turn is released as a NUL, not run to the cap.
     const turnGate = createTurnGate();
     const hist = [];   // the residual per pass, so a CONVERGING turn is left to the DMD
-    let dmdStop = null, progressStop = null;
+    let dmdStop = null, progressStop = null, passes = 0, refusedTurn = false;
     await runSpiral({
       atom: { text, finding: null }, grain: RUNGS[0], fuel: FUEL_TURN,
       step: async (cur, i) => {
         if (i > 0) { rungNow = RUNGS[0]; push({ kind: "think", by: "fold", op: "REC", text: `◉ re-opening the whole turn (pass ${i + 1}) — the finding: ${slice(cur.atom.finding).slice(0, 90)}` }); paint(); }
         const r = await onePass(cur.atom);
-        held = r.held;
+        passes += 1;
+        held = r.held; if (r.refused) refusedTurn = true;
         if (r.refused || r.held) return { done: true };
         // THE DMD FIRST (the measured stop): observe, then let the gate decide.
         hist.push(r.residual);
@@ -798,6 +799,8 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     if (!held && progressStop) toast("Left open — nothing new was found after " + progressStop.repeats + " tries; I stopped rather than loop.");
     else if (!held && dmdStop) toast("Left open — the turn's own modes " + (dmdStop.reason === "oscillating" ? "cycle" : "have settled") + " (measured, not the cap).");
     else if (!held) toast("Left open — the turn still does not hold after " + FUEL_TURN + " passes.");
+    // THE TURN'S OWN VERDICT, on the record (read by eval/agent; changes nothing the turn does).
+    cur.lastTurn = { held, passes, stop: held ? "held" : refusedTurn ? "refused" : progressStop ? "progress" : dmdStop ? "dmd" : "fuel" }; save();
     // LAY THE TRAIL: reinforce the path that held (the rungs climbed, the sources
     // read); sour the ground that gave nothing. The next turn follows the strongest.
     const srcKeys = (lastMaterial || []).map((m) => "src:" + domainKey(m)).filter((k) => k !== "src:");
@@ -1167,5 +1170,5 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
   if (newBtn) newBtn.onclick = () => create();
   if (railBtn) railBtn.onclick = () => (space.hidden ? (folds.length ? open([...folds].sort((a, b) => b.updated - a.updated)[0].id) : create()) : close());
   renderList();
-  return { create, setCodebase, open, close, isOpen: () => !space.hidden, list: () => folds.map((f) => ({ id: f.id, title: f.title, kind: f.kind })) };
+  return { create, setCodebase, open, close, isOpen: () => !space.hidden, isRunning: () => !!running, list: () => folds.map((f) => ({ id: f.id, title: f.title, kind: f.kind })) };
 }
