@@ -121,3 +121,16 @@ The edge's address is `ref#clauseStart-clauseEnd`.
 **universe-null:** each ask's edges keep their clauses, but the fillers are drawn from another ask's universe (a seeded derangement, 200 shuffles). RIGHT must collapse.
 
 **Declared limits:** English only; number words ("eleven", "two") are not quantities to `quantitiesIn`; the morphology prior is read from the workspace's `janus/priors`, which the browser surface must reach through the khora's door, never ship.
+
+## Amendment 3 (2026-10-14): two forms of every answer, the verbatim snip and a net-new paraphrase. Written before L2 runs.
+
+**The user's direction:** "we should be able to create net new paraphrases using the EOT to NL running through all the prosification archons while also doing verbatim snips."
+
+- **The snip.** The bound clause's own bytes, scored by the tiers above. Unchanged.
+- **The paraphrase.** Every bound edge is an EOT claim: khora `gfp-claim` `claimFromTriple(anchor, relation lemma, filler)`, with grounds at the clause's address and the anchor and filler bytes at theirs. It is realized as NL by the **Callimachus writer** (khora `prose-laws.js` segments and `lintSentence`; values copied from source bytes; frames from the per-language grammar; dates through CLDR/Intl), and equated by **YadaYadaYada** (`run-dmca.js` `chaseParaphrase`, model-free, FOR the person asking). It is requested from the Callimachus session as `realizeClaim`. **This session builds no realizer.**
+- **Paraphrase bars,** scored on every answered row once `realizeClaim` is vendored:
+  - **P1 lawful:** `lintSentence` passes.
+  - **P2 grounded:** every value or source segment re-verifies against its source bytes.
+  - **P3 same claim:** `chaseParaphrase` equates it to the edge's claim row.
+  - **P4 net new:** it is not character-identical to the snip. A paraphrase that only copies the snip is reported, not counted.
+- **Until `realizeClaim` lands,** paraphrases are a declared, unbuilt arm. L2–L4 are scored on snips only, as pre-registered.
