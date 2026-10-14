@@ -6,7 +6,7 @@
 // beside it, so the two can be scored against each other (eval/wald/PREREG.md).
 //
 //   witnessVotes(signals) → [{ witness, pull, vote, why }]
-//     signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial, urlAsk, bookask, live, lang, closedClass }
+//     signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial, urlAsk, bookask, live, lang, closedClass, want, wantSub }
 //     each is exactly the value fold-chat.js computed (null when the surface did not compute it — then that witness abstains)
 //   waldShadow({ signals, calibration, prices, gateNow }) → { decision, votes, gateNow, agrees, line }
 //
@@ -54,9 +54,17 @@ export function witnessVotes(sig = {}) {
   }
   // recall — recallOf (fold-chat-recall.js): the fold's own words, read back from the record
   if (sig.recall) { out.push(v("recall", PULLS.LOCAL, FOR, `the record holds it at ${sig.recall.address ?? "an address"}`)); out.push(v("recall", PULLS.WEB, AGAINST, "the record holds it")); }
-  // source-ask — sourceRecall / the primary-source finder
-  if (sig.srcRecall) { out.push(v("source", PULLS.LOCAL, FOR, "the last answer's source is on the record")); out.push(v("source", PULLS.WEB, AGAINST, "read back, not searched")); }
+  // source — the read-backs (sourceRecall, the watcher's batonReply / inspectReply / challengeReply) and the primary-source finder
+  if (sig.srcRecall) {
+    const path = sig.srcRecall.inspect ? "inspect" : sig.srcRecall.challenge ? "challenge" : sig.srcRecall.fromBaton ? "baton" : "sourceRecall";
+    out.push(v("source", PULLS.LOCAL, FOR, `read back from the record (${path})`)); out.push(v("source", PULLS.WEB, AGAINST, `read back, not searched (${path})`));
+  }
   if (sig.primaryAsk) out.push(v("source", PULLS.WEB, FOR, "a primary source must be found for the last claim"));
+  // …and when no read-back fired, the watcher's PRE still read the ask as ABOUT THE LAST TURN (where its answer came from, what it did, is it sure):
+  // the cold-gap shape of PREREG Amendment 2 — the record is what is asked about, whatever it holds. A source/new ask is not this.
+  else if (!sig.srcRecall && (sig.want === "inspect" || sig.want === "challenge" || (sig.want === "source" && sig.wantSub === "recall"))) {
+    out.push(v("source", PULLS.LOCAL, FOR, "the ask is about the last turn's own record")); out.push(v("source", PULLS.WEB, AGAINST, "the ask is about the last turn's own record"));
+  }
   // material — an attachment or pasted document is in hand
   if (sig.hasMaterial) out.push(v("material", PULLS.LOCAL, FOR, "material is attached"));
   // url — a URL ask is the page itself

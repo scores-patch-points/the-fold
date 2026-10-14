@@ -128,3 +128,71 @@ test("an ask in a language no closed-class reader reads is a vote of its own, no
   assert.deepEqual(witnessVotes({ ...sig, lang: "unknown" }).filter((x) => x.witness === "lang"), [], "an unknown language names nothing");
   assert.deepEqual(witnessVotes({ ...sig, closedClass: undefined }).filter((x) => x.witness === "lang"), [], "not computed is an abstention");
 });
+
+// ── PREREG Amendment 2: the read-back paths ───────────────────────────────
+
+test("an ask ABOUT THE LAST TURN votes the record, even when no read-back fired (the cold-gap shape, Amendment 2)", () => {
+  const sig = { kind: "research", follow: { mode: "cold-gap", kind: "source-ask" }, want: "source", wantSub: "recall" };
+  const src = (s) => witnessVotes(s).filter((x) => x.witness === "source").map((x) => [x.pull, x.vote]);
+  assert.deepEqual(src(sig), [["local", "for"], ["web", "against"]]);
+  assert.deepEqual(src({ ...sig, want: "inspect", wantSub: null }), [["local", "for"], ["web", "against"]]);
+  assert.deepEqual(src({ ...sig, want: "challenge", wantSub: null }), [["local", "for"], ["web", "against"]]);
+  assert.deepEqual(src({ ...sig, wantSub: "new" }), [], "a source/new ask with no primary finder is not about the record");
+  assert.deepEqual(src({ ...sig, want: "answer", wantSub: null }), [], "an ordinary ask casts no source vote");
+  assert.deepEqual(src({ ...sig, want: undefined, wantSub: undefined }), [], "not computed is an abstention");
+});
+
+test("one read-back is one vote per pull: a fired read-back is not counted twice, and its why names the path", () => {
+  const base = { want: "source", wantSub: "recall" };
+  for (const [srcRecall, path] of [[{ turn: 1 }, "sourceRecall"], [{ fromBaton: true }, "baton"], [{ fromBaton: true, inspect: true }, "inspect"], [{ fromBaton: true, challenge: true }, "challenge"]]) {
+    const vs = witnessVotes({ ...base, srcRecall }).filter((x) => x.witness === "source");
+    assert.deepEqual(vs.map((x) => [x.pull, x.vote]), [["local", "for"], ["web", "against"]]);
+    assert.ok(vs.every((x) => x.why.includes(path)), `why names ${path}`);
+  }
+  assert.deepEqual(witnessVotes({ ...base, primaryAsk: { claim: "x" } }).filter((x) => x.witness === "source").map((x) => [x.pull, x.vote]), [["web", "for"]], "the primary finder votes web, and the record vote stands aside");
+});
+
+test("THE CLARIFICATION 1 TURN, on its real stored prior: the organs read it, and the shipped calibration refuses the web", async () => {
+  const { signalsOf } = await import("./eval/wald/calibrate.mjs");
+  const { WALD_CALIBRATION } = await import("./fold-chat-wald-calibration.js");
+  const fs = await import("node:fs");
+  const live = JSON.parse(fs.readFileSync(new URL("./eval/wald/multiturn-live-2026-10-14.json", import.meta.url), "utf8"));
+  const prior = live.sessions.find((x) => x.id === "mv7o6ovcju1q").messages.slice(0, 2);   // the refused Great Wall turn, as stored
+  const sig = signalsOf("where did you get that?", prior);
+  assert.equal(sig.follow.mode, "cold-gap", "the path that fired live: the planner's cold gap, no read-back helper");
+  assert.equal(sig.srcRecall, null);
+  const s = waldShadow({ signals: sig, calibration: WALD_CALIBRATION, gateNow: false });
+  assert.ok(s.votes.some((x) => x.witness === "source" && x.pull === "web" && x.vote === "against"), "a witness now reads it");
+  assert.equal(s.decision.pulls.web.verdict, VERDICT.REFUSED);
+  assert.equal(s.waldWeb, false);
+  assert.equal(s.agrees, true);
+});
+
+test("'where did you get that?' after an answer with nothing verified (real g2 prior): read from the record, not searched", async () => {
+  const { signalsOf } = await import("./eval/wald/calibrate.mjs");
+  const { WALD_CALIBRATION } = await import("./fold-chat-wald-calibration.js");
+  const fs = await import("node:fs");
+  const t = JSON.parse(fs.readFileSync(new URL("./eval/ants/g2/repro-control-1791355297096.json", import.meta.url), "utf8")).turns[0];
+  const prior = [{ role: "user", content: t.ask }, { role: "assistant", content: t.spoken, provenance: t.provenance }];
+  const s = waldShadow({ signals: signalsOf("where did you get that?", prior), calibration: WALD_CALIBRATION, gateNow: true });
+  assert.equal(s.waldWeb, false, "the gate searches here (no source line, no baton); Wald does not");
+});
+
+test("the surface passes the watcher's reading into the shadow (fold-chat.js wiring)", async () => {
+  const fs = await import("node:fs");
+  const src = fs.readFileSync(new URL("./fold-chat.js", import.meta.url), "utf8");
+  const hook = src.split("\n").find((l) => l.includes("waldRec = waldShadow("));
+  assert.ok(hook, "the shadow hook exists");
+  assert.match(hook, /want: watcherPre\?\.want/);
+  assert.match(hook, /wantSub: watcherPre\?\.sub/);
+});
+
+test("the gold's signals compute the read-backs as the surface does: a verified primary line on the record is read back (sourceRecall)", async () => {
+  const { signalsOf } = await import("./eval/wald/calibrate.mjs");
+  const fs = await import("node:fs");
+  const turns = JSON.parse(fs.readFileSync(new URL("./eval/ants/watch-fixture-before-fix.json", import.meta.url), "utf8")).turns.slice(0, 2);
+  const prior = turns.flatMap((t) => [{ role: "user", content: t.ask }, { role: "assistant", content: t.spoken, provenance: t.provenance }]);
+  const sig = signalsOf("where did you get that?", prior);
+  assert.ok(sig.srcRecall && sig.srcRecall.provenance && !sig.srcRecall.fromBaton, "sourceRecall fired on the stored bbc.com line");
+  assert.ok(witnessVotes(sig).some((x) => x.witness === "source" && x.why.includes("sourceRecall")));
+});

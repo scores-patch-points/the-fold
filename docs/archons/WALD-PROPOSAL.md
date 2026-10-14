@@ -153,6 +153,36 @@ Gold: 341 rows (`eval/cases.json` 73; G1 output asks 268). Ratios are leave-one-
 - **Scope (chorus: Greenberg).** "No closed class" is a property of the surface's reader coverage, not of the language. de and pt fire because `functionWordsOf` has no set for them, not because they are hard to read. When a closed class is added for a language, this witness goes quiet for it, and the ratio must be re-measured.
 - **Bar S after the hook change was not re-checked live.** The preview slots were full. The one changed line in `fold-chat.js` adds `lang` and `closedClass` inside the shadow's own `try`, and it never assigns `wantWeb`.
 
+### Amendment 2: the read-back paths, with multi-turn gold (re-run 2026-10-14)
+
+`eval/wald/PREREG.md` Amendment 2 was committed (3c2c7d5) before any code change and before any run on the new gold. The live record of PREREG-METABOLISM Clarification 1 showed which path fired. The refused turn 1 was stored with empty content, so the planner went to **cold-gap**, and none of the four read-back helpers ran. The amendment did two things:
+- It extended the `source` witness. When the watcher's PRE reads the ask as about the last turn (`want` is inspect or challenge, or source/recall) and no read-back fired, it votes `local: for, web: against`.
+- It made `calibrate.mjs` compute the read-backs from the prior messages, as fold-chat.js does, instead of leaving them null.
+
+The new gold is `eval/wald/multiturn-gold.json`: 99 rows over 11 real stored priors, 21 labelled search. Run A is the new signals with the Amendment 1 witnesses; Run B adds the extended witness.
+
+| | gate now | Wald, Amendment 1 | Wald, Run A | Wald, Run B |
+|---|---|---|---|---|
+| cases.json: missed / wasted | 1 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| G1: missed / wasted | 8 / 2 | 0 / 2 | 0 / 2 | 0 / 2 |
+| old gold (cases + G1): errors · CONTINUE | 11 | 2 · 100 | 2 · 66 | 2 · 66 |
+| shuffled null, old gold (p05 / median) | | 146 / 168 | 146 / 168 | 147 / 168 |
+| **new gold (multi-turn): missed / wasted** | **10 / 23** | (not run) | 1 / 23 | **1 / 17** |
+| new gold: CONTINUE · null p05 / median | | | 45 · 29 / 48 | 35 · 29 / 48 |
+| decision time, max (median) | | 0.42 ms | 3.24 ms (0.026) | 1.36 ms (0.024) |
+
+- **B1 holds** (0 against 1). **B2 holds** ([0, 2] against [0, 2]). **B3 holds** (2 against a p05 of 147).
+- **B4 FAILS in both runs.** The max decision time is 3.24 ms in Run A and 1.36 ms in Run B, against the 1 ms stand-in. The median is 0.024 ms. The max is one per-row wall-clock outlier among 440 rows. Amendment 1 measured it over 341 rows with lighter signals. That cause is a hypothesis and has not been measured. The bar is reported failed and was not re-run. Live, the read-back turn decided in 1.0 ms and the turn before it in 4.3 ms, consistent with the 3.5–4.7 ms first-turn figures already on record.
+- **Old gold.** Its decisions are unchanged from Amendment 1: no row flips between pull and skip. Four G1 rows move from CONTINUE to PROBABLE, all taken by Wald in both runs. The cause is that the ratios and α/β are now measured with the new rows in the pool. On old gold, `srcRecall` and `primaryAsk` stay null on every row, as expected.
+- **The Clarification 1 row (`P3_R_0`)** is *continue → skip* in Run A, where the re-measured plan ratio alone tips it, and **REFUSED** in Run B, where the evidence is past log B. **Live re-check on :8824 (Bar S):** a fresh "Who wrote Pride and Prejudice?" was refused (unwitnessed), then "where did you get that?" was asked. The votes were `kind web:for, plan none:for, plan web:against, source local:for, source web:against`, llr −5.05 ≤ log B −2.11, so REFUSED. Wald agreed with the gate, and the web was not taken.
+- **Declared: the gate's 10 misses on the new gold are an artefact of the arm.** All of them are N rows ("find a primary source") where `primaryAsk` fires. That makes `wantWeb` false, but the surface's primary finder then searches (`fold-chat.js` ~3339). The gate-now arm is the `wantWeb` conjunction as pre-registered, so these count as misses, though the live surface does pull.
+- **Wald's one miss** is `P3_N_0`: "find a primary source" after a refused turn. The planner reads it as cold-gap, so no `primaryAsk` exists, and the live surface does not search either.
+- **Wald's 17 wasted pulls** are rows that no witness reads, and the gate wastes the same rows:
+  - 11 M rows ("what did you tell me earlier?"). Every real claim store is empty, so `recallOf` cannot fire.
+  - 6 I rows on the pre-watcher priors (P6–P11). No detail is stored, so `want` is not `inspect`.
+  Both are reader gaps, not witness tuning, and they are open.
+- **Mutation checks.** `wald.test.mjs` adds 6 tests: the cold-gap shape, one vote per read-back with its path named, the real Clarification 1 prior, the real g2 prior, the hook's wiring, and a `sourceRecall` on the real bbc.com line. 7 mutants were each killed: (b) removed, inspect dropped, the sub check dropped, the hook unwired, a double count, the gold's `srcRecall` back to null, and the path name swapped.
+
 ## Calibration and scoring (no hand-set thresholds)
 
 - **Gold, already labelled:** the 73 cases in `eval/cases.json` (`expect.search`) and G1's 371 phrasings (`needsSources`, 268 output asks and 103 non-asks, in five languages).
@@ -243,7 +273,7 @@ Each item was checked against its primary page where one would load. Pages behin
 ## Build order (each step falsified before the next, after ratification)
 
 1. **Done (khora archon/wald).** `wald.js` in khora `native/organs/`. It is pure: no fetch, no DOM. It holds the register, the witnesses (injected and tested against the real organs), the two bars, and the cheapest-first sequential loop. A `// Handle:` header goes on top, plus a register entry in `solon.js`.
-2. **Done; Amendment 1 added the `lang` witness and all of B1–B4 now hold.** The calibration script on the gold sets, and the null per pull. Pre-registration is written first.
+2. **Done; Amendment 1 added the `lang` witness; Amendment 2 made the read-back paths vote (B1–B3 hold, B4 fails on a timing outlier).** The calibration script on the gold sets, and the null per pull. Pre-registration is written first.
 3. **Done (shadow, the-fold archon/wald).** Shadow mode in the-fold: Wald decides and records on every turn while the surface's own gate (`wantWeb`) still decides. Compare Wald's decision with what the turn actually needed.
 4. Wire Wald as the gate only after shadow mode beats the pre-registered bars, and say so on the record.
 5. A dossier with verified sources, and a chorus check. (The first chorus ran 2026-10-14; the dossier is still open.)
