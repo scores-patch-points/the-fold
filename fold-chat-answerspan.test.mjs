@@ -533,3 +533,42 @@ test("Russian: an asked word in the genitive meets the page's nominative when it
   const r = answerSpan("Какова высота башни?", [P("Высота: башня составляет 330 метров. " + "Это ещё одно предложение для заполнения страницы о свете и его изучении. ".repeat(5), { ref: "ru.wikipedia.org — Страница" })]);
   assert.match(shownText(r), /330 метров/);
 });
+
+// ── a NAMESAKE is not the slot's filler (seen live 2026-10-14: "What is the capital of Australia?" over the Wikipedia page "Australian Capital
+// Territory" answered "The Australian Capital Territory"). The sentences below are the page's own lead (en.wikipedia.org, fetched 2026-10-14).
+const ACT = {
+  l1: "The Australian Capital Territory (ACT), known as the Federal Capital Territory until 1938, is an internal territory of Australia.",
+  l2: "Canberra, the capital city of Australia, is situated within the territory and is the territory's primate city.",
+  l3: "The Australian Capital Territory is located in southeastern Australia as an enclave surrounded by the state of New South Wales.",
+  l4: "The territory was excised from New South Wales in 1911 to serve as the seat of government for the Commonwealth, in accordance with Section 125 of the Australian Constitution.",
+  wit: "Whilst the overwhelming majority of the territory's population resides in the city of Canberra in the territory's north-east, the territory also includes smaller towns such as Williamsdale, Oaks Estate, Uriarra, Tharwa and Hall.",
+};
+const actPage = (...ks) => [P(ks.map((k) => ACT[k]).join(" ") + " " + FILLER, { ref: "en.wikipedia.org — Australian Capital Territory" })];
+test("namesake: 'the capital of Australia' over the ACT page binds Canberra, never the territory named after the relation", () => {
+  const r = answerSpan("What is the capital of Australia?", actPage("l1", "l2", "l3", "l4", "wit"));
+  assert.equal(r.spans[0]?.atom?.text, "Canberra", JSON.stringify(r.spans[0]));
+  assert.equal(shownText(r), "Canberra, the capital city of Australia.");
+});
+test("namesake: a page whose only 'capital' is inside its own name states no capital (a gap, not 'the Australian Capital Territory')", () => {
+  const r = answerSpan("What is the capital of Australia?", actPage("l1", "l3", "l4"));
+  assert.equal(r.spans.length, 0, JSON.stringify(r.spans[0]));
+});
+test("a sentence-opening single word is a name only when the same page writes it capitalised where case marks names", () => {
+  // without the page's witness "the city of Canberra", "Canberra," opening a sentence is indistinguishable from "However," — no atom
+  assert.equal(answerSpan("What is the capital of Australia?", actPage("l1", "l2", "l3")).spans.length, 0);
+  assert.equal(answerSpan("What is the capital of Australia?", actPage("l1", "l2", "l3", "wit")).spans[0]?.atom?.text, "Canberra");
+});
+test("namesake, an ask typed with no case: the page says which of its words are common ('capital city') and which only names ('Australia')", () => {
+  assert.equal(answerSpan("what is the capital of australia", actPage("l1", "l2", "l3", "l4", "wit")).spans[0]?.atom?.text, "Canberra");
+  assert.equal(answerSpan("what is the capital of australia", actPage("l1", "l3", "l4")).spans.length, 0);
+});
+test("predicate words: the ask's lower-case words when the asker uses case; none when the ask carries no case", () => {
+  assert.deepEqual(classifyAsk("What is the capital of Australia?", { lang: "en" }).predKs, ["capital"]);
+  assert.deepEqual(classifyAsk("what is the capital of australia", { lang: "en" }).predKs, []);
+  assert.deepEqual(classifyAsk("Quelle est la capitale de l'Australie ?", { lang: "fr" }).predKs, ["capit"], "an elided article does not hide the name's capital");
+  // a filler that shares a REFERENT word with the ask is untouched: the tower is named after its engineer
+  const eiffel = "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower from 1887 to 1889. ";
+  assert.equal(answerSpan("Who designed the Eiffel Tower?", [P(eiffel + FILLER, { ref: "en.wikipedia.org — Eiffel Tower" })]).spans[0]?.atom?.text, "Gustave Eiffel");
+  const mexico = "Mexico City is the capital and largest city of Mexico, as well as the most populous city in North America. ";
+  assert.equal(answerSpan("What is the capital of Mexico?", [P(mexico + FILLER, { ref: "en.wikipedia.org — Mexico City" })]).spans[0]?.atom?.text, "Mexico City");
+});

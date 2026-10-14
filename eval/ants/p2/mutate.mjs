@@ -69,6 +69,12 @@ const M = [
   ["v4: 'boiling point' is one measure word", 'if (L === "en" && x.t === "point" && /^(?:boiling|melting|freezing|flash|dew)$/.test(toks[ti - 1]?.t || "")) continue;', ''],
   ["definition head (the subject holds a word of the ask)", 'if (i >= 0 && toks.slice(0, i).some((x) => termKs.has(x.k))) return true;', 'if (i >= 0) return true;'],
   ["rewrite rule: strip-aside keeps a parenthesis with a figure", 'if (/\\d/.test(inner) || inner.includes(",")) return m;', 'if (inner.includes(",")) return m;'],
+  ["namesake: a sentence opener is a name when the page witnesses it", 'if (names && opener && !runs.some(', 'if (false && names && opener && !runs.some('],
+  ["namesake: a predicate word inside another name is not the relation", 'const foreign = predK.size ? (', 'const foreign = false ? ('],
+  ["namesake: a title the page writes as a name lends no predicate word", 'const titleGiven = titleIsName ? ', 'const titleGiven = false ? '],
+  ["namesake: predicate words only when the asker uses case", 'const predKs = usesCase ? ', 'const predKs = true ? '],
+  ["namesake: an ask with no case takes its predicate words from the page", 'const predKs = ask.usesCase || !isCased(text) ? ask.predKs : ', 'const predKs = true ? ask.predKs : '],
+  ["namesake: case is read past an elided article", "const capped = (raw) => /^(?:\\p{Ll}{1,2}['’])?\\p{Lu}/u.test(raw || \"\");", "const capped = (raw) => /^\\p{Lu}/u.test(raw || \"\");"],
 ];
 const results = [];
 const run = (env) => spawnSync(process.execPath, ["--test", TEST], { cwd: ROOT, env: { ...process.env, ...env }, encoding: "utf8", timeout: 110000 });
