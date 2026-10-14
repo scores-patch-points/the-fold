@@ -1,0 +1,840 @@
+{
+ "schema": "POSPrior@1",
+ "language": "sag",
+ "provenance": {
+  "giver": "POS projection (annotation transfer) — word alignment by IBM Model 1 with a diagonal prior, both directions, intersection links; each link adds the anchor form's own UD UPOS distribution (soft vote, ambiguity kept); a (form, class) vote kept only if it strictly exceeds all 199 shuffled-pairing runs of the same pipeline. Anchor taggers: pos-eng (Universal Dependencies — https://raw.githubusercontent.com/UniversalDependencies/UD_English-EWT/master/en_ewt-ud-train.conllu (train split), human-annotated gold treebank); pos-fra (Universal Dependencies — https://github.com/UniversalDependencies/UD_French-GSD (train split), human-annotated gold treebank); pos-spa (Universal Dependencies — https://github.com/UniversalDependencies/UD_Spanish-AnCora (CC BY-SA 4.0) (train split), human-annotated gold treebank). Parallel text: udhr-sag~eng [91 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]; udhr-sag~fra [90 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]; udhr-sag~spa [90 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]. Builder: eval/creole/pos-projection-run.mjs (pre-registered in eval/creole/POS-PROJECTION-PREREG.md).",
+  "license": "CC BY-SA 4.0 (projection; anchors UD CC BY-SA 4.0; parallel sources as listed — MIT / CC BY 2.0 FR / public domain)",
+  "method": "eval/creole/pos-projection.mjs",
+  "adoptedArms": {
+   "multi": true,
+   "fine": false,
+   "heldoutLambda": false,
+   "gateClosed": true,
+   "gateOpen": false,
+   "identity": true
+  },
+  "round": 2,
+  "parallel": [
+   {
+    "name": "udhr-sag~eng",
+    "kind": "udhr",
+    "pairs": 91,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "eng"
+   },
+   {
+    "name": "udhr-sag~fra",
+    "kind": "udhr",
+    "pairs": 90,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "fra"
+   },
+   {
+    "name": "udhr-sag~spa",
+    "kind": "udhr",
+    "pairs": 90,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "spa"
+   }
+  ],
+  "heldOutGuard": {
+   "rule": "a training sentence is dropped when its letters+digits key equals any creole sentence of any held-out file",
+   "log": []
+  },
+  "trainingSize": {
+   "pairs": 271,
+   "creoleTokens": 6750,
+   "forms": 144,
+   "rawForms": 309
+  },
+  "chance": {
+   "realKeptVotes": 143,
+   "bestShuffledRunKeptVotes": 29,
+   "beatsChance": true
+  },
+  "heldOutCoverage": {
+   "text": "creole side of the language-ID held-out file, read-only, never used to build",
+   "wordTokens": 22182,
+   "covered": 12338,
+   "coverage": 0.556,
+   "commonestMissing": [
+    "ayeke×510",
+    "e×421",
+    "a×348",
+    "yeke×340",
+    "ndo×226",
+    "mbi×190",
+    "mo×189",
+    "nzapa×168",
+    "lege×159",
+    "jehovah×147",
+    "lingbi×127",
+    "mu×122",
+    "oko×113",
+    "nyen×112",
+    "nzoni×109",
+    "la×102",
+    "ba×98",
+    "me×92",
+    "lani×82",
+    "ta×77",
+    "afa×76",
+    "sala×75",
+    "jesus×73",
+    "wara×72",
+    "duti×70"
+   ]
+  },
+  "calibration": {
+   "note": "Per-UPOS precision/recall of the SAME method on languages with gold, at the nearest data size. This is the method's error bar, not a measurement of this language; domain shift is not calibrated. Abstentions count against recall. 95% bootstrap intervals are in packs/CALIBRATION.json.",
+   "condition": "C1",
+   "row": "UDHR only",
+   "pcm_ud_naija_test": {
+    "withIdentityFillAccuracyAllTokens": 0.266,
+    "withoutIdentityFill": {
+     "accuracyAll": 0.091,
+     "macroF1": 0.127,
+     "coverage": 0.297
+    },
+    "baselines": {
+     "B0_majorityClass_accuracy": 0.077,
+     "B1_identityLookupOnly": {
+      "accuracyAll": 0.313,
+      "coverage": 0.506,
+      "macroF1": 0.361
+     }
+    },
+    "nonTrivialTokens": 1055,
+    "coverage": 0.57,
+    "accuracyOnCovered": 0.468,
+    "macroF1": 0.319,
+    "macroF1CI95": [
+     0.292,
+     0.358
+    ],
+    "fitPairs": 262,
+    "fitCreoleTokens": 9477,
+    "perUPOS": {
+     "ADJ": {
+      "nGold": 37,
+      "precision": 0.45,
+      "recall": 0.49
+     },
+     "ADP": {
+      "nGold": 72,
+      "precision": 0.65,
+      "recall": 0.54
+     },
+     "ADV": {
+      "nGold": 94,
+      "precision": 0.96,
+      "recall": 0.59
+     },
+     "AUX": {
+      "nGold": 155,
+      "precision": 0.32,
+      "recall": 0.15
+     },
+     "CCONJ": {
+      "nGold": 13,
+      "precision": 1,
+      "recall": 1
+     },
+     "DET": {
+      "nGold": 33,
+      "precision": 0.4,
+      "recall": 0.76
+     },
+     "INTJ": {
+      "nGold": 34,
+      "precision": 0,
+      "recall": 0
+     },
+     "NOUN": {
+      "nGold": 142,
+      "precision": 0.29,
+      "recall": 0.27
+     },
+     "NUM": {
+      "nGold": 22,
+      "precision": 0.6,
+      "recall": 0.14
+     },
+     "PART": {
+      "nGold": 12,
+      "precision": 0,
+      "recall": 0
+     },
+     "PRON": {
+      "nGold": 189,
+      "precision": 0.46,
+      "recall": 0.03
+     },
+     "PROPN": {
+      "nGold": 1,
+      "precision": 0.09,
+      "recall": 1
+     },
+     "PUNCT": {
+      "nGold": 31,
+      "precision": null,
+      "recall": 0
+     },
+     "SCONJ": {
+      "nGold": 33,
+      "precision": 0.79,
+      "recall": 0.33
+     },
+     "VERB": {
+      "nGold": 178,
+      "precision": 0.75,
+      "recall": 0.28
+     },
+     "X": {
+      "nGold": 9,
+      "precision": 0,
+      "recall": 0
+     }
+    }
+   },
+   "hat_vs_pos_hat_lexicon": {
+    "withIdentityFillAccuracyAllTokens": 0.187,
+    "withoutIdentityFill": {
+     "accuracyAll": 0.144,
+     "macroF1": 0.152,
+     "coverage": 0.379
+    },
+    "baselines": {
+     "B0_majorityClass_accuracy": 0.154,
+     "B1_identityLookupOnly": {
+      "accuracyAll": 0.097,
+      "coverage": 0.431,
+      "macroF1": 0.096
+     }
+    },
+    "nonTrivialTokens": 50100,
+    "coverage": 0.577,
+    "accuracyOnCovered": 0.324,
+    "macroF1": 0.181,
+    "macroF1CI95": [
+     0.12,
+     0.222
+    ],
+    "fitPairs": 547,
+    "fitCreoleTokens": 13515,
+    "perUPOS": {
+     "ADJ": {
+      "nGold": 2383,
+      "precision": 0.27,
+      "recall": 0.08
+     },
+     "ADP": {
+      "nGold": 3960,
+      "precision": 0.3,
+      "recall": 0.54
+     },
+     "ADV": {
+      "nGold": 3012,
+      "precision": 0.07,
+      "recall": 0.01
+     },
+     "AUX": {
+      "nGold": 3763,
+      "precision": 0.58,
+      "recall": 0.46
+     },
+     "CCONJ": {
+      "nGold": 1215,
+      "precision": 0.5,
+      "recall": 0.55
+     },
+     "DET": {
+      "nGold": 3953,
+      "precision": 0.73,
+      "recall": 0.82
+     },
+     "INTJ": {
+      "nGold": 51,
+      "precision": 0,
+      "recall": 0
+     },
+     "NOUN": {
+      "nGold": 9012,
+      "precision": 0.19,
+      "recall": 0.07
+     },
+     "NUM": {
+      "nGold": 59,
+      "precision": 0,
+      "recall": 0
+     },
+     "PART": {
+      "nGold": 138,
+      "precision": 0,
+      "recall": 0
+     },
+     "PRON": {
+      "nGold": 9408,
+      "precision": 0,
+      "recall": 0
+     },
+     "PROPN": {
+      "nGold": 2465,
+      "precision": 0.01,
+      "recall": 0.01
+     },
+     "SCONJ": {
+      "nGold": 1752,
+      "precision": 0.54,
+      "recall": 0.1
+     },
+     "VERB": {
+      "nGold": 8923,
+      "precision": 0.38,
+      "recall": 0.06
+     },
+     "X": {
+      "nGold": 6,
+      "precision": 0,
+      "recall": 0
+     }
+    }
+   }
+  },
+  "closedLikeNoLabel": {
+   "note": "forms that behave like closed-class words (not bursty against a shuffled-text null, within the top-frequency mass of the lexifier's closed-class share) but have no projected UPOS — typically tense/aspect markers with no lexifier-side counterpart. Evidence of 'function word', not of which one.",
+   "forms": [
+    "lege×33"
+   ],
+   "calibration": {
+    "pcm_test_C1": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 507,
+     "packOnly": {
+      "precision": 0.8897338403041825,
+      "recall": 0.46153846153846156
+     },
+     "packPlusFlag": {
+      "precision": 0.8897338403041825,
+      "recall": 0.46153846153846156
+     }
+    },
+    "pcm_test_C2": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 507,
+     "packOnly": {
+      "precision": 0.8784119106699751,
+      "recall": 0.6982248520710059
+     },
+     "packPlusFlag": {
+      "precision": 0.8784119106699751,
+      "recall": 0.6982248520710059
+     }
+    },
+    "hat_C1": {
+     "unlabelledClosedLike": 1,
+     "goldClosedTokens": 24189,
+     "packOnly": {
+      "precision": 0.7663956937273426,
+      "recall": 0.5768324444995659
+     },
+     "packPlusFlag": {
+      "precision": 0.7824844340104113,
+      "recall": 0.6338418289305056
+     }
+    },
+    "hat_C2": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 24189,
+     "packOnly": {
+      "precision": 0.8262953786491436,
+      "recall": 0.6342138988796561
+     },
+     "packPlusFlag": {
+      "precision": 0.8262953786491436,
+      "recall": 0.6342138988796561
+     }
+    }
+   }
+  },
+  "trust": "type-level lexicon only; a form absent here is a typed gap, not a negative; closed-class forms projected from an English/French aux/ADP/PRON are the most reliable, open-class recall is low"
+ },
+ "forms": {
+  "popokodoro": {
+   "ADJ": 4
+  },
+  "ndia": {
+   "NOUN": 11.26
+  },
+  "ti": {
+   "ADP": 254.81,
+   "DET": 86.17,
+   "PART": 40.69
+  },
+  "nengo": {
+   "ADJ": 5.67,
+   "PROPN": 1.46
+  },
+  "zo": {
+   "PRON": 27.01
+  },
+  "hingango": {
+   "SCONJ": 4.5,
+   "VERB": 12
+  },
+  "atene": {
+   "ADV": 2.23,
+   "PROPN": 1.33,
+   "SCONJ": 1.96
+  },
+  "na": {
+   "CCONJ": 83.91
+  },
+  "lingbingo": {
+   "NOUN": 4.88
+  },
+  "gunda": {
+   "NOUN": 5.81
+  },
+  "mbeni": {
+   "DET": 10.8,
+   "PRON": 6.1
+  },
+  "ahalezo": {
+   "AUX": 2
+  },
+  "alingbi": {
+   "AUX": 8.8
+  },
+  "mabe": {
+   "NOUN": 7.96
+  },
+  "taa": {
+   "VERB": 2.17
+  },
+  "gigi": {
+   "PROPN": 2.84
+  },
+  "mingi": {
+   "ADJ": 4.5
+  },
+  "sioni": {
+   "DET": 1.99
+  },
+  "maingo": {
+   "NOUN": 6.81
+  },
+  "popo": {
+   "ADP": 4.97
+  },
+  "nde": {
+   "ADP": 1.93
+  },
+  "bendo": {
+   "ADJ": 6.89,
+   "PROPN": 1.95
+  },
+  "fini": {
+   "NOUN": 6.62
+  },
+  "nga": {
+   "CCONJ": 33.97
+  },
+  "kota": {
+   "ADJ": 6.46,
+   "ADV": 2
+  },
+  "angangu": {
+   "NOUN": 8.16
+  },
+  "zara": {
+   "NOUN": 15.59
+  },
+  "kpengo": {
+   "X": 0.5
+  },
+  "lingo": {
+   "ADV": 1.52,
+   "NOUN": 4.13
+  },
+  "so": {
+   "PRON": 13.92,
+   "SCONJ": 7.11
+  },
+  "halezo": {
+   "NOUN": 5.6
+  },
+  "azara": {
+   "DET": 1.87
+  },
+  "sura": {
+   "NOUN": 88.13
+  },
+  "azo": {
+   "ADJ": 5.09,
+   "AUX": 2.88
+  },
+  "yamba": {
+   "VERB": 4
+  },
+  "ala": {
+   "AUX": 6.14
+  },
+  "boro-li": {
+   "NOUN": 5.95
+  },
+  "pepe": {
+   "DET": 2.56
+  },
+  "mara": {
+   "NOUN": 7.46
+  },
+  "koli": {
+   "NOUN": 6.71
+  },
+  "wala": {
+   "ADV": 4.68,
+   "CCONJ": 30.21
+  },
+  "mosoro": {
+   "NOUN": 5.72
+  },
+  "dungo": {
+   "NOUN": 3
+  },
+  "ndoni": {
+   "ADV": 2.99,
+   "SYM": 0.01
+  },
+  "kangbi": {
+   "ADJ": 3.91
+  },
+  "kue": {
+   "AUX": 9.22
+  },
+  "ngangu": {
+   "ADJ": 8.91,
+   "ADV": 5.49,
+   "INTJ": 0.45,
+   "NOUN": 38.77,
+   "PROPN": 4
+  },
+  "le": {
+   "ADP": 2.24
+  },
+  "gingo": {
+   "NOUN": 3
+  },
+  "amu": {
+   "DET": 12.3
+  },
+  "lo": {
+   "DET": 21.89,
+   "PRON": 15.01
+  },
+  "pepee": {
+   "ADV": 6.01,
+   "NUM": 2.9,
+   "PRON": 6.42
+  },
+  "kanga": {
+   "AUX": 2.95,
+   "VERB": 4.73
+  },
+  "apa": {
+   "VERB": 2.5
+  },
+  "ngoi": {
+   "ADV": 3
+  },
+  "awakoko": {
+   "VERB": 1.59
+  },
+  "asi": {
+   "VERB": 2.21
+  },
+  "diko": {
+   "CCONJ": 2
+  },
+  "sewa": {
+   "NOUN": 7.79
+  },
+  "kodorosese": {
+   "ADV": 2.09
+  },
+  "ata": {
+   "DET": 1.12
+  },
+  "kiri": {
+   "ADJ": 2.32
+  },
+  "tongana": {
+   "SCONJ": 1.82
+  },
+  "aye": {
+   "NOUN": 5.95
+  },
+  "da": {
+   "VERB": 4
+  },
+  "wakpale": {
+   "VERB": 2.5
+  },
+  "sarango": {
+   "NOUN": 6.17,
+   "X": 0.5
+  },
+  "apo": {
+   "ADJ": 3
+  },
+  "du": {
+   "ADP": 2.18,
+   "AUX": 1.1,
+   "PART": 0.64
+  },
+  "wakodorosese": {
+   "CCONJ": 1.85
+  },
+  "gbian": {
+   "VERB": 4.88
+  },
+  "dutingo": {
+   "ADP": 1.97
+  },
+  "bosongbi": {
+   "PROPN": 2.82
+  },
+  "akungba": {
+   "PROPN": 1.54
+  },
+  "mveni": {
+   "ADV": 3
+  },
+  "bibe": {
+   "NOUN": 6
+  },
+  "abibe": {
+   "VERB": 2.83
+  },
+  "ziango": {
+   "NOUN": 3
+  },
+  "gbu": {
+   "ADJ": 3
+  },
+  "awasele": {
+   "NUM": 0.31
+  },
+  "ndokua": {
+   "X": 0.19
+  },
+  "kunibe": {
+   "NOUN": 4.48
+  },
+  "awalengo": {
+   "NOUN": 2.5
+  },
+  "baa": {
+   "ADJ": 4,
+   "AUX": 1
+  },
+  "abango": {
+   "ADJ": 2
+  },
+  "zangbingoro": {
+   "NOUN": 3
+  },
+  "setere": {
+   "ADV": 2.79
+  },
+  "tangbingo": {
+   "ADJ": 2.93
+  },
+  "abaa": {
+   "X": 0.02
+  },
+  "kapa": {
+   "NOUN": 2.06
+  },
+  "afuta": {
+   "VERB": 2
+  },
+  "seni": {
+   "ADJ": 2
+  },
+  "yungo": {
+   "PRON": 1
+  },
+  "siokpale": {
+   "SCONJ": 0.05
+  },
+  "kodeye": {
+   "ADJ": 3
+  },
+  "mbeti": {
+   "NOUN": 4.51
+  },
+  "kono": {
+   "NOUN": 3.95
+  },
+  "akua": {
+   "NOUN": 2.97
+  },
+  "hingago": {
+   "SCONJ": 0.49
+  },
+  "akodekua": {
+   "ADJ": 2
+  },
+  "ahonga": {
+   "NOUN": 3
+  },
+  "mbeti-depa": {
+   "SYM": 0.01
+  },
+  "depa": {
+   "NOUN": 4.48,
+   "PROPN": 1.52
+  },
+  "ye": {
+   "AUX": 2.92
+  },
+  "gere": {
+   "PROPN": 0.88
+  },
+  "maboko": {
+   "DET": 1.99
+  },
+  "nda": {
+   "CCONJ": 1.85
+  },
+  "ameka": {
+   "AUX": 0.56,
+   "CCONJ": 0.42
+  },
+  "kobo": {
+   "X": 0.18
+  },
+  "asendasu": {
+   "ADJ": 2
+  },
+  "dengo": {
+   "AUX": 0.88
+  },
+  "be": {
+   "AUX": 0.98,
+   "NOUN": 0.01,
+   "VERB": 0.02
+  },
+  "gi": {
+   "NOUN": 0.5,
+   "PROPN": 0.5
+  },
+  "ya": {
+   "INTJ": 0.5,
+   "PRON": 0.5
+  },
+  "ani": {
+   "PROPN": 1
+  },
+  "sara": {
+   "PROPN": 1
+  },
+  "ale": {
+   "NOUN": 1
+  },
+  "mba": {
+   "NOUN": 1
+  },
+  "ali": {
+   "PROPN": 1
+  },
+  "de": {
+   "PROPN": 0.83,
+   "X": 0.17
+  },
+  "use": {
+   "ADJ": 0.01,
+   "NOUN": 0.14,
+   "PRON": 0.01,
+   "VERB": 0.85
+  },
+  "mango": {
+   "NOUN": 1
+  },
+  "ge": {
+   "PROPN": 1
+  },
+  "si": {
+   "ADV": 0.11,
+   "NOUN": 0.01,
+   "PROPN": 0.01,
+   "SCONJ": 0.87,
+   "X": 0.01
+  },
+  "ni": {
+   "CCONJ": 1
+  },
+  "abi": {
+   "PROPN": 0.5,
+   "X": 0.5
+  },
+  "tene": {
+   "PROPN": 1
+  },
+  "kate": {
+   "PROPN": 1
+  },
+  "li": {
+   "X": 1
+  },
+  "fade": {
+   "ADJ": 1
+  },
+  "amara": {
+   "PROPN": 1
+  },
+  "fa": {
+   "PROPN": 1
+  },
+  "koko": {
+   "PROPN": 1
+  },
+  "kobe": {
+   "PROPN": 1
+  },
+  "bongo": {
+   "PROPN": 1
+  },
+  "zen": {
+   "PROPN": 1
+  },
+  "gue": {
+   "NOUN": 1
+  },
+  "mai": {
+   "NOUN": 0.97,
+   "PROPN": 0.03
+  },
+  "bata": {
+   "NOUN": 1
+  },
+  "fingi": {
+   "VERB": 1
+  },
+  "ama": {
+   "NOUN": 0.56,
+   "VERB": 0.44
+  },
+  "tengo": {
+   "VERB": 1
+  },
+  "manda": {
+   "NOUN": 0.5,
+   "VERB": 0.5
+  },
+  "zia": {
+   "PROPN": 1
+  }
+ }
+}

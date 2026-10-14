@@ -1,0 +1,100 @@
+{
+ "B": 199,
+ "protocol": "prereg §4; pcm dev; max-T over sign flips",
+ "decisions": [
+  {
+   "factor": "M multi-anchor (C1)",
+   "delta": 58,
+   "maxNull": 30,
+   "adopt": true,
+   "a": {
+    "correct": 115,
+    "tokens": 1132,
+    "coverage": 0.3224381625441696,
+    "accuracyCovered": 0.3150684931506849,
+    "accuracyAll": 0.10159010600706714,
+    "macroF1": 0.14966454210670221
+   },
+   "b": {
+    "correct": 57,
+    "tokens": 1132,
+    "coverage": 0.18197879858657243,
+    "accuracyCovered": 0.2766990291262136,
+    "accuracyAll": 0.05035335689045936,
+    "macroF1": 0.08090999803703461
+   }
+  },
+  {
+   "factor": "G1 closed gate (C2)",
+   "delta": 28,
+   "maxNull": 16,
+   "adopt": true,
+   "with": {
+    "correct": 478,
+    "tokens": 1132,
+    "coverage": 0.5918727915194346,
+    "accuracyCovered": 0.7134328358208956,
+    "accuracyAll": 0.42226148409893993,
+    "macroF1": 0.40474150356537186
+   },
+   "without": {
+    "correct": 450,
+    "tokens": 1132,
+    "coverage": 0.5918727915194346,
+    "accuracyCovered": 0.6716417910447762,
+    "accuracyAll": 0.39752650176678445,
+    "macroF1": 0.3935231776264413
+   }
+  },
+  {
+   "factor": "G2 open gate (C2)",
+   "delta": -1,
+   "maxNull": 1,
+   "adopt": false,
+   "with": {
+    "correct": 477,
+    "tokens": 1132,
+    "coverage": 0.5918727915194346,
+    "accuracyCovered": 0.7119402985074627,
+    "accuracyAll": 0.4213780918727915,
+    "macroF1": 0.40193493803409674
+   },
+   "without": {
+    "correct": 478,
+    "tokens": 1132,
+    "coverage": 0.5918727915194346,
+    "accuracyCovered": 0.7134328358208956,
+    "accuracyAll": 0.42226148409893993,
+    "macroF1": 0.40474150356537186
+   }
+  },
+  {
+   "factor": "I identity fill (C2)",
+   "delta": 124,
+   "maxNull": 44,
+   "adopt": true,
+   "with": {
+    "correct": 602,
+    "tokens": 1132,
+    "coverage": 0.7906360424028268,
+    "accuracyCovered": 0.6726256983240223,
+    "accuracyAll": 0.5318021201413428,
+    "macroF1": 0.4554424951625775
+   },
+   "without": {
+    "correct": 478,
+    "tokens": 1132,
+    "coverage": 0.5918727915194346,
+    "accuracyCovered": 0.7134328358208956,
+    "accuracyAll": 0.42226148409893993,
+    "macroF1": 0.40474150356537186
+   }
+  }
+ ],
+ "adopted": {
+  "multi": true,
+  "gateClosed": true,
+  "gateOpen": false,
+  "identity": true
+ }
+}

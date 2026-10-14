@@ -1,0 +1,50 @@
+{
+ "pcm_test_C1": {
+  "unlabelledClosedLike": 0,
+  "goldClosedTokens": 507,
+  "packOnly": {
+   "precision": 0.8897338403041825,
+   "recall": 0.46153846153846156
+  },
+  "packPlusFlag": {
+   "precision": 0.8897338403041825,
+   "recall": 0.46153846153846156
+  }
+ },
+ "pcm_test_C2": {
+  "unlabelledClosedLike": 0,
+  "goldClosedTokens": 507,
+  "packOnly": {
+   "precision": 0.8784119106699751,
+   "recall": 0.6982248520710059
+  },
+  "packPlusFlag": {
+   "precision": 0.8784119106699751,
+   "recall": 0.6982248520710059
+  }
+ },
+ "hat_C1": {
+  "unlabelledClosedLike": 1,
+  "goldClosedTokens": 24189,
+  "packOnly": {
+   "precision": 0.7663956937273426,
+   "recall": 0.5768324444995659
+  },
+  "packPlusFlag": {
+   "precision": 0.7824844340104113,
+   "recall": 0.6338418289305056
+  }
+ },
+ "hat_C2": {
+  "unlabelledClosedLike": 0,
+  "goldClosedTokens": 24189,
+  "packOnly": {
+   "precision": 0.8262953786491436,
+   "recall": 0.6342138988796561
+  },
+  "packPlusFlag": {
+   "precision": 0.8262953786491436,
+   "recall": 0.6342138988796561
+  }
+ }
+}
