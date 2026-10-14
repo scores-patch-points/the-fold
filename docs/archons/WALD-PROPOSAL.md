@@ -82,9 +82,43 @@ Read from the primary source: Wald, *Sequential Analysis* (Wiley 1947). The held
 
 **Truncation is the budget ceiling** (§3.8). There is a hard upper limit on pulls per turn, with a stated rule for deciding when the limit is reached, and the change it makes to the error rates is bounded and recorded. The declared presets in `fold-chat-budget.js` become this ceiling. They are no longer the decision.
 
-**What the source does and does not claim about efficiency.** In 1947 the SPRT is shown to be near-optimal in the expected number of observations (Appendix A.7). Sequential tests "usually" save about 50% over a fixed-sample test of equal strength (§2.4.2). Exact optimality is the author's **conjecture** in a footnote to §2.4.1, not a result. The proof is Wald & Wolfowitz (1948), *Ann. Math. Statist.* 19(3), which has not yet been ingested because Project Euclid's bot wall refused the fetch.
+**What the source does and does not claim about efficiency.** In 1947 the SPRT is shown to be near-optimal in the expected number of observations (Appendix A.7). Sequential tests "usually" save about 50% over a fixed-sample test of equal strength (§2.4.2). Exact optimality is the author's **conjecture** in a footnote to §2.4.1, not a result. The proof is Wald & Wolfowitz (1948), *Ann. Math. Statist.* 19(3):326–339. The citation is checked, but the paper has not been ingested because Project Euclid's bot wall refused the fetch. Its optimality covers two simple hypotheses with one observation at a time, which is narrower than "the efficient budget rule".
 
 **Pre-registered bar 5:** Wald's own decision cost per turn is below the measured cost of the cheapest pull.
+
+## Metabolism II: what he starts with, what refills him, trails, recursive learning
+
+Pre-registered in `eval/wald/PREREG-METABOLISM.md` before any code. Prior art for this section is in *Prior art: metabolism* below.
+
+**What he starts with: as rich as the gate he replaces, and no richer.**
+- **Knowledge:** the measured witness ratios from the 341 gold rows. Anything unmeasured is a typed gap.
+- **Budget per turn (Wald's §3.8 truncation):** what today's gate actually spends on a turn, in ms, measured from the ledger. Until then the declared 1 ms stand-in stays declared.
+- **α and β:** a loan from the current gate's measured error rates. They are repaid by Wald's own measured rates once the ledger holds them (arm `recal`).
+
+**What refills him: returns, not time.**
+- A pull earns its cost back only when what it fetched is used: a cited passage, a recall that answered the turn, or a typed gap that held (the next act is not a re-ask).
+- A pull he skipped that the person then needed (a re-ask, a source-ask, a challenge on the same topic) costs him that next turn's ms. This is Wald's w, the loss for the wrong decision, in the same currency.
+- Prices follow return on spend for each kind of pull. The ceiling grows only while the overall return is above 1, so it grows from savings and never from being trusted more.
+
+**Pheromone trails: Wilson's layer, as one more witness.**
+`kernel/stigmergy.js` (Handle: Wilson) is already vendored. Wald deposits one trail event per turn: head = kind + output type, route = the pull, ok = returned, ms = price. The trail then enters the parliament as the `trail` witness. Its weight is measured like every other witness's, so if the trail is noise its ratio comes out near 1 and it drops out on its own. A trail is never an override, so the layer adds and never degrades the base. stigmergy's alarm channel maps to a pull whose source was later contradicted.
+
+Two of stigmergy's constants are hand-set, and Wald does not inherit them:
+- **Exploration** (`EXPLORE_EPSILON = 0.1`): replaced by the CONTINUE region. Wald scouts exactly where his evidence is undecided, at the odds that evidence implies, σ(llr).
+- **Half-life** (7 days): chosen prequentially from candidates taken from the ledger's own gaps between turns on the same head.
+
+**Recursive learning: three loops, one inside the next.**
+1. **Within a turn:** Wald's own sequential loop. Undecided → take the cheapest pull → its result, including a miss, is a new observation → decide again.
+2. **Within a session:** trails are deposited and evaporate; prices and returns update per kind of pull.
+3. **Across sessions:** ratios are re-measured, and α and β move to Wald's own rates.
+
+Every loop scores a turn before it learns from it (Dawid's prequential principle). A re-fit is admitted only if it beats a shuffled null on the same turns (bar M1). Solon can replay the whole sequence from the ledger.
+
+**The trap, named: he cannot learn from what he skipped.** A learner fed only on its own choices confirms itself, and gets cheaper and blinder. Two guards:
+- **In shadow,** outcomes exist only for the gate's actions. Every score is reported on the turns where Wald and the gate agree, with the share where they disagree beside it (bar M4).
+- **Once he gates,** the CONTINUE region is stochastic at σ(llr) and every propensity is logged, so the outcomes of other policies can be estimated without bias (inverse propensity, doubly robust). Turns outside that region are deterministic and declared unevaluable off-policy.
+
+**Prerequisite:** a turn ledger that survives the tab. It records only the existing `record.wald` fields, plus whether a kept passage was cited and the person's next act. It keeps no ask text.
 
 ## Shadow results (2026-10-14, as pre-registered in `eval/wald/PREREG.md`)
 
@@ -176,6 +210,31 @@ Each source below was checked against its primary page on 2026-10-13. "Verified"
 - **Angelopoulos & Bates (2021), "A Gentle Introduction to Conformal Prediction".** https://arxiv.org/abs/2107.07511. Partly. It gives distribution-free coverage *under exchangeability*, but the target level α is still chosen. Wald does not choose α: it takes its level from the cost ratio of a missed pull to a wasted pull as measured on the ground ledger. The exchangeability assumption is tested by Solon's prequential check, never assumed.
 - **Angelopoulos, Bates, Fisch, Lei & Schuster (2022), "Conformal Risk Control".** https://arxiv.org/abs/2208.02814. Verified; it is a preprint. It calibrates the threshold to control the expected value of any monotone loss. This is the method for the high bar: control the measured cost of a missed pull rather than a coverage rate.
 
+## Prior art: metabolism (checked 2026-10-14)
+
+Each item was checked against its primary page where one would load. Pages behind Springer, IEEE, JSTOR or T&F walls were checked through bibliographic search, and those rows are marked accordingly.
+
+**Trails**
+- **Grassé (1959), *Insectes Sociaux* 6:41–83 (pages not confirmed),** https://link.springer.com/article/10.1007/BF02223791. He coined *stigmergie*: coordination through the traces work leaves in the environment. Supported by secondary sources; the original was not read.
+- **Hölldobler & Wilson (1990), *The Ants*, Belknap/Harvard.** Partly verified: the bibliography is confirmed, the trail-recruitment chapter is not. This is the namesake of khora's `kernel/stigmergy.js`.
+- **Goss, Aron, Deneubourg & Pasteels (1989), "Self-organized shortcuts in the Argentine ant", *Naturwissenschaften* 76:579–581,** https://link.springer.com/article/10.1007/BF00462870. The double bridge: the shorter path wins by positive feedback, with no ant computing it. The title is unconfirmed. *Corrected:* an earlier draft credited Deneubourg et al. (1990), *J. Insect Behavior* 3:159–168 (https://doi.org/10.1007/BF01417909), which is about exploring unmarked ground, not the double bridge.
+- **Dorigo, Maniezzo & Colorni (1996), Ant System, IEEE Trans. SMC-B 26(1):29–41,** https://doi.org/10.1109/3477.484436. Positive feedback over a distributed search. The deposit-by-quality and evaporation rules are the method's well-known update, but were not read on the page.
+- **Di Caro & Dorigo (1998), AntNet, *JAIR* 9:317–365,** https://jair.org/index.php/jair/article/view/10217. Learned trail strength feeding a routing decision, which is the closest precedent for a `trail` witness that informs which pull to take. Confirmed through search.
+
+**Exploration, and learning from what you did not do**
+- **Thompson (1933), *Biometrika* 25:285–294,** https://doi.org/10.1093/biomet/25.3-4.285. Act with the probability that the option is best. Wald's stochastic CONTINUE region at σ(llr) is this idea applied to one pull.
+- **Auer, Cesa-Bianchi & Fischer (2002), UCB1, *Machine Learning* 47:235–256,** https://doi.org/10.1023/A:1013689704352. Exploration with bounded regret, cited for the trade-off. Wald's scout is the undecided region, not an optimism bonus.
+- **Horvitz & Thompson (1952), *JASA* 47:663–685,** https://doi.org/10.1080/01621459.1952.10483446. Weight each observation by the inverse of its inclusion probability. This is why every propensity is logged.
+- **Li, Chu, Langford & Schapire (2010), contextual bandits for news, WWW 2010,** https://arxiv.org/abs/1003.0146, **and Li, Chu, Langford & Wang (2011), unbiased offline evaluation, WSDM 2011,** https://arxiv.org/abs/1003.5956. Replay evaluation from logs, unbiased only under randomized logging. This is why shadow-mode scores count only the turns where Wald and the gate agree.
+- **Dudík, Langford & Li (2011), Doubly Robust Policy Evaluation and Learning, ICML,** https://arxiv.org/abs/1103.4601. The estimate stays sound if *either* the outcome model or the propensity model is right.
+- **Lakkaraju, Kleinberg, Leskovec, Ludwig & Mullainathan (2017), The Selective Labels Problem, KDD,** https://www.cs.cornell.edu/home/kleinber/kdd17-selective.pdf. Outcomes are observed only for the action that was chosen. This is the trap named above. Their remedy, *contraction*, uses variation between decision-makers. In shadow, the gate and Wald are two decision-makers, which is the variation this design reports (bar M4).
+- **Mozannar & Sontag (2020), learning to defer, ICML,** https://arxiv.org/abs/2006.01862. A classifier and a rejector learned jointly: spend or abstain, as one decision.
+- **Sutton & Barto (2018), *Reinforcement Learning*, 2nd ed., MIT Press.** Partly verified. The general frame for exploration against exploitation and for credit assignment.
+
+**Scoring and the bar**
+- **Dawid (1984), the prequential approach, *JRSS A* 147(2):278–292,** https://www.jstor.org/stable/2981683. Score each forecast before its outcome is used to learn from. Every loop of recursive learning obeys this.
+- **Wald & Wolfowitz (1948), Optimum character of the SPRT, *Ann. Math. Statist.* 19(3):326–339,** https://doi.org/10.1214/aoms/1177730197. This is the proof Wald conjectured in 1947. *Caveat:* optimality holds for two simple hypotheses with one observation at a time. It is cited for that case, and is not used to justify the SPRT as a budget rule in general.
+
 ## What is deliberately not taken
 
 - Learned end-to-end routers (Self-RAG, Toolformer, RouteLLM) put the decision inside a model. The house rule keeps the decision mechanical and the model as the mouth only. These systems are prior art for *what* to decide, not for *where* the decision lives.
@@ -183,8 +242,16 @@ Each source below was checked against its primary page on 2026-10-13. "Verified"
 
 ## Build order (each step falsified before the next, after ratification)
 
-1. `wald.js` in khora `native/organs/`. It is pure: no fetch, no DOM. It holds the register, the witnesses (injected and tested against the real organs), the two bars, and the cheapest-first sequential loop. A `// Handle:` header goes on top, plus a register entry in `solon.js`.
-2. The calibration script on the gold sets, and the null per pull. Pre-registration is written first.
-3. Shadow mode in the-fold: Wald decides and records on every turn while the surface still always searches. Compare Wald's decision with what the turn actually needed.
+1. **Done (khora archon/wald).** `wald.js` in khora `native/organs/`. It is pure: no fetch, no DOM. It holds the register, the witnesses (injected and tested against the real organs), the two bars, and the cheapest-first sequential loop. A `// Handle:` header goes on top, plus a register entry in `solon.js`.
+2. **Done; Amendment 1 added the `lang` witness and all of B1–B4 now hold.** The calibration script on the gold sets, and the null per pull. Pre-registration is written first.
+3. **Done (shadow, the-fold archon/wald).** Shadow mode in the-fold: Wald decides and records on every turn while the surface's own gate (`wantWeb`) still decides. Compare Wald's decision with what the turn actually needed.
 4. Wire Wald as the gate only after shadow mode beats the pre-registered bars, and say so on the record.
-5. A dossier with verified sources, and a chorus check.
+5. A dossier with verified sources, and a chorus check. (The first chorus ran 2026-10-14; the dossier is still open.)
+
+Phase 2 (metabolism, pre-registered in `eval/wald/PREREG-METABOLISM.md`):
+
+6. The turn ledger: `record.wald` fields plus `cited` and the person's next act, kept across tabs, with no ask text.
+7. Measured prices and earn-back per kind of pull, computed prequentially from the ledger. The 1 ms stand-in retires at the first measured price.
+8. The `trail` witness over `kernel/stigmergy.js`, admitted only if it beats trail-null (M1). Its half-life is chosen prequentially from the ledger's own gaps.
+9. `recal`: α and β move from the gate's rates to Wald's own (M2).
+10. Only after step 4: a stochastic CONTINUE region at σ(llr), with propensities logged for off-policy evaluation.
