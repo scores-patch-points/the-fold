@@ -20,6 +20,8 @@ const sha = (b) => crypto.createHash("sha256").update(b).digest("hex");
 import { BUDGET, termsOf, collectionOf, buildCard, indexCards, indexCardsGrouped, routeQuestion, packetFor, paragraphsOf } from "./work-card.js";
 
 const ZEN = "/Users/mlacy/Documents/3.0/Zenodotus/";
+// a clean checkout has no local corpus: skip, loudly, instead of failing `npm test` for everyone
+if (!fs.existsSync(ZEN)) { console.log(`SKIP: corpus not present at ${ZEN} (this test measures routing over the local Zenodotus texts)`); process.exit(0); }
 const SOURCES = [
   { lang: "en", dir: "01-literature-books/gutenberg/" }, { lang: "grc", dir: "11-multi-language/greek-originals/" },
   { lang: "es", dir: "24-global-literature/es/" }, { lang: "pt", dir: "24-global-literature/pt/" }, { lang: "zh", dir: "24-global-literature/zh/" },

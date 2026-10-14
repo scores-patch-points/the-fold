@@ -8,6 +8,8 @@
 import fs from "node:fs"; import path from "node:path";
 import { BUDGET, termsOf, collectionOf, buildCard, indexCards, packetFor, applyDistance, DISTANCES } from "./work-card.js";
 const ZEN = "/Users/mlacy/Documents/3.0/Zenodotus/";
+// a clean checkout has no local corpus: skip, loudly, instead of failing `npm test` for everyone
+if (!fs.existsSync(ZEN)) { console.log(`SKIP: corpus not present at ${ZEN} (this test measures routing over the local Zenodotus texts)`); process.exit(0); }
 const SRC = [["en", "01-literature-books/gutenberg/"], ["grc", "11-multi-language/greek-originals/"], ["es", "24-global-literature/es/"], ["pt", "24-global-literature/pt/"], ["zh", "24-global-literature/zh/"]];
 const works = [];
 for (const [lang, dir] of SRC) for (const f of fs.readdirSync(ZEN + dir).filter((x) => x.endsWith(".txt")).sort().filter((x) => { const n = fs.statSync(ZEN + dir + x).size; return n >= 60_000 && n <= 3e6; }).slice(0, 6)) works.push({ lang, file: ZEN + dir + f, id: f, title: f.replace(/\.txt$/, "").replace(/^(pg)?\d+[_-]/i, "").replace(/^[a-z]{2}-\d+-/i, "").replace(/[_-]+/g, " ") });
