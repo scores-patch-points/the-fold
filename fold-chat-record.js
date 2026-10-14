@@ -60,13 +60,17 @@ export function mechanicalUnits({ slotTurn = null, strand = null, webPassages = 
   const urlOf = (p) => String((p && (p.url || p.source)) || "");
   const fits = (p, a, b) => p && typeof p.text === "string" && p.ref && Number.isInteger(a) && Number.isInteger(b) && a >= 0 && b > a && b <= p.text.length;
   const out = [];
-  const row = slotTurn?.answer?.row;
-  if (row && Array.isArray(row.span) && row.source) {
+  // a COMPOUND turn ("who is X and where was he born") answers each part from its own row; its joined `answer.text` is not one sentence of one page
+  const rows = Array.isArray(slotTurn?.parts) && slotTurn.parts.length
+    ? slotTurn.parts.filter((x) => x && x.answer && x.answer.row).map((x) => ({ row: x.answer.row, text: String(x.answer.text || "").trim() }))
+    : slotTurn?.answer?.row ? [{ row: slotTurn.answer.row, text: String(line || "").trim() }] : [];
+  for (const { row, text: shown } of rows) {
+    if (!Array.isArray(row.span) || !row.source) continue;
     const [a, b] = row.span;
     const byUrl = row.source.url ? pages.filter((p) => urlOf(p) === String(row.source.url)) : [];
     const k = /^S(\d+)$/.exec(String(row.source.ref || ""));
     const page = byUrl.find((p) => fits(p, a, b)) || (k ? [pages[Number(k[1]) - 1]].find((p) => fits(p, a, b)) : null);
-    const text = String(line || "").trim() || String(row.sentence || "").trim();
+    const text = shown || String(row.sentence || "").trim();
     if (page && text) out.push({ text, address: `${page.ref}#${a}-${b}`, kind: "slot" });
   }
   for (const sn of Array.isArray(strand?.snips) ? strand.snips : []) {
