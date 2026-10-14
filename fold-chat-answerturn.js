@@ -33,6 +33,7 @@
 // An answer whose checks could not be run ships as standing 'unmeasured' — the source states it, nothing was able to cross-check it, and
 // the card says so. It is never called 'survived'. No case logic anywhere: entities are what a TITLE resolves to.
 
+import { answerSpan } from "./fold-chat-answerspan.js";
 import { askFrame, GRAMMAR, tokensOf, stemOf, closedClassOf } from "./fold-chat-frame.js";
 import { sentencesOf, bindSentence } from "./fold-chat-witness.js";
 import { runFalsify, askTense, sameFiller } from "./fold-chat-falsify.js";
@@ -151,6 +152,7 @@ function firstBoundary(text, from, G) {
  *  number — subject + the closed-class words right before the number + the number + the matched noun after it ("Spiders have eight
  *  legs."). A time, or anything that cannot be built from the row's own words, is the row's sentence verbatim. */
 export function realise(row, frame, { fw, lang }) {
+  if (row && row.viaSpan) return row.sentence;   // read by the extractive witness: the sentence as written ("…whose company designed and built the tower"), never cut to a clause that loses the verb asked about
   const G = GRAMMAR[lang];
   const f = row && row.filler;
   const text = row ? row.sentence : "";
@@ -250,6 +252,7 @@ async function run({ question, lang, passages, now, deps }) {
 
   const witnesses = () => entries.filter((e) => e.row.tier === "T1" && e.row.filler && e.row.polarity === "+");
 
+  let widened = [];   // the passages the one wider read added (3b reads them too)
   // 3 ── something must fill the slot; one wider read before giving up
   if (!witnesses().length && typeof deps.searchPassages === "function") {
     const asked = frame.referents.map((r) => r.title || r.surface);
@@ -258,6 +261,7 @@ async function run({ question, lang, passages, now, deps }) {
     if (aborted(signal)) return partial();
     const have = new Set(entries.map((e) => e.page.url + "\u0000" + e.page.title));
     const fresh = more.filter((p) => p && typeof p.text === "string" && !have.has((p.url || "") + "\u0000" + (p.title || "")) && !asArr(passages).some((x) => x && x.url && x.url === p.url));
+    widened = fresh;
     const next = bindPassages(fresh, frame, { fw, code, from: asArr(passages).length });
     addSources(next.read);
     entries = entries.concat(next.entries);
@@ -265,6 +269,30 @@ async function run({ question, lang, passages, now, deps }) {
     tv.note("widen", { asked, read: next.read.map((s) => ({ title: s.title, host: s.host, url: s.url })), ...(reason ? { reason } : {}) });
     unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles)).unverified || unverifiedNames;
     if (aborted(signal)) return partial();
+  }
+
+  // 3b ── the extractive reader as a SECOND WITNESS. The binder above wants the filler, the predicate and the referent tied by the sentence's own grammar; "whose company
+  // designed and built the tower" and "designed by his company and built for the Exposition" say who built it and bind to nothing. When nothing witnessed the slot,
+  // the page's best sentence for the same ask is read by the span module (a name that fits "who", the ask's own predicate in the sentence, never a name made of the
+  // predicate), and a span that carries a name enters the pool as a row like any other: its filler still has to resolve to a page title (verifyFillers) and goes
+  // through the same current-ness, choosing and contest below. Only the person slot: that is the class the span module types by "a name".
+  if (!witnesses().length && frame.slot === "person") {
+    const all = asArr(passages).concat(widened);
+    const query = said + " " + frame.referents.map((r) => r.surface).join(" ");
+    let spans = [];
+    try { spans = answerSpan(query, all.map((p) => ({ title: p.title || "", text: typeof p.text === "string" ? p.text : "", url: p.url || "" }))).spans || []; } catch { spans = []; }
+    let k = 0;
+    for (const sp of spans) {
+      if (!sp.atom || !sp.sentence) continue;
+      const p = all[sp.passageIndex]; if (!p) continue;
+      const source = { ref: isStr(p.ref) ? p.ref : "S" + (sp.passageIndex + 1), title: p.title || "", url: p.url || "", host: p.host || hostOf(p.url), lang: p.lang || code };
+      const sa = sp.sentence.start, a0 = sp.atom.start - sa, a1 = sp.atom.end - sa;
+      if (a0 < 0 || a1 > sp.sentence.text.length || sp.sentence.text.slice(a0, a1) !== sp.atom.text) continue;     // the filler is a slice of the sentence, or it is nothing
+      const row = { tier: "T1", sentence: sp.sentence.text, source, span: [sa, sp.sentence.end], polarity: "+", tense: "unknown", filler: { text: sp.atom.text, span: [a0, a1] }, emphasis: [[a0, a1]], viaSpan: true };
+      entries.push({ row, viaTitle: false, viaSpan: true, page: source, order: 900000 + k++ });
+      addSources([source]);
+    }
+    if (k) { unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles)).unverified || unverifiedNames; if (aborted(signal)) return partial(); }
   }
 
   const readTitles = sourcesSeen.map((s) => s.title || s.host || s.url).filter(isStr);

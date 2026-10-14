@@ -41,6 +41,7 @@ import { threadPrompt, threadNotice, coldFollowUpNotice, missingAnswerNotice, ad
 // order, question last, a refused fold withheld), the conversation's flow (follow-ups, push-backs and frame-asks are moves against
 // the thread), and the felt shape of the recent answers for a DECLARED experiencer.
 import { door as garyDoor, noteWindows } from "./fold-chat-gary.js";
+import { houdini as houdiniProject } from "./fold-chat-houdini.js";
 import { planTurn, cuesFor, actOf } from "./fold-chat-flow.js";
 import { readFelt } from "./fold-chat-pathos.js";
 import { hintsFor } from "./fold-chat-hints.js";
@@ -2622,7 +2623,8 @@ export function mount(root, opts = {}) {
       if (carried.length) { webPassages = carried.map((p) => ({ ...p })); sourceBlock += "\n\n" + sourcesPrompt(webPassages); threadTurn.carried = webPassages.length; }
       say(`turn \u00b7 ${kindWord} \u00b7 following the conversation \u00b7 answering from turn ${threadTurn.turn}\u2026`);
       feedPush(lineEvent(tt, "Followed the conversation", { tone: "ok", note: `no search \u2014 answering from your earlier turn ${threadTurn.turn}${threadTurn.carried ? ` and the ${threadTurn.carried} source(s) it read` : ""}` }));
-    } else if (follow.mode === "cold-gap") feedPush(lineEvent(tt, "Nothing earlier to follow", { tone: "info", note: "no search, and the model is not asked" }));
+    } else if (follow.mode === "cold-gap" && follow.askRef) feedPush(lineEvent(tt, "Read back from this chat", { tone: "info", note: "your own earlier questions, as you typed them · no search, and the model is not asked" }));
+    else if (follow.mode === "cold-gap") feedPush(lineEvent(tt, "Nothing earlier to follow", { tone: "info", note: "no search, and the model is not asked" }));
     // THE MURMUR GATES THE TURN. A HARD ask the machine cannot read on its own (a run-together token, or
     // nothing readable) does NOT get a model answer: the model would answer the machine's own misreading
     // (ITNOW, for "it now"). The turn becomes a typed gap carrying the murmur's reading, so the person can
@@ -2699,8 +2701,12 @@ export function mount(root, opts = {}) {
           }
         }
       }
+      // HOUDINI (docs/HOUDINI.md, default ON; turn off with localStorage "fold-chat:houdini" = "off"): the context is projected by need, not position. It reads the WHOLE
+      // store and exchange (not the gated/salient copies above), so the upstream anaphora gate and salience do not filter first; the sources keep their own salience.
+      const houdiniOn = (() => { try { return localStorage.getItem("fold-chat:houdini") !== "off"; } catch { return true; } })() && (kind === "research" || kind === "chat" || kind === "advice");
       const composed = garyDoor.composeTurn({
-        basePrompt: turnBase, cues: flowInfo?.cues || [], summary: promptSummary, history: promptHistory, question, sourceBlock, recencyWindow,
+        basePrompt: turnBase, cues: flowInfo?.cues || [], summary: houdiniOn ? s.summary : promptSummary, history: houdiniOn ? history.slice(0, -1) : promptHistory, question, sourceBlock, recencyWindow,
+        ...(houdiniOn ? { project: houdiniProject, referents: s.referents, turn: { kind: follow.kind || null, act: follow.act || null, mode: follow.mode || null } } : {}),
         shrinkSource: fromWeb ? (maxChars) => sourcesPrompt(promptPassages.map((p) => ({ ...p, text: String(p.text || "").slice(0, maxChars) }))) + (webPassages.some((p) => p.recipe) ? "\n\n" + CARD_PROMPT : "") : null,
       }, { model: m.id, maxTokens: 1024, material: materialInView });
       messages = composed.messages;
@@ -3110,7 +3116,7 @@ export function mount(root, opts = {}) {
         if (aw.flags.length) feedPush(lineEvent(tt, "Discourse check", { tone: "warn", note: aw.flags.map((f) => f.flag.replace(/_/g, " ")).join(", ") + " \u2014 this turn read the conversation differently from how it answered" }));
       } catch (e) { /* the watcher is an aid, never a reason to lose a turn */ }
       if (!provenance && srcRecall && srcRecall.provenance) provenance = srcRecall.provenance;   // the same source line, drawn again under this turn
-      if (aloneBarred) { const at = follow.mode === "cold-gap" ? { notice: follow.missing ? missingAnswerNotice(follow.missing) : coldFollowUpNotice() } : recall ? { notice: { kind: "alone", text: recall.text } } : srcRecall ? { notice: { kind: "alone", text: srcRecall.text } } : primaryNotice ? { notice: { kind: "alone", text: primaryNotice } } : aloneTurn(noLookup ? "nolookup" : kind, genOt && !noLookup ? { outputType: genOt, hasMaterial: materialOf(s).length > 0, question } : undefined); if (at.void && !genGate) genGate = { ok: false, void: at.void, notice: { kind: "gen-void", text: at.notice?.text || at.void.note }, fallbackAllowed: false }; if (at.notice && !at.void) notices.push(at.notice); }
+      if (aloneBarred) { const at = follow.mode === "cold-gap" ? { notice: follow.askRef ? { kind: "alone", text: follow.askRef.text } : follow.missing ? missingAnswerNotice(follow.missing) : coldFollowUpNotice() } : recall ? { notice: { kind: "alone", text: recall.text } } : srcRecall ? { notice: { kind: "alone", text: srcRecall.text } } : primaryNotice ? { notice: { kind: "alone", text: primaryNotice } } : aloneTurn(noLookup ? "nolookup" : kind, genOt && !noLookup ? { outputType: genOt, hasMaterial: materialOf(s).length > 0, question } : undefined); if (at.void && !genGate) genGate = { ok: false, void: at.void, notice: { kind: "gen-void", text: at.notice?.text || at.void.note }, fallbackAllowed: false }; if (at.notice && !at.void) notices.push(at.notice); }
       if (threadTurn && text.trim()) { const tn = threadNotice(threadTurn); notices.push(threadTurn.carried ? { ...tn, text: tn.text.replace(/No web source was used[^.]*\./, `No new search was made; it used the ${threadTurn.carried} source(s) that turn read, and is checked against them.`) } : tn); }
       { const cn = carryNotice(follow, s.messages.filter((x) => x.role === "assistant").length + 1); if (cn) notices.push(cn); }   // what the pronoun was read as: the person may refuse it (fold-chat-minds.js)
       if (!text.trim() && !notices.length && !skipModel && !liveDrop && !genGate) notices.push(emptyNotice({ tokens: out.tokens, model: m.id }));      const turn = s.messages.filter((x) => x.role === "assistant").length + 1;
@@ -3361,7 +3367,8 @@ export function mount(root, opts = {}) {
         })();
       }
     } catch (err) {      // A stop is a stop; ANYTHING else that died is stored as a typed, retry-able note on its own
-      // message (failTurn) — whether or not this chat is the open one.      if (ac.signal.aborted) stopped(); else failTurn(err);
+      // message (failTurn) — whether or not this chat is the open one.
+      if (ac.signal.aborted) stopped(); else failTurn(err);
     } finally {
       refreshMeter();
     }
@@ -3578,6 +3585,20 @@ export function mount(root, opts = {}) {
     if (engagement === "code" && isMakeAsk(text)) { E.input.value = ""; E.input.style.height = "auto"; folds.create(text); return; }
     E.input.value = ""; E.input.style.height = "auto";
     const s = sessions[activeId] || (newChat(), sessions[activeId]);
+    // A typed clip/stitch sentence is a CUT, never a model turn: the parser is
+    // deterministic, the cut is real bytes on this machine, and nothing is invented.
+    const clip = clipAsk(text);
+    if (clip) {
+      E.input.value = ""; E.input.style.height = "auto";
+      s.messages.push({ role: "user", content: text, at: now(), mode: normMode(engagement) });
+      s.title = s.title === "New chat" ? text.slice(0, 46) : s.title; s.updated = now();
+      save("fold-chat:sessions", sessions);
+      setView(false);
+      appendMsg(s, "user", text, { index: s.messages.length - 1, mode: normMode(engagement) });
+      renderChats();
+      runClip(s.id, clip);
+      return;
+    }
     // EFFORT IS CAPTURED HERE, at send, and stamped on the ask: it applies to
     // this turn only. (A code-door turn runs no grounded pipeline, so it carries none.)
     const grounded = !(engagement === "code" && modelsUp && isCodeTask(text));   // no machine door (no bridge): any ask is answered by the grounded lane, never refused
@@ -4136,21 +4157,7 @@ export function mount(root, opts = {}) {
         const raw = await file.text();
         taint.addFromText(raw, "local-read"); taint.add(file.name, "filename");
         const reading = await client.read(raw, { base: bridge, source: file.name, sessionId: sessions[activeId]?.codeSessionId || null });
-const s = sessions[activeId] || (newChat(), sessions[activeId]);
-    // A typed clip/stitch sentence is a CUT, never a model turn: the parser is
-    // deterministic, the cut is real bytes on this machine, and nothing is invented.
-    const clip = clipAsk(text);
-    if (clip) {
-      E.input.value = ""; E.input.style.height = "auto";
-      s.messages.push({ role: "user", content: text, at: now(), mode: normMode(engagement) });
-      s.title = s.title === "New chat" ? text.slice(0, 46) : s.title; s.updated = now();
-      save("fold-chat:sessions", sessions);
-      setView(false);
-      appendMsg(s, "user", text, { index: s.messages.length - 1, mode: normMode(engagement) });
-      renderChats();
-      runClip(s.id, clip);
-      return;
-    }
+        const s = sessions[activeId] || (newChat(), sessions[activeId]);
         const note = readingNote(file.name, raw.length, reading);
         s.attachments = [...(s.attachments || []), { name: file.name, bytes: raw.length, referents: (reading.referents || []).length, relations: (reading.relations || []).length }];
         // The reading rides the history as grounded material — never the raw

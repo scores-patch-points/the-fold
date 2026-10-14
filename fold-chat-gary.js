@@ -132,18 +132,21 @@ export function makeDoor({ windowOf: windowFor = windowOf } = {}) {
    * `withheld` names what was left out and why it is not in the prompt (never silently): "cues" · "fold" · "history" · "sources".
    */
   function composeTurn(parts, ctx = {}) {
-    const { basePrompt = "", cues = [], summary = null, history = [], question = "", sourceBlock = null, recencyWindow, shrinkSource = null } = parts || {};
+    const { basePrompt = "", cues = [], summary = null, history = [], question = "", sourceBlock = null, recencyWindow, shrinkSource = null, project = null, referents = null, turn = null } = parts || {};
     const { model = null, maxTokens = 0, material = undefined, dedupe = false } = ctx;
     const facts = (cues || []).map((c) => (typeof c === "string" ? c : c?.text)).map((t) => String(t ?? "").trim()).filter(Boolean);
     const hasFold = !!summary && (!!summary.topic || (summary.records || []).length > 0);   // the two blocks buildTurnMessages projects
     const state = { cues: facts.length > 0, fold: hasFold, rw: recencyWindow, src: sourceBlock };
     // the earlier exchange is carried ONCE: when the system block quotes it, the turns that repeat it are left out (dedupe)
     const once = dedupe ? carryOnce(history, sourceBlock) : { history, dropped: 0 };
-    const build = () => buildTurnMessages({
-      basePrompt: state.cues ? [basePrompt, facts.join(" ")].filter(Boolean).join("\n\n") : basePrompt,
-      summary: state.fold ? summary : emptySummary(),
-      history: once.history, question, sourceBlock: state.src, recencyWindow: state.rw,
-    });
+    // `project` (optional, default off): Houdini's projection (fold-chat-houdini.js) replaces the positional one while the fold stands; a fold Gary withheld, or any throw, falls back to the positional build.
+    const build = () => {
+      const base = state.cues ? [basePrompt, facts.join(" ")].filter(Boolean).join("\n\n") : basePrompt;
+      if (typeof project === "function" && state.fold) {
+        try { const h = project({ basePrompt: base, summary, history: once.history, question, sourceBlock: state.src, recencyWindow: state.rw, referents, turn }); if (h && Array.isArray(h.messages) && h.messages.length) return h.messages; } catch { /* an aid, never a reason to lose a turn */ }
+      }
+      return buildTurnMessages({ basePrompt: base, summary: state.fold ? summary : emptySummary(), history: once.history, question, sourceBlock: state.src, recencyWindow: state.rw });
+    };
     const read = () => hand(build(), { model, maxTokens, material, question, kind: "turn", record: false });
     const withheld = once.dropped ? ["repeats"] : [];
     let r = read();
