@@ -250,7 +250,7 @@ Each item was checked against its primary page where one would load. Pages behin
 
 Phase 2 (metabolism, pre-registered in `eval/wald/PREREG-METABOLISM.md`):
 
-6. The turn ledger: `record.wald` fields plus `cited` and the person's next act, kept across tabs, with no ask text.
+6. **Done (live-verified 2026-10-14 on :8824; `fold-chat-wald-ledger.js`, localStorage `fold-chat:wald-ledger`).** The turn ledger: `record.wald` fields plus `cited` and the person's next act, kept across tabs, with no ask text.
 7. Measured prices and earn-back per kind of pull, computed prequentially from the ledger. The 1 ms stand-in retires at the first measured price.
 8. The `trail` witness over `kernel/stigmergy.js`, admitted only if it beats trail-null (M1). Its half-life is chosen prequentially from the ledger's own gaps.
 9. `recal`: α and β move from the gate's rates to Wald's own (M2).

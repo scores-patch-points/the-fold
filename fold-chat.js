@@ -67,6 +67,7 @@ import { functionWordsOf } from "./fold-chat-snippets.js";
 import { lookupWarranted } from "./fold-chat-self.js";
 import { waldShadow } from "./fold-chat-wald.js";   // WALD, the watcher of the pull (SHADOW: decides and records every turn, gates nothing yet; eval/wald/PREREG.md)
 import { WALD_CALIBRATION } from "./fold-chat-wald-calibration.js";
+import { ledgerEntry, nextActOf, closeLast, appendEntry, LEDGER_KEY } from "./fold-chat-wald-ledger.js";   // Wald's turn ledger (PREREG-METABOLISM prerequisite): no ask text, honours history-off and context-free chats
 import { sourceRecall } from "./fold-chat-sourceask.js";
 import { pre as watchPre, post as watchPost, wantLine, batonReply, inspectReply, keepOnTopic, withoutAppAnswered, challengeReply } from "./fold-chat-watch.js";
 import { trailOf } from "./fold-chat-trail.js";   // the trail in plain language: the mechanical fold of the prior turns, spoken like the record
@@ -234,6 +235,15 @@ function untombstone(id) {
 // memory. save() honours two of its rules — a context-free (incognito) chat is
 // never written, and when the history switch is off nothing is retained.
 let MEMORY_STORE = null;
+// WALD'S LEDGER, in this browser: read/written only here; never for a context-free chat, never with history off (the memory store's own rule).
+function waldLedgerOn(s) { return !(s && s.contextFree) && !(MEMORY_STORE && MEMORY_STORE.historyOn === false); }
+// A write that fails (a full or blocked store) never costs a turn, but it is never silent either: it is COUNTED, and the next entry that lands
+// carries the count (`droppedBefore`), so every later measure knows the ledger has a hole and how big it is (chorus: Feynman).
+let WALD_LEDGER_DROPPED = 0;
+function waldLedgerUpdate(s, fn) {
+  if (!waldLedgerOn(s)) return false;
+  try { const cur = JSON.parse(localStorage.getItem(LEDGER_KEY) || "[]"); localStorage.setItem(LEDGER_KEY, JSON.stringify(fn(cur))); return true; } catch (e) { WALD_LEDGER_DROPPED++; return false; }
+}
 function save(key, v) {
   try {
     if (key === "fold-chat:sessions") {
@@ -2277,6 +2287,8 @@ export function mount(root, opts = {}) {
       ? castOf(askAt > 0 ? s.messages.slice(0, askAt) : [], s.referents || {})
       : null;
     const follow = planTurn(said, askAt > 0 ? s.messages.slice(0, askAt) : [], { referents: s.referents || null, rejected: rejectedSurfaces(s.minds), hints: hintsFor(lang0 === "unknown" ? "en" : lang0), lang: lang0, casts });
+    // the person's act on the LAST answer closes its ledger entry: a retry, a source-ask, a push-back, or moving on (fold-chat-wald-ledger.js nextActOf)
+    waldLedgerUpdate(s, (led) => closeLast(led, s.id, nextActOf(follow)));
     // A bare nudge ("well?") after an unanswered ask IS that ask again: the turn is read, searched and written as the earlier question
     // (follow.retry); the person's own "well?" stays what they said (the thread, the record's `said`).
     // A source-ask ("find a primary source") is answered by the SOURCES, never by the model: asked to "find a primary source" a small model writes a link
@@ -3575,6 +3587,7 @@ export function mount(root, opts = {}) {
       if (pvLive) { try { const sealed = pvLive.finish(); if (record) record.tape = sealed.tape; armTailReplay(sealed.liveT); pvLive.close(); } catch (e) { try { pvLive.close(); } catch {} } }
       if (clarify && followup && !String(text || "").trim()) text = followup.question;   // the clarifying question IS the turn's words (app-authored)
       s.messages.push({ role: "assistant", content: text, at: now(), mode: "chat", answerMode, grounding: record, model: m.id, ...(murmur ? { murmur } : {}), ...(followup ? { followup } : {}), ...(pivotRes ? { pivot: storePivot(pivotRes) } : {}), ...(discourseWatch ? { watch: discourseWatch } : {}), ...(provenance ? { provenance } : {}), ...(strand ? { authored: "sources", ...(slotTurn ? { answerTurn: slotStored } : { snips: storedSnips }) } : {}), ...(fellBack ? { fellBackFrom: fellBack.fellBackFrom, answerMode: "snips" } : {}), ...(notices.length ? { notices } : {}) });
+      if (record && record.wald) { if (waldLedgerUpdate(s, (led) => appendEntry(led, ledgerEntry({ droppedBefore: WALD_LEDGER_DROPPED, sid: s.id, turn, at: now(), head: `${kind}:${outType?.type || "-"}`, wald: record.wald, usedBy: Array.isArray(record.cited) && record.cited.length > 0 ? "cited" : strand ? "sources" : null })))) WALD_LEDGER_DROPPED = 0; }
       s.sealed = !!m.sealed;
       s.updated = now();
       maybeName(s);

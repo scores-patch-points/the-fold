@@ -17,3 +17,11 @@ fast: 8 files · 180 affected tests pass · law: ok (0 citations) · note: eval/
 | Simon/Chekhov | new signal in the surface | fold-chat.js:2540 | noted | `lang`/`closedClass` wired into the shadow hook; unit-tested via witnessVotes (4 mutants killed); not re-checked on a live turn (preview slots full) — declared |
 | Greenberg (not routed, read anyway: the diff is about language) | language scope | fold-chat-wald.js (lang witness) | noted | "no closed class" is reader coverage, not a language property (de, pt fire); e_wall_sw is read as `id` by langid, so the why names the wrong language — scope declared in the proposal |
 clean: Pearl (lang and lookup do not double-count: lookup abstains exactly where lang votes)
+
+## 2026-10-14 — Wald's turn ledger (archon/wald, 965c8fd..HEAD)
+fast: 5 files · 170 affected tests pass · law: ok
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Feynman | swallowed error | fold-chat.js (waldLedgerUpdate) | fixed | a full/blocked store dropped ledger turns silently; now counted and stamped on the next entry that lands (`droppedBefore`), tested |
+| Feynman | numeric constant | fold-chat-wald-ledger.test.mjs:47 | false-positive-on-review | `cap: 3` is test data |
+clean: Simon/Chekhov (the new module is imported by its test)
