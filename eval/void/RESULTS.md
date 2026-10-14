@@ -114,3 +114,25 @@ Dev and held are identical to L1.1: no new RIGHT and no new WRONG. It is safe, a
 **Where this leaves the open gap.** The remaining ambiguity in dev is between fillers that are *both* legitimate arguments of the relation: they differ in **whose claim it is**, i.e. which referent the clause is about. The unspent test is the **subject agreement** one: the anchor is the claim's subject (or, in the passive, the by-phrase's patient) and the filler is its object or oblique. It needs the parse's roles, which `readClause` already returns (`claim.voice`, `subj`, `obj`, `obls`). To be pre-registered before it is built.
 
 **Not run, flagged:** the L1 matter found in the trace (the declared relation words include a leftover noun such as *Moon*) is still open and may be the larger lever: it contaminates every L2-family arm's relation test.
+
+## Feasibility probe, not an arm: the structured door (Wikidata) answers by identity (`probe-wikidata.mjs`, 2026-10-14)
+
+The old notes (project_fold_referent_identity_givers, Sep 2026) had already measured that the string and edge tiers cannot answer a slot ask ("the label slot is filled by non-verbs"), and had answered it by identity instead: Wikidata QIDs and typed, dated properties, with `hl.js` returning CONTESTED when a functional relation has more than one value. That door was never connected to the-fold's slot pipeline (the-fold's only Wikidata uses are origin/primary/hosts; khora's `current-holder.js` handles office-holders only).
+
+Probe: anchor = the battery's gold anchor title (a real run would use L1.2's anchor); property candidates = Wikidata **property-label search** with the ask's own non-anchor words (no property table); fillers = those properties' statement values, labels resolved.
+
+| | asks | any value | gold present |
+|---|---|---|---|
+| the 55 answerable asks (3 false-premise asks excluded) | 55 | 45 | **26** |
+
+For comparison, the best prose arm (L0 through L1.2) answers 12 of the 55 (7 dev + 5 held RIGHT). The gold is present as a **value of a typed property of the right entity** for 26.
+
+What it gets right: *capital* (Canberra, Ottawa, Ankara, Bern, Wellington), *date of official opening*, *inception*, *date of birth / place of birth*, *creator*, *director*, *founder*, *author*, *currency*, *height*. The unambiguous ones come out with no contested fillers.
+
+What fails, and why (each is a lexical or choice problem, not a retrieval one):
+1. **Verb → property.** *wrote*, *composed*, *invented*, *designed*, *sank* match no property label (the labels are nouns: author, composer, inventor). The bridge is a derivation (write → writer/author, invent → inventor) and a property's **aliases**. Not tabled, not yet measured.
+2. **The wrong property is licensed.** *completed* matched *inception* (1887, construction start) for the Eiffel Tower, which is not 1889. Label search offers candidates; it does not say which one the *relation* names.
+3. **Quantity slots** give the wrong dimension or a part (*has part(s)* for "how many strings").
+4. **Entity resolution** needs L1.2's anchor, not the gold title (done here only to isolate the property step).
+
+**What this settles:** the hang-up is not witnesses or nulls. The prose tiers choose among co-present values with no way to know which value is the *property's*; the structured door has the typed value already, and the open problem is choosing the **property**, a closed, small, label-addressed space. That is a different and far more tractable gap than the one L2–L4 were attacking.
