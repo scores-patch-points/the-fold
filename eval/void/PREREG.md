@@ -223,3 +223,19 @@ The user's direction: "remember the work we did on induction for ALL terrains". 
 - for = a probable candidate exists;
 - against = either (i) a second candidate is also probable, or (ii) candidates exist and every one was refused (by the order check or by its kind).
 - The outcomes are bound (is), contested (both), unbound (neither), and contradicted (is-not: every candidate refused, none probable).
+
+## Amendment 8 (2026-10-14): the final level, an LLM that repairs grammar. Its additions are snipped, entered into the EOT, and folded in. Declared now; built last.
+
+**The user's direction:** "the final level we can add is a LLM that fixes grammar with its additions snipped and added to the EOT and folded into the final output."
+
+**L5, the mouth as grammar repair, and nothing more.** It takes the stack's mechanical output (the snip and the Callimachus paraphrase) and returns a repaired sentence. Then:
+- **Every token the model added or changed** (a mechanical diff against its input; never the model's own account of what it changed) is **snipped**. Each snip carries its own address in the output and is typed `self:model` (Koestler, `output-holograph.js`).
+- **The snips are entered into the EOT** as the model's own claims, typed and for-whom, beside the claims the stack established. Nothing the model adds is ever folded in as a source's words.
+- **The final output is the fold** of the stack's claims and the model's typed snips. A reader always sees which words were the model's.
+
+**Its bars (it is admitted only if all hold; the rule that the model is just the mouth):**
+- **G1 (grammar only):** every model addition is closed-class (function words, punctuation) or an inflection of a word already present (khora `sameAct`, EWT gold lemma). A new content word is refused, and the input stands.
+- **G2 (no new claim):** the repaired sentence's reverse parse (Callimachus `realizeClaim`'s equate) yields the same claim as its input, with every value equal to its source bytes.
+- **G3 (logos):** the repaired sentence passes the `OPERATOR_CHAIN` / `CELL_OF_GRAMMAR` order check that its input failed, or passes as its input did.
+- **G4:** Useful does not fall and WRONG does not rise against the stack below (V1–V3). G5: prose-law lint passes (`lintSentence`) at least as often as below, against a null of identical inputs passed through unrepaired.
+- **The model** is the house's local small model (Huginn picks it; Gary builds its prompt, information not prohibition, the sentence last). It is the only layer allowed a model call, so V6 is reported per layer and is zero below L5.

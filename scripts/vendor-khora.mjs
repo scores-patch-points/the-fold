@@ -63,6 +63,10 @@ export const ENTRIES = [
   "the-fold/void-shape.js",
   // TERRAIN INDUCTION (Kanada; khora kernel/terrain-induction.js, renamed from kind-induction 2026-10-14): terrainEvidence for the void's universe
   "kernel/terrain-induction.js",
+  // NAGARJUNA'S FOUR CORNERS (interpretation/hl.js: verdictOfSupport — is / is-not / both / neither) for the void's verdicts; zero imports
+  "interpretation/hl.js",
+  // REFERENCE (SIG·Figure): khora's pronoun binder, gates opened and decided by a Born null (eval/void Amendment 5)
+  "adapters/text/pronouns.js",
   // THE CONVERSATION'S FLOW (Terry Gross, in earned-cast.js): the speech act of the turn and the facts a reply hears — fold-chat-flow.js.
   "the-fold/earned-cast.js",
   // THE PATHOS ARCHONS: the felt shape of a run of answers for a DECLARED experiencer (Abhinavagupta, with Murch's pacing,

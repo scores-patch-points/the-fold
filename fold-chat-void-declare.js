@@ -49,7 +49,7 @@ export const VOID_GRAMMAR = Object.freeze({
 const SLOT_ADMITS = Object.freeze({ time: "date", person: "person", place: "place" });
 
 /** Read the void of one ask. → { decl: EOVoidDeclaration@1 | null, fields, anchor: {surface,title}|null, frame, gap? } */
-export async function declareAskVoid(question, { fw = null, lang = "en", resolveTitles = null, experiencer = null } = {}) {
+export async function declareAskVoid(question, { fw = null, lang = "en", resolveTitles = null, experiencer = null, longestName = false } = {}) {
   const said = String(question ?? "");
   const G = grammarOf(lang), V = VOID_GRAMMAR[lang];
   if (!G || !V || !(fw instanceof Set) || !fw.size) return { decl: null, fields: {}, anchor: null, frame: null, gap: { kind: "no_grammar_for_language" } };
@@ -90,6 +90,18 @@ export async function declareAskVoid(question, { fw = null, lang = "en", resolve
     const hit = table instanceof Map ? perceived.map((surface) => ({ surface, res: table.get(surface) })).find((x) => x.res && x.res.title && !x.res.disambiguation) : null;
     if (hit) { referents = [{ surface: hit.surface, title: hit.res.title, aliases: [hit.surface, hit.res.title] }]; anchorBy = ["perceiver", "title-door"]; }
   } else if (referents.length && perceived.some((p) => p.toLowerCase() === String(referents[0].surface).toLowerCase())) anchorBy.push("perceiver");
+  // L1.1 (eval/void Amendment 4): the LONGEST NAME, with both witnesses — a perceived surface that strictly contains the door's anchor
+  // surface, and that the same door resolves, is the anchor ("Pride and Prejudice" ⊃ "Prejudice"). Off unless asked (L1 stays as admitted).
+  if (longestName && referents.length && typeof resolveTitles === "function") {
+    const inner = String(referents[0].surface).toLowerCase();
+    const wider = perceived.filter((p) => p.toLowerCase() !== inner && p.toLowerCase().includes(inner));
+    if (wider.length) {
+      let table = null;
+      try { table = await resolveTitles(wider.slice()); } catch { table = null; }
+      const hit = table instanceof Map ? wider.map((surface) => ({ surface, res: table.get(surface) })).find((x) => x.res && x.res.title && !x.res.disambiguation) : null;
+      if (hit) { referents = [{ surface: hit.surface, title: hit.res.title, aliases: [hit.surface, hit.res.title] }, ...referents]; anchorBy = ["perceiver", "title-door", "longest-name"]; }
+    }
+  }
   const anchor = referents[0] ? { surface: referents[0].surface, title: referents[0].title, by: anchorBy } : null;
   const refFolds = new Set(referents.flatMap((r) => tokensOf(r.surface, lang).map((t) => t.fold)));
 
@@ -117,7 +129,10 @@ export async function declareAskVoid(question, { fw = null, lang = "en", resolve
   if (slot === "time" && roleFold && V.timeNouns.includes(stemOf(roleFold, lang)) && roleFold !== "year" && roleFold !== "date") admits = stemOf(roleFold, lang);
 
   // 4. relation, cardinality, extent
-  const relation = [...new Set([...(frame && frame.ok ? frame.predicate.map((p) => p.stem) : []), ...(roleFold && slot === "thing" ? [stemOf(roleFold, lang)] : [])])];
+  // with the longest name taken, a predicate word that now sits inside the anchor's own name is the name's, not the relation's
+  const inName = new Set(longestName && anchor ? tokensOf(anchor.surface, lang).map((t) => t.fold) : []);
+  const predicate = frame && frame.ok ? frame.predicate.filter((p) => !inName.has(String(p.surface).toLowerCase())) : [];
+  const relation = [...new Set([...predicate.map((p) => p.stem), ...(roleFold && slot === "thing" ? [stemOf(roleFold, lang)] : [])])];
   const pluralRole = role && V.plural.test(roleFold) && stemOf(roleFold, lang) !== roleFold;
   const pluralCopula = folds.some((f) => V.pluralCopulas.includes(f));
   const cardinality = pluralRole || pluralCopula ? "many" : 1;
@@ -135,7 +150,7 @@ export async function declareAskVoid(question, { fw = null, lang = "en", resolve
   const decl = slot ? declareVoid(fields, { cellOf }) : null;
   const forWhom = experiencer || { who: "the person asking", read: `ask#0-${said.length}`, revision: null };
   const held = decl ? withExperiencer({ void: decl }, forWhom) : null;
-  const relationWords = [...new Set([...(frame && frame.ok ? frame.predicate.map((p) => p.surface) : []), ...(role ? [role.text] : [])])];
+  const relationWords = [...new Set([...predicate.map((p) => p.surface), ...(role ? [role.text] : [])])];
   return { decl, fields, anchor, perceived, relationWords, experiencer: held ? held.experiencer : null, frame, ...(slot ? {} : { gap: { kind: "no_slot_read" } }) };
 }
 

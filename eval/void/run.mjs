@@ -12,6 +12,11 @@ import { slotDeps } from "../../fold-chat-answerwire.js";
 import { functionWordsOf } from "../../fold-chat-snippets.js";
 import { declareAskVoid } from "../../fold-chat-void-declare.js";
 import { universeOf, bindVoid } from "../../fold-chat-void-universe.js";
+import { bornFill } from "../../fold-chat-void-born.js";
+import { resolvePronouns } from "../../vendor/khora/native/adapters/text/pronouns.js";
+import { ewt } from "./ewt.mjs";
+// the khora's rich relation reader (S50) — node-only (reads the priors from disk); the browser surface reaches it through the khora's door
+const { engineRelationsFor } = await import("/Users/mlacy/Documents/3.0/khora-terrain-induction/native/the-fold/reader-bundle.js");
 import { morphologyFromPrior, createLemmatizer } from "../../vendor/khora/native/adapters/text/morphology.js";
 // the received morphology prior (khora reads it from the workspace's janus/priors; the browser surface must reach it through the khora's door)
 const MORPH = (() => { try { const p = morphologyFromPrior(JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../../../janus/priors/morphology-eng.json"), "utf8"))); return createLemmatizer(p.forms, { language: p.language }); } catch { return null; } })();
@@ -35,6 +40,29 @@ export const ARMS = {
     const deps = slotDeps({ fetchImpl, memo: makeMemo(), lang: "en" });
     const v = await declareAskVoid(q, { fw: functionWordsOf("en"), lang: "en", resolveTitles: deps.resolveTitles });
     return { ...base, voidDecl: v.decl, anchorTitle: v.anchor ? v.anchor.title : base.anchorTitle, raw: { ...base.raw, void: v.fields, anchorBy: v.anchor ? v.anchor.by : null, experiencer: v.experiencer, voidGap: v.gap || null } };
+  },
+  // L1.1: L1 with the longest name (both witnesses) — Amendment 4
+  async L1_1(q, fetchImpl) {
+    const base = await ARMS.L0(q, fetchImpl);
+    const deps = slotDeps({ fetchImpl, memo: makeMemo(), lang: "en" });
+    const v = await declareAskVoid(q, { fw: functionWordsOf("en"), lang: "en", resolveTitles: deps.resolveTitles, longestName: true });
+    return { ...base, voidDecl: v.decl, anchorTitle: v.anchor ? v.anchor.title : base.anchorTitle, raw: { ...base.raw, void: v.fields, anchorBy: v.anchor ? v.anchor.by : null }, _v: v, _deps: deps };
+  },
+  // L2′: L1.1 + the Born-weighed parliament (clause + engine witnesses), logos order, four corners — Amendments 4–7
+  async L2b(q, fetchImpl) {
+    const l11 = await ARMS.L1_1(q, fetchImpl);
+    const { _v: v, _deps: deps, ...out } = l11;
+    if (out.answer || !v.anchor || !v.fields.admits) return { ...out, raw: { ...out.raw, l2b: out.answer ? "kept-L0-answer" : "no-anchor-or-admits" } };
+    let passages = [];
+    try { passages = await deps.searchPassages({ referents: [{ surface: v.anchor.surface, title: v.anchor.title }], predicate: (v.frame && v.frame.ok ? v.frame.predicate : []) }); } catch { passages = []; }
+    let engineEdges = [];
+    try { engineEdges = engineRelationsFor(passages.map((p) => ({ ref: p.ref, text: p.text }))).edges || []; } catch (e) { engineEdges = []; }
+    const E = ewt();
+    const r = bornFill({ fields: v.fields, anchor: v.anchor, relationWords: v.relationWords, passages,
+      organs: { sameAct, lemmasOf: E.lemmasOf, ewtEntry: E.entry, resolvePronouns, engineEdges } });
+    const l2b = { verdict: r.verdict, bindings: r.bindings, nullTopMax: r.nullTopMax, top: r.candidates.slice(0, 3).map((c) => ({ v: String(c.value).slice(0, 30), M: c.mass, probable: c.probable, w: c.witnesses })), violations: r.orderViolations.length, gaps: r.gaps.map((g) => g.kind), kinds: r.kinds };
+    if (r.verdict === "bound" && r.answer && r.answer.text) return { ...out, answer: r.answer.text, raw: { ...out.raw, l2b: { ...l2b, at: r.answer.at } } };
+    return { ...out, raw: { ...out.raw, l2b } };
   },
   // L2: the referent's universe — L1 plus, where L0 gave no answer, the void's open edge bound by clause (PREREG Amendment 2)
   async L2(q, fetchImpl) {
