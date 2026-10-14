@@ -124,80 +124,90 @@ export function nullTable(cards, col, budget = BUDGET, fullVocab = null) {
 // ── serialisation: the index a page loads. The collection is cut to the terms a card signature can score (a term in no signature
 // contributes nothing to any score), and the null table is rebuilt on that same cut so k means the same thing at build and at runtime.
 export function serializeIndex(cards, col, budget = BUDGET) {
+  const common = [...commonTerms(col)];
   const need = new Set(); for (const c of cards) { for (const t of c.pins) need.add(t); for (const x of c.characteristic) need.add(x.t); }
   const lite = { df: new Map([...need].map((t) => [t, col.df.get(t) ?? 0])), N: col.N, byLang: new Map() };
   for (const [l, g] of col.byLang ?? []) lite.byLang.set(l, { N: g.N, df: new Map([...need].map((t) => [t, g.df.get(t) ?? 0]).filter(([, n]) => n > 0)) });
-  const fullVocab = [...col.df.keys()];
-  const nullMax = nullTable(cards, lite, budget, fullVocab);
-  return { schema: "WorkCardIndex@1", at: new Date().toISOString(), N: lite.N, df: Object.fromEntries(lite.df), byLang: Object.fromEntries([...lite.byLang].map(([l, g]) => [l, { N: g.N, df: Object.fromEntries(g.df) }])), nullMax, cards, budget: { spans: budget.spans, terms: budget.terms, maxK: budget.maxK } };
+  // the null is computed on the LITE collection the page will actually have (k means 'known terms'), against random known terms AND against
+  // other works' own characteristic terms; the earlier build drew random words from the full vocabulary and dropped the unknown ones, which
+  // left nullMax at 0.0 for nominal k=1 and a 2.6 plateau after it
+  const knownVocab = [...lite.df.keys()];
+  const nullMax = nullTable(cards, lite, budget, knownVocab), nullCard = nullTableOtherWorks(cards, lite, budget);
+  return { schema: "WorkCardIndex@1", at: new Date().toISOString(), N: lite.N, df: Object.fromEntries(lite.df), byLang: Object.fromEntries([...lite.byLang].map(([l, g]) => [l, { N: g.N, df: Object.fromEntries(g.df) }])), nullMax, nullCard, common, cards, budget: { spans: budget.spans, terms: budget.terms, maxK: budget.maxK } };
 }
 export function indexFromSerialized(obj) {
   if (!obj || obj.schema !== "WorkCardIndex@1" || !Array.isArray(obj.cards) || !Array.isArray(obj.nullMax)) return null;
   const col = { df: new Map(Object.entries(obj.df)), N: obj.N, byLang: new Map(Object.entries(obj.byLang ?? {}).map(([l, g]) => [l, { N: g.N, df: new Map(Object.entries(g.df)) }])) };
   const budget = { ...BUDGET, ...(obj.budget ?? {}) };
-  return { cards: obj.cards, col, sigs: obj.cards.map((c) => signatureOf(c, col)), nullMax: obj.nullMax, budget };
+  const sigs = obj.cards.map((c) => signatureOf(c, col));
+  return { cards: obj.cards, col, sigs, held: heldOf(sigs), nullMax: obj.nullMax, nullCard: obj.nullCard ?? null, common: new Set(obj.common ?? []), budget };
 }
+
+
+/** The best score a question ABOUT ANOTHER WORK gets on a given card: for every card j, draw k of its own characteristic terms and score
+ *  them against every OTHER card i; table[i][k] is the max over j and draws. It is per card on purpose: a single max over all pairs
+ *  grows with the number of cards and is set by the one pair of sibling works, which refused most true questions at 80 cards (held-out
+ *  routing 68% -> 30%); a per-card threshold is strict exactly where a card is confusable (Aristophanes' Clouds vs Birds) and no stricter
+ *  elsewhere. A random-vocabulary null says nothing about this case: 13% of questions about works with NO card were routed to a wrong
+ *  card before it existed. */
+export function nullTableOtherWorks(cards, col, budget = BUDGET) {
+  const rnd = mulberry32(budget.seed + 3); const sigs = cards.map((c) => signatureOf(c, col));
+  const perCard = Math.max(8, Math.ceil(budget.nullDraws / Math.max(1, cards.length)));
+  const table = cards.map(() => new Array(budget.maxK + 1).fill(0));
+  for (let k = 1; k <= budget.maxK; k++) {
+    cards.forEach((c, j) => {
+      const pool = c.characteristic.map((x) => x.t).filter((t) => col.df.has(t)); if (pool.length < k) return;
+      for (let d = 0; d < perCard; d++) {
+        const q = new Set(); while (q.size < k) q.add(pool[Math.floor(rnd() * pool.length)]);
+        const qa = [...q];
+        for (let i = 0; i < sigs.length; i++) if (i !== j) { const v = scoreOf(sigs[i], qa); if (v > table[i][k]) table[i][k] = v; }
+      }
+    });
+  }
+  return table;
+}
+
+/** Terms that are in the majority of a language's works (or of the pool when no language is labelled): function-like, not names. A majority
+ *  is the natural cut; nothing is listed and no number is tuned. */
+export function commonTerms(col) {
+  const out = new Set();
+  if (col.byLang?.size) { for (const [, g] of col.byLang) if (g.N >= 3) for (const [t, n] of g.df) if (n * 2 > g.N) out.add(t); }
+  else for (const [t, n] of col.df) if (n * 2 > col.N) out.add(t);
+  return out;
+}
+
+/** Every term some card names or is characterised by: computed ONCE per index (it was rebuilt on every question). */
+const heldOf = (sigs) => { const h = new Set(); for (const s of sigs) for (const t of s.keys()) h.add(t); return h; };
 
 /** A routing index over the cards: built once, then every question is a few map lookups. */
 export function indexCards(cards, col, budget = BUDGET) {
-  return { cards, col, sigs: cards.map((c) => signatureOf(c, col)), nullMax: nullTable(cards, col, budget), budget };
+  const sigs = cards.map((c) => signatureOf(c, col));
+  return { cards, col, sigs, held: heldOf(sigs), nullMax: nullTable(cards, col, budget), nullCard: nullTableOtherWorks(cards, col, budget), common: commonTerms(col), budget };
 }
 
 /** question → { card, score, nullMax, k } or a typed refusal. Never a guess: below the null, no card. */
 export function routeQuestion(question, index) {
   const q = termsOf(question); const known = q.filter((t) => index.col.df.has(t));
   const k = Math.min(Math.max(1, new Set(known).size), index.budget.maxK);
-  if (!known.length) return { refusal: "no_known_terms", k: 0 };
+  if (!known.length) return { refusal: "no_known_terms", k: 0, asked: [...new Set(q)], known: [] };
   let best = -1, bi = -1, second = -1;
   for (let i = 0; i < index.sigs.length; i++) { const s = scoreOf(index.sigs[i], known); if (s > best) { second = best; best = s; bi = i; } else if (s > second) second = s; }
-  const nullMax = index.nullMax[k];
-  if (best <= nullMax) return { refusal: "not_above_chance", score: best, nullMax, k };
-  return { card: index.cards[bi], score: best, runnerUp: Math.max(0, second), nullMax, k };
+  // the bar: what random vocabulary reaches, and what OTHER works' terms reach on THIS card
+  const nullMax = Math.max(index.nullMax[k], index.nullCard?.[bi]?.[k] ?? 0);
+  const card = index.cards[bi];
+  // NAMES. The question names things. P: asked terms that are this card's own title terms. U: asked terms that NO card names or is
+  // characterised by and that are not common words of the collection (the question names something the fold does not hold). A name
+  // that belongs to this card carries the question when it outnumbers the names the card cannot account for; otherwise the content
+  // overlap has to clear the bar on its own. ("tell me about Tom Sawyer" shares "adventures" with Alice's title: P=1, U=2 -> not Alice.)
+  const asked = [...new Set(q)]; const held = index.held;
+  // a title word that is a common word of the collection ("the", "of") names nothing
+  const P = known.filter((t, i) => card.pins.includes(t) && !index.common?.has(t) && known.indexOf(t) === i);
+  const U = asked.filter((t) => !held.has(t) && !(index.common?.has(t)) && t.length >= 3);
+  const byName = P.length > 0 && P.length > U.length;
+  if (best <= nullMax && !byName) return { refusal: "not_above_chance", score: best, nullMax, k, asked, known: [...new Set(known)], named: P, unnamed: U, nearest: card };
+  return { card, score: best, runnerUp: Math.max(0, second), nullMax, k, viaPin: P.length > 0, named: P, unheld: U, byName };
 }
 
-
-// ── LANGUAGE-GROUPED INDEX: idf within a language, one null across groups ───────────────────────────────────────────────────────────
-// A pooled idf makes Spanish function words look rare beside English ones. Each language group weighs terms by ITS OWN works; a
-// question is scored in every group, each score normalised by what random vocabulary scores there (mean of the best score over
-// seeded draws), and the question is accepted only above the best normalised score any random question reaches across all groups
-// — the Bonferroni-by-count is carried by taking the max over groups inside the null itself.
-export function indexCardsGrouped(cards, colByLang, budget = BUDGET) {
-  const groups = new Map();
-  cards.forEach((c, i) => { const g = groups.get(c.lang) ?? { lang: c.lang, col: colByLang.get(c.lang), idx: [] }; g.idx.push(i); groups.set(c.lang, g); });
-  const G = [...groups.values()];
-  for (const g of G) g.sigs = g.idx.map((i) => signatureOf(cards[i], g.col));
-  const pooled = new Map(); for (const g of G) for (const t of g.col.df.keys()) pooled.set(t, true);
-  const vocab = [...pooled.keys()];
-  const bestIn = (g, q) => { let b = 0, bi = -1; for (let j = 0; j < g.sigs.length; j++) { const v = scoreOf(g.sigs[j], q); if (v > b) { b = v; bi = g.idx[j]; } } return [b, bi]; };
-  const rnd = mulberry32(budget.seed + 11);
-  const scale = new Map(), nullRatio = [0];
-  for (let k = 1; k <= budget.maxK; k++) {
-    const sums = new Map(G.map((g) => [g.lang, 0])); const qs = [];
-    for (let d = 0; d < budget.nullDraws; d++) { const q = Array.from({ length: k }, () => vocab[Math.floor(rnd() * vocab.length)]); qs.push(q); for (const g of G) sums.set(g.lang, sums.get(g.lang) + bestIn(g, q.filter((t) => g.col.df.has(t)))[0]); }
-    const sc = new Map(G.map((g) => [g.lang, Math.max(1e-6, sums.get(g.lang) / budget.nullDraws)])); scale.set(k, sc);
-    let mx = 0; for (const q of qs) for (const g of G) { const r = bestIn(g, q.filter((t) => g.col.df.has(t)))[0] / sc.get(g.lang); if (r > mx) mx = r; }
-    nullRatio.push(mx);
-  }
-  return { grouped: true, cards, groups: G, scale, nullRatio, bestIn, budget };
-}
-export function routeGrouped(question, index) {
-  const q = termsOf(question); let best = { ratio: -1 };
-  const known = (g) => q.filter((t) => g.col.df.has(t));
-  const any = index.groups.some((g) => known(g).length);
-  if (!any) return { refusal: "no_known_terms", k: 0 };
-  for (const g of index.groups) {
-    const kt = known(g); if (!kt.length) continue;
-    const k = Math.min(Math.max(1, new Set(kt).size), index.budget.maxK);
-    const [score, ci] = index.bestIn(g, kt); if (ci < 0) continue;
-    const ratio = score / index.scale.get(k).get(g.lang);
-    if (ratio > best.ratio) best = { ratio, score, ci, k, lang: g.lang };
-  }
-  if (best.ci === undefined || best.ratio <= index.nullRatio[best.k]) return { refusal: "not_above_chance", ratio: best.ratio, nullMax: index.nullRatio[best.k ?? 1], k: best.k ?? 0 };
-  return { card: index.cards[best.ci], score: best.score, ratio: best.ratio, nullMax: index.nullRatio[best.k], k: best.k, lang: best.lang };
-}
-
-/** The packet a mouth narrates from: the route, the card's selection, the lanes with their standing. A broad question takes the
- *  card's arc (key spans in order); a narrow one takes the spans that carry the question's own terms first. */
 export const DISTANCES = Object.freeze([
   { d: 0, name: "near", spans: 8, terms: 12 },       // every key span, verbatim, in the arc of the work
   { d: 1, name: "default", spans: 5, terms: 12 },
@@ -210,10 +220,32 @@ export function applyDistance(current, cmd) {
   const next = cmd?.op === "set" ? Number(cmd.value) : c + Number(cmd?.value ?? 0);
   return Math.max(0, Math.min(last, Math.round(Number.isFinite(next) ? next : c)));
 }
+/** A POSITIVE VOID. Not holding a work is a fact the fold asserts, with its terms, not a silence the caller has to infer.
+ *  `unheld` are the asked terms that no card names or is characterised by; `nearest` is the closest card and why it is NOT the answer
+ *  (below the bar for this question); `fill` says what would make the void a work. The mouth narrates "the fold holds no card for ..."; it
+ *  never answers from `nearest`. */
+export function voidOf(question, index, r) {
+  const sigTerms = index.held;
+  const asked = r.asked ?? [...new Set(termsOf(question))];
+  const unheld = asked.filter((t) => !sigTerms.has(t));
+  const named = unheld.filter((t) => !index.common?.has(t) && t.length >= 3);   // asked, rare, held by no card: what the question names that the fold does not hold
+  const n = r.nearest ?? null;
+  return {
+    kind: "WorkVoid@1", asserted: true, question: String(question).slice(0, 300),
+    absence: r.refusal === "no_known_terms" ? { reason: "no_known_terms", detail: "no word of the question is one any card names or is characterised by" }
+      : r.refusal === "not_above_chance" ? { reason: "not_above_the_bar", detail: `the best card scores ${r.score?.toFixed?.(1)} and this card's bar for a question of ${r.k} known term${r.k === 1 ? "" : "s"} is ${r.nullMax?.toFixed?.(1)}: what it shares with the question is no more than other works' words share with it` }
+      : { reason: String(r.refusal), detail: "" },
+    asked, unheld, named,
+    nearest: n ? { id: n.id, title: n.title, lang: n.lang, score: r.score ?? null, bar: r.nullMax ?? null, isTheAnswer: false } : null,
+    fill: named.length ? `no card names or characterises: ${named.slice(0, 8).join(", ")}; reading the work they name into a card (scripts/build-work-cards.mjs) would close this void` : "the question's words are held, but none of them singles out one work above the bar",
+    standing: "asserted by the router; the mouth narrates it and answers from nothing else",
+  };
+}
+
 export function packetFor(question, index, { distance = 1 } = {}) {
   const t0 = process.hrtime.bigint();
-  const r = index.grouped ? routeGrouped(question, index) : routeQuestion(question, index);
-  if (r.refusal) return { kind: "WorkPacket@1", ready: true, work: null, refusal: r.refusal, route: r, ms: Number(process.hrtime.bigint() - t0) / 1e6 };
+  const r = routeQuestion(question, index);
+  if (r.refusal) return { kind: "WorkPacket@1", ready: true, work: null, refusal: r.refusal, void: voidOf(question, index, r), route: r, ms: Number(process.hrtime.bigint() - t0) / 1e6 };
   const D = DISTANCES[Math.max(0, Math.min(DISTANCES.length - 1, distance))];
   const qs = new Set(termsOf(question)); const c = r.card;
   const hit = (s) => { let n = 0; for (const t of new Set(termsOf(s.preview))) if (qs.has(t) && !c.pins.includes(t)) n += 1; return n; };
@@ -223,5 +255,5 @@ export function packetFor(question, index, { distance = 1 } = {}) {
   const ordered = narrow ? [...c.keySpans].sort((a, b) => hit(b) - hit(a) || b.score - a.score || a.byteStart - b.byteStart) : [...c.keySpans].sort((a, b) => b.score - a.score || a.byteStart - b.byteStart);
   const picked = new Set(ordered.slice(0, D.spans).map((s) => s.byteStart));
   const spans = c.keySpans.filter((s) => picked.has(s.byteStart));                      // shown in the work's own order
-  return { kind: "WorkPacket@1", ready: true, work: { id: c.id, title: c.title, lang: c.lang, file: c.file, bytes: c.bytes }, route: { score: r.score, runnerUp: r.runnerUp ?? null, nullMax: r.nullMax, k: r.k, ...(r.ratio !== undefined ? { ratio: r.ratio, lang: r.lang } : {}) }, mode: narrow ? "narrow" : "broad", distance: D.d, distanceName: D.name, characteristic: c.characteristic.slice(0, D.terms).map((x) => x.t), keySpans: spans, lanes: c.lanes, standing: "mechanical selection; the mouth narrates, it adds nothing", ms: Number(process.hrtime.bigint() - t0) / 1e6 };
+  return { kind: "WorkPacket@1", ready: true, work: { id: c.id, title: c.title, lang: c.lang, file: c.file, bytes: c.bytes }, route: { score: r.score, runnerUp: r.runnerUp ?? null, nullMax: r.nullMax, k: r.k, viaPin: r.viaPin ?? null, ...(r.ratio !== undefined ? { ratio: r.ratio, lang: r.lang } : {}) }, mode: narrow ? "narrow" : "broad", distance: D.d, distanceName: D.name, characteristic: c.characteristic.slice(0, D.terms).map((x) => x.t), keySpans: spans, lanes: c.lanes, standing: "mechanical selection; the mouth narrates, it adds nothing", ms: Number(process.hrtime.bigint() - t0) / 1e6 };
 }
