@@ -97,3 +97,20 @@ Dev and held are identical to L1.1: no new RIGHT and no new WRONG. It is safe, a
   1. the declared void's `admits` as a *kind gate* read from the filler's own page (is "gray" a person? is "may" a place?) via khora `terrainInduction`;
   2. a **syntactic role witness**: the filler is the argument of the relation token's own clause in the UD EWT parse (the Callimachus english-parser), not merely co-present;
   3. Callimachus's clause segmentation (merged, PR #10) as the unit instead of my hand-cut clauses.
+
+## L3: the slot-fill role witness (Amendment 12, Clarification 12.1). **Not admitted: identical to L1.2 in all three arms.**
+
+| arm | dev RIGHT / WRONG / Useful | held RIGHT / WRONG / Useful |
+|---|---|---|
+| L1.2 (last admitted) | 7 / 0 / 21 | 5 / 1 / 19 |
+| L3-soft, L3-strict, L3-noengine | 7 / 0 / 21 | 5 / 1 / 19 |
+
+**What the gate did (dev + held, per candidate filler):** passed 12, removed 3, refused 33. Of the 33 refusals, 18 `no_verb_relation`, 8 `untrusted_parse`, 4 the verb is not attested in EWT (*sank* among them), 2 the predicate sits in a subordinate clause (so the sentence does not assert it), 1 a clause-parse disagreement. L3-strict equals L3-soft because the slots the parse refused never carried the right filler.
+
+**How little this test had power to show.** Of the 12 passes, **11 were the weak form** (the anchor was reached by kind or pronoun and not written in the sentence, so the rule collapses to "the filler is inside some argument"). One slot got the real test (anchor and filler in different arguments). The gate removed 3 candidates in total. So this is **not a refutation of "co-argument of the predicate"**: it is an experiment whose discriminating test ran on one slot. What it does show:
+- a clean parse was available for 23 of the 30 verb-relation slots, so a role witness is *buildable* on this battery: the earlier collapse was my wiring, which Clarification 12.1 fixed;
+- readable predicates were mostly **not** the problem: the telephone's *invented* parsed, and both Bell and Gray (1876) are genuine arguments of it. Two true co-arguments with the same value cannot be separated by grammar.
+
+**Where this leaves the open gap.** The remaining ambiguity in dev is between fillers that are *both* legitimate arguments of the relation: they differ in **whose claim it is**, i.e. which referent the clause is about. The unspent test is the **subject agreement** one: the anchor is the claim's subject (or, in the passive, the by-phrase's patient) and the filler is its object or oblique. It needs the parse's roles, which `readClause` already returns (`claim.voice`, `subj`, `obj`, `obls`). To be pre-registered before it is built.
+
+**Not run, flagged:** the L1 matter found in the trace (the declared relation words include a leftover noun such as *Moon*) is still open and may be the larger lever: it contaminates every L2-family arm's relation test.

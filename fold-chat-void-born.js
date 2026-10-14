@@ -67,7 +67,7 @@ const keyOf = (f) => {
 const yearIn = (f) => { const y = String(f.value).match(/\b(\d{3,4})\b/); return y ? Number(y[1]) : null; };
 
 /** L2′. */
-export function bornFill({ fields, anchor, relationWords = [], passages = [], organs = {}, draws = 200, seed = 20261014, strictCorefer = false, perCandidateNull = false, orderOn = true, nullMode = "filler" } = {}) {
+export function bornFill({ fields, anchor, relationWords = [], passages = [], organs = {}, draws = 200, seed = 20261014, strictCorefer = false, perCandidateNull = false, orderOn = true, nullMode = "filler", roleGate = null, engineOn = true } = {}) {
   const gaps = [];
   const out = (verdict, extra = {}) => ({ verdict, candidates: [], nullTopMax: null, bindings: 0, orderViolations: [], gaps, ...extra });
   if (!fields || !fields.slot) return out("unbound", { gaps: [{ kind: "no_void" }] });
@@ -152,7 +152,10 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
         if (!cands.length) return;
         const relation = isMeasure ? true : toks.some(isRel);
         const seg = fields.extent ? cands.some((f) => { const y = yearIn(f); return y != null && y >= fields.extent.from && y <= fields.extent.to; }) : null;
-        slots.push({ witness: "clause", instance: `${fold(s.text)}`, ref: p.ref, start: absStart, end: absEnd, text, reach, relation, seg, cands, toks, allQ: isMeasure ? quantitiesIn(text) : null });
+        // Clarification 12.1: the predicate is the first ACCEPTED relation token whose EWT gold UPOS is majority VERB/AUX; none -> typed
+        const verbal = (t) => { const e = ewtEntry ? ewtEntry(t) : null; if (!e) return false; const best = Math.max(...Object.values(e.upos)); return ((e.upos.VERB || 0) >= best && best > 0) || ((e.upos.AUX || 0) >= best && best > 0); };
+        const relTok = isMeasure ? null : toks.find((t) => isRel(t) && verbal(t)) || null;
+        slots.push({ witness: "clause", instance: `${fold(s.text)}`, ref: p.ref, start: absStart, end: absEnd, text, reach, relation, seg, cands, toks, allQ: isMeasure ? quantitiesIn(text) : null, sent: s.text, inSent: c.start, relTok });
       });
     }
   }
@@ -169,6 +172,25 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
       slots.push({ witness: "engine", instance: sentKey, ref: e.refs ? [...e.refs][0] : "engine", text: `${e.end1} —${e.label}→ ${e.end2}`, reach: engineIsAnchor(a) ? "name" : null, relation: isMeasure ? true : toks.some(isRel), seg: null, cands, toks, allQ: null });
     }
   }
+  // ── Amendment 12: the role witness is a GATE on clause slots (never a second amplitude): a candidate is kept only if it is a CO-ARGUMENT
+  //    of the relation's predicate with the anchor (readClause's subj / obj / obls spans). `roleGate(slot, aliases)` is injected; it returns
+  //    { ok:true|false, refused?:reason }. soft: remove only on a successful parse that says "not a co-argument"; strict: a refusal removes too.
+  const roleStats = { passed: 0, removed: 0, refused: 0, refusals: {}, implied: 0 };
+  if (typeof roleGate === "function") {
+    for (const sl of slots) {
+      if (sl.witness !== "clause" || !sl.cands.length || isMeasure || !sl.relation) continue;   // only slots the relation test accepted can bind, so only they are gated   // a measure's predicate is adjectival (the dimension is the relation): ungated, declared
+      const kept = [];
+      for (const f of sl.cands) {
+        let r; try { r = roleGate(sl, f, aliases); } catch (e) { r = { ok: null, refused: "gate_error" }; }
+        if (r.refused) { roleStats.refused++; roleStats.refusals[r.refused] = (roleStats.refusals[r.refused] || 0) + 1; if (!r.strictOnly) kept.push(f); else if (r.keepOnRefuse) kept.push(f); }
+        else if (r.ok) { roleStats.passed++; if (r.implied) roleStats.implied++; kept.push(f); }
+        else roleStats.removed++;
+      }
+      sl.cands = kept;
+    }
+    for (let i = slots.length - 1; i >= 0; i--) if (!slots[i].cands.length) slots.splice(i, 1);
+  }
+  if (!engineOn) for (let i = slots.length - 1; i >= 0; i--) if (slots[i].witness === "engine") slots.splice(i, 1);
   // ── score a placement: bindings → n_{w,c} (one unit per independent instance, split over its candidates) → Born mass
   const orderViolations = [];
   const score = (placement, record = false) => {
@@ -266,7 +288,7 @@ export function bornFill({ fields, anchor, relationWords = [], passages = [], or
   const probable = candidates.filter((c) => c.probable);
   const allRefused = candidates.length === 0 && orderViolations.length > 0;
   const verdict = verdictOfSupport(probable.length >= 1, probable.length >= 2 || allRefused);
-  const res = { verdict, candidates: candidates.map(({ at, ...c }) => c), nullTopMax: nullTopMax == null ? null : +nullTopMax.toFixed(4), bindings: real.bindings, orderViolations, gaps, kinds: [...kindKeys] };
+  const res = { verdict, candidates: candidates.map(({ at, ...c }) => c), nullTopMax: nullTopMax == null ? null : +nullTopMax.toFixed(4), bindings: real.bindings, orderViolations, gaps, kinds: [...kindKeys], role: roleStats };
   if (verdict === "bound") {
     // the SNIP is source bytes: the clause slot that holds the bound candidate (an engine edge's text is not the source's own words)
     const top = candidates[0];
