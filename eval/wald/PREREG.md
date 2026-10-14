@@ -41,3 +41,50 @@ A failed bar is reported as failed. No re-run after a look, except as a new amen
 - **The null.** It shuffles the new witness's column like every other column (same seed, same 200 shuffles).
 
 **Unchanged:** the gold, the arms, α and β (the gate's own rates), the measures, and bars S, B1, B2, B3 and B4, word for word. One re-run follows this amendment. Every bar is reported pass or fail exactly as measured, together with any change on G1 (new misses or new wasted pulls) beside the first run's figures. If a bar still fails, it is reported as failed. Any change to the witness after this re-run needs Amendment 2, written before its own re-run.
+
+## Amendment 2 (2026-10-14): the read-back paths, and multi-turn gold. Written and committed before any code change and before any run on the new gold.
+
+**Why there is an amendment.** PREREG-METABOLISM Clarification 1 recorded one live turn where the gate read back and Wald would have searched. The live record has now been read (the shadow preview's ledger and sessions on localhost:8824, session `mv7o6ovcju1q`, turn 2). Turn 1 ("When did the Great Wall of China start being built?") was refused (unwitnessed), and its assistant message was stored with empty content. So `threadOf` found no answer, and `planTurn` planned "where did you get that?" as **cold-gap**. The reply was `coldFollowUpNotice`. **None of `sourceRecall`, `batonReply`, `inspectReply` or `challengeReply` fired**: each needs mode `web` or `thread`, and `srcRecall` stayed null. The ledger's votes were `kind web:for`, `plan none:for` and `plan web:against`. Wald's web sum was log 48.3 (kind for) + log 1.24 (plan against) = 4.09, between log B −2.82 and log A 4.49, so it was CONTINUE, truncated to pull. That gives two defects:
+1. No witness reads that the ask is **about the last turn**. The watcher's PRE has read it that way (`want: source, sub: recall`), but that reading is not passed to Wald. The plan witness's "against" lumps cold-gap, clarify and thread together, and the gold measures it at 1.24, so an "against" vote pushes toward the web. That measurement comes from the 7 cases.json follow-ups, which are read without their assistant replies (the declared limitation).
+2. When a read-back does fire, the `source` witness votes, but its ratio was never measured. `calibrate.mjs` hard-codes `srcRecall: null, primaryAsk: null`, so no gold row carries a source vote. Live, its term is dropped as "witness not in calibration".
+**Declared:** this amendment is written after reading that one live record. No run has been made on the new gold.
+
+**New gold (frozen with this amendment): `eval/wald/multiturn-gold.json`.** It has 99 rows over 11 real prior threads, with label `expect.search` (21 true, 78 false). The priors are stored messages, including the assistant replies, from three sources:
+- `eval/wald/multiturn-live-2026-10-14.json`: the three live sessions above, exported from localStorage. Only the fields the read-back paths read are kept, and the export's hash was checked against the browser's copy.
+- `eval/ants/watch-fixture-before-fix.json`: the 2026-10-06 live run. Each turn is rebuilt as {user: ask} and {assistant: spoken, provenance, authored}.
+- `eval/ants/g2/repro-control-1791355297096.json`: the telephone turn, rebuilt the same way.
+
+Each prior gets the same nine follow-ups:
+- R: "where did you get that?", "source?" and "how do you know?"
+- I: "what did you search for?" and "which pages did you read?"
+- C: "are you sure?"
+- N: "find a primary source"
+- F: one new fact on the thread's topic
+- M: "what did you tell me earlier?"
+
+The labels come from rules L1–L4 in the file, not from any arm:
+- **L1** (R, I, C → false): an ask about the last turn itself is answered from the record, whether or not the record holds a verified source.
+- **L2** (N → true): an ask for new evidence searches, unless the last written answer already stored a primary-tier pointer on a non-tertiary host. Only P7 meets that, and it is read back (false).
+- **L3** (F → true): a new fact on the topic searches.
+- **L4** (M → false): an ask for the fold's own earlier words is a read of the record.
+
+**Declared limits of the new gold:**
+- Most asks are the author's. Only the real follow-ups are the person's: P3's "where did you get that?", P6's "find a primary source", P7's "where did you get that?", P9's "source?" and P11's F row.
+- The rows cluster nine to a prior, so they are not independent.
+- L2's exception mirrors `sourceRecall`'s own `hasPrimary` rule, so the gate agreeing on N rows is not independent evidence.
+- P6–P11 come from a run made before the watcher existed, so no baton or detail is stored, and the inspect and baton paths cannot fire on them.
+- Every real claim store is empty, so recall (L4) cannot fire anywhere. Those rows are kept as they are.
+
+**The witness change: the `source` witness is extended. No witness is added.**
+- (a) Unchanged: when `srcRecall` is set it votes `local: for, web: against`, and when `primaryAsk` is set it votes `web: for`. Its why now names which read-back fired (`sourceRecall`, `baton`, `inspect`, `challenge`), from the flags `srcRecall` already carries.
+- (b) New: when neither is set and the watcher's PRE reads the ask as about the last turn, it votes `local: for, web: against`, with the why "the ask is about the last turn's own record". "About the last turn" means `want` is `inspect` or `challenge`, or `want` is `source` with `sub` `recall`. This is the cold-gap shape. A `source/new` ask without `primaryAsk` casts no (b) vote.
+- **Inputs:** `want` = `watcherPre.want` and `wantSub` = `watcherPre.sub`. fold-chat.js already computes both. They are passed into `witnessVotes`, and the witness computes nothing.
+- **Its weight:** measured leave-one-out like every other witness, with Laplace's rule as the only prior. Nothing is set by hand. The witness is still the one column `source` in the null shuffle.
+
+**The calibration change.** `signalsOf` in `calibrate.mjs` now computes `watcherPre` (`watchPre`), the `srcRecall` chain (`sourceRecall` → `batonReply` → `inspectReply` → `challengeReply`) and `primaryAsk` from the prior messages, exactly as fold-chat.js does at lines 2528–2539. They are no longer null. `gateNow` keeps its formula, which already reads `srcRecall` and `primaryAsk`. On old-gold rows these come out null, because no prior there has an assistant reply. Any old-gold row whose gate or signals change is listed. The ratios are measured leave-one-out over old and new gold together, α and β are the gate's own rates on the other rows as before, and the shipped calibration uses all rows.
+
+**Runs (two, both pre-registered here):**
+- **Run A**: the new `signalsOf` with the Amendment 1 witness set, so `source` votes only on `srcRecall` and `primaryAsk`. This is the baseline. It shows how far computing the read-backs alone goes.
+- **Run B**: Run A plus the extended `source` witness (b).
+
+**Bars:** S, B1, B2, B3 and B4 are unchanged word for word. They are computed on the old gold sets exactly as defined (cases.json, G1, and all = cases + G1), for both runs. The new gold is reported **separately** with the same measures: missed, wasted and continue for gate-now and Wald, and the same shuffled null (same seed, 200 shuffles) on the new gold alone. The Clarification 1 row (`P3_R_0`) is reported by name. No bar is added for the new gold in this amendment, and Wald does not gate on the strength of it. A failed bar is reported as failed. Any change after Run B needs Amendment 3, written before its own re-run.
