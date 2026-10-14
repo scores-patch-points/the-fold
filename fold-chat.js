@@ -3366,7 +3366,8 @@ export function mount(root, opts = {}) {
         })();
       }
     } catch (err) {      // A stop is a stop; ANYTHING else that died is stored as a typed, retry-able note on its own
-      // message (failTurn) — whether or not this chat is the open one.      if (ac.signal.aborted) stopped(); else failTurn(err);
+      // message (failTurn) — whether or not this chat is the open one.
+      if (ac.signal.aborted) stopped(); else failTurn(err);
     } finally {
       refreshMeter();
     }
@@ -3583,6 +3584,20 @@ export function mount(root, opts = {}) {
     if (engagement === "code" && isMakeAsk(text)) { E.input.value = ""; E.input.style.height = "auto"; folds.create(text); return; }
     E.input.value = ""; E.input.style.height = "auto";
     const s = sessions[activeId] || (newChat(), sessions[activeId]);
+    // A typed clip/stitch sentence is a CUT, never a model turn: the parser is
+    // deterministic, the cut is real bytes on this machine, and nothing is invented.
+    const clip = clipAsk(text);
+    if (clip) {
+      E.input.value = ""; E.input.style.height = "auto";
+      s.messages.push({ role: "user", content: text, at: now(), mode: normMode(engagement) });
+      s.title = s.title === "New chat" ? text.slice(0, 46) : s.title; s.updated = now();
+      save("fold-chat:sessions", sessions);
+      setView(false);
+      appendMsg(s, "user", text, { index: s.messages.length - 1, mode: normMode(engagement) });
+      renderChats();
+      runClip(s.id, clip);
+      return;
+    }
     // EFFORT IS CAPTURED HERE, at send, and stamped on the ask: it applies to
     // this turn only. (A code-door turn runs no grounded pipeline, so it carries none.)
     const grounded = !(engagement === "code" && modelsUp && isCodeTask(text));   // no machine door (no bridge): any ask is answered by the grounded lane, never refused
@@ -4141,21 +4156,7 @@ export function mount(root, opts = {}) {
         const raw = await file.text();
         taint.addFromText(raw, "local-read"); taint.add(file.name, "filename");
         const reading = await client.read(raw, { base: bridge, source: file.name, sessionId: sessions[activeId]?.codeSessionId || null });
-const s = sessions[activeId] || (newChat(), sessions[activeId]);
-    // A typed clip/stitch sentence is a CUT, never a model turn: the parser is
-    // deterministic, the cut is real bytes on this machine, and nothing is invented.
-    const clip = clipAsk(text);
-    if (clip) {
-      E.input.value = ""; E.input.style.height = "auto";
-      s.messages.push({ role: "user", content: text, at: now(), mode: normMode(engagement) });
-      s.title = s.title === "New chat" ? text.slice(0, 46) : s.title; s.updated = now();
-      save("fold-chat:sessions", sessions);
-      setView(false);
-      appendMsg(s, "user", text, { index: s.messages.length - 1, mode: normMode(engagement) });
-      renderChats();
-      runClip(s.id, clip);
-      return;
-    }
+        const s = sessions[activeId] || (newChat(), sessions[activeId]);
         const note = readingNote(file.name, raw.length, reading);
         s.attachments = [...(s.attachments || []), { name: file.name, bytes: raw.length, referents: (reading.referents || []).length, relations: (reading.relations || []).length }];
         // The reading rides the history as grounded material — never the raw
