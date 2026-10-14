@@ -110,7 +110,7 @@ Gold: 341 rows (`eval/cases.json` 73; G1 output asks 268). Ratios are leave-one-
 - **Pre-registered bars to beat** (written before the build, in `eval/wald/PREREG.md`):
   1. Creative asks searched: 82.1% now, target 0 with no loss in grounded asks.
   2. `expect.search` agreement on `eval/cases.json` must not fall below the current classifier's.
-  3. Live wire per turn below the always-search baseline.
+  3. Live wire per turn below the current gate's (`wantWeb`, the conjunction in `fold-chat.js`). *Corrected 2026-10-14 (chorus, Ostrom):* the "always-search" baseline was the wrong scope.
   4. Zero increase in unsourced claims (✱) on checkable turns.
 
 ## Prior art

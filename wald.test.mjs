@@ -100,3 +100,22 @@ test("shadow mode compares, changes nothing, and says when it cannot compare", (
   assert.equal(s.agrees, null, "uncalibrated: no agreement claimed");
   assert.equal(s.gateNow, true);
 });
+
+test("an ask no witness reads is a typed gap, never a silent 'take nothing' (chorus: Alexander)", () => {
+  const d = waldDecide({ votes: [] });
+  assert.deepEqual(d.recommend, []);
+  assert.ok(d.gaps.some((g) => g.pull === null && /no witness read/.test(g.why)));
+});
+
+test("the calibration the surface ships is measured, separable, and decides (chorus: Simon/Chekhov)", async () => {
+  const { WALD_CALIBRATION: c } = await import("./fold-chat-wald-calibration.js");
+  assert.equal(c.schema, "WaldCalibration@1");
+  assert.ok(c.gold.needed > 0 && c.gold.notNeeded > 0, "both labels present in the gold it was measured on");
+  const t = thresholdsOf(c.web);
+  assert.equal(t.ok, true, "alpha/beta from the gate's own rates separate");
+  assert.ok(t.logB < 0 && t.logA > 0);
+  for (const w of ["kind", "output"]) assert.ok(c.web.lr[w], `witness ${w} measured`);
+  const s = waldShadow({ signals: { kind: "generate", follow: { mode: "web" }, producing: true, outType: { type: "poem", needsSources: false } }, calibration: c, gateNow: false });
+  assert.equal(s.decision.pulls.web.verdict, VERDICT.REFUSED, "a creative piece that needs no sources is refused the web under the shipped calibration");
+  assert.equal(s.agrees, true);
+});

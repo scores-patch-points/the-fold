@@ -155,6 +155,8 @@ export function waldDecide({ votes = [], calibration = {}, prices = {} } = {}) {
     if (entry.verdict === VERDICT.CONTINUE) entry.truncated = llr > 0 ? "pull" : "skip";   // §3.8: at the limit the sign decides
     pulls[pull] = entry;
   }
+  // no witness read this ask at all: say so — an empty possible set is a gap in the parliament, never a silent "take nothing"
+  if (!vs.length) gaps.push({ pull: null, why: "no witness read this ask: no vote for or against any pull" });
   const by = (verdict) => COST_ORDER.filter((p) => pulls[p].verdict === verdict);
   const possible = COST_ORDER.filter((p) => pulls[p].possible);
   const probable = by(VERDICT.PROBABLE);
