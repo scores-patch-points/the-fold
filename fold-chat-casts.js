@@ -30,6 +30,21 @@ export function pronounOf(ask, gate) {
   return tokenRuns(ask).find((w) => CASTS.pronounGender[w]) || null;
 }
 
+/** Do two word forms share a stem? Equal; one a prefix or suffix of the other (a plural, a compound head: "wahl" in "praesidentschaftswahl"); or a long
+ *  common prefix ("eleccio" in elecció / eleccions). Folded, ≥4 letters. The false-positive rate on unrelated words is MEASURED in
+ *  fold-chat-pronoun-levels.test.mjs, not assumed. */
+export function sameStem(a, b) {
+  a = fold(a); b = fold(b);
+  if (a.length < 4 || b.length < 4) return false;
+  if (a === b) return true;
+  const [s, l] = a.length <= b.length ? [a, b] : [b, a];
+  if (l.startsWith(s) || l.endsWith(s)) return true;
+  let k = 0; while (k < s.length && s[k] === l[k]) k++;
+  return k >= Math.max(5, Math.ceil(0.75 * s.length));
+}
+/** Does the ask itself NAME this referent (some word of the ask shares a stem with some word of its surface)? */
+export const askNames = (ask, surface) => { const a = tokenRuns(ask).filter((w) => w.length >= 4); return tokenRuns(surface).some((s) => s.length >= 4 && a.some((w) => sameStem(w, s))); };
+
 const mentions = (surface, text) => {
   const ws = tokenRuns(surface);
   if (!ws.length) return false;
@@ -67,6 +82,12 @@ export function resolveCast(question, cast, { rejected = null, pronoun = null } 
   const refused = new Set((Array.isArray(rejected) ? rejected : []).map((x) => fold(x).trim()));
   const wantAnim = pronoun && CASTS.pronounGender[pronoun] ? CASTS.pronounGender[pronoun] : null;
   let pool = cast.established.filter((e) => cast.userReachable.has(e.holder) && e.holder !== H.SOURCE && !refused.has(e.id));
+  // DISJOINT REFERENCE (Level 4, language-free). In a one-sentence ask, a pronoun does not stand for a referent the ask itself names: in
+  // "say more about him losing the election" the election is named, so "him" is not the election. It needs no animacy table and no
+  // pronoun gender, so it holds in every language the stem test holds in. Applied only when it leaves at least one candidate, and not to
+  // an ask of several sentences ("Trump lost. Tell me more about him."), where the pronoun may well stand for a name already given.
+  const oneSentence = !/[.!?;。！？]\s*\p{L}/u.test(said);
+  if (oneSentence) { const rest = pool.filter((e) => !askNames(said, e.surface)); if (rest.length && rest.length < pool.length) pool = rest; }
   if (wantAnim === "n") pool = pool.filter((e) => !e.person);
   else if (wantAnim === "p") { const pl = pool.filter((e) => e.person); if (pl.length) pool = pl; }
   if (!pool.length) return { ...base, reason: wantAnim ? "nothing-person-like-or-reachable" : "nothing-reachable", why: "the referent the ask points back to is out of the person's scope, or was refused" };
