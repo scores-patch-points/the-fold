@@ -57,8 +57,11 @@ const BAD_HTTP = (s) => Number.isFinite(+s) && +s >= 400;
 /** Units of a text: runs between line breaks, ellipses, ' | ' and sentence stops (a stop is . ! ? 。！？ followed by space, so
  *  4.97 and 3.5 stay whole; a stop after a known abbreviation does not end a unit). */
 const ABBREV = /(?:^|[\s(])(?:mr|mrs|ms|dr|prof|sr|jr|st|vs|etc|no|nos|fig|figs|eq|inc|ltd|co|corp|mt|ave|gen|col|capt|lt|sgt|rev|vol|vols|pp|ca|approx|est|dept|univ|e\.g|i\.e|cf|al)\.$/iu;
-/** Does this text END on an abbreviation or a lone initial, so its final "." is not a sentence stop? */
-export const endsWithAbbreviation = (t) => { const x = String(t ?? "").replace(/["')\]”’]+$/u, ""); return ABBREV.test(x) || /(?:^|[\s(])\p{Lu}\.$/u.test(x); };
+/** Does this text END on an abbreviation, a lone initial, or a run of dotted initials, so its final
+ *  "." is not a sentence stop? "U.S."/"D.C." end in an initial preceded by another dotted initial —
+ *  the single-initial rule needs [\s(] before it and misses the second dot (F4 S06: "…first U.S.|patent…"
+ *  split a sentence in two). Same accepted ambiguity as Fig./Dr.: "…in the U.S. He…" reads as one unit. */
+export const endsWithAbbreviation = (t) => { const x = String(t ?? "").replace(/["')\]”’]+$/u, ""); return ABBREV.test(x) || /(?:^|[\s(])(?:\p{Lu}\.){2,}$/u.test(x) || /(?:^|[\s(])\p{Lu}\.$/u.test(x); };
 export function unitsOf(text) {
   const out = [];
   for (const line of String(text ?? "").split(/\n+|\s…\s|…|\s\|\s/u)) {

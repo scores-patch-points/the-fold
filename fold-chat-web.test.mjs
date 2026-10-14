@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { search, readText, searchWeb, SCOPES, queriesFor, onTopic, EFFORT, EFFORT_LEVELS, normEffort, effortOfTurn, resolveEffort } from "./fold-chat-web.js";
+import { search, readText, searchWeb, SCOPES, queriesFor, onTopic, EFFORT, EFFORT_LEVELS, normEffort, effortOfTurn, resolveEffort, urlOf } from "./fold-chat-web.js";
 
 const resp = (body, { ok = true, status = 200 } = {}) => ({
   ok, status, json: async () => body, text: async () => (typeof body === "string" ? body : JSON.stringify(body)),
@@ -49,7 +49,7 @@ test("readText: a refused direct read does not claim direct — it names the thi
     if (/allorigins/.test(url)) return resp("<title>Via proxy</title><p>" + "text ".repeat(30) + "</p>");
     throw new Error("unexpected " + url);
   };
-  const rd = await readText("https://blocked.example/a", { fetchImpl: f });
+  const rd = await readText("https://blocked.example/a", { fetchImpl: f, publicFallback: true });   // the public fallback, switched on (C8: off by default)
   assert.equal(rd.ok, true);
   assert.notEqual(rd.via, "direct");
   assert.match(rd.via, /proxy|reader/);
@@ -64,7 +64,7 @@ test("readText: a page only a text reader can read is marked as the reader", asy
     if (/r\.jina\.ai/.test(url)) return resp("Title: X\n\nMarkdown Content:\n" + "deep text ".repeat(40));
     throw new Error("unexpected " + url);
   };
-  const rd = await readText("https://spa.example/x", { fetchImpl: f });
+  const rd = await readText("https://spa.example/x", { fetchImpl: f, publicFallback: true });   // the public fallback, switched on (C8: off by default)
   assert.equal(rd.ok, true);
   assert.match(rd.via, /reader/);
 });
@@ -158,4 +158,12 @@ test("looksBinary: replacement characters and control bytes are not text; prose,
   assert.equal(looksBinary("<html><body><p>Héllo — wörld, “quoted” text with accents and symbols ©</p></body></html>".repeat(2)), false);
   assert.equal(looksBinary("\ufffd"), false);   // too short to judge
   assert.equal(looksBinary(""), false);
+});
+
+test("urlOf detects a URL an ask points at (bare or with a verb), and refuses prose", () => {
+  assert.equal(urlOf("https://leostrausstranscripts.uchicago.edu/navigate/1/2"), "https://leostrausstranscripts.uchicago.edu/navigate/1/2");
+  assert.equal(urlOf("read this page: https://example.com/a?b=1."), "https://example.com/a?b=1");
+  assert.equal(urlOf("summarize https://example.org/x and tell me"), "https://example.org/x");
+  assert.equal(urlOf("who is the president?"), null);
+  assert.equal(urlOf("mailto:x@y.com"), null);
 });

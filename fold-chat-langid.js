@@ -110,7 +110,8 @@ let INDEX = {};
 /** Swap the priors (experiments and tests only): useIndex(otherPriors), or useIndex() for the shipped ones. */
 export function useIndex(priors = null, { fwTop = null, drop = [] } = {}) { INDEX = {}; ID_MEMO.clear(); OVERRIDE = priors; FWTOP = fwTop; DROP = new Set(drop); }
 let OVERRIDE = null, FWTOP = null, DROP = new Set();
-function fold(s) { return s.normalize("NFD").replace(/\p{M}+/gu, "").normalize("NFC"); }
+// (a `fold` that stripped every \p{M} after NFD lived here, unused — the khora's reverted
+//  blanket strip (II.13). It is removed: langid keeps marks INSIDE their runs, in runsOf below.)
 // One script group is decoded the first time a text in that script is read (a Latin ask never pays for Cyrillic).
 // `tier`: "core" (treebank, default) or "udhr" (the UDHR fallback). An OVERRIDE (tests/experiments) ignores tiers.
 function groupOf(script, tier = "core") {

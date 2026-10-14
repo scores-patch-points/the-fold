@@ -130,3 +130,12 @@ test("the 25 everyday asks of the 2026-10-05 harness classify as the report says
   };
   for (const [q, k] of Object.entries(want)) assert.equal(classifyTurn(q), k, q.slice(0, 70));
 });
+
+// ── directive: found live 2026-10-14 — "Say hello in five words." was classified chat, searched, and answered with a wikiHow page ──
+import { directiveShape as _directiveShape } from "./fold-chat-kinds.js";
+test("directiveShape: an instruction about the model's own words with no information need", () => {
+  for (const q of ["Say hello in five words.", "Say something nice.", "Reply with yes or no.", "say hi", "Please say hello in 3 words"]) assert.equal(_directiveShape(q), true, q);
+});
+test("directiveShape: a topical object is NOT a directive and still searches", () => {
+  for (const q of ["Say hello to the Eiffel Tower", "Tell me about the Eiffel Tower in three words.", "Who said hello first?", "Write a haiku about rain.", "type your name"]) assert.equal(_directiveShape(q), false, q);
+});

@@ -48,6 +48,18 @@ test("an ask with no names or content words leaves the pool alone", () => {
   assert.deepEqual(titleGate(pool, "ok?").off, []);
 });
 
+test("identifier surfaces (referent-first 2026-10-11): short identifier tokens join the ask's stems", async () => {
+  const { contentTerms, identifierPieces } = await import("./fold-chat-web.js");
+  const t = contentTerms("how do i edit src/app.js to import chat?");
+  for (const w of ["src", "app", "js"]) assert.ok(t.includes(w), w + " is a referent surface, not dropped for length");
+  assert.ok(identifierPieces("for NIST CSF category ID.AM-1").includes("am"), "AM-1 contributes am");
+  assert.ok(identifierPieces("for NIST CSF category ID.AM-1").includes("id"), "ID.AM-1 contributes id");
+  // The page bearing the identifier is kept first; the unrelated page is demoted for sharing no word.
+  const g = titleGate([R("Cat videos"), R("src/app.js — chat component")], "how do i edit src/app.js to import chat?");
+  assert.equal(g.pool[0].title, "src/app.js — chat component");
+  assert.equal(g.off[0].title, "Cat videos");
+  assert.equal(g.off[0].why, "no-shared-word");
+});
 test("people-record asks are not disturbed: the entity's own record pages and swarm results stay in order", () => {
   const pool = [R("Judy Liff - Whitepages"), R("Zachary Liff - Elementix Investors"), R("Judy (film)")];
   const g = titleGate(pool, "find the relationship between Judy and Zachary Liff from Nashville");

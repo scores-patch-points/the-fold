@@ -1,0 +1,87 @@
+THE FULL REAL READING PIPELINE (bytes -> answer) — ascii, code-grounded
+========================================================================
+Two layers actually read: the PERCEIVER (khora, the ground producer) and the SURFACE (the fold chat).
+Citations are file:line. Written 2026-10-10, read alongside WHAT-IT-ACTUALLY-DOES.ascii.
+
+A. THE PERCEIVER (khora — what makes the ground)
+------------------------------------------------
+  bytes (a page, a book, an audio transcript)
+    |  native/adapters/text/material.js        the raw, named with its source identity
+    |  native/adapters/text/surfaces.js        the read's surfaces (pronouns/entities it can hear)
+    |  native/adapters/text/spans.js           token/span segmentation, stem-folded, byte-addressed
+    |  native/adapters/text/priors.js          received closed classes (negation, determiners) with givers
+    |  native/adapters/text/wordclass.js       classifyWord from POSPrior@1   <-- the real prior
+    v
+  makeRelationReader / makeCaseMarkedRelationReader      native/organs/hypergraph.js
+    |  cast + bonds + folds a FoldReadingIndex@2; posPriorFor gates the verb vocabulary
+    v
+  THE WHEEL, one step per being                    native/kernel/reading.js
+    |  void -> being -> fold  (receivedGround, applyObservation, deltaFold)
+    |  challengeCandidates  constitutive perturbation (canonical callback gate)
+    |  witness -> deriveSurprise/Tension/Release   native/kernel/dynamics.js
+    |  buildHypergraph -> the reading's fold
+    v
+  the fold (deltaFold, reconstruction)            native/kernel/fold.js
+    |  reading returns surprise/tension/release on EVERY step (kernel/reading.js:183)
+    v
+  pathos  pathosOf -> reGroundCondition           native/organs/pathos.js:67,:140
+    |    ground_holds | stale | collapse | contested | lifted   (measured ONLY with the fold)
+    v
+  the ledger  notes.js (end1|verb|end2) -> text face notes-text.js (hyperlexicon)   native/kernel/notes.js:87
+    v
+  instant role-kind answers  currentFactsStore().resolve(ask)   native/organs/current-facts.js:271  [O(1)]
+    v
+  the seam: proxy-runner.mjs  POST /v1/read   (what the holodeck drives)   proxy-runner.mjs
+
+B. THE SURFACE (the fold chat — what a person sees)
+---------------------------------------------------
+  a URL / a drop -> Add
+    |  readText(forward)                          fold-chat-web.js:339
+    |    direct -> Wikipedia-extract -> bridge(/api/page) -> relay/raw
+    |           -> allorigins/codetabs/corsproxy/cors.eu.org/thingproxy -> jina/microlink
+    |    looksBlocked (:393)  looksDisambiguation (:394,:413)  binary/too-short/frame gates
+    |  regionOfHtml  -> the CONTENT region           fold-chat-region.js   (nav/header/banner/footer dropped)
+    |  impressionOf  -> SHADOW field + impressions      fold-chat-impression.js
+    |  snipsOf / strand  -> the source's VERBATIM sentences   fold-chat-strand.js
+    v
+  candidate pool -> on-topic gate                 fold-chat-web.js:854
+    |  entitiesOf -> applyGate (swarm) -> titleGate -> demoteOtherSenses  (a name or a scope wins)
+    |  rankBySalience (prior-informed)            fold-chat-salience-infer.js   <-- the real-prior layer
+    v
+  model mouth (heimdall/ollama/webllm) through GARY        fold-chat-gary.js
+    |  makeGary().composeTurn -> refuse before the network; the model never speaks alone
+    v
+  coverage / grounding  (which sentences the answer SHARES with the material)   fold-chat-ground.js:710
+    v
+  THE VOID (the disposition)                      fold-chat-channels.js:47  (see WHAT-IT-ACTUALLY-DOES.ascii)
+    |  unreached | unsupported | partial | live | generate
+    v
+  EOT ledger (provenance events)                  fold-chat-eot.js
+    v
+  render -> the bubble, its cites, its void
+
+C. THE ARCHONS RIDING THE PIPELINE
+----------------------------------
+  matched domain wisdoms   matchArchons(text)     khora native/organs/archon-compendium.js:1027
+      e.g. over a presidential read it called up:
+        eastwood   the shortest true answer           partee   tense is anaphora ("now")
+        hubel      local reach                        koestler the holon
+        solon      nothing in excess                  sima     walk past the received account
+        mozi       a claim stands on what senses witness  dai  a quotation verified or not printed
+  taught probes (generation/revision grid)          khora native/the-fold/archon-rules.js
+      zinsser / llsh-klinkenborg / clark / caro / kidder-todd / mcphee / gornick / gebser / houdini / williams
+        ethos.logos.pathos x macro.meso.micro
+  the prompt archon GARY                           khora organs/gary.js + the-fold fold-chat-gary.js
+  the dossier disclosure gate                      the-fold scripts/archon-dossier-check.mjs
+
+D. WHERE IT WORKS / WHERE IT IS THIN (measured today)
+---------------------------------------------------
+  WORKS:  matchArchons names the relevant wisdoms for a real read and CREDITS them;
+          the taught probes audit real material — over "List of presidents of the United States"
+          williamsCausalOrder caught "due to" making 1841 the cause of 1789 (a real flag);
+          the surface's own auditors (looksBlocked/looksDisambiguation/verbatim strand) are live.
+  THIN:   the probes are wired to the GENERATION pipeline (pipeline-run.mjs), not to every
+          surface READ — a turn's read text does not pass through the teaching grid unless a piece
+          is being composed; matchArchons is a crediting compendium, not an auditor;
+          pathos reGroundCondition cannot fire on the chat surface (its curve is unmeasured there —
+          backup: 0/24 collapse on real prompts).

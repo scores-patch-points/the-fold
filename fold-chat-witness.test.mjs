@@ -177,7 +177,10 @@ test("person filler: the COPULA-SIDE rule — the side that does not carry the r
   assert.equal(f("The king of the United Kingdom is Charles III (born 1948)."), "Charles III");
   assert.equal(f("The king of the United Kingdom is Charles III; he acceded in 2022."), "Charles III");
   assert.equal(f("The king of the United Kingdom is Charles III having acceded in 2022."), "Charles III");
-  assert.equal(f("The king of the United Kingdom is the one that acceded."), "the one");
+  assert.equal(f("The king of the United Kingdom is Charles III that acceded."), "Charles III");     // trimmed at the relative clause
+  // a PERSON filler is somebody (panel-fixes, 2026-10-13): "the one" is a pronoun-like run (POSPrior rank 1), not a name — it was a
+  // filler here before the person-like guard; the clause-boundary trim above is pinned on a name instead
+  assert.equal(f("The king of the United Kingdom is the one that acceded."), null);
   assert.equal(f("Charles III, born in 1948, is the king of the United Kingdom."), "Charles III");
   assert.equal(f("Charles III is the king of the United Kingdom, having acceded in 2022."), "Charles III");
 });
@@ -221,12 +224,15 @@ test("time filler: the year in the sentence; SEVERAL years are reported as candi
   assert.equal(inRef.filler.text, "1972", "a year inside the referent is not the answer");
 });
 
-test("place and thing fillers use the same copula-side rule", () => {
+test("place and thing fillers use the copula-side rule; a PLACE filler is the PLACE itself — the leading phrase is cut (declared 2026-10-11, giver: the author: a place must bind a real place, so 'born in Queens' and 'located in Paris' yield the place, not the phrase)", () => {
   const thing = mk("thing", [["Australia", "Australia"]], ["capital"]);
   assert.equal(bind(thing, "Canberra is the capital city of Australia.").filler.text, "Canberra");
   assert.equal(bind(thing, "The capital city of Australia is Canberra.").filler.text, "Canberra");
   const place = mk("place", [["Eiffel Tower", "Eiffel Tower"]], ["located"]);
-  assert.equal(bind(place, "The Eiffel Tower is located in Paris, France.").filler.text, "located in Paris");
+  assert.equal(bind(place, "The Eiffel Tower is located in Paris, France.").filler.text, "Paris");
+  const birth = mk("place", [["Donald Trump", "Donald Trump"]], ["born"]);
+  assert.equal(bind(birth, "Donald Trump was born in Queens.").filler.text, "Queens");
+  assert.equal(bind(birth, "Donald Trump was born in Queens.").filler.span[0] > 0, true, "the filler is bytes of the sentence, the phrase cut, nothing invented");
 });
 
 test("emphasis: the filler and the matched referent and predicate words, as sentence offsets", async () => {
@@ -258,4 +264,42 @@ test("the source object the caller passes rides on the row untouched", async () 
   const source = { ref: "S7", title: "X", url: "https://e.org/x", host: "e.org", lang: "en" };
   const r = bindSentence({ text: "Charles III is the king of the United Kingdom.", start: 10, end: 57 }, frame, { fw: FW, lang: "en", source });
   assert.deepEqual(r.source, source); assert.deepEqual(r.span, [10, 57]);
+});
+
+// ── THE REAL-WEB HOLDER SENTENCE (declared 2026-10-11): subject-verb-role with a role-carrying topic ──
+test("subject-verb-role binds: 'Charles III became king on 8 September 2022.' witnesses 'who is the king of the UK?' from a role page", () => {
+  const frame = { ok: true, lang: "en", slot: "person", referents: [{ surface: "UK", title: "United Kingdom", aliases: ["UK", "United Kingdom"] }], predicate: [{ surface: "king", stem: "king" }] };
+  const fw = functionWordsOf("en");
+  const r = bindSentence({ text: "Charles III became king on 8 September 2022.", start: 0, end: 43 }, frame, { fw, lang: "en", topic: "Who is King Charles III? A look at his life — LBC" });
+  assert.equal(r.tier, "T1");
+  assert.equal(r.filler.text, "Charles III");
+});
+
+test("FALSIFIER: the role rule never guesses — a pronoun subject fills nothing, no topic is nothing, a title without the role is nothing", () => {
+  const frame = { ok: true, lang: "en", slot: "person", referents: [{ surface: "UK", title: "United Kingdom", aliases: ["UK", "United Kingdom"] }], predicate: [{ surface: "king", stem: "king" }] };
+  const fw = functionWordsOf("en");
+  const pronoun = bindSentence({ text: "He became king on 8 September 2022.", start: 0, end: 36 }, frame, { fw, lang: "en", topic: "Who is King Charles III? — LBC" });
+  assert.ok(!pronoun || !pronoun.filler, "a pronoun subject names no one");
+  const noTopic = bindSentence({ text: "Charles III became king on 8 September 2022.", start: 0, end: 43 }, frame, { fw, lang: "en", topic: null });
+  assert.equal(noTopic, null, "without a role-carrying topic the referent must appear, exactly as before");
+  const noRole = bindSentence({ text: "Charles III became king on 8 September 2022.", start: 0, end: 43 }, frame, { fw, lang: "en", topic: "Monarchy of the United Kingdom" });
+  assert.equal(noRole, null, "the topic must literally carry the role word");
+  const nonRoleVerb = bindSentence({ text: "King Charles III attended the summit.", start: 0, end: 34 }, frame, { fw, lang: "en", topic: "Who is King Charles III? — LBC" });
+  assert.ok(!nonRoleVerb || !nonRoleVerb.filler, "a sentence with no role verb and no copula fills nothing");
+});
+
+test("the perfect copula binds too: 'King Charles III has been king since 8 September 2022.' yields the subject 'King Charles III', never the auxiliary", () => {
+  const frame = { ok: true, lang: "en", slot: "person", referents: [{ surface: "UK", title: "United Kingdom", aliases: ["UK", "United Kingdom"] }], predicate: [{ surface: "king", stem: "king" }] };
+  const fw = functionWordsOf("en");
+  const r = bindSentence({ text: "King Charles III has been king since 8 September 2022.", start: 0, end: 55 }, frame, { fw, lang: "en", topic: "Who is King Charles III? — LBC" });
+  assert.equal(r.tier, "T1");
+  assert.equal(r.filler.text, "King Charles III");
+});
+
+test("a PREDICATE-LESS role frame binds from the referent's own role word: 'who is the king of the UK' (referent 'king of the uk') + 'Charles III became king…' + a King-carrying title", () => {
+  const frame = { ok: true, lang: "en", slot: "person", referents: [{ surface: "king of the uk", title: "Monarchy of the United Kingdom", aliases: ["king of the uk", "Monarchy of the United Kingdom"] }], predicate: [] };
+  const fw = functionWordsOf("en");
+  const r = bindSentence({ text: "Charles III became king on September 8, 2022, following the death of Queen Elizabeth II.", start: 0, end: 93 }, frame, { fw, lang: "en", topic: "Who is Britain\u2019s King Charles III?" });
+  assert.equal(r.tier, "T1");
+  assert.equal(r.filler.text, "Charles III");
 });

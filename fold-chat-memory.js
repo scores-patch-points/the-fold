@@ -10,24 +10,14 @@
 //
 // Pure and node-testable.
 
+// The name-introduction forms across the fold's languages live in one declared place
+// (fold-chat-lang-facts.js). This module re-exports the extractor so the identity
+// pipeline and the memory store share ONE rule and cannot drift apart.
+import { extractStatedName } from "./fold-chat-lang-facts.js";
+export { extractStatedName };
+
 /** The standing rule carried into every turn. */
 export const NO_INVENT = "Never state, guess, or attribute the person's name, identity, or any personal fact that is not given to you in this context. If asked and it is not in this context, say plainly that you do not have it. Never answer with your own model name as if it were the person's.";
-
-const STOP = /^(a|an|the|not|no|just|here|fine|good|ok|okay|sorry|asking|wondering|curious|confused)$/i;
-
-/** Learn a name the person states about themselves. Returns the name
- *  (capitalized) or null. Questions never yield a name. */
-export function extractStatedName(text) {
-  const t = String(text ?? "").trim();
-  if (!t) return null;
-  const m =
-    t.match(/\b(?:my name is|my name'?s|call me|i am|i'?m)\s+([\p{L}][\p{L}'’-]+)/iu) ||
-    t.match(/\bname'?s\s+([\p{L}][\p{L}'’-]+)/iu);
-  if (!m) return null;
-  const raw = m[1];
-  if (!raw || STOP.test(raw)) return null;
-  return raw[0].toUpperCase() + raw.slice(1);
-}
 
 /** True when the text is a question about the person's identity. */
 export function asksIdentity(text) {

@@ -1,0 +1,988 @@
+{
+  "lang": "en",
+  "about": "Draft built mechanically from en.wikipedia.org; each gold quote is the first page sentence with the answer.",
+  "labeledBy": "the builder's own draft — not yet reviewed by a second labeler",
+  "items": [
+    {
+      "id": "en-factual-01",
+      "lang": "en",
+      "part": "factual",
+      "ask": "What is the height of Mount Everest above sea level, in metres?",
+      "gold": {
+        "source": {
+          "title": "Mount Everest",
+          "url": "https://en.wikipedia.org/wiki/Mount_Everest",
+          "quote": "Its height was most recently measured in 2020 through a joint survey by Nepalese and Chinese authorities as 8,848.86 m (29,031 ft 8+1⁄2 in)."
+        },
+        "answers": [
+          "8,848.86"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-02",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which year was Marie Curie awarded the Nobel Prize in Physics?",
+      "gold": {
+        "source": {
+          "title": "Marie Curie",
+          "url": "https://en.wikipedia.org/wiki/Marie_Curie",
+          "quote": "She shared the 1903 Nobel Prize in Physics with her husband, Pierre Curie, \"for their joint researches on the radioactivity phenomena discovered by Professor Henri Becquerel\"."
+        },
+        "answers": [
+          "1903"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-03",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Into which ocean does the Amazon River flow?",
+      "gold": {
+        "source": {
+          "title": "Amazon River",
+          "url": "https://en.wikipedia.org/wiki/Amazon_River",
+          "quote": "The Amazon enters Brazil with only one-fifth of the flow it finally discharges into the Atlantic Ocean yet already has a greater flow at this point than the discharge of any other river in the world."
+        },
+        "answers": [
+          "Atlantic Ocean"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-04",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which work by Isaac Newton set out the laws of motion and universal gravitation?",
+      "gold": {
+        "source": {
+          "title": "Isaac Newton",
+          "url": "https://en.wikipedia.org/wiki/Isaac_Newton",
+          "quote": "His book Philosophiæ Naturalis Principia Mathematica (Mathematical Principles of Natural Philosophy), first published in 1687, achieved the first great unification in physics and established classical mechanics."
+        },
+        "answers": [
+          "Principia"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-05",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which gas do plants take in from the air during photosynthesis?",
+      "gold": {
+        "source": {
+          "title": "Photosynthesis",
+          "url": "https://en.wikipedia.org/wiki/Photosynthesis",
+          "quote": "In this process, atmospheric carbon dioxide is incorporated into already existing organic compounds, such as ribulose bisphosphate (RuBP)."
+        },
+        "answers": [
+          "carbon dioxide"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-06",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Into which sea does the Nile flow?",
+      "gold": {
+        "source": {
+          "title": "Nile",
+          "url": "https://en.wikipedia.org/wiki/Nile",
+          "quote": "The Nile is a major north-flowing river in northeast Africa which empties into the Mediterranean Sea."
+        },
+        "answers": [
+          "Mediterranean Sea"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-07",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which town was Johann Sebastian Bach born?",
+      "gold": {
+        "source": {
+          "title": "Johann Sebastian Bach",
+          "url": "https://en.wikipedia.org/wiki/Johann_Sebastian_Bach",
+          "quote": "The Bach family had already produced several composers when Johann Sebastian was born in Eisenach, the youngest child of the city musician Johann Ambrosius Bach."
+        },
+        "answers": [
+          "Eisenach"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-08",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which 1859 book by Charles Darwin set out the theory of natural selection?",
+      "gold": {
+        "source": {
+          "title": "Charles Darwin",
+          "url": "https://en.wikipedia.org/wiki/Charles_Darwin",
+          "quote": "Darwin published his theory of evolution with compelling evidence in On the Origin of Species (1859)."
+        },
+        "answers": [
+          "On the Origin of Species"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-09",
+      "lang": "en",
+      "part": "factual",
+      "ask": "What is the largest hot desert in the world?",
+      "gold": {
+        "source": {
+          "title": "Sahara",
+          "url": "https://en.wikipedia.org/wiki/Sahara",
+          "quote": "The Sahara is the world's largest hot desert."
+        },
+        "answers": [
+          "Sahara"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-10",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Who created the Python programming language?",
+      "gold": {
+        "source": {
+          "title": "Python (programming language)",
+          "url": "https://en.wikipedia.org/wiki/Python_(programming_language)",
+          "quote": "Guido van Rossum began working on Python in the late 1980s as a successor to the ABC programming language."
+        },
+        "answers": [
+          "Guido van Rossum"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-11",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Who invented the World Wide Web?",
+      "gold": {
+        "source": {
+          "title": "World Wide Web",
+          "url": "https://en.wikipedia.org/wiki/World_Wide_Web",
+          "quote": "The Web was invented by English computer scientist Tim Berners-Lee while at CERN in 1989 and opened to the public in 1993."
+        },
+        "answers": [
+          "Tim Berners-Lee"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-12",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which chemist published the first widely recognised periodic table in 1869?",
+      "gold": {
+        "source": {
+          "title": "Periodic table",
+          "url": "https://en.wikipedia.org/wiki/Periodic_table",
+          "quote": "The first periodic table to become generally accepted was that of the Russian chemist Dmitri Mendeleev in 1869; he formulated the periodic law as a dependence of chemical properties on atomic mass."
+        },
+        "answers": [
+          "Dmitri Mendeleev",
+          "Mendeleev"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-13",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which year did the Titanic sink?",
+      "gold": {
+        "source": {
+          "title": "Titanic",
+          "url": "https://en.wikipedia.org/wiki/Titanic",
+          "quote": "RMS Titanic was a British ocean liner that sank in the early hours of 15 April 1912 after striking an iceberg on her maiden voyage from Southampton, England, to New York City."
+        },
+        "answers": [
+          "1912"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-14",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which year did the French Revolution begin?",
+      "gold": {
+        "source": {
+          "title": "French Revolution",
+          "url": "https://en.wikipedia.org/wiki/French_Revolution",
+          "quote": "The French Revolution was a period of political and societal change in France that began with the Estates General of 1789 and ended with the Coup of 18 Brumaire on 9 November 1799."
+        },
+        "answers": [
+          "1789"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-15",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which year did the Berlin Wall fall?",
+      "gold": {
+        "source": {
+          "title": "Berlin Wall",
+          "url": "https://en.wikipedia.org/wiki/Berlin_Wall",
+          "quote": "The Berlin Wall (German: Berliner Mauer, pronounced [bɛʁˌliːnɐ ˈmaʊɐ] ) was a guarded concrete barrier that encircled West Berlin from 1961 to 1989, separating it from East Berlin and the German Democratic Republic (GDR; East Germany)."
+        },
+        "answers": [
+          "1989"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-16",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Who was the first Roman emperor?",
+      "gold": {
+        "source": {
+          "title": "Augustus",
+          "url": "https://en.wikipedia.org/wiki/Augustus",
+          "quote": "Augustus (born Gaius Octavius; 23 September 63 BC – 19 August AD 14), also known as Octavian (Latin: Octavianus), was the founder of the Roman Empire and the first Roman emperor from 27 BC until his death in AD 14."
+        },
+        "answers": [
+          "Augustus"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-17",
+      "lang": "en",
+      "part": "factual",
+      "ask": "How many symphonies did Beethoven compose?",
+      "gold": {
+        "source": {
+          "title": "Ludwig van Beethoven",
+          "url": "https://en.wikipedia.org/wiki/Ludwig_van_Beethoven",
+          "quote": "Beethoven's having written nine symphonies was the original source of the so-called curse of the ninth, a superstition that composers were doomed to die before they could complete a tenth symphony."
+        },
+        "answers": [
+          "nine"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-18",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which town was William Shakespeare born?",
+      "gold": {
+        "source": {
+          "title": "William Shakespeare",
+          "url": "https://en.wikipedia.org/wiki/William_Shakespeare",
+          "quote": "Shakespeare was born and raised in Stratford-upon-Avon, Warwickshire."
+        },
+        "answers": [
+          "Stratford-upon-Avon"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-19",
+      "lang": "en",
+      "part": "factual",
+      "ask": "On which planet is the Great Red Spot?",
+      "gold": {
+        "source": {
+          "title": "Great Red Spot",
+          "url": "https://en.wikipedia.org/wiki/Great_Red_Spot",
+          "quote": "The Great Red Spot is a persistent, elliptical high-pressure region in the atmosphere of the planet Jupiter, producing the largest anticyclonic storm in the Solar System."
+        },
+        "answers": [
+          "Jupiter"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-20",
+      "lang": "en",
+      "part": "factual",
+      "ask": "What is the deepest known part of Earth's oceans called?",
+      "gold": {
+        "source": {
+          "title": "Mariana Trench",
+          "url": "https://en.wikipedia.org/wiki/Mariana_Trench",
+          "quote": "The Mariana Trench is the deepest oceanic trench on Earth, located in the western Pacific Ocean, about 200 kilometers (124 mi) east of the Mariana Islands."
+        },
+        "answers": [
+          "Mariana Trench"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-21",
+      "lang": "en",
+      "part": "factual",
+      "ask": "How many chambers does the human heart have?",
+      "gold": {
+        "source": {
+          "title": "Heart",
+          "url": "https://en.wikipedia.org/wiki/Heart",
+          "quote": "In humans, the heart is divided into four chambers: upper left and right atria and lower left and right ventricles."
+        },
+        "answers": [
+          "four"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-22",
+      "lang": "en",
+      "part": "factual",
+      "ask": "What does DNA stand for?",
+      "gold": {
+        "source": {
+          "title": "DNA",
+          "url": "https://en.wikipedia.org/wiki/DNA",
+          "quote": "Deoxyribonucleic acid (; DNA) is a polymer composed of two polynucleotide chains that coil around each other to form a double helix."
+        },
+        "answers": [
+          "deoxyribonucleic acid"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-23",
+      "lang": "en",
+      "part": "factual",
+      "ask": "What is the speed of light in a vacuum, in metres per second?",
+      "gold": {
+        "source": {
+          "title": "Speed of light",
+          "url": "https://en.wikipedia.org/wiki/Speed_of_light",
+          "quote": "The value 299,792,458 metres per second is approximately 1 billion kilometres per hour; 700 million miles per hour."
+        },
+        "answers": [
+          "299,792,458"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-24",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which country is Mount Kilimanjaro?",
+      "gold": {
+        "source": {
+          "title": "Mount Kilimanjaro",
+          "url": "https://en.wikipedia.org/wiki/Mount_Kilimanjaro",
+          "quote": "Mount Kilimanjaro () is a large dormant stratovolcano in Tanzania."
+        },
+        "answers": [
+          "Tanzania"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-25",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which lake is the deepest in the world?",
+      "gold": {
+        "source": {
+          "title": "Lake Baikal",
+          "url": "https://en.wikipedia.org/wiki/Lake_Baikal",
+          "quote": "Lake Baikal is a rift lake and the deepest lake in the world."
+        },
+        "answers": [
+          "Lake Baikal"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-26",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which year was Magna Carta sealed?",
+      "gold": {
+        "source": {
+          "title": "Magna Carta",
+          "url": "https://en.wikipedia.org/wiki/Magna_Carta",
+          "quote": "Magna Carta (Medieval Latin for \"Great Charter\"), sometimes spelled Magna Charta, is a royal charter of rights sealed by King John of England at Runnymede, near Windsor, on 15 June 1215."
+        },
+        "answers": [
+          "1215"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-27",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which device is Alexander Graham Bell credited with patenting?",
+      "gold": {
+        "source": {
+          "title": "Alexander Graham Bell",
+          "url": "https://en.wikipedia.org/wiki/Alexander_Graham_Bell",
+          "quote": "Alexander Graham Bell ( ; born Alexander Bell; March 3, 1847 – August 2, 1922) was a Scottish-born Canadian-American inventor, scientist, and engineer who is credited with patenting the first practical telephone."
+        },
+        "answers": [
+          "telephone"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-28",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which year did the Wright brothers make their first powered flight?",
+      "gold": {
+        "source": {
+          "title": "Wright brothers",
+          "url": "https://en.wikipedia.org/wiki/Wright_brothers",
+          "quote": "They made the first controlled, sustained flight of an engine-powered, heavier-than-air aircraft with the Wright Flyer on December 17, 1903, four miles (6 km) south of Kitty Hawk, North Carolina, at what is now known as Kill Devil Hills."
+        },
+        "answers": [
+          "1903"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-29",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Who invented the movable-type printing press in Europe?",
+      "gold": {
+        "source": {
+          "title": "Johannes Gutenberg",
+          "url": "https://en.wikipedia.org/wiki/Johannes_Gutenberg",
+          "quote": "Johannes Gensfleisch zur Laden zum Gutenberg (c. 1393–1406 – 1468) was a German inventor and craftsman who invented the movable-type printing press."
+        },
+        "answers": [
+          "Johannes Gutenberg",
+          "Gutenberg"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-30",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Who painted the ceiling of the Sistine Chapel?",
+      "gold": {
+        "source": {
+          "title": "Sistine Chapel",
+          "url": "https://en.wikipedia.org/wiki/Sistine_Chapel",
+          "quote": "The chapel's fame lies mainly in the frescoes that decorate its interior, most particularly the Sistine Chapel ceiling and The Last Judgment, both by Michelangelo."
+        },
+        "answers": [
+          "Michelangelo"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-31",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Who deciphered Egyptian hieroglyphs using the Rosetta Stone?",
+      "gold": {
+        "source": {
+          "title": "Rosetta Stone",
+          "url": "https://en.wikipedia.org/wiki/Rosetta_Stone",
+          "quote": "Jean-François Champollion announced the transliteration of the Egyptian scripts in Paris in 1822; it took longer still before scholars were able to read Ancient Egyptian inscriptions and literature confidently."
+        },
+        "answers": [
+          "Champollion"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-32",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which 1930 march did Mahatma Gandhi lead in protest at the salt tax?",
+      "gold": {
+        "source": {
+          "title": "Salt March",
+          "url": "https://en.wikipedia.org/wiki/Salt_March",
+          "quote": "The Salt March, also known as the Salt Satyagraha, Dandi March, and the Dandi Satyagraha, was an act of nonviolent civil disobedience in colonial India, led by Mahatma Gandhi."
+        },
+        "answers": [
+          "Salt March"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-33",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which continent is the coldest?",
+      "gold": {
+        "source": {
+          "title": "Antarctica",
+          "url": "https://en.wikipedia.org/wiki/Antarctica",
+          "quote": "Antarctica is, on average, the coldest, driest, and windiest of the continents, and has the highest average elevation."
+        },
+        "answers": [
+          "Antarctica"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-34",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which city hosted the first modern Olympic Games in 1896?",
+      "gold": {
+        "source": {
+          "title": "1896 Summer Olympics",
+          "url": "https://en.wikipedia.org/wiki/1896_Summer_Olympics",
+          "quote": "The 1896 Summer Olympics, officially known as the Games of the I Olympiad, and commonly known as Athens 1896 (Greek: Αθήνα 1896), were the first international Olympic Games held in modern history."
+        },
+        "answers": [
+          "Athens"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-35",
+      "lang": "en",
+      "part": "factual",
+      "ask": "How many squares are on a chessboard?",
+      "gold": {
+        "source": {
+          "title": "Chessboard",
+          "url": "https://en.wikipedia.org/wiki/Chessboard",
+          "quote": "It consists of 64 squares, 8 rows by 8 columns, on which the chess pieces are placed."
+        },
+        "answers": [
+          "64"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-36",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which ocean does the Panama Canal link to the Atlantic Ocean?",
+      "gold": {
+        "source": {
+          "title": "Panama Canal",
+          "url": "https://en.wikipedia.org/wiki/Panama_Canal",
+          "quote": "The Panama Canal (Spanish: Canal de Panamá) is an artificial 82-kilometer (51-mile) waterway in Panama that connects the Caribbean Sea in the Atlantic Ocean with the Pacific Ocean."
+        },
+        "answers": [
+          "Pacific Ocean",
+          "Pacific"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-37",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which country was Vincent van Gogh born?",
+      "gold": {
+        "source": {
+          "title": "Vincent van Gogh",
+          "url": "https://en.wikipedia.org/wiki/Vincent_van_Gogh",
+          "quote": "Vincent Willem van Gogh was born on 30 March 1853 in Groot-Zundert, in the predominantly Catholic province of North Brabant in the Netherlands."
+        },
+        "answers": [
+          "Netherlands"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-38",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which country is Mount Fuji?",
+      "gold": {
+        "source": {
+          "title": "Mount Fuji",
+          "url": "https://en.wikipedia.org/wiki/Mount_Fuji",
+          "quote": "Mount Fuji (富士山・富士の山, Fujisan, Fuji no Yama) is an active stratovolcano located on the Japanese island of Honshu, with a summit elevation of 3,776.24 m (12,389 ft 3 in)."
+        },
+        "answers": [
+          "Japan"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-39",
+      "lang": "en",
+      "part": "factual",
+      "ask": "Which theorem relates the sides of a right-angled triangle?",
+      "gold": {
+        "source": {
+          "title": "Pythagorean theorem",
+          "url": "https://en.wikipedia.org/wiki/Pythagorean_theorem",
+          "quote": "In mathematics, the Pythagorean theorem or Pythagoras's theorem is a fundamental relation in Euclidean geometry between the three sides of a right triangle."
+        },
+        "answers": [
+          "Pythagorean theorem"
+        ]
+      }
+    },
+    {
+      "id": "en-factual-40",
+      "lang": "en",
+      "part": "factual",
+      "ask": "In which year was the Hubble Space Telescope launched?",
+      "gold": {
+        "source": {
+          "title": "Hubble Space Telescope",
+          "url": "https://en.wikipedia.org/wiki/Hubble_Space_Telescope",
+          "quote": "The Hubble Space Telescope (HST or Hubble) is a space telescope that was launched into low Earth orbit in 1990 and remains in operation."
+        },
+        "answers": [
+          "1990"
+        ]
+      }
+    },
+    {
+      "id": "en-trap-01",
+      "lang": "en",
+      "part": "trap",
+      "ask": "When did Albert Einstein win his second Nobel Prize?",
+      "gold": {
+        "source": {
+          "title": "Albert Einstein",
+          "url": "https://en.wikipedia.org/wiki/Albert_Einstein",
+          "quote": "He received the 1921 Nobel Prize in Physics for \"his services to theoretical physics, and especially for his discovery of the law of the photoelectric effect\"."
+        },
+        "flag": "false-premise"
+      }
+    },
+    {
+      "id": "en-trap-02",
+      "lang": "en",
+      "part": "trap",
+      "ask": "In which year did Marie Curie win the Nobel Prize in Literature?",
+      "gold": {
+        "source": {
+          "title": "Marie Curie",
+          "url": "https://en.wikipedia.org/wiki/Marie_Curie",
+          "quote": "She won the 1911 Nobel Prize in Chemistry \"[for] the discovery of the elements radium and polonium, by the isolation of radium and the study of the nature and compounds of this remarkable element\"."
+        },
+        "flag": "false-premise"
+      }
+    },
+    {
+      "id": "en-trap-03",
+      "lang": "en",
+      "part": "trap",
+      "ask": "Why did the Berlin Wall fall in 1991?",
+      "gold": {
+        "source": {
+          "title": "Berlin Wall",
+          "url": "https://en.wikipedia.org/wiki/Berlin_Wall",
+          "quote": "The Berlin Wall (German: Berliner Mauer, pronounced [bɛʁˌliːnɐ ˈmaʊɐ] ) was a guarded concrete barrier that encircled West Berlin from 1961 to 1989, separating it from East Berlin and the German Democratic Republic (GDR; East Germany)."
+        },
+        "flag": "false-premise"
+      }
+    },
+    {
+      "id": "en-trap-04",
+      "lang": "en",
+      "part": "trap",
+      "ask": "What is the name of Venus's largest moon?",
+      "gold": {
+        "source": {
+          "title": "Venus",
+          "url": "https://en.wikipedia.org/wiki/Venus",
+          "quote": "Venus has no natural satellites."
+        },
+        "flag": "false-premise"
+      }
+    },
+    {
+      "id": "en-trap-05",
+      "lang": "en",
+      "part": "trap",
+      "ask": "What did Isaac Newton say when the apple hit his head?",
+      "gold": {
+        "source": {
+          "title": "Isaac Newton",
+          "url": "https://en.wikipedia.org/wiki/Isaac_Newton",
+          "quote": "Newton often told the story that he was inspired to formulate his theory of gravitation by watching the fall of an apple from a tree."
+        },
+        "flag": "false-premise"
+      }
+    },
+    {
+      "id": "en-trap-06",
+      "lang": "en",
+      "part": "trap",
+      "ask": "Which Roman emperor ordered the building of the Great Wall of China?",
+      "gold": {
+        "source": {
+          "title": "Great Wall of China",
+          "url": "https://en.wikipedia.org/wiki/Great_Wall_of_China",
+          "quote": "The first walls date to the 7th century BC; these were joined together in the Qin dynasty."
+        },
+        "flag": "false-premise"
+      }
+    },
+    {
+      "id": "en-trap-07",
+      "lang": "en",
+      "part": "trap",
+      "ask": "What is the capital of South Africa?",
+      "gold": {
+        "source": {
+          "title": "South Africa",
+          "url": "https://en.wikipedia.org/wiki/South_Africa",
+          "quote": "Pretoria is the administrative capital, while Cape Town, as the seat of Parliament, is the legislative capital, and Bloemfontein is regarded as the judicial capital."
+        },
+        "flag": "multiple"
+      }
+    },
+    {
+      "id": "en-trap-08",
+      "lang": "en",
+      "part": "trap",
+      "ask": "What is the official language of Switzerland?",
+      "gold": {
+        "source": {
+          "title": "Switzerland",
+          "url": "https://en.wikipedia.org/wiki/Switzerland",
+          "quote": "The federal government is obliged to communicate in the official languages, and in the federal parliament simultaneous translation is provided from and into German, French and Italian."
+        },
+        "flag": "multiple"
+      }
+    },
+    {
+      "id": "en-trap-09",
+      "lang": "en",
+      "part": "trap",
+      "ask": "Who invented the light bulb?",
+      "gold": {
+        "source": {
+          "title": "Incandescent light bulb",
+          "url": "https://en.wikipedia.org/wiki/Incandescent_light_bulb",
+          "quote": "Historians Robert Friedel and Paul Israel list inventors of incandescent lamps prior to Joseph Swan and Thomas Edison of General Electric."
+        },
+        "flag": "multiple"
+      }
+    },
+    {
+      "id": "en-trap-10",
+      "lang": "en",
+      "part": "trap",
+      "ask": "How did Napoleon's famously short stature shape his career?",
+      "gold": {
+        "source": {
+          "title": "Napoleon",
+          "url": "https://en.wikipedia.org/wiki/Napoleon",
+          "quote": "In fact, at about 168 cm (5 ft 6 in), he was of average height."
+        },
+        "flag": "false-premise"
+      }
+    },
+    {
+      "id": "en-entity-01",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Who wrote 'The Little Prince'?",
+      "gold": {
+        "source": {
+          "title": "Antoine de Saint-Exupéry",
+          "url": "https://en.wikipedia.org/wiki/Antoine_de_Saint-Exup%C3%A9ry",
+          "quote": "Antoine Marie Jean-Baptiste Roger, vicomte de Saint-Exupéry (29 June 1900 – c. 31 July 1944), known simply as Antoine de Saint-Exupéry (UK: , US: ; French: [ɑ̃twan də sɛ̃t‿ɛɡzypeʁi] ), was a French writer, poet, journalist and aviator."
+        },
+        "answers": [
+          "Antoine de Saint-Exupéry"
+        ],
+        "keep": [
+          "Saint-Exupéry"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-02",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Which Polish city was formerly known in German as Danzig?",
+      "gold": {
+        "source": {
+          "title": "Gdańsk",
+          "url": "https://en.wikipedia.org/wiki/Gda%C5%84sk",
+          "quote": "Gdańsk (Kashubian: Gduńsk; German: Danzig) is a city on the Baltic coast of northern Poland, and the capital of the Pomeranian Voivodeship."
+        },
+        "answers": [
+          "Gdańsk"
+        ],
+        "keep": [
+          "Gdańsk"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-03",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Which Czech composer wrote the cycle of symphonic poems 'Má vlast'?",
+      "gold": {
+        "source": {
+          "title": "Bedřich Smetana",
+          "url": "https://en.wikipedia.org/wiki/Bed%C5%99ich_Smetana",
+          "quote": "Bedřich Smetana (2 March 1824 – 12 May 1884) was a Czech composer who pioneered the development of a musical style that became closely identified with his people's aspirations to a cultural and political \"revival\"."
+        },
+        "answers": [
+          "Bedřich Smetana",
+          "Smetana"
+        ],
+        "keep": [
+          "Bedřich"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-04",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Which Danish philosopher wrote 'Fear and Trembling'?",
+      "gold": {
+        "source": {
+          "title": "Søren Kierkegaard",
+          "url": "https://en.wikipedia.org/wiki/S%C3%B8ren_Kierkegaard",
+          "quote": "Søren Aabye Kierkegaard ( SORR-ən KEER-kə-gard, US also -⁠gor; Danish: [ˈsɶːɐn ˈɔˀˌpyˀ ˈkʰiɐ̯kəˌkɒːˀ] ; 5 May 1813 – 11 November 1855) was a Danish philosopher, Christian theologian, poet, social critic, and religious author who is widely considered to be the first existentialist philosopher."
+        },
+        "answers": [
+          "Søren Kierkegaard",
+          "Kierkegaard"
+        ],
+        "keep": [
+          "Søren"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-05",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Who founded the Republic of Turkey?",
+      "gold": {
+        "source": {
+          "title": "Mustafa Kemal Atatürk",
+          "url": "https://en.wikipedia.org/wiki/Mustafa_Kemal_Atat%C3%BCrk",
+          "quote": "Mustafa Kemal Atatürk (c. 1881 – 10 November 1938) was a Turkish field marshal and statesman who was the founder of the Republic of Turkey and served as its first president from 1923 until his death in 1938."
+        },
+        "answers": [
+          "Mustafa Kemal Atatürk",
+          "Atatürk"
+        ],
+        "keep": [
+          "Atatürk"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-06",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Who wrote 'One Hundred Years of Solitude'?",
+      "gold": {
+        "source": {
+          "title": "Gabriel García Márquez",
+          "url": "https://en.wikipedia.org/wiki/Gabriel_Garc%C3%ADa_M%C3%A1rquez",
+          "quote": "Gabriel José García Márquez (Latin American Spanish: [ɡaˈβɾjel ɣaɾˈsi.a ˈmaɾ.kes] ; 6 March 1928 – 17 April 2014) was a Colombian writer and journalist, known affectionately as Gabo ([ˈɡaβo]) or Gabito ([ɡaˈβito]) throughout Latin America."
+        },
+        "answers": [
+          "Gabriel García Márquez",
+          "García Márquez"
+        ],
+        "keep": [
+          "García Márquez"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-07",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Which Hungarian composer wrote the opera 'Bluebeard's Castle'?",
+      "gold": {
+        "source": {
+          "title": "Béla Bartók",
+          "url": "https://en.wikipedia.org/wiki/B%C3%A9la_Bart%C3%B3k",
+          "quote": "Béla Viktor János Bartók (; Hungarian: [ˈbɒrtoːk ˈbeːlɒ]; 25 March 1881 – 26 September 1945) was a Hungarian composer, pianist and ethnomusicologist."
+        },
+        "answers": [
+          "Béla Bartók",
+          "Bartók"
+        ],
+        "keep": [
+          "Béla Bartók"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-08",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Which scientist, born Maria Skłodowska, discovered polonium and radium?",
+      "gold": {
+        "source": {
+          "title": "Marie Curie",
+          "url": "https://en.wikipedia.org/wiki/Marie_Curie",
+          "quote": "Maria Salomea Skłodowska Curie (née Skłodowska; 7 November 1867 – 4 July 1934), better known as Marie Curie, was a Polish and naturalised-French physicist and chemist."
+        },
+        "answers": [
+          "Marie Curie",
+          "Curie"
+        ],
+        "keep": [
+          "Skłodowska"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-09",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Which Catalan architect designed the Sagrada Família?",
+      "gold": {
+        "source": {
+          "title": "Antoni Gaudí",
+          "url": "https://en.wikipedia.org/wiki/Antoni_Gaud%C3%AD",
+          "quote": "Antoni Gaudí i Cornet ( gow-DEE, GOW-dee; Catalan: [ənˈtɔni‿ɣəwˈði]; 25 June 1852 – 10 June 1926) was a Catalan architect and designer, widely known as the greatest exponent of Catalan Modernisme."
+        },
+        "answers": [
+          "Antoni Gaudí",
+          "Gaudí"
+        ],
+        "keep": [
+          "Gaudí"
+        ]
+      }
+    },
+    {
+      "id": "en-entity-10",
+      "lang": "en",
+      "part": "entity",
+      "ask": "Which Polish composer is known for his piano nocturnes and études?",
+      "gold": {
+        "source": {
+          "title": "Frédéric Chopin",
+          "url": "https://en.wikipedia.org/wiki/Fr%C3%A9d%C3%A9ric_Chopin",
+          "quote": "Frédéric François Chopin (born Fryderyk Franciszek Chopin; 1 March 1810 – 17 October 1849) was a Polish composer and virtuoso pianist of the early Romantic period who wrote primarily for solo piano."
+        },
+        "answers": [
+          "Frédéric Chopin",
+          "Chopin"
+        ],
+        "keep": [
+          "Frédéric"
+        ]
+      }
+    }
+  ]
+}

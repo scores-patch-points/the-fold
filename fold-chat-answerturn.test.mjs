@@ -281,7 +281,7 @@ test("FALSIFIER: the model is provably not called — deps carry no model, and o
   for (const id of ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"]) {
     const { turn, keys } = await (async () => { const r = await run(caseOf(id)); return { turn: r.turn, keys: r.log.keys }; })();
     assert.ok(!turn.handoff, id);
-    for (const k of keys) assert.ok(["fw", "resolveTitles", "fetchLead", "searchPassages", "signal", "then", "toJSON"].includes(k), id + " touched deps." + k);
+    for (const k of keys) assert.ok(["fw", "resolveTitles", "suggestQuery", "fetchLead", "searchPassages", "signal", "then", "toJSON"].includes(k), id + " touched deps." + k);
   }
   // and nothing in the module can reach one: no network, no clock, no randomness, no globals, no model word
   const code = SRC.replace(/^\s*\/\/.*$/gm, "");

@@ -152,6 +152,54 @@
   .cstate + .menu { margin-left: 4px; }
   @keyframes cspin { to { transform: rotate(360deg); } }
   .empty-hint { padding: 8px 10px; color: var(--mut); font-size: var(--fs-sm); }
+  /* ---------------- memory: the visible, tiered store ----------------
+     The person's OWN memories (auditable, editable), grouped by project;
+     a history switch (on by default); and, per chat, a context-free toggle. */
+  .mem-group { margin-top: 8px; }
+  .mem-group .mem-label { display: flex; align-items: center; gap: 6px; padding: 4px 10px; color: var(--mut); font-size: var(--fs-sm); font-weight: 600; }
+  .mem { display: flex; align-items: flex-start; gap: 8px; padding: 6px 10px; border-radius: var(--r-md); color: var(--ink2); }
+  .mem:hover { background: var(--side2); }
+  .mem .mem-text { flex: 1; min-width: 0; font-size: var(--fs-sm); overflow-wrap: anywhere; }
+  .mem .mem-src { flex: none; font-family: var(--mono); font-size: var(--fs-xs); color: var(--dim); }
+  .mem .mem-act { margin-left: auto; flex: none; display: flex; gap: 2px; }
+  .mem .mem-act button { width: 26px; height: 26px; border: none; background: transparent; border-radius: var(--r-sm); color: var(--mut); opacity: 0; }
+  .mem:hover .mem-act button, .mem:focus-within .mem-act button { opacity: 1; }
+  .mem .mem-act button:hover { background: var(--line); color: var(--ink); }
+  .mem-toggle { display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: var(--ink2); font-size: var(--fs-sm); cursor: pointer; }
+  .mem-note { padding: 2px 10px 6px; color: var(--mut); font-size: var(--fs-xs); }
+  .mem-actions { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 10px 6px; }
+  .mem-actions .btn { font-size: var(--fs-xs); }
+  .composer .cbtn.on { background: var(--side2); color: var(--acc-deep); }
+
+  /* ---------------- the sidebar, as Claude draws it ----------------
+     One panel, not a drawer full of drawers: the brand and the two ways to
+     start sit pinned on top, the search rides under them, and everything else
+     (projects, chats grouped by time, the agent's folds, the quiet foot) is a
+     scrollable body. No chrome between the start affordances and the content. */
+  .side-head { display: flex; align-items: center; gap: 8px; padding: 2px 8px 10px 10px; }
+  .side-brand { display: flex; align-items: center; gap: 9px; min-width: 0; margin-right: auto; }
+  .side-brand .mark { width: 24px; height: 24px; flex: none; border-radius: var(--r-sm); background: var(--acc-grad); display: grid; place-items: center; color: #fff; font: 700 12px/1 var(--sans); text-shadow: 0 1px 1px rgba(0,0,0,.25); }
+  .side-brand .name { font: 700 var(--fs-md) var(--sans); letter-spacing: -.01em; color: var(--ink); }
+  .side-collapse { width: var(--touch); height: var(--touch); flex: none; border: none; background: transparent; border-radius: var(--r-md); display: grid; place-items: center; color: var(--mut); cursor: pointer; transition: background .12s, color .12s; }
+  .side-collapse:hover { background: var(--side2); color: var(--ink); }
+  .side-actions { display: flex; flex-direction: column; gap: 6px; padding: 0 8px 10px; }
+  .newchat { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: var(--touch); border: 0; border-radius: var(--r-lg); background: var(--acc-grad); color: #fff; padding: 0 12px; font: 600 var(--fs-md) var(--sans); cursor: pointer; box-shadow: var(--shadow-sm); transition: filter .12s, transform .12s; }
+  .newchat:hover { filter: brightness(1.08); }
+  .newchat:active { transform: translateY(1px); }
+  .newchat svg { width: 17px; height: 17px; flex: none; }
+  .agentstart { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: var(--touch); border: 1px solid var(--ag); border-radius: var(--r-lg); background: var(--ag-soft); color: var(--ag-deep); padding: 0 12px; font: 600 var(--fs-md) var(--sans); cursor: pointer; transition: filter .12s; }
+  .agentstart:hover { filter: brightness(1.05); }
+  .agentstart svg { width: 17px; height: 17px; flex: none; }
+  .side-search { display: flex; align-items: center; gap: 8px; margin: 0 8px 2px; min-height: var(--touch); padding: 0 10px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--side2); cursor: text; transition: border-color .12s, box-shadow .12s; }
+  .side-search:focus-within { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc); }
+  .side-search > svg { width: 16px; height: 16px; flex: none; color: var(--mut); }
+  .side-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--ink); font: var(--fs-md) var(--sans); padding: 0; }
+  .side-search input::placeholder { color: var(--dim); }
+  .side-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+  .side-search .qclear { flex: none; width: 24px; height: 24px; border: none; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--mut); cursor: pointer; opacity: 0; visibility: hidden; transition: opacity .12s, background .12s, color .12s; }
+  .side-search.has-q .qclear { opacity: 1; visibility: visible; }
+  .side-search .qclear:hover { background: var(--line); color: var(--ink); }
+  .side-search .qclear svg { width: 13px; height: 13px; }
 
   /* collapsible section headers */
   .sec-head { border-radius: var(--r-md); }
@@ -447,6 +495,27 @@
   .prov-open { margin-left: 4px; font: var(--fs-xs)/1 var(--mono); color: var(--dim); text-decoration: none; }
   .prov-open:hover { text-decoration: underline; }
   .prov-none { border-left-color: var(--warn, #b7791f); }
+  /* The discourse panel - the conversation's running discourse, drawn while it
+     is still being watched. Subtle: it is audit furniture, never part of the
+     answer; the moment the thread holds, the JS side is removed with it. */
+  .discourse { margin: 0 0 12px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--side2); }
+  .discourse.empty { display: flex; align-items: center; gap: 10px; padding: 9px 12px; font-size: var(--fs-sm); color: var(--mut); border-style: dashed; border-color: var(--line2); }
+  .discourse-empty-txt { color: var(--dim); }
+  .discourse-bar { display: flex; align-items: center; gap: 8px; padding: 7px 10px 6px; font-size: var(--fs-sm); color: var(--mut); }
+  .discourse-title { font-weight: 600; color: var(--ink); }
+  .discourse-hide { font: inherit; font-size: var(--fs-xs); color: var(--mut); background: none; border: 1px solid var(--line2); border-radius: 999px; padding: 1px 9px; cursor: pointer; }
+  .discourse-hide:hover { color: var(--ink); border-color: var(--line); }
+  .discourse-topic { padding: 4px 12px 8px; font-size: var(--fs-sm); line-height: 1.5; color: var(--ink2); }
+  .discourse-label { color: var(--dim); }
+  .discourse-now { color: var(--ink); }
+  .discourse-flow { margin-top: 3px; color: var(--dim); font-size: var(--fs-xs); }
+  .discourse > details > summary { list-style: none; cursor: pointer; padding: 6px 10px; font-size: var(--fs-sm); color: var(--mut); border-top: 1px solid var(--line); }
+  .discourse > details > summary::-webkit-details-marker { display: none; }
+  .discourse > details > summary::before { content: "\25B8\00a0"; }
+  .discourse > details[open] > summary::before { content: "\25BE\00a0"; }
+  .discourse-block { margin: 0; padding: 8px 12px; font: var(--fs-xs)/1.5 var(--mono); white-space: pre-wrap; color: var(--ink2); background: var(--side); border-top: 1px solid var(--line); }
+  .discourse-miss { padding: 6px 12px; font-size: var(--fs-xs); color: var(--dim); }
+  .discourse-store { padding: 6px 12px; font-size: var(--fs-xs); color: var(--dim); border-top: 1px solid var(--line); }
   .srcline { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; max-width: 100%; margin: 0 0 0 -6px; padding: 5px 8px; border: 0; border-radius: var(--r-md); background: none; color: var(--mut); font-size: var(--fs-sm); text-align: left; }
   .srcline:hover { background: var(--side2); color: var(--ink2); }
   .srcline .sl-caret { color: var(--dim); transition: transform .15s ease; display: inline-block; width: 10px; }
@@ -1257,8 +1326,9 @@
   .pv-sen.ok:hover { background: transparent !important; }
   .act.act-code { font-family: var(--mono); font-size: .88em; }
   [data-bare="1"] > .e-v, [data-bare="1"] .e-v { display: none; }
-  /* HIDDEN FOR NOW: the external-calls monitor / evidence drawer and the lock / sealed indicators (flag HIDE_EXTERNAL in fold-chat.js; UI only) */
-  html[data-hide-external] #railEvidence, html[data-hide-external] #drawer, html[data-hide-external] #setKeys,
+  /* HIDDEN FOR NOW: the external-calls monitor / evidence drawer and the lock / sealed indicators (flag HIDE_EXTERNAL in fold-chat.js; UI only).
+     The API keys section is NOT hidden: on this in-browser surface the Anthropic key lives in the fold and powers Angelica (2026-10-11). */
+  html[data-hide-external] #railEvidence, html[data-hide-external] #drawer,
   html[data-hide-external] .e-lock, html[data-hide-external] #setModelsSec .hint, html[data-hide-external] .cc-monitor, html[data-hide-external] [data-monitor] { display: none !important; }
   /* HIDDEN FOR NOW: Folds and Agent mode (flag HIDE_AGENT in fold-chat.js; it sets html[data-hide-agent]) */
   html[data-hide-agent] #railFolds, html[data-hide-agent] [data-sec="folds"], html[data-hide-agent] #setAgent,
@@ -1646,19 +1716,48 @@
   </nav>
 
   <aside class="side" id="side" aria-label="Chats and projects">
+    <div class="side-head">
+      <div class="side-brand" title="The Fold">
+        <span class="mark" aria-hidden="true">F</span>
+        <span class="name">The Fold</span>
+      </div>
+      <button type="button" class="side-collapse" id="sideCollapse" title="Hide sidebar" aria-label="Hide sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><line x1="9" y1="6" x2="15" y2="12"/><line x1="15" y1="12" x2="9" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="side-actions">
+      <button type="button" id="sideNewChat" class="newchat" title="New chat" aria-label="New chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        New chat
+      </button>
+      <button type="button" id="agStart" class="agentstart" title="Start an agent" aria-label="Start an agent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5h10l6 6v8H4z"/><path d="M14 5v6h6"/><path d="M9 15h4"/></svg>
+        Agent
+      </button>
+    </div>
+    <div class="side-search" id="sideSearch">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="chatSearch" placeholder="Search chats…" autocomplete="off" spellcheck="false" aria-label="Search chats">
+      <button type="button" class="qclear" id="chatSearchClear" title="Clear search" aria-label="Clear search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
+    </div>
     <div class="side-scroll">
       <div class="sec" data-sec="projects">
         <div class="sec-head"><span class="caret" aria-hidden="true">⌄</span><span>Projects</span><span class="grow"></span><button type="button" id="projNewProject" title="New project" aria-label="New project">＋</button><button type="button" id="projAdd" title="New session in a project" aria-label="New session in the selected project">▶</button></div>
         <div class="sec-body" id="projects"></div>
       </div>
+      <div class="sec" data-sec="chats">
+        <div class="sec-head"><span>Chats</span></div>
+        <div class="sec-body" id="chats"></div>
+      </div>
+      <div class="sec" data-sec="memory">
+        <div class="sec-head"><span class="caret" aria-hidden="true">⌄</span><span>Memory</span><span class="grow"></span><button type="button" id="memoryNew" title="Add a memory" aria-label="Add a memory">＋</button></div>
+        <div class="sec-body" id="memory"></div>
+      </div>
       <div class="sec" data-sec="folds">
         <div class="sec-head"><span>Folds</span><span class="grow"></span><button type="button" id="foldsCodebase" title="Add a codebase" aria-label="Add a codebase">📁</button><button type="button" id="foldsNew" title="New fold" aria-label="New fold">＋</button></div>
         <div class="sec-body" id="folds"></div>
-      </div>
-      <div class="sec" data-sec="chats">
-        <button type="button" id="chatsNew" class="chat" title="New chat" aria-label="New chat" style="width:100%;text-align:left;background:none;border:0"><span class="ct">Chat</span><span style="margin-left:auto;color:var(--mut)">＋</span></button>
-        <button type="button" id="agStart" class="chat" title="Start an agent" aria-label="Start an agent" style="width:100%;text-align:left;background:none;border:0"><span class="ct">Agent</span><span style="margin-left:auto;color:var(--mut)">＋</span></button>
-        <div class="sec-body" id="chats"></div>
       </div>
     </div>
   </aside>
@@ -1690,6 +1789,9 @@
         <div class="composer-tag" id="composerTag"><span class="ct-glyph">›</span><span class="ct-label" id="composerMode">agent</span><span class="ct-cwd" id="composerCwd"></span></div>
         <textarea id="input" rows="1" placeholder="Message the fold" aria-label="Message the fold"></textarea>
         <div class="tools">
+          <button type="button" class="cbtn" id="cfToggle" title="Context-free chat — this chat neither reads nor writes your memory, and is not saved" aria-label="Context-free (incognito) chat" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c5 0 9 4.5 9 7a11 11 0 0 1-2.2 3.3M6.6 6.6A11.6 11.6 0 0 0 3 12c0 2.5 4 7 9 7a9.7 9.7 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+          </button>
           <button type="button" class="cbtn" id="attach" title="Attach a text file — the khora reads it, and only the reading enters the chat" aria-label="Attach a text file — the khora reads it, and only the reading enters the chat">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21.4 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
@@ -1740,6 +1842,13 @@
           </div>
         </div>
         <div class="hint">Transparency shows the “how this was answered” line under every answer.</div>
+        <div class="line stack"><label for="setDiscourse">Show the conversation’s discourse</label>
+          <label class="check"><input type="checkbox" id="setDiscourse"> Always disclose what the fold reads the thread as, each turn (mechanically generated - reversible here or with the note’s own hide button)</label>
+        </div>
+        <div class="line stack"><label for="setPublicFallback">When the fold's own relay can't read a page</label>
+          <label class="check"><input type="checkbox" id="setPublicFallback"> Try public proxy services instead</label>
+        </div>
+        <div class="hint">Off: a page only the relay could read is left out, and the answer says so. On: five public proxy services and two text readers are tried, and each of them sees the page's address.</div>
         <div class="line"><label for="setPreset">Preset</label><select id="setPreset"></select></div>
         <div class="line"><span class="flabel">Display</span><button type="button" class="btn" id="topFocus">Full screen</button></div>
       </div>
@@ -1773,9 +1882,9 @@
     <details class="set" id="setKeys">
       <summary>API keys</summary>
       <div class="set-body">
-        <div class="hint keyhint">Stored on this machine beside `heimdall key`. Never in this page, never sent to an outside model.</div>
+        <div class="hint keyhint">On a heimdall surface keys are stored server-side beside `heimdall key`. On this in-browser surface the Anthropic key is kept in this browser and used only by Angelica’s sealed steering — the ask and the machine’s counts, never your pages.</div>
         <div class="keygroup">Frontier</div>
-        <div class="keyrow"><label class="keyname" for="keyAnthropic">Anthropic</label><input type="password" id="keyAnthropic" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button type="button" class="btn" data-provider="anthropic">Save</button><a class="keyget" href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer" title="Opens Anthropic in a new tab: sign up or sign in there, create a key, and paste it here">Get a key &#8599;</a></div>
+        <div class="keyrow"><label class="keyname" for="keyAnthropic">Anthropic</label><input type="password" id="keyAnthropic" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button type="button" class="btn" id="keyAnthropicReveal" title="Show or hide the key stored in this fold">show</button><button type="button" class="btn" id="keyAnthropicClear" title="Remove the key from this fold">clear</button><button type="button" class="btn" data-provider="anthropic">Save</button><a class="keyget" href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer" title="Opens Anthropic in a new tab: sign up or sign in there, create a key, and paste it here">Get a key &#8599;</a></div>
         <div class="keyrow"><label class="keyname" for="keyOpenai">OpenAI</label><input type="password" id="keyOpenai" placeholder="sk-…" autocomplete="off" spellcheck="false"><button type="button" class="btn" data-provider="openai">Save</button><a class="keyget" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" title="Opens OpenAI in a new tab: sign up or sign in there, create a key, and paste it here">Get a key &#8599;</a></div>
         <div class="keygroup">Small hosted models <span>cents per million tokens; the Fold can ask several at once</span></div>
         <div class="keyrow"><label class="keyname" for="keyOpenrouter">OpenRouter</label><input type="password" id="keyOpenrouter" placeholder="sk-or-…" autocomplete="off" spellcheck="false"><button type="button" class="btn" data-provider="openrouter">Save</button><a class="keyget" href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" title="Opens OpenRouter in a new tab: sign up or sign in there, create a key, and paste it here">Get a key &#8599;</a></div>

@@ -98,7 +98,7 @@ test("the retried ask is read as the ASK it is: classified research, not as the 
 
 test("WIRING: the live turn reads, classifies, searches and writes the retried ask — and keeps what the person said", () => {
   const src = fs.readFileSync(new URL("./fold-chat.js", import.meta.url), "utf8");
-  assert.match(src, /const question = follow\.retry \|\| said;/);
+  assert.match(src, /(?:const|let) question = follow\.retry \|\| said;/);   // let: the interpret reading may re-read a hard ask; it starts from the retried ask all the same
   assert.match(src, /classifyTurn\(question, \{ hasMaterial/);
   assert.doesNotMatch(src, /classifyTurn\(lastUserText\(s\)/, "the kind must be read from the retried ask, not the nudge");
   assert.match(src, /record\.followed = \{ kind: follow\.kind, said,/);

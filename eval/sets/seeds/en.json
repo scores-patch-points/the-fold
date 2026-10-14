@@ -1,0 +1,608 @@
+[
+ {
+  "part": "factual",
+  "title": "Mount Everest",
+  "ask": "What is the height of Mount Everest above sea level, in metres?",
+  "answers": [
+   "8,848.86"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Marie Curie",
+  "ask": "In which year was Marie Curie awarded the Nobel Prize in Physics?",
+  "answers": [
+   "1903"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Amazon River",
+  "ask": "Into which ocean does the Amazon River flow?",
+  "answers": [
+   "Atlantic Ocean"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Isaac Newton",
+  "ask": "Which work by Isaac Newton set out the laws of motion and universal gravitation?",
+  "answers": [
+   "Principia"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Photosynthesis",
+  "ask": "Which gas do plants take in from the air during photosynthesis?",
+  "answers": [
+   "carbon dioxide"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Nile",
+  "ask": "Into which sea does the Nile flow?",
+  "answers": [
+   "Mediterranean Sea"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Johann Sebastian Bach",
+  "ask": "In which town was Johann Sebastian Bach born?",
+  "answers": [
+   "Eisenach"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Charles Darwin",
+  "ask": "Which 1859 book by Charles Darwin set out the theory of natural selection?",
+  "answers": [
+   "On the Origin of Species"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Sahara",
+  "ask": "What is the largest hot desert in the world?",
+  "answers": [
+   "Sahara"
+  ],
+  "with": "largest hot desert"
+ },
+ {
+  "part": "factual",
+  "title": "Python (programming language)",
+  "ask": "Who created the Python programming language?",
+  "answers": [
+   "Guido van Rossum"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "World Wide Web",
+  "ask": "Who invented the World Wide Web?",
+  "answers": [
+   "Tim Berners-Lee"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Periodic table",
+  "ask": "Which chemist published the first widely recognised periodic table in 1869?",
+  "answers": [
+   "Dmitri Mendeleev",
+   "Mendeleev"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Titanic",
+  "ask": "In which year did the Titanic sink?",
+  "answers": [
+   "1912"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "French Revolution",
+  "ask": "In which year did the French Revolution begin?",
+  "answers": [
+   "1789"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Berlin Wall",
+  "ask": "In which year did the Berlin Wall fall?",
+  "answers": [
+   "1989"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Augustus",
+  "ask": "Who was the first Roman emperor?",
+  "answers": [
+   "Augustus"
+  ],
+  "with": "first Roman emperor"
+ },
+ {
+  "part": "factual",
+  "title": "Ludwig van Beethoven",
+  "ask": "How many symphonies did Beethoven compose?",
+  "answers": [
+   "nine"
+  ],
+  "with": "symphon"
+ },
+ {
+  "part": "factual",
+  "title": "William Shakespeare",
+  "ask": "In which town was William Shakespeare born?",
+  "answers": [
+   "Stratford-upon-Avon"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Great Red Spot",
+  "ask": "On which planet is the Great Red Spot?",
+  "answers": [
+   "Jupiter"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Mariana Trench",
+  "ask": "What is the deepest known part of Earth's oceans called?",
+  "answers": [
+   "Mariana Trench"
+  ],
+  "with": "deepest"
+ },
+ {
+  "part": "factual",
+  "title": "Heart",
+  "ask": "How many chambers does the human heart have?",
+  "answers": [
+   "four"
+  ],
+  "with": "chambers"
+ },
+ {
+  "part": "factual",
+  "title": "DNA",
+  "ask": "What does DNA stand for?",
+  "answers": [
+   "deoxyribonucleic acid"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Speed of light",
+  "ask": "What is the speed of light in a vacuum, in metres per second?",
+  "answers": [
+   "299,792,458"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Mount Kilimanjaro",
+  "ask": "In which country is Mount Kilimanjaro?",
+  "answers": [
+   "Tanzania"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Lake Baikal",
+  "ask": "Which lake is the deepest in the world?",
+  "answers": [
+   "Lake Baikal"
+  ],
+  "with": "deepest"
+ },
+ {
+  "part": "factual",
+  "title": "Magna Carta",
+  "ask": "In which year was Magna Carta sealed?",
+  "answers": [
+   "1215"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Alexander Graham Bell",
+  "ask": "Which device is Alexander Graham Bell credited with patenting?",
+  "answers": [
+   "telephone"
+  ],
+  "with": "patent"
+ },
+ {
+  "part": "factual",
+  "title": "Wright brothers",
+  "ask": "In which year did the Wright brothers make their first powered flight?",
+  "answers": [
+   "1903"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Johannes Gutenberg",
+  "ask": "Who invented the movable-type printing press in Europe?",
+  "answers": [
+   "Johannes Gutenberg",
+   "Gutenberg"
+  ],
+  "with": "invented"
+ },
+ {
+  "part": "factual",
+  "title": "Sistine Chapel",
+  "ask": "Who painted the ceiling of the Sistine Chapel?",
+  "answers": [
+   "Michelangelo"
+  ],
+  "with": "ceiling"
+ },
+ {
+  "part": "factual",
+  "title": "Rosetta Stone",
+  "ask": "Who deciphered Egyptian hieroglyphs using the Rosetta Stone?",
+  "answers": [
+   "Champollion"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Salt March",
+  "ask": "Which 1930 march did Mahatma Gandhi lead in protest at the salt tax?",
+  "answers": [
+   "Salt March"
+  ],
+  "with": "Gandhi"
+ },
+ {
+  "part": "factual",
+  "title": "Antarctica",
+  "ask": "Which continent is the coldest?",
+  "answers": [
+   "Antarctica"
+  ],
+  "with": "coldest"
+ },
+ {
+  "part": "factual",
+  "title": "1896 Summer Olympics",
+  "ask": "Which city hosted the first modern Olympic Games in 1896?",
+  "answers": [
+   "Athens"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Chessboard",
+  "ask": "How many squares are on a chessboard?",
+  "answers": [
+   "64"
+  ],
+  "with": "64"
+ },
+ {
+  "part": "factual",
+  "title": "Oxygen",
+  "ask": "What is the atomic number of oxygen?",
+  "answers": [
+   "atomic number 8"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Venus",
+  "ask": "Which planet in the Solar System is the hottest?",
+  "answers": [
+   "Venus"
+  ],
+  "with": "hottest"
+ },
+ {
+  "part": "factual",
+  "title": "Panama Canal",
+  "ask": "Which ocean does the Panama Canal link to the Atlantic Ocean?",
+  "answers": [
+   "Pacific Ocean",
+   "Pacific"
+  ],
+  "with": "Pacific"
+ },
+ {
+  "part": "factual",
+  "title": "Vincent van Gogh",
+  "ask": "In which country was Vincent van Gogh born?",
+  "answers": [
+   "Netherlands"
+  ],
+  "with": "born"
+ },
+ {
+  "part": "factual",
+  "title": "Mount Fuji",
+  "ask": "In which country is Mount Fuji?",
+  "answers": [
+   "Japan"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Pythagorean theorem",
+  "ask": "Which theorem relates the sides of a right-angled triangle?",
+  "answers": [
+   "Pythagorean theorem"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Hubble Space Telescope",
+  "ask": "In which year was the Hubble Space Telescope launched?",
+  "answers": [
+   "1990"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Great Barrier Reef",
+  "ask": "Off which country's coast is the Great Barrier Reef?",
+  "answers": [
+   "Australia"
+  ]
+ },
+ {
+  "part": "factual",
+  "title": "Mars",
+  "ask": "Which planet is known as the Red Planet?",
+  "answers": [
+   "Mars"
+  ],
+  "with": "Red Planet"
+ },
+ {
+  "part": "trap",
+  "title": "Albert Einstein",
+  "ask": "When did Albert Einstein win his second Nobel Prize?",
+  "flag": "false-premise",
+  "with": "Nobel Prize in Physics"
+ },
+ {
+  "part": "trap",
+  "title": "Marie Curie",
+  "ask": "In which year did Marie Curie win the Nobel Prize in Literature?",
+  "flag": "false-premise",
+  "with": "Nobel Prize in Chemistry"
+ },
+ {
+  "part": "trap",
+  "title": "Berlin Wall",
+  "ask": "Why did the Berlin Wall fall in 1991?",
+  "flag": "false-premise",
+  "with": "1989"
+ },
+ {
+  "part": "trap",
+  "title": "Venus",
+  "ask": "What is the name of Venus's largest moon?",
+  "flag": "false-premise",
+  "with": "no natural satellites"
+ },
+ {
+  "part": "trap",
+  "title": "Isaac Newton",
+  "ask": "What did Isaac Newton say when the apple hit his head?",
+  "flag": "false-premise",
+  "with": "apple"
+ },
+ {
+  "part": "trap",
+  "title": "Great Wall of China",
+  "ask": "Which Roman emperor ordered the building of the Great Wall of China?",
+  "flag": "false-premise",
+  "with": "Qin"
+ },
+ {
+  "part": "trap",
+  "title": "South Africa",
+  "ask": "What is the capital of South Africa?",
+  "flag": "multiple",
+  "with": "capital"
+ },
+ {
+  "part": "trap",
+  "title": "Switzerland",
+  "ask": "What is the official language of Switzerland?",
+  "flag": "multiple",
+  "with": "official languages"
+ },
+ {
+  "part": "trap",
+  "title": "Nile",
+  "ask": "What is the longest river in the world?",
+  "flag": "multiple",
+  "with": [
+   "Amazon",
+   "longer"
+  ]
+ },
+ {
+  "part": "trap",
+  "title": "Incandescent light bulb",
+  "ask": "Who invented the light bulb?",
+  "flag": "multiple",
+  "with": "Swan"
+ },
+ {
+  "part": "trap",
+  "title": "Napoleon",
+  "ask": "How did Napoleon's famously short stature shape his career?",
+  "flag": "false-premise",
+  "with": "5 ft"
+ },
+ {
+  "part": "trap",
+  "title": "Bat",
+  "ask": "Why are bats blind?",
+  "flag": "false-premise",
+  "with": "blind"
+ },
+ {
+  "part": "trap",
+  "title": "Great Wall of China",
+  "ask": "Why is the Great Wall of China visible from the Moon with the naked eye?",
+  "flag": "false-premise",
+  "with": "visible"
+ },
+ {
+  "part": "entity",
+  "title": "Antoine de Saint-Exupéry",
+  "ask": "Who wrote 'The Little Prince'?",
+  "answers": [
+   "Antoine de Saint-Exupéry"
+  ],
+  "keep": [
+   "Saint-Exupéry"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Gdańsk",
+  "ask": "Which Polish city was formerly known in German as Danzig?",
+  "answers": [
+   "Gdańsk"
+  ],
+  "keep": [
+   "Gdańsk"
+  ],
+  "with": "Danzig"
+ },
+ {
+  "part": "entity",
+  "title": "Bedřich Smetana",
+  "ask": "Which Czech composer wrote the cycle of symphonic poems 'Má vlast'?",
+  "answers": [
+   "Bedřich Smetana",
+   "Smetana"
+  ],
+  "keep": [
+   "Bedřich"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Søren Kierkegaard",
+  "ask": "Which Danish philosopher wrote 'Fear and Trembling'?",
+  "answers": [
+   "Søren Kierkegaard",
+   "Kierkegaard"
+  ],
+  "keep": [
+   "Søren"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Mustafa Kemal Atatürk",
+  "ask": "Who founded the Republic of Turkey?",
+  "answers": [
+   "Mustafa Kemal Atatürk",
+   "Atatürk"
+  ],
+  "keep": [
+   "Atatürk"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Gabriel García Márquez",
+  "ask": "Who wrote 'One Hundred Years of Solitude'?",
+  "answers": [
+   "Gabriel García Márquez",
+   "García Márquez"
+  ],
+  "keep": [
+   "García Márquez"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Béla Bartók",
+  "ask": "Which Hungarian composer wrote the opera 'Bluebeard's Castle'?",
+  "answers": [
+   "Béla Bartók",
+   "Bartók"
+  ],
+  "keep": [
+   "Béla Bartók"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Marie Curie",
+  "ask": "Which scientist, born Maria Skłodowska, discovered polonium and radium?",
+  "answers": [
+   "Marie Curie",
+   "Curie"
+  ],
+  "keep": [
+   "Skłodowska"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Antoni Gaudí",
+  "ask": "Which Catalan architect designed the Sagrada Família?",
+  "answers": [
+   "Antoni Gaudí",
+   "Gaudí"
+  ],
+  "keep": [
+   "Gaudí"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Frédéric Chopin",
+  "ask": "Which Polish composer is known for his piano nocturnes and études?",
+  "answers": [
+   "Frédéric Chopin",
+   "Chopin"
+  ],
+  "keep": [
+   "Frédéric"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Les Misérables",
+  "ask": "Who wrote 'Les Misérables'?",
+  "answers": [
+   "Victor Hugo"
+  ],
+  "keep": [
+   "Les Misérables"
+  ]
+ },
+ {
+  "part": "entity",
+  "title": "Zoë Wanamaker",
+  "ask": "Which actress played Madam Hooch in the first Harry Potter film?",
+  "answers": [
+   "Zoë Wanamaker"
+  ],
+  "keep": [
+   "Zoë"
+  ]
+ }
+]

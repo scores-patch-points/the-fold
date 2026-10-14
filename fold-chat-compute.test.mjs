@@ -84,3 +84,24 @@ test("answerKeeps (II.9): the model's wording must state the computed result and
   assert.equal(steps.ok, false); assert.ok(steps.extra.includes(12), "the figure the model added on its own is named");
   assert.equal(answerKeeps("anything", { ok: false }).ok, true, "no computed value, nothing to hold it to");
 });
+
+// ── battery 2026-10-12 (eval/modelless): the calendar and the word "degrees" ─────────────────────────────────────
+import { evaluate as evalQ } from "./fold-chat-compute.js";
+test("calendar: days between two dates is arithmetic, never a search (compute#8)", () => {
+  const r = evalQ("How many days are there between 1 January 2026 and 1 March 2026?");
+  assert.equal(r.ok, true); assert.equal(r.kind, "date"); assert.equal(r.value, 59);
+  assert.equal(evalQ("days between March 1, 2026 and April 1st 2026").value, 31);
+  assert.equal(evalQ("how many days between 2026-01-01 and 2026-12-31").value, 364);
+  assert.equal(evalQ("how many days between 2024-02-28 and 2024-03-01").value, 2, "a leap year is not guessed");
+  assert.equal(evalQ("how many days between 1 March 2026 and 1 January 2026").value, 59, "order does not matter");
+});
+test("calendar: an unreadable date is a refusal, not a guess", () => {
+  assert.equal(evalQ("how many days between 31 Smarch 2026 and 1 May 2026").ok, false);
+  assert.equal(evalQ("how many days between the day before and the day after").ok, false);
+});
+test("temperature: 'degrees' carries no value (compute#6)", () => {
+  assert.equal(evalQ("Convert 72 degrees Fahrenheit to Celsius").value.toFixed(2), "22.22");
+  assert.equal(evalQ("What is 100 degrees centigrade in fahrenheit").value, 212);
+  assert.equal(evalQ("convert 0 degrees celsius to kelvin").value.toFixed(2), "273.15");
+  assert.equal(evalQ("convert 72 degrees to celsius").ok, false, "a bare 'degrees' is an angle, not a temperature");
+});

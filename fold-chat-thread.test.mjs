@@ -46,7 +46,8 @@ test("a standalone ask is searched as asked, even with a thread", () => {
 });
 
 test("the pronoun path is resolveQuestion's: a trigger + a referent record carries; without a record nothing carries", () => {
-  const rec = admitReferents(emptyReferents(), { question: "Who founded Nashville?", answer: "Nashville was founded in 1779 by James Robertson and John Donelson.", sources: [{ title: "Wikipedia — Nashville, Tennessee" }] });
+  // one founder: "him" is unambiguous (two co-founders would be an exact tie, which is asked — fold-chat-channel.test.mjs)
+  const rec = admitReferents(emptyReferents(), { question: "Who founded Nashville?", answer: "Nashville was founded in 1779 by James Robertson.", sources: [{ title: "Wikipedia — Nashville, Tennessee" }] });
   const f = followUp("what happened to him later in life?", [{ role: "user", content: "Who founded Nashville?" }, { role: "assistant", content: "Nashville was founded in 1779 by James Robertson." }], { referents: rec, hints: EN });
   assert.equal(f.kind, "carried");
   assert.ok(f.carried.length >= 1 && f.query.includes(f.carried[0]));

@@ -60,7 +60,11 @@ test("verifyPointer returns the tier: primary, index (an encyclopedia), origin (
   const p = (reply, passages) => verifyPointer({ reply, claim: CLAIM, passages, fw: FW });
   assert.equal(p("SOURCE: S1\nSENTENCE: Charles III is the king of the United Kingdom and the other Commonwealth realms, having acceded on 8 September 2022.", [WIKI]).tier, "index");
   assert.equal(p("SOURCE: S1\nSENTENCE: His Majesty King Charles III is the monarch of the United Kingdom.", [ROYAL]).tier, "origin");
-  assert.equal(p("SOURCE: S1\nSENTENCE: King Charles III became king on 8 September 2022 following the death of Queen Elizabeth II.", [BBC]).tier, "primary");
+  // the picked sentence must itself state the claim's names (F4 P6/P7 strict names): the BBC's first sentence says he
+  // "became king" but never names the United Kingdom — the claim's "United Kingdom" is unstated there, so it is rejected.
+  // The second sentence states it, and gets the primary tier.
+  assert.equal(p("SOURCE: S1\nSENTENCE: King Charles III is the monarch of the United Kingdom, having acceded on that date.", [BBC]).tier, "primary");
+  assert.deepEqual(p("SOURCE: S1\nSENTENCE: King Charles III became king on 8 September 2022 following the death of Queen Elizabeth II.", [BBC]), { ok: false, why: "unstated_name:United Kingdom" });
 });
 
 test("narrate: the app's words around the source's words — three tiers, a corroborating second host, and the honest 'none'", () => {
@@ -69,13 +73,13 @@ test("narrate: the app's words around the source's words — three tiers, a corr
   const r1 = v("SOURCE: S2\nSENTENCE: His Majesty King Charles III is the monarch of the United Kingdom.");
   const r2 = v("SOURCE: S3\nSENTENCE: King Charles III became king on 8 September 2022 following the death of Queen Elizabeth II.", "King Charles III became king on 8 September 2022.");
   const n = narrate([r1, r2], { indexHost: "en.wikipedia.org" });
-  assert.match(n.text, /^I checked this on Wikipedia, but I treat that as an index to primary sources, so I followed it to royal\.uk and verified it there\. It says: “His Majesty King Charles III is the monarch of the United Kingdom\.” It also says it on bbc\.com: “King Charles III became king/);
+  assert.match(n.text, /^I checked this on Wikipedia for the answer's first sentence, but I treat that as an index to primary sources, so I followed it to royal\.uk and verified it there\. It says: “His Majesty King Charles III is the monarch of the United Kingdom\.” It also says what the first sentence says on bbc\.com: “King Charles III became king/);
   assert.equal(n.verified, 2);
   assert.equal(verifyNarration(n, ps, [r1, r2], { indexHost: "en.wikipedia.org" }).ok, true);
   const idx = narrate([v("SOURCE: S1\nSENTENCE: Charles III is the king of the United Kingdom and the other Commonwealth realms, having acceded on 8 September 2022.")]);
-  assert.match(idx.text, /^I found this on Wikipedia, which I treat as a pointer rather than a source, and I could not reach a primary page that says it, so treat it as unconfirmed\. It says: “Charles III is the king/);
+  assert.match(idx.text, /^I found this on Wikipedia for the answer's first sentence, which I treat as a pointer rather than a source, and I could not reach a primary page that says it, so treat it as unconfirmed\. It says: “Charles III is the king/);
   const prim = narrate([v("SOURCE: S3\nSENTENCE: King Charles III became king on 8 September 2022 following the death of Queen Elizabeth II.", "King Charles III became king in September 2022.")]);
-  assert.match(prim.text, /^I got this from King Charles \(bbc\.com\)\. It says: “King Charles III became king/);
+  assert.match(prim.text, /^I got this from King Charles \(bbc\.com\) for the answer's first sentence\. It says: “King Charles III became king/);
   const none = narrate([{ ok: false, why: "not_in_sources" }]);
   assert.equal(none.text, TEMPLATES.none()); assert.equal(none.verified, 0);
   const same = narrate([r1, { ...r1, quote: "A different sentence from the same site entirely." }]);

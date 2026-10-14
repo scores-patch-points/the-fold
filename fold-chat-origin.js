@@ -168,7 +168,7 @@ function folded(s) {
   for (let i = 0; i < s.length; i++) {
     const c = skip.has(i) ? " " : s[i];
     if (/[\s ]/.test(c)) { if (out.length && out[out.length - 1] !== " ") { out.push(" "); map.push(i); } continue; }
-    for (const ch of c.normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase()) { out.push(ch); map.push(i); }
+    for (const ch of foldText(c)) { out.push(ch); map.push(i); }   // khora fold scope (II.13): marks that carry content stay
   }
   if (out.length && out[out.length - 1] === " ") { out.pop(); map.pop(); }
   return { n: out.join(""), map };
@@ -207,7 +207,8 @@ export function noteMarksFor(blocks, sentence) {
   return null;
 }
 
-const wordsOf = (s) => (String(s ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase().match(/[\p{L}\p{N}]+/gu) || []);
+import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13): Latin vowel accents only
+const wordsOf = (s) => (foldText(s).match(/[\p{L}\p{N}]+/gu) || []);
 
 /** A lead summarises the body and seldom carries footnotes itself. When `sentence` stands under none, the body's own sentence that says
  *  the same thing, and the footnotes under THAT sentence: { sentence, marks } | null.
@@ -310,7 +311,7 @@ const sameFill = (slot, a, b) => {
   for (let i = 0; i + s.length <= l.length; i++) { if (s.every((w, j) => l[i + j] === w)) return true; }
   return false;
 };
-const toks = (s) => String(s ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+const toks = (s) => foldText(s).match(/[\p{L}\p{N}]+/gu) || [];
 
 /** RUNG 2 — the claim and the page, each READ by the Pivot's B grammar under the asker's frame, compared as ASSERTIONS.
  *  → null when the rung does not apply (no frame, or the claim does not bind the frame with a filler), else
@@ -412,7 +413,7 @@ function supportByConsequence(claim, page, forWhom) {
   const own = consequenceOf(sentence, pg);
   if (!own.atoms.length) return { verdict: "undecidable", why: own.why || "unread-structure", detail: own.detail || "", address: c.address, sentence, atoms: c.atoms };
   // a name's identity is its words, not a sentence-initial article: "The Nobel Prize" opening a sentence is the "Nobel Prize" a clause names
-  const lead = new Set([...(FUNCTION_WORDS.en || []), ...(FUNCTION_WORDS[detectLang(String(claim)).lang] || [])].map((x) => String(x).normalize("NFKD").replace(/\p{M}+/gu, "").toLowerCase()));
+  const lead = new Set([...(FUNCTION_WORDS.en || []), ...(FUNCTION_WORDS[detectLang(String(claim)).lang] || [])].map((x) => foldText(String(x))));
   const nameId = (a) => { const w = a.slice(5).split("_"); while (w.length > 1 && lead.has(w[0])) w.shift(); return "name:" + w.join("_"); };
   const part = (k, p) => k.atoms.filter((x) => x.startsWith(p)).map((x) => (p === "name:" ? nameId(x) : x));
   const within = (xs, ys) => xs.every((x) => ys.includes(x));

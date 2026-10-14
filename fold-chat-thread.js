@@ -238,6 +238,13 @@ export function followUp(question, priorMessages, { referents = null, hints = nu
   const thread = threadOf(priorMessages);
   const base = { said, query: said, kind: "standalone", thread, topic: "", carried: [], reason: "stands-alone" };
   if (!said) return base;
+  // "again" / "once more" / "otra vez" / "encore": a REPEAT of the last ask — the earlier ask is asked again (the person's words stay what they said),
+  // not a topic carried and not the word searched. With no earlier ask it is the cold gap.
+  if (isRepeat(said, lang)) {
+    const last = lastAskOf(priorMessages, lang);
+    if (last) return { ...base, kind: "retry", query: last, retry: last, reason: "repeat-of-last-ask" };
+    return { ...base, kind: "meta", reason: "repeat-cold" };
+  }
   if (isMeta(said)) return { ...base, kind: "meta", query: said, reason: thread.has ? "meta-with-thread" : "meta-cold" };
   // "go on" / "continue" / "keep going" ask for NEW material and stay on the old path exactly as before (fold-chat-nudge.test.mjs pins it): the Continue button
   // is the model's own re-prompt, and a thread-only reply may not write new material. The gate below must not turn them into an elliptical search.
@@ -265,6 +272,15 @@ export function followUp(question, priorMessages, { referents = null, hints = nu
     const q = searchQueries(r)[0] || said;
     return { ...base, gate, kind: "carried", query: q, carried: r.carried.map((c) => c.surface), reason: "carried-referent" };
   }
+  // 2b. DISCOURSE AWARENESS (user, 2026-10-13): when the reference is not unique the Fold ASKS, with the candidates as clickable options that
+  //     resend the ask marked "(about: X)"; when a person pronoun has no person in the channel it SAYS so — a book is not read as who wrote it,
+  //     and no search goes out for the book's title. Nothing is searched, no model is asked.
+  if (r.reason === "ambiguous" || r.reason === "no-person-to-carry") {
+    const options = Array.isArray(r.options) ? r.options : [];
+    const pronoun = r.pronoun || (typeof pronounOf === "function" ? pronounOf(said, gate) : null) || null;
+    return { ...base, gate, kind: "clarify-reference", reason: r.reason === "ambiguous" ? "ambiguous-reference" : "no-person-in-channel",
+      pronoun, options, choices: options.map((o) => ({ label: o, ask: `${said} (about: ${o})` })), question: referenceQuestion({ pronoun, options }) };
+  }
   // 3. an elliptical ask with no referent to read it through: the earlier ask's topic words
   { const v = variant(); if (v) return v; }
   return { ...base, gate, reason: "points-back-but-nothing-to-carry" };
@@ -275,6 +291,43 @@ export function followUp(question, priorMessages, { referents = null, hints = nu
  *    mode            "web" | "thread" | "cold-gap"
  *    modelMay        the model may be asked (grounded in the thread) — ONLY mode "thread"
  *  THE FALSIFIER: a cold meta ask (nothing earlier to follow) is "cold-gap": no search, no model, an app-authored note. */
+// ── repeat markers ──────────────────────────────────────────────────────────────
+/** Phrases that mean "do the last thing again". DECLARED, not measured (the author, 2026-10-13; the user named "again"). A language is added by
+ *  adding its row — no English in the logic. An ask is a repeat only when, with the marker taken out, no content word is left. */
+export const REPEAT = Object.freeze({
+  en: ["try again", "do that again", "do it again", "say that again", "say it again", "one more time", "once more", "again"],
+  es: ["inténtalo de nuevo", "intenta otra vez", "otra vez", "de nuevo", "una vez más"],
+  fr: ["réessaie", "encore une fois", "une fois de plus", "de nouveau", "encore"],
+});
+const foldRepeat = (s) => String(s ?? "").toLowerCase().normalize("NFD").replace(/\p{M}+/gu, "").replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+export function isRepeat(said, lang = null) {
+  const rows = lang && REPEAT[lang] ? REPEAT[lang] : [].concat(...Object.values(REPEAT));
+  let t = " " + foldRepeat(said) + " ";
+  let hit = false;
+  for (const m of rows.map(foldRepeat).sort((a, b) => b.length - a.length)) { const at = " " + m + " "; if (t.includes(at)) { t = t.replace(at, " "); hit = true; } }
+  if (!hit) return false;
+  return contentWords(t.trim()).length === 0;
+}
+/** The most recent ask the person made that was not itself a repeat or a nudge. */
+function lastAskOf(priorMessages, lang = null) {
+  const ms = Array.isArray(priorMessages) ? priorMessages : [];
+  for (let i = ms.length - 1; i >= 0; i--) {
+    const m = ms[i];
+    if (m && m.role === "user" && typeof m.content === "string" && m.content.trim() && !isRepeat(m.content, lang) && !isNudge(m.content)) return m.content.trim();
+  }
+  return null;
+}
+
+/** The plain-words question for an unclear reference (app-authored; replace to translate). Two or more candidates are offered; none says
+ *  there is no one yet. */
+export function referenceQuestion({ pronoun = null, options = [] } = {}) {
+  const word = pronoun ? `“${pronoun}”` : "that";
+  const list = (options || []).filter(Boolean);
+  if (list.length >= 2) return `By ${word} do you mean ${list.length === 2 ? list.join(" or ") : `${list.slice(0, -1).join(", ")} or ${list[list.length - 1]}`}?`;
+  if (list.length === 1) return `Do you mean ${list[0]} by ${word}?`;
+  return `I don't have a person from this conversation for ${word}. Who do you mean?`;
+}
+
 export function turnPlan(question, priorMessages, opts = {}) {
   // A bare nudge ("well?") never goes to the web as a word. If an earlier ask went unanswered, it IS that ask again (the person's
   // words stay "well?"; `retry` is what is searched and asked); with an answer to follow it is about that answer; with neither it is cold.
@@ -298,6 +351,7 @@ export function turnPlan(question, priorMessages, opts = {}) {
     if (rt.missing) return { said, query: said, kind: "conversation-ref", thread: threadOf(priorMessages), topic: "", carried: [], mode: "cold-gap", search: null, modelMay: false, reason: "refers-to-missing-answer", missing: rt };
   }
   const f = followUp(question, priorMessages, opts);
+  if (f.kind === "clarify-reference") return { ...f, mode: "clarify", search: null, modelMay: false };
   if (f.kind === "meta") {
     if (f.thread.has) return { ...f, mode: "thread", search: null, modelMay: true };
     return { ...f, mode: "cold-gap", search: null, modelMay: false };

@@ -299,3 +299,14 @@ test("SOFT grounding (default): a sentence the pages read do not back is SPOKEN 
   assert.deepEqual(hard.dropped.map((d) => d.why.split(":")[0]).sort(), ["boilerplate", "number_not_given", "ungrounded"]);
   assert.deepEqual([...SOFT_WHY].sort(), ["no-overlap", "terms", "terms-elsewhere", "thin"]);
 });
+
+test("a quotation not verbatim in any source is STRUCK (an invented quote never prints beside a confession)", () => {
+  const p = pivotText({ draft: 'Strauss concludes: "Return is not regress; it is the very foundation of existence."', ask: "what does strauss say about return", material: [{ ref: "S1", source: "strauss.txt", text: "Return, however, is not the same as going backwards; the acceptance of the past is radically different from mere continuation." }] });
+  assert.equal(p.text, "");
+  assert.ok(p.dropped.some((d) => d.why.startsWith("quote_not_verbatim")), "the invented quote is dropped");
+});
+test("a quotation VERBATIM in a source survives the quote rule (and still must ground)", () => {
+  const p = pivotText({ draft: 'Strauss says return "is not the same as going backwards"; he means no diminution is involved.', ask: "what does strauss say about return", material: [{ ref: "S1", source: "strauss.txt", text: "Return, however, is not the same as going backwards; the acceptance of the past is radically different from mere continuation." }] });
+  assert.ok(!(p.dropped || []).some((d) => d.why.startsWith("quote_not_verbatim")),
+    "a verbatim quote is not struck by the quote rule: " + JSON.stringify((p.dropped || []).map((d) => d.why)));
+});

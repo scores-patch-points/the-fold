@@ -225,6 +225,16 @@ export function pivotText({ draft, ask = "", material = [], computed = null, rea
     if (att && !mats.some((m) => hasPhrase(m.text, att.trim()))) { drop("attribution", att.trim()); continue; }
     const fresh = numbersOf(u.text).filter((n) => !given.has(n));
     if (fresh.length) { drop("number_not_given", fresh.join(",")); continue; }
+    // A QUOTATION IS THE STRICTEST CLAIM (2026-10-11): a quoted run (≥6 chars of real text) must be VERBATIM in a
+    // source — an invented quotation ("he writes: …") that no passage contains is fabrication and is struck,
+    // never printed beside "without explicitly stating his source".
+    const quotedRuns = [...u.text.matchAll(/[“”]((?:[^“”"]|"){6,})[“”]|"((?:[^“”]){6,})"/g)].map((m) => m[1] || m[2]).filter((q) => q && /[\p{L}]{3,}/u.test(q));
+    if (quotedRuns.length) {
+      const normQ = (s) => String(s || "").replace(/[“”"…—–]/g, " ").replace(/[’']/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
+      const hay = mats.map((m) => normQ(m.text));
+      const missing = quotedRuns.some((q) => { const n = normQ(q); return n.length >= 6 && !hay.some((h) => h.includes(n)); });
+      if (missing) { drop("quote_not_verbatim"); continue; }
+    }
     rec.add("check", { of: e.n, name: "shape", result: "ok" });
     if (mustGround) {
       let checkText = u.text, echo = null;
