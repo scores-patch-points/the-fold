@@ -308,3 +308,13 @@ Draws: 200, seed 20261014. A universe with fewer than 2 attested verbs (or fewer
 **Honest expectation, stated now:** every adjectival or measure relation (*tall*, *long*) refuses, so the measure asks will stay informative gaps under L3-strict, and under L3-soft will behave as in L2d (contested). The experiment may therefore move only the person, date and thing asks. A null result (identical to L1.2) is as informative as a gain and will be reported as such.
 
 **Vendoring:** the parse prior is 16 MB, node-only, and the eval is node-only. L3 imports `readClause` and `loadModel` from a khora checkout (the commit above) and does not vendor them into the-fold. The browser surface would reach this witness through the khora's door.
+
+## Clarification 12.1 (2026-10-14): which accepted token is the predicate. Written after the first L3 run was read on dev rows only; no held row has been looked at.
+
+**First L3 run (all three arms identical to L1.2).** The role gate refused 19 of 21 dev slots. A trace of the predicate forms passed to `readClause` showed:
+1. **A wiring error, mine.** Amendment 12 says the predicate is "the token the relation test accepted". The relation words of "Apollo 11 land on the Moon" are *land* and *Moon* (the title door resolved only "Apollo 11", so *Moon* is a leftover content word). The first accepted token in 11 slots was the noun **Moon**, which is not a predicate. The same happened with *Sinks* (a TV series title) and *sinking* (a noun).
+2. **A parser coverage limit, not mine.** `sank` is refused as "a word EWT never attests as a verb": the parser's prior does not hold that irregular past form (the full treebank has it once, so it is presumably outside the training split). It is a typed refusal and is left as one.
+
+**The clarification.** Among the clause's accepted relation tokens, the predicate is the first whose **EWT gold UPOS is majority VERB or AUX** (the same `ewt()` table the relation test already uses, so no new source). If none is, the slot is typed `no_verb_relation`, which the gate counts apart from parser refusals. The role rule, the arms, the bars and the null are unchanged. The three arms are re-run once on this wiring and reported beside the first run, which is kept.
+
+**Separate finding, not fixed here:** the declared void's `relation` words include participant nouns (*Moon*) when the title door resolves a shorter anchor. That is an L1 matter (the leftover content words of the ask are not all relations) and goes in its own amendment.
