@@ -4,8 +4,8 @@
  "at": "2026-10-14T12:00:00.000Z",
  "fetch": {
   "live": 0,
-  "hits": 1203,
-  "misses": 0,
+  "hits": 1190,
+  "misses": 11,
   "gaveUp": 0
  },
  "l0": {
@@ -38,7 +38,8 @@
   },
   "ko": {
    "RIGHT": 4,
-   "WRONG": 2
+   "GAP": 1,
+   "WRONG": 1
   },
   "tr": {
    "RIGHT": 5,
@@ -53,7 +54,8 @@
   "RIGHT": 38,
   "LABEL": 9,
   "ANCHOR": 2,
-  "PROPERTY": 4,
+  "TYPE": 1,
+  "PROPERTY": 3,
   "VALUE": 1
  },
  "matrix": {
@@ -108,7 +110,7 @@
   "ko": {
    "capital-au": "RIGHT",
    "capital-ca": "RIGHT",
-   "creator-mona": "WRONG:PROPERTY",
+   "creator-mona": "TYPE",
    "opening-syd": "RIGHT",
    "birthplace-mozart": "WRONG:VALUE",
    "currency-jp": "RIGHT"
@@ -418,17 +420,18 @@
     {
      "surface": "başkent",
      "title": "Başkent",
-     "verdict": "bound",
-     "refused": null,
-     "property": "P7033",
-     "matched": null
+     "verdict": "unbound",
+     "refused": "datatype_mismatch",
+     "matched": [
+      "Avustralya eğitim sözlüğündeki kimliği:external-id"
+     ]
     },
     {
      "surface": "baş",
      "title": "Kafa",
      "verdict": "bound",
      "refused": null,
-     "property": "P7033",
+     "property": "P31",
      "matched": null
     }
    ],
@@ -795,9 +798,9 @@
     {
      "surface": "Kan",
      "title": "Kan",
-     "verdict": "contested",
+     "verdict": "bound",
      "refused": null,
-     "property": "P3222",
+     "property": "P31",
      "matched": null
     },
     {
@@ -1046,10 +1049,10 @@
     "handoff": "no_grammar_for_language",
     "answered": false
    },
-   "tier": "WRONG",
-   "cause": "PROPERTY",
-   "propertyRight": false,
-   "anchor": "작가",
+   "tier": "GAP",
+   "cause": "TYPE",
+   "propertyRight": null,
+   "anchor": null,
    "tried": [
     {
      "surface": "모나리자",
@@ -1068,19 +1071,15 @@
     {
      "surface": "작가",
      "title": "작가",
-     "verdict": "bound",
-     "refused": null,
-     "property": "P2963",
-     "matched": null
+     "verdict": "unbound",
+     "refused": "datatype_mismatch",
+     "matched": [
+      "굿리즈 저자 ID:external-id"
+     ]
     }
    ],
-   "line": "작가 — 굿리즈 저자 ID： 13942718。",
-   "claim": {
-    "property": "P2963",
-    "values": [
-     "13942718"
-    ]
-   }
+   "line": null,
+   "claim": null
   },
   {
    "id": "creator-mona.tr",

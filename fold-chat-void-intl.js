@@ -61,6 +61,7 @@ export async function intlDoor({ ask, lang, getJson, resolveTitles, dominantOf =
   // Clarification 16.1: every distinct resolved TITLE is tried (a longer run may be a redirect to a different entity, e.g. "capital of Australia" ->
   // Canberra); the entity whose kind has the key the rest of the ask names is the anchor. Longest run first, up to six.
   resolved.sort((x, y) => (y.end - y.start) - (x.end - x.start) || x.start - y.start);
+  // Amendment 17 rule 1 (nested-anchor rejection) was tried and refuted, see eval/void/PREREG.md; reverted
   const chosen = [], seenTitles = new Set();
   for (const r of resolved) { if (seenTitles.has(r.title)) continue; seenTitles.add(r.title); chosen.push(r); }
   const tried = [];

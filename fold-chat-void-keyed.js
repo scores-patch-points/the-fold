@@ -147,7 +147,7 @@ export async function keyedFill({ fields, anchor, relationWords = [], askWords =
     return res("unbound", { qid, refused: "no_matching_key", openVoid: open.slice(0, 12), nKeys: props.size, words });
   }
   // 4. the property's own value type is the admits kind
-  const typed = matches.filter((p) => !wantType || p.datatype === wantType);
+  const typed = matches.filter((p) => (!wantType || p.datatype === wantType) && !(slotFree && p.datatype === "external-id"));   // Amendment 17: an identifier is never the relation asked for
   if (!typed.length) return res("unbound", { qid, refused: "datatype_mismatch", matched: matches.map((p) => `${p.label}:${p.datatype}`), wantType });
   // 5. values, with the single-value constraint for the verdict
   const hit = [];
