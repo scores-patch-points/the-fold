@@ -318,3 +318,22 @@ Draws: 200, seed 20261014. A universe with fewer than 2 attested verbs (or fewer
 **The clarification.** Among the clause's accepted relation tokens, the predicate is the first whose **EWT gold UPOS is majority VERB or AUX** (the same `ewt()` table the relation test already uses, so no new source). If none is, the slot is typed `no_verb_relation`, which the gate counts apart from parser refusals. The role rule, the arms, the bars and the null are unchanged. The three arms are re-run once on this wiring and reported beside the first run, which is kept.
 
 **Separate finding, not fixed here:** the declared void's `relation` words include participant nouns (*Moon*) when the title door resolves a shorter anchor. That is an L1 matter (the leftover content words of the ask are not all relations) and goes in its own amendment.
+
+## Amendment 13 (2026-10-14): L4, the anchor is a CORE argument of the claim; and L1.3, relation words from the predicate that is a predicate. Written after the L3 null and after probing `readClause` on five specimen sentences; before any arm runs.
+
+**What was learned (probe, khora main @ a227897f; Callimachus supplied the morphology backoff and the voice-normalised `slotsOf`):**
+- With the morphology prior (`loadModel(parser, { morphology })`) the plain irregular past *sank* parses: subject *The Titanic*, oblique *on 15 April 1912*. Without it, it was a refusal.
+- *awarded the patent for the invention of the telephone in 1876*: the anchor *telephone* lies **inside the object's adjunct** (`obj.adjuncts`), not in the object. *invented the telephone* (active): the anchor is the object itself. *The telephone was invented by Bell* (passive): the anchor is the subject. So the question "is this claim about the anchor?" has a **structural** answer: is the anchor a core argument or only something a core argument's adjunct mentions?
+
+**L4's rule, with no constant.** On a successful parse (the L3 gate's refusals are unchanged, and under L3-soft a refusal keeps the binding), the anchor, **as written in the sentence**, must lie inside the span of the subject or the object (the passive's by-oblique is the agent) and **not** inside any of that argument's `adjuncts` or `appositives`. A filler must lie in a **different** argument than the anchor. An anchor that is only inside an adjunct or an oblique fails: the claim is *about something else* that mentions the anchor. When the anchor is not written in the sentence (reached by kind or pronoun) the L3 weak rule applies and is counted apart, as before.
+
+**L1.3 (relation words).** The declared void's `relationWords` contain every leftover content word of the ask; *Moon* in "land on the Moon" became a "relation". For the fill (not for the declared void's `relation` field, which is scored as before), the relation words are the leftover words whose **EWT gold UPOS is majority VERB, AUX or ADJ**, plus the role noun. A leftover word that is majority NOUN or PROPN is a participant, not a relation. If nothing is left, the role noun alone.
+
+**Arms (each against L1.2, replayed on the clean recording; relation-counterfactual Born null; V1–V4):**
+- **L3m**: L3-soft with the morphology backoff. Measures only the coverage fix.
+- **L4**: L3m + the core-anchor rule.
+- **L4r**: L4 + L1.3. The arm that tests whether the contaminated relation test was the larger lever.
+
+**Reported:** per arm, passes by the strong form (anchor written, core, different argument) and the weak form; removals by rule; refusals by reason; each ask's top two fillers and whether the verdict is bound, contested or unbound. The number of **strong-form passes** is the arm's power, and an arm with fewer than **10** strong-form slots across dev and held is reported as underpowered and is not read as a refutation. (10 is the count that would let one in ten slots move a rate of 0.1; it is reported, not tuned.)
+
+**Admission.** An arm is admitted only if its Useful is at least L1.2's on dev and on held, and WRONG is no higher, with at least one set strictly better.
