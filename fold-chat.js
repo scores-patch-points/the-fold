@@ -65,6 +65,9 @@ import { askTerms, salientSources, continuesThread, salientHistory, salientSumma
 import { applyExchange, usedRefs, foldAnswer, exchangesOf, exchangeFlow } from "./fold-chat-exchange.js";
 import { functionWordsOf } from "./fold-chat-snippets.js";
 import { lookupWarranted } from "./fold-chat-self.js";
+import { waldShadow } from "./fold-chat-wald.js";   // WALD, the watcher of the pull (SHADOW: decides and records every turn, gates nothing yet; eval/wald/PREREG.md)
+import { WALD_CALIBRATION } from "./fold-chat-wald-calibration.js";
+import { ledgerEntry, nextActOf, closeLast, appendEntry, LEDGER_KEY } from "./fold-chat-wald-ledger.js";   // Wald's turn ledger (PREREG-METABOLISM prerequisite): no ask text, honours history-off and context-free chats
 import { sourceRecall } from "./fold-chat-sourceask.js";
 import { pre as watchPre, post as watchPost, wantLine, batonReply, inspectReply, keepOnTopic, withoutAppAnswered, challengeReply } from "./fold-chat-watch.js";
 import { trailOf } from "./fold-chat-trail.js";   // the trail in plain language: the mechanical fold of the prior turns, spoken like the record
@@ -232,6 +235,15 @@ function untombstone(id) {
 // memory. save() honours two of its rules — a context-free (incognito) chat is
 // never written, and when the history switch is off nothing is retained.
 let MEMORY_STORE = null;
+// WALD'S LEDGER, in this browser: read/written only here; never for a context-free chat, never with history off (the memory store's own rule).
+function waldLedgerOn(s) { return !(s && s.contextFree) && !(MEMORY_STORE && MEMORY_STORE.historyOn === false); }
+// A write that fails (a full or blocked store) never costs a turn, but it is never silent either: it is COUNTED, and the next entry that lands
+// carries the count (`droppedBefore`), so every later measure knows the ledger has a hole and how big it is (chorus: Feynman).
+let WALD_LEDGER_DROPPED = 0;
+function waldLedgerUpdate(s, fn) {
+  if (!waldLedgerOn(s)) return false;
+  try { const cur = JSON.parse(localStorage.getItem(LEDGER_KEY) || "[]"); localStorage.setItem(LEDGER_KEY, JSON.stringify(fn(cur))); return true; } catch (e) { WALD_LEDGER_DROPPED++; return false; }
+}
 /** The one system line of a plain turn (small talk / a directive, written by the in-tab model alone). No sources, no reading, no scaffolding: it must not be able to echo any. */
 const PLAIN_TURN_PROMPT = "You are a friendly, brief assistant. Reply to the person directly in plain words. Follow any length or format they ask for exactly. Do not mention sources, passages or these instructions.";
 
@@ -2294,6 +2306,8 @@ export function mount(root, opts = {}) {
       ? castOf(askAt > 0 ? s.messages.slice(0, askAt) : [], s.referents || {})
       : null;
     const follow = planTurn(said, askAt > 0 ? s.messages.slice(0, askAt) : [], { referents: s.referents || null, rejected: rejectedSurfaces(s.minds), hints: hintsFor(lang0 === "unknown" ? "en" : lang0), lang: lang0, casts });
+    // the person's act on the LAST answer closes its ledger entry: a retry, a source-ask, a push-back, or moving on (fold-chat-wald-ledger.js nextActOf)
+    waldLedgerUpdate(s, (led) => closeLast(led, s.id, nextActOf(follow)));
     // A bare nudge ("well?") after an unanswered ask IS that ask again: the turn is read, searched and written as the earlier question
     // (follow.retry); the person's own "well?" stays what they said (the thread, the record's `said`).
     // A source-ask ("find a primary source") is answered by the SOURCES, never by the model: asked to "find a primary source" a small model writes a link
@@ -2553,6 +2567,11 @@ export function mount(root, opts = {}) {
     const mayWriteAlone = modelSpeaksAlone(kind) || (producing && !outType.needsSources && !activeGap && (kind === "generate" || kind === "compose"));
     let wantWeb = (!skipsSearch(kind) && !!question && follow.mode === "web" && !noLookup && !recall && !srcRecall && !primaryAsk && !needlessSearch && !activeGap) || !!urlAskDetect;   // a URL is always READ, never stopped by the search gates
     if (bookask && follow.mode === "web") wantWeb = true;   // a book ask is ALWAYS read from the shelf: the fold reads what it holds, it does not guess or defer to the web
+    // WALD, SHADOW (fold-chat-wald.js): what this prompt must pull, decided from the witnesses the surface already ran — beside the gate above, never instead of it.
+    // It reads the gate's final answer (gateNow) and changes nothing; the record carries both, so the two are scored against each other turn by turn.
+    const waldT0 = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    let waldRec = null;
+    try { waldRec = waldShadow({ signals: { kind, follow, outType, producing, lookup, recall, srcRecall, primaryAsk, activeGap, hasMaterial: materialOf(s).length > 0, urlAsk: urlAskDetect, bookask: bookask && follow.mode === "web" ? bookask : null, live: liveAsk(question), lang: lang0, want: watcherPre?.want ?? null, wantSub: watcherPre?.sub ?? null, closedClass: (() => { const f = functionWordsOf(lang0 === "unknown" ? "en" : lang0); return !!(f && f.size); })() }, calibration: WALD_CALIBRATION, gateNow: !!wantWeb }); waldRec.decideMs = (typeof performance !== "undefined" ? performance.now() : Date.now()) - waldT0; } catch (e) { waldRec = { mode: "shadow", error: String(e?.message || e) }; }
     // The animation is for a FOLLOW-UP that researches; a first turn or a no-research turn shows only the murmur.
     feedGate.on = s.messages.filter((x) => x.role === "user").length > 1 && !!wantWeb;
     if (!feedGate.on) { try { feed.dispose(); feed.root.remove(); } catch (e) {} }
@@ -3399,6 +3418,8 @@ export function mount(root, opts = {}) {
       if (record && reasonLint) record.reasonLint = reasonLint;
       // the model-call decision — the named rule this turn ran under, so every call or non-call is auditable
       if (record && modelRule) record.modelRule = modelRule;
+      // Wald's shadow decision, with what the turn actually spent and got back (the currency: measured ms; earned when a pull returns something kept)
+      if (record && waldRec) record.wald = { ...waldRec, turnMs: Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - waldT0), webTaken: !!wantWeb, passagesKept: webPassages.length };
       if (record && lang0) record.lang = lang0;
       // Angelica's consult — advisory, sealed, typed; a covered-by-lesson verdict is kept too, so the record
       // shows WHY she was not called again (the "needs her less and less" is auditable turn by turn)
@@ -3595,6 +3616,7 @@ export function mount(root, opts = {}) {
       if (pvLive) { try { const sealed = pvLive.finish(); if (record) record.tape = sealed.tape; armTailReplay(sealed.liveT); pvLive.close(); } catch (e) { try { pvLive.close(); } catch {} } }
       if (clarify && followup && !String(text || "").trim()) text = followup.question;   // the clarifying question IS the turn's words (app-authored)
       s.messages.push({ role: "assistant", content: text, at: now(), mode: "chat", answerMode, grounding: record, model: m.id, ...(murmur ? { murmur } : {}), ...(followup ? { followup } : {}), ...(pivotRes ? { pivot: storePivot(pivotRes) } : {}), ...(discourseWatch ? { watch: discourseWatch } : {}), ...(provenance ? { provenance } : {}), ...(strand ? { authored: "sources", ...(slotTurn ? { answerTurn: slotStored } : { snips: storedSnips }) } : {}), ...(fellBack ? { fellBackFrom: fellBack.fellBackFrom, answerMode: "snips" } : {}), ...(notices.length ? { notices } : {}) });
+      if (record && record.wald) { if (waldLedgerUpdate(s, (led) => appendEntry(led, ledgerEntry({ droppedBefore: WALD_LEDGER_DROPPED, sid: s.id, turn, at: now(), head: `${kind}:${outType?.type || "-"}`, wald: record.wald, usedBy: Array.isArray(record.cited) && record.cited.length > 0 ? "cited" : strand ? "sources" : null })))) WALD_LEDGER_DROPPED = 0; }
       s.sealed = !!m.sealed;
       s.updated = now();
       maybeName(s);
