@@ -51,6 +51,32 @@ export function transcriptOf(messages) {
   return out;
 }
 
+/** THE VOIDS THE CONVERSATION DREW (nesting audit F, D4): a slot turn that ended in a typed gap — nothing stated it (`unwitnessed`), nothing could
+ *  be read (`unreached`), the holder is not current (`no_present_holder`) — is a void LOOKED FOR AND NOT FOUND, scoped to what was read. The lens
+ *  (khora resolutions.js lensBlock `voids`) renders each as "looked for and not found so far: S — verb→ ? (looked for in N sources; an open gap, not
+ *  a finding that it is false)". It was handed `voids: []`, so the turn's own gap never reached the next prompt. A refuted answer is a FINDING and a
+ *  contest is two answers: neither is a void. A turn with no stored answer turn (a model turn) draws none. The subject is the frame's first
+ *  referent as the title door resolved it; the verb is the ask's own predicate words, else the slot's name. Pure; recomputed from the messages. */
+export const VOID_GAPS = Object.freeze(["unwitnessed", "unreached", "no_present_holder"]);
+export function voidsOfMessages(messages) {
+  const out = [];
+  let turn = 0;
+  for (const m of Array.isArray(messages) ? messages : []) {
+    if (m?.role !== "assistant") continue;
+    turn++;
+    const at = m.answerTurn;
+    if (!at || typeof at !== "object" || at.answer || (Array.isArray(at.contest) && at.contest.length)) continue;
+    const kind = at.gap && at.gap.kind;
+    if (!VOID_GAPS.includes(kind)) continue;
+    const ref = (at.frame?.referents || []).find((r) => r && (r.title || r.surface));
+    if (!ref) continue;
+    const pred = (at.frame?.predicate || []).map((p) => p && (p.surface || p.stem)).filter(Boolean).join(" ");
+    const sources = (Array.isArray(at.sources) ? at.sources : []).map((x) => x && (x.url || x.title)).filter(Boolean);
+    out.push({ subject: String(ref.title || ref.surface), verb: pred || String(at.frame?.slot || at.slot || "answer"), scope: { sources }, kind, turn });
+  }
+  return out;
+}
+
 /**
  * carryOf(session) → { text, lines, entities, basis, active } — `text` is struck of addresses and is what the mouth may see;
  * `lines` keep their [turn:N] addresses for the record. Empty (text "") when nothing resolves to a referent yet; `basis` says why.
@@ -63,7 +89,9 @@ export function carryOf(session, { question = null, level = 2 } = {}) {
   const active = activeReferents(q, transcript, index);
   const atmosphere = atmosphereBlock({ question: q, transcript, index });
   const lens = level >= 2
-    ? lensBlock({ question: q, active: active.ids, index, notes: [], voids: [], records: session?.summary?.records || [], transcript })
+    // `notes` is NOT passed: this surface keeps no note ledger, and `notes: []` read as a fed-but-empty one. The voids are the gaps the
+    // conversation's own slot turns drew (voidsOfMessages); the records carry the addresses mechanical turns showed (fold-chat-record.js).
+    ? lensBlock({ question: q, active: active.ids, index, voids: voidsOfMessages(session?.messages), records: session?.summary?.records || [], transcript })
     : null;
   const blocks = [atmosphere, lens].filter((b) => b && b.text);
   const entities = [...(session.referents.entities || [])].sort((a, b) => b.weight - a.weight).map((e) => e.surface);
@@ -71,7 +99,7 @@ export function carryOf(session, { question = null, level = 2 } = {}) {
     text: blocks.map((b) => b.text).join("\n\n"),
     lines: [...atmosphere.lines, ...(lens?.lines || [])],
     entities,
-    basis: [atmosphere.basis, lens?.basis].filter(Boolean).join(" · "),
+    basis: [atmosphere.basis, lens?.basis, lens ? "no-notes: this surface keeps no note ledger, so the lens reads none" : null].filter(Boolean).join(" · "),
     active: [...active.ids].map((id) => index.represent(id)),
   };
 }
