@@ -1,6 +1,8 @@
 // node work-card-runtime.test.mjs — the card cannot break a turn.
 import fs from "node:fs";
 import { modeOf, ensureWorkCards, resetWorkCards, workCardPassages } from "./work-card-runtime.js";
+// a clean checkout has not built the card file (scripts/build-work-cards.mjs, local corpus): skip, loudly
+if (!fs.existsSync(new URL("./mind/work-cards.json", import.meta.url))) { console.log("SKIP: mind/work-cards.json not built (node scripts/build-work-cards.mjs needs the local corpus)"); process.exit(0); }
 let fail = 0; const claim = (n, ok, d = "") => { console.log(`${ok ? "PASS" : "FAIL"}  ${n}${d ? " — " + d : ""}`); if (!ok) fail += 1; };
 const raw = fs.readFileSync(new URL("./mind/work-cards.json", import.meta.url), "utf8");
 const okFetch = async () => ({ ok: true, json: async () => JSON.parse(raw) });
