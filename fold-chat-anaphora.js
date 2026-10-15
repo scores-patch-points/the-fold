@@ -27,6 +27,7 @@ import { functionWordsOf } from "./fold-chat-snippets.js";
 import { casedRuns, scriptOf } from "./fold-chat-mind.js";
 import { detectLang } from "./fold-chat-lang.js";
 import { PRONOUNS } from "./fold-chat-pronouns.js";
+import { ANAPHORA_DERIVED } from "./fold-chat-anaphora-classes.js";
 
 export const ANAPHORA = Object.freeze({
   weakMaxTokens: 8,       // an ask longer than this names enough on its own for a weak pronoun (it/this/that…); same limit as THREAD.ellipticalMaxWords
@@ -47,7 +48,7 @@ const CLASSES = Object.freeze({
     strong: set("he she him his her hers himself herself"),
     weak: set("it its they them their theirs this that these those one ones itself themselves"),
     connectives: set("and but also so then plus"), connective2: new Set(["what about", "how about", "and what about", "and how about", "and then", "what of"]),
-    wh: set("who whom whose which what when where why how"),
+    wh: new Set(ANAPHORA_DERIVED.en.wh),   // DERIVED: UD PronType=Int|Rel (scripts/gen-anaphora-classes.mjs); es and fr below stay declared
     frame: set("who whom whose which what when where why how tell show give explain describe say know find ask please pls thanks thank ok okay let lets go on wait hold hmm hm well really seriously honestly huh sure"),
     cont: set("more else further again another details detail elaborate continue same instead rest next"),
     comparative: /\b\p{L}{3,}ier\b|\b(?:bett|wors|cheap|easi|hard|fast|slow|bigg|small|larg|long|short|thick|thin|soft|crisp|sweet|spic|healthi|light|strong|smooth|rich|tough|tender|simpl|clear|brief)er\b|\b(?:more|less|a bit|a little|much|way|super|very)\s+\p{L}{3,}\b/iu,
