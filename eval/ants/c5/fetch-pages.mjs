@@ -8,7 +8,7 @@ const TITLES = ["Eiffel Tower", "Gustave Eiffel", "Paris", "Photosynthesis", "Ch
 const out = {};
 for (const t of TITLES) {
   const u = "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&redirects=1&format=json&titles=" + encodeURIComponent(t);
-  const j = await (await fetch(u, { headers: { "user-agent": "the-fold-eval-c5/1 (michael.t.lacy@gmail.com)" } })).json();
+  const j = await (await fetch(u, { headers: { "user-agent": "the-fold-eval-c5/1 (https://github.com/scores-patch-points/the-fold)" } })).json();
   const pg = Object.values(j.query.pages)[0];
   let text = String(pg.extract || "").replace(/\n+==+[^=\n]+==+\n/g, "\n").replace(/\s*\n\s*/g, " ").replace(/\s+/g, " ").trim();
   if (text.length > 3000) { const cut = text.lastIndexOf(". ", 3000); text = text.slice(0, cut > 1500 ? cut + 1 : 3000); }

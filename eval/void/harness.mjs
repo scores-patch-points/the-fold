@@ -39,7 +39,7 @@ export function recordingFetch(mode, { dir = REC_DIR, log = null } = {}) {
     // and NEVER saved; a 403 is the site's real refusal and is kept. Still failing after the retries: returned live, left unrecorded.
     let res, body, tries = 0;
     for (;;) {
-      res = await fetch(u, { ...o, headers: { "user-agent": "the-fold eval/void (michael.t.lacy@gmail.com)", ...(o.headers || {}) } });
+      res = await fetch(u, { ...o, headers: { "user-agent": "the-fold eval/void (https://github.com/scores-patch-points/the-fold)", ...(o.headers || {}) } });
       body = await res.text();
       const transient = res.status === 429 || res.status >= 500;
       if (!transient) break;
