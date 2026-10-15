@@ -4,7 +4,7 @@ import fs from "node:fs";
 const R = "/Users/mlacy/Documents/3.0/the-fold-void/";
 const { BATTERY } = await import(R + "eval/void/battery.mjs");
 const API = "https://www.wikidata.org/w/api.php";
-const UA = { "user-agent": "the-fold eval/void probe (michael.t.lacy@gmail.com)" };
+const UA = { "user-agent": "the-fold eval/void probe (https://github.com/scores-patch-points/the-fold)" };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function j(params) {
   const u = API + "?" + new URLSearchParams({ format: "json", origin: "*", ...params });
