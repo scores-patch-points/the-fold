@@ -57,7 +57,7 @@ import { modelCallRule } from "./fold-chat-model-rule.js";   // THE RULE: the mo
 import { judgeReachable, decisionSignature, needsJudge, sealJudge, Angelica, lessonOf, judgeOn, judgeLessonsOf, addJudgeLesson, anthropicJudge, browserJudgeKey, judgeModelName, JUDGE_KEY_STORE } from "./fold-chat-sealed-judge.js";   // ANGELICA: the sealed judge — advisory, sealed, typed, and learned (the same signature stops consulting her)
 import { addOp, correctionOp, rejectedSurfaces, carryNotice, mindsClause } from "./fold-chat-minds.js";
 import { castOf } from "./fold-chat-casts.js";
-import { claimsOfTurn, appendClaims, pointerOf, conversationMaterial, convoRefOf, mechanicalUnits } from "./fold-chat-record.js";
+import { claimsOfTurn, appendClaims, pointerOf, conversationWitness, convoRefOf, mechanicalUnits, MODEL_NOT_WITNESS } from "./fold-chat-record.js";
 import { freshnessOf } from "./fold-chat-freshness.js";
 import { recallOf } from "./fold-chat-recall.js";
 import { askTerms, salientSources, continuesThread, salientHistory, salientSummary, salienceEnabled } from "./fold-chat-salience.js";
@@ -3275,7 +3275,11 @@ export function mount(root, opts = {}) {
       // hijacked — the thread can only ever ADD a witness, never stop the search. Bounded so a long chat fits.
       // each earlier turn is its OWN address ("earlier in this chat · turn N#start-end", fold-chat-record.js conversationMaterial): they used to
       // share one ref, so a claim witnessed by turn 2 was "cited" with turn 1's bytes (nesting audit F, D1).
-      const convoMaterial = conversationMaterial(askAt > 0 ? s.messages.slice(0, askAt) : []);
+      // THE MOUTH IS NEVER A WITNESS (audit F 3.5, fold-chat-record.js conversationWitness): a turn the MODEL wrote is not material, so an earlier false
+      // paragraph cannot "support" its own repetition; only the person's words and turns the app authored from a page ride in. `convoWitness.notWitness`
+      // keeps the excluded turns so what that withheld is typed below, not silent.
+      const convoWitness = conversationWitness(askAt > 0 ? s.messages.slice(0, askAt) : []);
+      const convoMaterial = convoWitness.items;
       const material = [
         ...materialOf(s),        // a transform's material IS the person's own text: it is grounded against itself, not the web
         ...(kind === "transform" ? [{ ref: "your message", source: "your message", text: question }] : []),
@@ -3297,6 +3301,24 @@ export function mount(root, opts = {}) {
       if (pivotOn && !strand && !slotTurn && !plainTurnLive && text.trim()) {
         const readLang = detectLang(text, { prior: lang0 === "unknown" ? null : lang0 }).lang;
         pivotRes = pivotText({ draft: text, ask: question, material, requireGrounding: !!wantWeb || !!threadTurn, computed: computed && computed.ok ? computed.text : null, read: readLang === "unknown" ? "en" : readLang, kind, experiencer: { who: m.id, read: `chat-draft:${runId}` } });
+        // The typed gap: which withheld sentences were withheld ONLY because the model's own earlier turn is not a witness? Re-read the SAME draft
+        // with those turns restored as material (a counterfactual, never shown); a sentence it would have kept is the model's echo of itself.
+        if (convoWitness.notWitness.length && Array.isArray(pivotRes.dropped) && pivotRes.dropped.length) {
+          try {
+            const asWitness = convoWitness.notWitness.map((n) => ({ ref: n.ref, source: "turn " + n.turn, text: "I answered: " + n.text }));
+            const cf = pivotText({ draft: text, ask: question, material: [...material, ...asWitness], requireGrounding: !!wantWeb || !!threadTurn, computed: computed && computed.ok ? computed.text : null, read: readLang === "unknown" ? "en" : readLang, kind, experiencer: { who: m.id, read: `chat-draft:${runId}` } });
+            const kept = new Set((cf.units || []).filter((u) => u.kind === "sentence").map((u) => String(u.start) + "-" + String(u.end)));
+            const echoed = pivotRes.dropped.filter((d) => kept.has(String(d.start) + "-" + String(d.end))).map((d) => {
+              const nw = convoWitness.notWitness.find((n) => n.text.includes(String(d.text || "").replace(/[.!?\s]+$/, ""))) || convoWitness.notWitness[convoWitness.notWitness.length - 1];
+              return { sentence: String(d.text || "").slice(0, 200), turn: nw.turn, ref: nw.ref, reason: MODEL_NOT_WITNESS };
+            });
+            if (echoed.length) {
+              pivotRes.notWitness = echoed;
+              if (pivotRes.gap) pivotRes.gap = { ...pivotRes.gap, reason: MODEL_NOT_WITNESS, turns: [...new Set(echoed.map((e) => e.turn))] };
+              notices.push({ kind: "fold", reason: MODEL_NOT_WITNESS, text: `${echoed.length} sentence${echoed.length === 1 ? "" : "s"} of the model's draft only repeated the model's own earlier answer (turn ${[...new Set(echoed.map((e) => e.turn))].join(", ")}); the model's output is not a witness, so ${echoed.length === 1 ? "it was" : "they were"} withheld.` });
+            }
+          } catch (e) { /* an aid: the withholding already happened, only its label is lost */ }
+        }
         const vp = verifyPivot(pivotRes, text);
         if (!vp.ok) { console.error("[fold-chat] the pivot spoke a word the draft did not carry — a bug; the draft is withheld:", vp.bad.slice(0, 3)); pivotRes = { ...pivotRes, text: "", gap: { kind: "pivot_unverified", why: "the realised text did not re-derive from the draft" } }; }
         const gl = noteGates(pivotRes, { verified: vp.ok });

@@ -15,18 +15,46 @@ export { FOLD_RECORD_SCHEMA, turnAddress, holonOfSource, claimAt, pointerOf, app
 export const CONVO_REF = "earlier in this chat";
 export const convoRefOf = (turn, part = "") => `${CONVO_REF} \u00b7 turn ${Number(turn) || 0}${part ? ` \u00b7 ${part}` : ""}`;
 
-/** The earlier exchanges as material items, one per answered turn, the last `last` of them: `{ ref, source, text, turn }`. `prior` is the messages
- *  before this ask. `turn` counts the answered (non-agent, non-empty) assistant messages, the same index referencedThread (fold-chat-thread.js) and
- *  `source: "turn N"` use. Pure. */
-export function conversationMaterial(prior, { last = 4 } = {}) {
+/** THE MOUTH IS NEVER A WITNESS (nesting audit F, open item 3.5). The repo's own law: a layer's product does not witness itself, and the reader is
+ *  never a witness of record. A turn the MODEL wrote is the mouth's output; letting "earlier in this chat · turn N" cite it meant a later draft that
+ *  repeated an earlier false paragraph was "supported" by the model's own earlier turn (measured: 12-turn fabricate arm, turns 6-10). So this is the
+ *  one place that decides whose turn it is. A turn the person wrote, or one the app authored from a page (a sources / slot turn, a clarifying
+ *  question, the watcher's reply, any turn the model was barred from), may witness; the model's turn has no witness address. No record of who wrote
+ *  it is read as the model's (never assumed to be the app's). Pure, mechanical, no list of words. */
+export const MODEL_NOT_WITNESS = "model-authored-not-a-witness";
+export function modelAuthored(m) {
+  if (!m || m.role !== "assistant") return false;
+  if (m.authored === "sources") return false;                      // the page's own words, verbatim (strand / slot turn)
+  if (m.followup) return false;                                     // the clarifying question is the app's
+  if (m.watch && m.watch.appAnswered) return false;                 // the watcher's own reply (no model)
+  const r = m.grounding && m.grounding.modelRule;
+  if (r && r.allowed === false) return false;                       // the model was barred on this turn: the app wrote it
+  return true;
+}
+
+/** The earlier exchanges split by who may witness, one entry per answered turn, the last `last` of them. `items`: `{ ref, source, text, turn }` the
+ *  material (the same shape as before). A turn the model wrote contributes only the PERSON's words (`You asked: ...`, at its own `· you` address);
+ *  its "I answered" half is not material and is listed in `notWitness` (`{ turn, ref, text, reason }`) so the loss is typed and countable, never
+ *  silent. `prior` is the messages before this ask. `turn` counts the answered (non-agent, non-empty) assistant messages, the same index
+ *  referencedThread (fold-chat-thread.js) and `source: "turn N"` use. Pure. */
+export function conversationWitness(prior, { last = 4 } = {}) {
   const pairs = [];
   let ask = null, n = 0;
   for (const m of Array.isArray(prior) ? prior : []) {
     if (m?.role === "user" && String(m.content || "").trim()) ask = String(m.content).replace(/\s+/g, " ").trim();
-    else if (m?.role === "assistant" && String(m.content || "").trim() && m.mode !== "agent") { n++; pairs.push({ turn: n, ask, text: String(m.content).replace(/\s+/g, " ").trim().slice(0, 3000) }); }
+    else if (m?.role === "assistant" && String(m.content || "").trim() && m.mode !== "agent") { n++; pairs.push({ turn: n, ask, text: String(m.content).replace(/\s+/g, " ").trim().slice(0, 3000), model: modelAuthored(m) }); }
   }
-  return pairs.slice(-last).map((p) => ({ ref: convoRefOf(p.turn), source: "turn " + p.turn, turn: p.turn, text: (p.ask ? "You asked: " + p.ask + "\n" : "") + "I answered: " + p.text }));
+  const items = [], notWitness = [];
+  for (const p of pairs.slice(-last)) {
+    if (!p.model) { items.push({ ref: convoRefOf(p.turn), source: "turn " + p.turn, turn: p.turn, text: (p.ask ? "You asked: " + p.ask + "\n" : "") + "I answered: " + p.text }); continue; }
+    if (p.ask) items.push({ ref: convoRefOf(p.turn, "you"), source: "turn " + p.turn, turn: p.turn, text: "You asked: " + p.ask });
+    notWitness.push({ turn: p.turn, ref: convoRefOf(p.turn), text: p.text, reason: MODEL_NOT_WITNESS });
+  }
+  return { items, notWitness };
 }
+
+/** The earlier exchanges that may witness, as material items: `conversationWitness(prior).items`. Pure. */
+export function conversationMaterial(prior, opts) { return conversationWitness(prior, opts).items; }
 
 /** The source's own bytes at a support address `<ref>#<from>-<to>`: `material` is what the turn READ ([{ ref, text }], the same items the Pivot judged against), the
  *  span is a byte range of that item's text. Absent (null) when the ref is not in the material or the range does not fit — never guessed, never the spoken sentence

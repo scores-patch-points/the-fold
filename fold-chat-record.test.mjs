@@ -80,11 +80,13 @@ test("basis.cited is the source's own bytes at the support span, read from the M
 import * as GROUND from "./fold-chat-ground.js";
 import { conversationMaterial, CONVO_REF, convoRefOf } from "./fold-chat-record.js";
 
+// the earlier answers are turns the APP authored from pages (`authored: "sources"`): those may witness. A turn the MODEL wrote may not (the mouth is
+// never a witness: fold-chat-model-not-witness.test.mjs), so a bare assistant message here would, correctly, not be material.
 const CONVO_MSGS = [
   { role: "user", content: "Who painted the Mona Lisa?" },
-  { role: "assistant", content: "The Mona Lisa was painted by Leonardo da Vinci in the early sixteenth century. It hangs in the Louvre in Paris, where it has been displayed since the nineteenth century and attracts millions of visitors each year from every country." },
+  { role: "assistant", authored: "sources", content: "The Mona Lisa was painted by Leonardo da Vinci in the early sixteenth century. It hangs in the Louvre in Paris, where it has been displayed since the nineteenth century and attracts millions of visitors each year from every country." },
   { role: "user", content: "What is the capital of Australia?" },
-  { role: "assistant", content: "The capital city of Australia is Canberra, located in the Australian Capital Territory." },
+  { role: "assistant", authored: "sources", content: "The capital city of Australia is Canberra, located in the Australian Capital Territory." },
 ];
 
 test("D1: each earlier chat turn is its own address (turn index in the ref); citedAt returns the bytes the attribution matched, never another turn's", () => {
