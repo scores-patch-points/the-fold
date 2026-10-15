@@ -24,7 +24,8 @@ function genderUnion() {
 export const CASTS = Object.freeze({
   // DECLARED (II.11): a SOURCE's assertion is not the person's establishment; the fold's shown answer is reachable.
   accessibility: Object.freeze({ [H.USER]: [H.FOLD], [H.FOLD]: [H.SOURCE, H.USER], [H.SOURCE]: [] }),
-  // DECLARED, never measured: animacy of a thing-shaped surface (an article title, an office, a structure, a year).
+  // DECLARED, never measured (giver: the author; English-only; LEFT on purpose, docs/NO-FIXED-LISTS.md): animacy of a thing-shaped surface (an article title,
+  // an office, a structure, a year). Removing it passes the suites and the ratchet but makes Berlin Wall / Eiffel Tower persons: fold-chat-casts.test.mjs PINs it.
   inanimate: /\b(?:election|presidential|office|presidency|king|queen|prime minister|mayor|president|wall|tower|bridge|river|city|capital|planet|element|band|album|record label|article|page|edition|ship|war|battle|treaty|law)\b|\b(?:19|20)\d{2}\b|·|—/i,
   // DERIVED (scripts/gen-pronoun-gender.mjs -> fold-chat-pronoun-gender.js): the pronouns of a NATURAL-gender language (no determiner/adjective agrees
   // in Gender in its UD treebank) say person (Masc/Fem) or thing (Neut); a grammatical-gender language contributes nothing. A form two languages
