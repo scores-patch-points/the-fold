@@ -14,11 +14,16 @@
 // stemmer, no per-language switch. What each language's own parser would add is a separate lane, not a precondition.
 //
 // BUDGETS (declared, not thresholds of truth): SPANS key spans per work, TERMS characteristic terms, the span length window.
-import crypto from "node:crypto";
+// (no static node:crypto import: the chat page imports this module through work-card-runtime.js, and a browser/extension bundle cannot ship a node: specifier.
+//  Hashing a span happens only when a card is BUILT, offline, in node — see scripts/build-work-cards.mjs — so it is reached by call, not by import.)
 
 export const BUDGET = Object.freeze({ spans: 8, terms: 40, minSpan: 80, maxSpan: 700, nullDraws: 300, maxK: 12, seed: 20261014 });
 const mulberry32 = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-const sha = (b) => crypto.createHash("sha256").update(b).digest("hex");
+const sha = (b) => {
+  const c = globalThis.process?.getBuiltinModule?.("node:crypto");
+  if (!c) throw new Error("work-card: sha256 of a span is computed when a card is built (node); this runtime only reads built cards");
+  return c.createHash("sha256").update(b).digest("hex");
+};
 const deaccent = (s) => s.normalize("NFD").replace(/\p{M}+/gu, "").replace(/ς/g, "σ");
 const UNSPACED = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
 
