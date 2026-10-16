@@ -13,6 +13,7 @@ import { createMemory, contentWords } from "./fold-blocks-weave.js";
 import { longKind, urlOf, runEssay, runExtract, addSection, replaceInArtifact, extendEssay } from "./fold-chat-longform.js";
 import { createWorkspace, treeOf, applyEdits, parseEdits, diffLines, diffStat, snapshot as wsSnapshot } from "./fold-chat-workspace.js";
 import { spineBase, buildViaSpine, editViaSpine } from "./fold-chat-spine.js";
+import { eotFetch, changesOf, spineHtml, noteHtml } from "./fold-chat-eotview.js";
 // THE APP'S OWN FALSIFIER — the same organ the answer lane uses. A made page is
 // not trusted because it renders; its CLAIMS are falsified against the material
 // that was read, and a failing claim sends the turn back (REC→NUL) to be corrected.
@@ -231,6 +232,7 @@ const CSS = `
 .fs-vt{display:none}`;
 
 const CODE_CSS = `
+.fs-spine{border-bottom:1px solid var(--line,#0002);padding:6px 8px;font:var(--fs-xs) var(--mono)}.fs-spine-h{display:flex;gap:8px;align-items:center;margin-bottom:4px}.fs-lane{display:flex;gap:6px;align-items:center}.fs-lane-n{width:72px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis}.fs-lane-m{display:flex;flex-wrap:wrap}.fs-mk{background:none;border:0;padding:0 2px;cursor:pointer;color:var(--ink)}.fs-mk.said{color:var(--ink2);opacity:.6}.fs-mk.cur{background:var(--side2);border-radius:var(--r-sm);font-weight:700}
 .fs-code{display:grid;grid-template-columns:minmax(140px,220px) minmax(0,1fr);height:100%;min-height:0}
 .fs-by{font:700 10.5px/1.2 var(--mono);color:#fff;border-radius:4px;padding:2px 5px;white-space:nowrap;display:inline-block}
 .fs-by.model,.fs-by.mouth{background:var(--ag)}.fs-by.app,.fs-by.box{background:#5f5f6b}.fs-by.you{background:var(--link)}.fs-by.library{background:#7c3aed}.fs-by.hunt{background:#a16207}.fs-by.gap,.fs-by.wall{background:var(--bad)}
@@ -1115,10 +1117,11 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
       const mode = cur.codeMode || "projection";
       const body = mode === "log"
         ? (changes.length
-          ? changes.map((c, i) => { const d = diffLines(c.before, c.after); const st = diffStat(d); return `<div class="fs-chg"><div class="fs-chg-h"><span class="fs-by ${esc(c.by)}">${esc(c.by)}</span><b>${esc(c.label || c.op)}</b>${i === 0 ? "" : `<span>+${st.added} −${st.removed}</span>`}</div><pre class="fs-diff">${d.filter((h) => h.op !== "ctx" && h.op !== "same").map((h) => (h.op === "add" ? "+ " : h.op === "del" ? "- " : "  ") + esc(h.text)).join("\n")}</pre></div>`; }).join("")
+          ? changes.map((c, i) => { const d = diffLines(c.before, c.after); const st = diffStat(d); return `<div class="fs-chg"><div class="fs-chg-h"><span class="fs-by ${esc(c.by)}">${esc(c.by)}</span><b>${esc(c.label || c.op)}</b>${i === 0 ? "" : `<span>+${st.added} −${st.removed}</span>`}</div><pre class="fs-diff">${d.filter((h) => h.op !== "eq").map((h) => (h.op === "add" ? "+ " : "- ") + esc(h.line)).join("\n")}</pre></div>`; }).join("")
           : `<div class="fs-empty">No changes recorded for ${esc(tgt || "this file")} yet.</div>`)
         : `<pre class="fs-file">${esc(content)}</pre>`;
-      codeView = `<div class="fs-code"><div class="fs-tree">${names.map((p) => `<button type="button" class="fs-tbtn${p === tgt ? " on" : ""}" data-cf="${esc(p)}">${esc(p)}</button>`).join("")}</div><div class="fs-cview"><div class="fs-ch"><b>${esc(tgt || "")}</b><span class="fs-sp"></span><button type="button" class="fs-btn${mode === "projection" ? " on" : ""}" data-cmode="projection">Projection</button><button type="button" class="fs-btn${mode === "log" ? " on" : ""}" data-cmode="log">Log (${changes.length})</button></div>${body}</div></div>`;
+      const spine = cur.eot ? spineHtml(cur.eot.log, { cursor: cur.eot.asOf, esc }) + noteHtml(cur.eot.tree, esc) : "";
+      codeView = `${spine}<div class="fs-code"><div class="fs-tree">${names.map((p) => `<button type="button" class="fs-tbtn${p === tgt ? " on" : ""}" data-cf="${esc(p)}">${esc(p)}</button>`).join("")}</div><div class="fs-cview"><div class="fs-ch"><b>${esc(tgt || "")}</b><span class="fs-sp"></span><button type="button" class="fs-btn${mode === "projection" ? " on" : ""}" data-cmode="projection">Projection</button><button type="button" class="fs-btn${mode === "log" ? " on" : ""}" data-cmode="log">Log (${changes.length})</button></div>${body}</div></div>`;
     }
     if (!space.firstChild) space.innerHTML = `<div class="fs-sess"></div><div class="fs-canvas"></div>`;
     if (!space.dataset.view) space.dataset.view = "session";
@@ -1128,7 +1131,7 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
       <div class="fs-comp">${sel && kernel ? `<div class="row"><span class="fs-sel">◎ ${esc(sel)}</span><button type="button" class="fs-more" data-unsel="1">clear</button></div>` : ""}<div class="inrow"><textarea rows="2" aria-label="${started ? "Follow up on this fold" : "What should this fold make"}">${esc(keepComp)}</textarea>${running ? `<button type="button" class="fs-btn" data-stop="1">Stop</button>` : `<button type="button" class="fs-btn go" data-send="1">${started ? "Send" : "Make it"}</button>`}</div>
         ${!started ? `<div class="row">${["auto", "website", "widget", "document"].map((k) => `<button type="button" class="fs-btn${(cur.kindPick || "auto") === k ? " on" : ""}" data-kind="${k}">${k}</button>`).join("")}</div>` : ""}</div>`;
     const trustSig = [tr.sources?.length || 0, tr.claims?.backed || 0, tr.claims?.failed || 0, tr.run?.ok ? 1 : 0].join(",");
-    const ckey = [tab, editMode, html, parts.length, tab === "eot" ? cur.log.length : 0, trustSig, cur.codebase ? [cur.codeTarget, cur.codeMode, (cur.codeChanges || []).length].join(",") : ""].join("|");
+    const ckey = [tab, editMode, html, parts.length, tab === "eot" ? cur.log.length : 0, trustSig, cur.codebase ? [cur.codeTarget, cur.codeMode, (cur.codeChanges || []).length, cur.eot ? [cur.eot.asOf, cur.eot.log?.total, cur.eot.tree?.files?.length, cur.eot.tree?.drift?.length].join(":") : ""].join(",") : ""].join("|");
     if (canvasEl.__key !== ckey) {
       canvasEl.__key = ckey;
       const trustBar = (tr.sources || tr.claims || tr.run) ? `
@@ -1165,7 +1168,8 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     space.querySelectorAll("[data-think]").forEach((b) => (b.onclick = () => b.closest(".fs-thinkblock").classList.toggle("collapsed")));
     space.querySelectorAll("[data-undo]").forEach((b) => (b.onclick = () => undo(+b.dataset.undo)));
     space.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => { tab = b.dataset.tab; paint(); }));
-    space.querySelectorAll("[data-cf]").forEach((b) => (b.onclick = () => { cur.codeTarget = b.dataset.cf; paint(); }));
+    space.querySelectorAll("[data-cf]").forEach((b) => (b.onclick = () => { cur.codeTarget = b.dataset.cf; if (cur.eot) loadEot(); else paint(); }));
+    space.querySelectorAll("[data-evt]").forEach((b) => (b.onclick = () => { if (cur.eot) { cur.eot.asOf = b.dataset.evt || null; loadEot(); } }));
     space.querySelectorAll("[data-cmode]").forEach((b) => (b.onclick = () => { cur.codeMode = b.dataset.cmode; paint(); }));
     space.querySelectorAll("[data-f]").forEach((x) => (x.oninput = x.onchange = () => { ed.values[x.dataset.f] = x.value; }));
     const rows = space.querySelector("[data-rows]"); if (rows) rows.oninput = () => { ed.rows = rows.value; };
@@ -1216,8 +1220,31 @@ export function mountFolds({ main, list, newBtn = null, railBtn = null, getModel
     paint(); renderList();
     return cur.id;
   }
+  // THE CODEBASE FROM THE LOG: no tree of its own — the door folds the one EOT log at a cursor (asOf = an event id,
+  // null = now) and the panel draws it: names from /tree, one file's bytes and edits from /file, the spine from /log.
+  async function loadEot() {
+    const e = cur?.eot; if (!e) return;
+    try {
+      const [log, tree] = await Promise.all([eotFetch(e.base, "log", e.q), eotFetch(e.base, "tree", e.q, e.asOf)]);
+      e.log = log; e.tree = tree;
+      const names = tree.files.map((f) => f.path);
+      if (!names.includes(cur.codeTarget)) cur.codeTarget = names[0] || null;
+      const file = cur.codeTarget ? await eotFetch(e.base, "file", e.q, e.asOf, { path: cur.codeTarget }) : null;
+      cur.codebase = createWorkspace({});
+      for (const p of names) cur.codebase.files[p] = p === cur.codeTarget ? (file?.text ?? (file?.binary ? "(binary)" : "")) : "";
+      cur.codeChanges = changesOf(file);
+    } catch (err) { toast("eot log unreachable — " + String(err?.message || err).slice(0, 80)); }
+    paint();
+  }
+  function setEotCodebase({ base, workspace = null, task = null } = {}) {
+    if (!cur) create();
+    cur.eot = { base: base || spineBase() || (typeof location !== "undefined" ? location.origin : ""), q: { workspace, task }, asOf: null, log: null, tree: null };
+    cur.codeMode = "projection"; tab = "code";
+    loadEot(); renderList();
+    return cur.id;
+  }
   if (newBtn) newBtn.onclick = () => create();
   if (railBtn) railBtn.onclick = () => (space.hidden ? (folds.length ? open([...folds].sort((a, b) => b.updated - a.updated)[0].id) : create()) : close());
   renderList();
-  return { create, setCodebase, open, close, isOpen: () => !space.hidden, isRunning: () => !!running, list: () => folds.map((f) => ({ id: f.id, title: f.title, kind: f.kind })) };
+  return { create, setCodebase, setEotCodebase, open, close, isOpen: () => !space.hidden, isRunning: () => !!running, list: () => folds.map((f) => ({ id: f.id, title: f.title, kind: f.kind })) };
 }
