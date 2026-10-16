@@ -78,6 +78,7 @@ import { fetchLoaded, describeLoaded, noModelWhy, createLoadedPoller } from "./f
 import { createPageEngine, canonicalModelId, ollamaTagOf, MODEL_CHOICES, DEFAULT_MODEL, PAGE_PREFIX } from "./fold-chat-webllm.js";
 import { snipsOf, strandText, storeSnip, verifySnips, STRAND } from "./fold-chat-strand.js";
 import { ensureFoundation, mindPassagesFor, mergeMind } from "./fold-chat-foundation.js";
+import { modeOf as workCardMode, ensureWorkCards, workCardPassages } from "./work-card-runtime.js";
 import { slotTurnWanted, slotPipelineOn, runSlotTurn, endsTurn, answerLine, storeAnswerTurn, traceFeed, answerRecordNote, answerProcessLine, frameReferentsOf } from "./fold-chat-answerwire.js";
 import { splitSlotParts, runSlotParts, partsLine, partsContentAllowed, slotAskFor } from "./fold-chat-split.js";
 import { mountAnswerCard } from "./fold-chat-answercard.js";
@@ -2699,6 +2700,18 @@ export function mount(root, opts = {}) {
           }
         }
         const foundationReady = ensureFoundation();   // THE MIND: the foundation index loads alongside the search; a page without one has no mind yet
+        // THE CARD (work-card-runtime.js): a work folded once into a card whose key spans join the turn's material at their file byte address.
+        // off (the default) fetches nothing and the turn is exactly what it was; shadow computes a packet for the feed and adds no passage.
+        const workCardsMode = workCardMode();
+        const workCardsReady = workCardsMode === "off" ? null : ensureWorkCards();
+        const withWorkCards = async (list) => {
+          if (!workCardsReady) return list;
+          try {
+            const wc = workCardPassages({ question: searchQ || question, index: await workCardsReady, mode: workCardsMode });
+            if (wc.packet?.work) feedPush(lineEvent(tt, wc.passages.length ? `The fold's card of ${wc.packet.work.title} held ${wc.passages.length} span${wc.passages.length === 1 ? "" : "s"} that bear on this` : `Shadow: the card would route to ${wc.packet.work.title}`, { tone: "info", note: wc.passages.map((p) => p.address?.file).filter(Boolean).slice(0, 2).join(" \u00b7 ") }));
+            return wc.passages.length ? mergeMind(list, { passages: wc.passages }) : list;
+          } catch { return list; }
+        };
         if (!bookFound) try {
           if (searchQ !== question) feedPush(lineEvent(tt, follow.kind === "carried" ? "Followed on from the last answer" : "Followed on from the conversation", { tone: "info", note: `searching for \u201c${searchQ.slice(0, 90)}\u201d` }));
           feedPush(lineEvent(tt, "The query", { tone: "info", note: `searching for \u201c${String(searchQ).slice(0, 90)}\u201d` }));   // what was asked of the web, in the record the watcher reads (a later "what did you search for?" opens it)
@@ -2743,6 +2756,7 @@ export function mount(root, opts = {}) {
               feedPush(lineEvent(tt, `The mind held ${mp.passages.length} passage${mp.passages.length === 1 ? "" : "s"} that bear on this`, { tone: "info", note: mp.passages.map((p) => p.title).slice(0, 3).join(" \u00b7 ") }));
             }
           } catch {}
+          webPassages = await withWorkCards(webPassages);
           if (genOt) {
             // pages ABOUT writing the output (tutorials, samples, templates, writing services, bot walls, pages that never mention the topic) are not material for it
             const g0 = genVoid({ outputType: genOt, webPassages, question });
@@ -2779,6 +2793,7 @@ export function mount(root, opts = {}) {
               feedPush(lineEvent(tt, `Answering from what the fold already read`, { tone: "info", note: `${mp.passages.length} passage${mp.passages.length === 1 ? "" : "s"} from the foundation` }));
             }
           } catch {}
+          try { if (!webPassages.length) { const wp = await withWorkCards([]); if (wp.length) { webPassages = wp; sourceBlock = sourcesPrompt(webPassages); } } } catch {}
         }
       }
     } else {
