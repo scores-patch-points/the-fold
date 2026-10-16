@@ -1,7 +1,7 @@
 {
   "schema": "ArchonDossier@1",
   "handle": "houdini",
-  "organ": "khora/native/the-fold/archon-rules.js::houdiniExclusivity; proxy-runner.mjs::runProxyTurn",
+  "organ": "khora/native/the-fold/archon-rules.js::houdiniExclusivity; proxy-runner.mjs::runProxyTurn; fold-chat-houdini.js",
   "standing": "nomination",
   "snips": [],
   "creditAsScholarship": false,
@@ -14,7 +14,7 @@
       "disputes": "I did not read scholarship on whether Houdini fairly treated Margery (accounts of him quarreling with the committee exist); the compendium's onstage re-performance claim is unverified by me."
     }
   ],
-  "ourUse": "houdiniExclusivity re-runs isMetaSentence (a regex-style test) over the finished piece and folds out sentences that sound like the mouth talking about its own phrasing or task.",
+  "ourUse": "houdiniExclusivity re-runs isMetaSentence (a regex-style test) over the finished piece and folds out sentences that sound like the mouth talking about its own phrasing or task. fold-chat-houdini.js (the same archon, a second organ) projects the fold's context by need and by moment: records that bear on the ask, pinned records (unsupported or open) first, a hard cap at the positional size, an honest 'Not shown: N' count. Measured by eval/houdini (docs/HOUDINI.md).",
   "verdict": "partial",
   "bends": [
     {
@@ -34,9 +34,15 @@
       "kind": "decorative",
       "ours": "work cites 'not by declaring a seance false, but by attending one, then performing the same effect himself ... onstage'.",
       "theirs": "The compendium itself says this was recalled from general knowledge; I verified attendance and explaining her tricks, not onstage re-performance."
+    },
+    {
+      "id": "stage-selection",
+      "kind": "re-scoped",
+      "ours": "fold-chat-houdini.js: 'what the audience is shown is chosen in advance, to the moment, and nothing else is on the stage'.",
+      "theirs": "Houdini's writings on conjuring and exposure (The Unmasking of Robert-Houdin, A Magician Among the Spirits) do not address choosing what a reader or model is shown; the name stands for the discipline only, no argument of his is applied."
     }
   ],
-  "noBendReason": "The handle is a project nomination claiming no Houdini text; the bends are about the historical gloss in the compendium and how far the code resembles his method.",
+  "noBendReason": "The handle is a project nomination claiming no Houdini text; the bends are about the historical gloss in the compendium and how far the code resembles his method. The context-projection organ is likewise a nomination: it applies no text of his.",
   "fix": [
     "work: 'Houdini sat on the 1924 Scientific American committee that declined to award the Margery prize and explained her effects as ordinary trickery. Our houdiniExclusivity is named for that posture only: a sentence dressed as channelled content is folded out when no mechanism backs it. The check is a regex-based self-reference test, not an investigation.'",
     "source: drop the 'recalled from general knowledge' clause or cite HistoryNet."

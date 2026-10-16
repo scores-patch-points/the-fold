@@ -188,3 +188,37 @@ test("a bot-challenge page is blocked, not an answer; a blocked passage is never
   assert.ok(snips.length >= 1 && snips.every((s) => !/challenge/i.test(s.text)), JSON.stringify(snips.map((s) => s.text.slice(0, 40))));
   assert.equal(snipsOf([blocked], "x").snips.length, 0);
 });
+
+// ── a question about the person's OWN asks is read back from the chat, never searched (found live 2026-10-14: "what wsa my first question?" → "56 Fun My First Time Tag Questions") ──
+import { askRefOf, turnPlan as _turnPlan } from "./fold-chat-thread.js";
+const ASKS = [{ role: "user", content: "Tell me about the Eiffel Tower." }, { role: "assistant", content: "It is a lattice tower in Paris." }, { role: "user", content: "Who built the Eiffel Tower?" }, { role: "assistant", content: "Gustave Eiffel's company." }];
+test("askRefOf: my first/last/second question is quoted from the transcript, typo-proof (the anchor is the noun phrase)", () => {
+  assert.match(askRefOf("what was my first question?", ASKS).text, /first question in this chat was: “Tell me about the Eiffel Tower\.”/);
+  assert.match(askRefOf("what wsa my first question?", ASKS).text, /“Tell me about the Eiffel Tower\.”/);
+  assert.match(askRefOf("what did I ask first?", ASKS).text, /“Tell me about the Eiffel Tower\.”/);
+  assert.match(askRefOf("what was my last question?", ASKS).text, /“Who built the Eiffel Tower\?”/);
+  assert.match(askRefOf("what was my fifth question?", ASKS).text, /asked 2 questions so far, so there is no fifth/);
+});
+test("askRefOf: the whole chat is listed in the person's own words; a world question is not touched", () => {
+  assert.match(askRefOf("what have we talked about?", ASKS).text, /asked 2 questions: 1\. “Tell me about the Eiffel Tower\.”\s+2\. “Who built the Eiffel Tower\?”/);
+  assert.equal(askRefOf("What is the first question on the SAT?", ASKS), null);
+  assert.equal(askRefOf("Who painted the Mona Lisa?", ASKS), null);
+});
+test("the plan: it never searches and never asks the model (cold-gap lane with the read-back)", () => {
+  const p = _turnPlan("what wsa my first question?", ASKS, {});
+  assert.equal(p.kind, "conversation-ref"); assert.equal(p.mode, "cold-gap"); assert.equal(p.search, null); assert.equal(p.modelMay, false);
+  assert.match(p.askRef.text, /Eiffel Tower/);
+});
+test("attachments and nudges are not the person's questions", () => {
+  const msgs = [{ role: "user", content: "[attachment read by the khora · a.txt · 12 bytes]", attachment: "a.txt" }, { role: "user", content: "well?" }, ...ASKS];
+  assert.match(askRefOf("what was my first question?", msgs).text, /“Tell me about the Eiffel Tower\.”/);
+});
+test("'what did you say first?' is about the answers, not the web", () => {
+  const p = _turnPlan("what did you say first?", ASKS, {});
+  assert.equal(p.kind, "conversation-ref"); assert.equal(p.mode, "thread");
+});
+test("an earlier read-back question is not counted among the person's questions", () => {
+  const msgs = [...ASKS, { role: "user", content: "what wsa my first question?" }, { role: "assistant", content: "Your first question…" }];
+  assert.match(askRefOf("what have we talked about?", msgs).text, /asked 2 questions: 1\./);
+  assert.match(askRefOf("what was my last question?", msgs).text, /“Who built the Eiffel Tower\?”/);
+});

@@ -286,6 +286,7 @@ function firstBoundary(text, from, G) {
  *  number — subject + the closed-class words right before the number + the number + the matched noun after it ("Spiders have eight
  *  legs."). A time, or anything that cannot be built from the row's own words, is the row's sentence verbatim. */
 export function realise(row, frame, { fw, lang }) {
+  if (row && row.viaSpan) return row.sentence;   // read by the extractive witness: the sentence as written ("…whose company designed and built the tower"), never cut to a clause that loses the verb asked about
   const G = grammarOf(lang);
   const f = row && row.filler;
   const text = row ? row.sentence : "";
@@ -393,6 +394,7 @@ async function run({ question, lang, passages, now, deps }) {
 
   const witnesses = () => entries.filter((e) => e.row.tier === "T1" && e.row.filler && e.row.polarity === "+");
 
+  let widened = [];   // the passages the one wider read added (3b reads them too)
   // 3 ── something must fill the slot; one wider read before giving up
   if (!witnesses().length && typeof deps.searchPassages === "function") {
     const asked = frame.referents.map((r) => r.title || r.surface);
@@ -401,6 +403,7 @@ async function run({ question, lang, passages, now, deps }) {
     if (aborted(signal)) return partial();
     const have = new Set(entries.map((e) => e.page.url + "\u0000" + e.page.title));
     const fresh = more.filter((p) => p && typeof p.text === "string" && !have.has((p.url || "") + "\u0000" + (p.title || "")) && !asArr(passages).some((x) => x && x.url && x.url === p.url));
+    widened = fresh;
     const next = bindPassages(fresh, frame, { fw, code, from: asArr(passages).length, pageEntity: await pageEntitiesOf(fresh, deps.resolveTitles) });
     addSources(next.read);
     entries = entries.concat(next.entries);

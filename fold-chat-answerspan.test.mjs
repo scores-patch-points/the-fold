@@ -534,6 +534,19 @@ test("Russian: an asked word in the genitive meets the page's nominative when it
   assert.match(shownText(r), /330 метров/);
 });
 
+// found live (2026-10-14, houdini-wired): "who built it?" over the Eiffel Tower pages was answered by the Chrysler Building sentence — the stemmer folds built/Building,
+// the sentence was credited with a verb it never says, and "Chrysler Building" (a capitalised run) passed for a builder.
+test("a name made of the ask's own predicate is not the answer: who built the Eiffel Tower is Gustave Eiffel, not the Chrysler Building", async () => {
+  const { answerSpan } = await import("./fold-chat-answerspan.js");
+  const wiki = { title: "Eiffel Tower - Wikipedia", text: "The Eiffel Tower ( EYE-fəl; French: Tour Eiffel [tuʁ ɛfɛl] ) is a lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower from 1887 to 1889. The tower received 5,889,000 visitors in 2022." };
+  const brit = { title: "Eiffel Tower | Facts, History, & Height | Britannica", text: "Eiffel Tower, wrought-iron lattice tower on the Champ de Mars in Paris, France. The Eiffel Tower was constructed using advanced engineering techniques and a small labor force over a period of about two years from 1887 to 1889. When the Eiffel Tower was completed, it stood at 300 meters (984 feet) high, making it the tallest structure in the world until the topping off of the Chrysler Building in New York City in 1929." };
+  for (const order of [[brit, wiki], [wiki, brit]]) {
+    const r = answerSpan("Who built the Eiffel Tower?", order);
+    assert.ok(r.spans[0] && /Gustave Eiffel/.test(r.spans[0].shown), JSON.stringify(r.spans[0]?.shown));
+  }
+  const only = answerSpan("Who built the Eiffel Tower?", [brit]);
+  assert.equal(only.spans.length, 0, "no sentence there names a builder: a typed gap, not the Chrysler Building");
+});
 // ── a NAMESAKE is not the slot's filler (seen live 2026-10-14: "What is the capital of Australia?" over the Wikipedia page "Australian Capital
 // Territory" answered "The Australian Capital Territory"). The sentences below are the page's own lead (en.wikipedia.org, fetched 2026-10-14).
 const ACT = {

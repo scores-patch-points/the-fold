@@ -143,6 +143,7 @@ const REF_YOU_RE = new RegExp("\\b(?:" +
   "you\\s+(?:(?:just|already|earlier|previously|now|also|first|then)\\s+)?(?:said|wrote|stated|gave|mentioned|claimed|told|relied|based|grounded|cited|used|quoted|read|answered|summari[sz]ed)" +
   "|your\\s+(?:(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|last|latest|final|previous|earlier|prior|very|\\d+)\\s+)?(?:answers?|responses?|repl(?:y|ies)|words|wording|points?|claims?|sentences?|paragraphs?|turns?)" +
   "|what\\s+you\\s+(?:said|wrote|answered|gave|claimed)" +
+  "|what\\s+did\\s+you\\s+(?:(?:just|first|last)\\s+)?(?:say|write|answer|tell|give|claim|state)" +
   "|the\\s+exact\\s+(?:sentence|quote|wording|words|span|passage)" +
   ")\\b", "iu");
 
@@ -167,6 +168,42 @@ function ordinalRefs(s) {
   for (const [k, n] of Object.entries(ORDINAL_INDEX)) if (new RegExp(`\\b${k}\\b`, "iu").test(s)) out.push(n);
   if (!out.length && /\b(?:previous|earlier|prior|preceding|above|foregoing)\b/iu.test(s)) out.push("last");
   return out;
+}
+
+// A question about the PERSON'S OWN earlier asks, or about the conversation as a whole ("what was my first question?", "what did I ask first?", "what have we talked about?").
+// Measured live 2026-10-14 (houdini-wired): every one of these planned STANDALONE and was searched as its own words — "what wsa my first question?" came back as
+// "56 Fun My First Time Tag Questions". The ground is the chat's own transcript, which the app holds exactly: no search, no model, an app-authored read-back of what the
+// person typed. The ANCHOR is the noun phrase ("my first question"), not the verb, so a slip in the other words ("wsa") changes nothing. English cues, DECLARED, not
+// measured (II.11); another language falls through to the normal plan.
+const ORD_WORDS = "first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|1st|2nd|3rd|4th|5th|6th|7th|8th|9th|10th|last|latest|final|previous|earlier|prior|original|initial|opening";
+const ASK_NOUNS = "(?:question|ask|message|prompt|query|request)s?";
+const MY_ASK_RE = new RegExp(`\\bmy\\s+(?:(?:very|own)\\s+)?(?:(?:${ORD_WORDS})\\s+)?${ASK_NOUNS}\\b`, "iu");
+const I_ASKED_RE = new RegExp(`\\bwhat\\s+(?:did|have|was)\\s+i\\s+(?:(?:just|first|last|previously|already|even)\\s+)?(?:ask|asked|say|said|type|typed|write|wrote|tell|told)\\b|\\b(?:the\\s+)?(?:${ORD_WORDS})\\s+(?:thing|question)\\s+i\\s+(?:asked|said|typed|wrote)\\b`, "iu");
+const WHOLE_CHAT_RE = /\bwhat\s+(?:have|did)\s+(?:we|i)\s+(?:talk|discuss|cover|been\s+(?:talking|discussing))\w*\b|\b(?:summari[sz]e|recap)\s+(?:our|this|the|my)\s+(?:conversation|chat|thread|session|questions?)\b|\bwhat\s+(?:have\s+)?(?:i|we)\s+asked\b/iu;
+const ORD_LABEL = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
+
+/** The app-authored read-back for a question about the person's own earlier asks / the whole chat, or null when the ask is not one.
+ *  { kind: "alone", text, askRef: "ordinal"|"whole" } — the text quotes the person's own typed words; nothing is searched or written. Pure. */
+export function askRefOf(question, priorMessages) {
+  const s = String(question ?? "").trim();
+  if (!s || s.length > 200) return null;
+  const mine = MY_ASK_RE.test(s) || I_ASKED_RE.test(s), whole = WHOLE_CHAT_RE.test(s);
+  if (!mine && !whole) return null;
+  // the person's questions about the world: not an attachment note, not a nudge, and not an earlier read-back question of this very kind ("what was my first question?" is not itself one)
+  const isRef = (t) => MY_ASK_RE.test(t) || I_ASKED_RE.test(t) || WHOLE_CHAT_RE.test(t);
+  const asks = (Array.isArray(priorMessages) ? priorMessages : []).filter((m) => m?.role === "user" && !m.attachment && asText(m) && !isNudge(asText(m)) && !isRef(asText(m))).map((m) => asText(m));
+  const clip = (t) => { const x = String(t).replace(/\s+/g, " ").trim(); return x.length > 160 ? x.slice(0, 157) + "…" : x; };
+  if (!asks.length) return { kind: "alone", askRef: "ordinal", text: "That was the first thing you typed in this chat, so there is nothing earlier to read back." };
+  if (whole && !mine) {
+    const shown = asks.slice(0, 12).map((t, i) => `${i + 1}. “${clip(t)}”`).join("  ");
+    return { kind: "alone", askRef: "whole", text: `So far in this chat you asked ${asks.length} ${asks.length === 1 ? "question" : "questions"}: ${shown}${asks.length > 12 ? `  … and ${asks.length - 12} more` : ""}` };
+  }
+  const refs = ordinalRefs(s.toLowerCase());
+  const want = refs.length ? refs[0] : "last";
+  const idx = want === "last" ? asks.length : want;
+  if (!asks[idx - 1]) return { kind: "alone", askRef: "ordinal", text: `You have asked ${asks.length} ${asks.length === 1 ? "question" : "questions"} so far, so there is no ${ORD_LABEL[want - 1] || want + "th"} one yet.` };
+  const label = want === "last" ? (asks.length === 1 ? "only" : "last") : ORD_LABEL[idx - 1] || `${idx}th`;
+  return { kind: "alone", askRef: "ordinal", text: `Your ${label} question in this chat was: “${clip(asks[idx - 1])}”` };
 }
 
 /** The thread object a conversation-reference reply is grounded in: the earlier answers the ask names, as a list
@@ -343,6 +380,8 @@ export function turnPlan(question, priorMessages, opts = {}) {
   // you relied on", "combine your four answers"): follow the thread, do not search its literal words. Only when there
   // IS an earlier answer; with none it falls through to the normal plan (a first-turn ask that mentions "the exact
   // sentence" still searches).
+  // a question about the person's OWN earlier asks or the whole chat: read back from the transcript (no search, no model) — see askRefOf
+  { const ar = askRefOf(question, priorMessages); if (ar) { const said = String(question ?? "").trim(); return { said, query: said, kind: "conversation-ref", thread: threadOf(priorMessages), topic: "", carried: [], mode: "cold-gap", search: null, modelMay: false, askRef: ar, reason: "refers-to-earlier-asks" }; } }
   if (isConversationRef(question)) {
     const rt = referencedThread(priorMessages, question);
     const said = String(question ?? "").trim();
