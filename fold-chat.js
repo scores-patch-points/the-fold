@@ -4391,6 +4391,8 @@ export function mount(root, opts = {}) {
     onQuestion: (q) => { try { folds.close(); } catch (e) {} if (engagement === "code") setEngagement("chat"); E.input.value = String(q ?? ""); E.input.focus(); try { E.composer.requestSubmit(); } catch (e) {} } });
   // SELF-TEST HOOK (2026-10-10) — AFTER the mount: the fold exposes its own API so a harness binds a worktree, and the app tells the harness about itself.
   try { window.__folds = folds; } catch {}
+  // THE WORK TREE FROM THE LOG: ?eot=<door base>[&task=…][&workspace=…] opens the fold's code view on the EOT log.
+  try { const q = new URLSearchParams(location.search), base = q.get("eot"); if (base) folds.setEotCodebase({ base: base === "1" ? undefined : base, task: q.get("task"), workspace: q.get("workspace") }); } catch {}
   for (const id of ["chats", "projects", "topNew", "sideNewChat", "agStart"]) $(id)?.addEventListener("click", () => folds.isOpen() && folds.close(), true);
   // ADD A CODEBASE: choose a folder → the agent's workspace (fold-chat-workspace.js),
   // shown in the fold as a worktree with each file viewable as a projection or a log.
