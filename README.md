@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source srcset="brand/lockup/the-fold-lockup-horizontal-dark.svg" media="(prefers-color-scheme: dark)">
+    <img src="brand/lockup/the-fold-lockup-horizontal-light.svg" alt="The Fold" height="48">
+  </picture>
+</p>
+
 # fold · chat — The Fold's chat version
 
 A browser chat surface for The Fold. It runs like the fold does — a static

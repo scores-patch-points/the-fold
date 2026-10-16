@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="color-scheme" content="light dark">
 <title>The Fold · Chat</title>
+<link rel="icon" type="image/svg+xml" href="brand/favicon/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="brand/favicon/favicon-32.png">
+<link rel="apple-touch-icon" href="brand/app-icon/the-fold-app-icon-dark-180.png">
 <script src="fold-theme-boot.js"></script>
 <style>
   /* Tokens. A white surface, a white sidebar + icon rail, and a neutral
@@ -1694,6 +1697,12 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   }
+  /* Brand mark (brand/): swaps light/dark with the theme. */
+  .brandmark { background: none !important; box-shadow: none !important; text-shadow: none !important; border-radius: 0 !important; }
+  .brandmark img { width: 100%; height: 100%; display: block; }
+  .brandmark .dk { display: none; }
+  [data-theme="dark"] .brandmark .lt { display: none; }
+  [data-theme="dark"] .brandmark .dk { display: block; }
 </style>
 <link rel="stylesheet" href="styles/live-panel.css">
 <link rel="stylesheet" href="styles/answer-evidence.css">
@@ -1725,7 +1734,7 @@
   <aside class="side" id="side" aria-label="Chats and projects">
     <div class="side-head">
       <div class="side-brand" title="The Fold">
-        <span class="mark" aria-hidden="true">F</span>
+        <span class="mark brandmark" aria-hidden="true"><img class="lt" src="brand/mark/the-fold-mark-light.svg" alt=""><img class="dk" src="brand/mark/the-fold-mark-dark.svg" alt=""></span>
         <span class="name">The Fold</span>
       </div>
       <button type="button" class="side-collapse" id="sideCollapse" title="Hide sidebar" aria-label="Hide sidebar">
@@ -1784,7 +1793,7 @@
     </header>
 
     <div class="welcome" id="welcome">
-      <div class="mark" aria-hidden="true">F</div>
+      <span class="mark brandmark" aria-hidden="true"><img class="lt" src="brand/mark/the-fold-mark-light.svg" alt=""><img class="dk" src="brand/mark/the-fold-mark-dark.svg" alt=""></span>
       <h1>What can I help with?</h1>
       <p id="welcomeSub"></p>
     </div>
