@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the fold — the layers of a turn</title>
+<!-- The site's own tokens, source-card rules and panel rules, verbatim from index.html. -->
+<style>
+  :root {
+    color-scheme: light;
+    --bg:#ffffff; --side:#ffffff; --side2:#f1f1f4; --line:#e4e4e9; --line2:#cfcfd7;
+    --ink:#141416; --ink2:#44444e; --mut:#5f5f6b; --dim:#666673;
+    --link:#1d4ed8; --hl:#fdf0b0; --ag:#0d7a70; --warn:#a04a07; --ok:#16793a;
+    --r-sm:6px; --r-md:10px; --r-lg:14px; --r-pill:999px;
+    --fs-2xs:10.5px; --fs-xs:11.5px; --fs-sm:12.5px; --fs-md:13.5px; --fs-base:15px;
+    --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --col:940px;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:var(--fs-base)/1.55 var(--sans); color:var(--ink); background:var(--bg); }
+
+  /* ── the app's two regions: the thread (left) and the right panel ── */
+  .app { display:flex; min-height:100vh; }
+  .main { flex:1; min-width:0; overflow-y:auto; padding:26px 28px 64px; }
+  .col { max-width:var(--col); margin:0 auto; }
+  .srcpane { width:380px; flex:none; border-left:1px solid var(--line); background:var(--side); position:sticky; top:0; height:100vh; overflow-y:auto; padding:16px 18px 40px; }
+  .srcpane-h { display:flex; align-items:baseline; gap:8px; margin:0 0 12px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+  .srcpane-h b { font:700 var(--fs-sm)/1 var(--sans); color:var(--ink); }
+  .srcpane-h .x { margin-left:auto; border:0; background:none; color:var(--mut); font-size:18px; line-height:1; cursor:pointer; }
+  .srcpane-empty { color:var(--dim); font-size:var(--fs-sm); line-height:1.6; }
+  .srcpane-empty b { color:var(--ink2); font-weight:600; }
+  @media (max-width:900px) { .app { flex-direction:column; } .srcpane { width:auto; height:auto; position:static; border-left:0; border-top:1px solid var(--line); } }
+
+  /* ── the reply ── */
+  .face-answer { display:flex; flex-direction:column; gap:2px; }
+  .prop { display:block; width:100%; text-align:left; margin:0; padding:5px 9px; border:1px solid transparent; border-radius:var(--r-md); background:none; font:inherit; color:inherit; cursor:pointer; }
+  .prop:hover { background:var(--side2); }
+  .prop.active { background:#e9f3f1; border-color:var(--ag); }
+  .prop.sourced::after { content:" ↗"; font:var(--fs-xs) var(--mono); color:var(--ag); }
+  .prop.owned { color:var(--ink2); }
+  .prop.owned::after { content:" ·"; font:var(--fs-xs) var(--mono); color:var(--mut); }
+
+  /* ── the site's provenance line + source card (verbatim CSS) ── */
+  .layer { padding:12px 0; border-top:1px solid var(--line); }
+  .layer:first-child { border-top:0; padding-top:0; }
+  .layer-k { font:600 var(--fs-2xs)/1.4 var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:0 0 7px; }
+  .srcline { display:inline-flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px; padding:5px 8px; border:0; border-radius:var(--r-md); background:none; color:var(--mut); font-size:var(--fs-sm); cursor:pointer; }
+  .srcline:hover { background:var(--side2); color:var(--ink2); }
+  .srcline .sl-caret { color:var(--dim); display:inline-block; width:10px; }
+  .srcline .sl-gap { color:var(--warn); font-weight:600; }
+  .srclist { display:flex; flex-direction:column; gap:12px; }
+  .srcdoc { min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .srcdoc-h { display:flex; align-items:baseline; gap:8px; min-width:0; font-size:var(--fs-sm); }
+  .src-title { flex:0 1 auto; min-width:3ch; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .src-dom { flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; color:var(--mut); font-size:var(--fs-xs); white-space:nowrap; }
+  a.src-open { flex:none; margin-left:auto; color:var(--link); font-size:var(--fs-xs); text-decoration:none; white-space:nowrap; }
+  a.src-open:hover { text-decoration:underline; }
+  .src { border-left:2px solid var(--line); margin-left:2px; }
+  .src.open { border-left-color:var(--link); }
+  .src-head { display:flex; align-items:baseline; gap:8px; width:100%; min-width:0; text-align:left; padding:3px 8px; border:0; background:none; font:inherit; font-size:var(--fs-sm); line-height:1.4; color:var(--ink2); cursor:pointer; }
+  .src-head:hover { background:var(--side2); }
+  .src-n { flex:none; font:700 var(--fs-xs)/1 var(--mono); color:var(--ink); white-space:nowrap; }
+  .src-snip { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--mut); }
+  .src.open .src-snip { display:none; }
+  .src-ex { display:none; padding:2px 8px 6px; color:var(--ink2); line-height:1.55; font-size:var(--fs-md); }
+  .src.open .src-ex { display:block; }
+  .src.web .src-ex { font-family:Georgia,"Times New Roman",serif; font-size:14.5px; }
+  .src-quote { background:var(--hl); color:var(--ink); border-radius:3px; padding:0 1px; box-shadow:0 0 0 1px #efe0a0 inset; }
+  .src-el { color:var(--dim); }
+  .src-mech { display:block; margin:8px 0 0; font:var(--fs-2xs)/1.5 var(--mono); color:var(--dim); }
+  .src-mech b { color:var(--ink2); font-weight:600; }
+
+  /* ── the provenance narration + standings (verbatim CSS) ── */
+  .prov { margin:6px 0 2px; padding:8px 12px; border-left:2px solid var(--line); color:var(--ink2); font-size:var(--fs-sm); line-height:1.55; max-width:62ch; }
+  .prov-app { color:var(--dim); }
+  .prov-q { font-style:italic; color:var(--ink2); }
+  .prov-q::before { content:"\201C"; } .prov-q::after { content:"\201D"; }
+  .prov-q[data-i] { cursor:pointer; border-bottom:1px dotted var(--line2); }
+  .prov-q[data-i]:hover { color:var(--ink); border-bottom-color:var(--link); }
+  .pv-s, .pv-m { display:flex; gap:8px; align-items:baseline; margin:0 0 4px; }
+  .pv-chip { flex:0 0 auto; font:600 11px/1.6 var(--mono); color:var(--ag); }
+  .pv-m .pv-chip { color:var(--mut); }
+  .pv-a .pv-chip { color:var(--warn); }
+  .pv-t { overflow-wrap:anywhere; }
+  .prov-stand { color:var(--ink2); font-size:var(--fs-sm); }
+  .prov-flag { color:var(--warn); font-size:var(--fs-sm); overflow-wrap:anywhere; }
+  .rec { font:var(--fs-xs)/1.6 var(--mono); color:var(--mut); }
+
+  /* ── the layer switch ── */
+  .layer-switch { display:flex; flex-wrap:wrap; gap:5px; }
+  .layer-chip { font:var(--fs-sm)/1.4 var(--mono); color:var(--mut); background:var(--bg); border:1px solid var(--line2); border-radius:var(--r-pill); padding:4px 11px; cursor:pointer; }
+  .layer-chip:hover { color:var(--ink2); border-color:var(--dim); }
+  .layer-chip.on { color:#fff; border-color:var(--ag); background:var(--ag); }
+  .layer-chip.empty { opacity:.38; cursor:default; }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="main"><div class="col">
+    <h1 style="font-size:20px;margin:0 0 2px">the fold — the layers of a turn</h1>
+    <p style="color:var(--mut);font-size:var(--fs-md);margin:0 0 20px">Click a proposition; the source opens in the panel on the right, at the span the fold located.</p>
+    <div id="app"></div>
+  </div></main>
+
+  <aside class="srcpane" id="srcpane" aria-label="source">
+    <div class="srcpane-h"><b id="pane-title">source</b><button class="x" id="pane-x" title="close">×</button></div>
+    <div id="pane-body">
+      <p class="srcpane-empty">Click a proposition on the left. A <b>grounded</b> claim opens its source here, at the span the <b>fold</b> located — character-for-character, never the model's copy. The model's own says so plainly: it has none.</p>
+    </div>
+  </aside>
+</div>
+
+<script type="module">
+import { normLayers, toggleLayer } from "./fold-chat-layers.js";
+import { layersControlHtml } from "./fold-chat-layersview.js";
+import { sentencesHtml, recordLine, standingHtml, flagsHtml } from "./fold-chat-provenanceview.js";
+
+const PASSAGES = [
+  { n: "S1", title: "gov.uk — People", domain: "gov.uk", url: "https://www.gov.uk/government/people",
+    text: "The office confirmed that Andy Burnham became Prime Minister on 17 July 2028, succeeding the previous holder of the office." },
+  { n: "S2", title: "bbc.co.uk — Election 2028", domain: "bbc.co.uk", url: "https://www.bbc.co.uk/news/election-2028",
+    text: "The 2028 general election was held in June 2028, and turnout was reported as high across the country." },
+];
+const SENTENCES = [
+  { text: "The current prime minister is Andy Burnham.", type: "grounded", ref: "gov.uk#1", source: 0, quote: "Andy Burnham became Prime Minister" },
+  { text: "He took office after the 2028 general election.", type: "asserted", ref: "bbc.co.uk#1", source: 1, quote: "The 2028 general election was held in June 2028" },
+  { text: "This arrangement is stable, on the whole.", type: "self:model" },
+];
+const TURN = {
+  summary: { grounded: 1, asserted: 1, selfModel: 1, flagged: 1 },
+  flags: [{ kind: "unverified_pass", cell: "EVA·Figure", detail: "no witnessed exit-0 verify in this turn" }],
+  standing: { cell: "EVA·Pattern", watched: ["control_survived", "NOT_COMPARABLE", "unlicensed"] },
+};
+let layers = normLayers(["answer", "provenance"]); // collapsed by default; the switch reveals the rest
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const show = (k) => layers.includes(k);
+
+// THE FOLD'S MECHANIC (not the model's): locate the claim's sentence in the passage character for
+// character, return the SOURCE'S OWN slice with offsets; a miss is a typed gap, never a guess.
+function locate(text, quote) {
+  const at = text.indexOf(quote);
+  if (at < 0) return { ok: false, el: esc(text) };
+  return { ok: true, at, end: at + quote.length, el: esc(text.slice(0, at)) + `<mark class="src-quote">${esc(text.slice(at, at + quote.length))}</mark>` + esc(text.slice(at + quote.length)) };
+}
+
+function card(s, open) {
+  const p = PASSAGES[s.source], loc = locate(p.text, s.quote);
+  const before = loc.ok && loc.at > 0, after = loc.ok && loc.end < p.text.length;
+  const ex = `${before ? '<span class="src-el">… </span>' : ""}${loc.el}${after ? '<span class="src-el"> …</span>' : ""}`;
+  const mech = loc.ok
+    ? `span ${s.source}:${loc.at}–${loc.end} · <b>located by the fold</b> (character-for-character) · ${s.type === "asserted" ? "asserted" : "witnessed"}`
+    : `no located span — the fold could not find it: a <b>typed gap</b>, never a guess`;
+  return `<div class="srcdoc">
+    <div class="srcdoc-h"><span class="src-title">${esc(p.title)}</span><span class="src-dom">${esc(p.domain)}</span><a class="src-open" href="${esc(p.url)}" target="_blank" rel="noopener">open ↗</a></div>
+    <div class="src web${open ? " open" : ""}">
+      <button class="src-head" aria-expanded="${open}"><span class="src-n">${esc(p.n)}</span><span class="src-snip">${esc(s.quote || p.text)}</span></button>
+      <div class="src-ex">${ex}<span class="src-mech">${mech}</span></div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const turn = { sentences: SENTENCES, flags: TURN.flags, standing: TURN.standing, snips: PASSAGES, text: "x", record: TURN.summary };
+  const b = [];
+  if (show("answer")) b.push(`<div class="layer"><p class="layer-k">answer · click a proposition</p><div class="face-answer">${SENTENCES.map((s, i) => `<button class="prop ${s.source == null ? "owned" : "sourced"}" data-i="${i}">${esc(s.text)}</button>`).join("")}</div></div>`);
+  if (show("provenance")) b.push(`<div class="layer"><p class="layer-k">provenance · the app's line + the [S#]/[M] tags</p>${sentencesHtml(SENTENCES)}<div class="prov"><span class="prov-app">I checked the current office-holder on </span><q class="prov-q" data-i="0" title="open the span">Andy Burnham became Prime Minister on 17 July 2028</q><span class="prov-app">, and it also stands on </span><q class="prov-q" data-i="1" title="open the span">the 2028 general election was held in June 2028</q><span class="prov-app">.</span></div></div>`);
+  if (show("standing")) b.push(`<div class="layer"><p class="layer-k">standing · where the claim stands</p>${standingHtml(TURN.standing)}${flagsHtml(TURN.flags)}</div>`);
+  if (show("sources")) b.push(`<div class="layer"><p class="layer-k">sources · the passages, verbatim</p><div class="srclist">${PASSAGES.map((p, i) => { const s = SENTENCES.find((x) => x.source === i); return `<div class="src web"><button class="src-head" data-i="${i}"><span class="src-n">${esc(p.n)}</span><span class="src-snip">${esc(p.title)}</span></button></div>`; }).join("")}</div></div>`);
+  if (show("record")) b.push(`<div class="layer"><p class="layer-k">record · what the turn carried</p><div class="rec">${esc(recordLine(TURN.summary, TURN.flags))}</div></div>`);
+  if (!b.length) b.push(`<div class="layer"><p class="layer-k">nothing shown</p><p class="rec">every layer is off — hidden, not deleted.</p></div>`);
+  document.getElementById("app").innerHTML = b.join("") + `<div class="layer"><div class="layer-switch">${layersControlHtml(layers, turn)}</div></div>`;
+  document.querySelectorAll(".layer-chip").forEach((el) => el.addEventListener("click", () => { if (el.disabled) return; layers = toggleLayer(layers, el.dataset.layer); render(); }));
+  document.querySelectorAll(".prop").forEach((p) => p.addEventListener("click", () => openClaim(Number(p.dataset.i))));
+  document.querySelectorAll(".src-head[data-i]").forEach((h) => h.addEventListener("click", () => openClaim(Number(h.dataset.i))));
+  document.querySelectorAll(".prov-q[data-i]").forEach((q) => q.addEventListener("click", () => openClaim(Number(q.dataset.i))));
+}
+
+// Open the source in the RIGHT PANEL at the located span.
+function openClaim(i) {
+  const s = SENTENCES[i] || { source: i, quote: PASSAGES[i].text };
+  document.querySelectorAll(".prop.active").forEach((x) => x.classList.remove("active"));
+  const btn = document.querySelector(`.prop[data-i="${i}"]`); if (btn) btn.classList.add("active");
+  const title = document.getElementById("pane-title"), body = document.getElementById("pane-body");
+  if (s.source == null) {
+    title.textContent = "the model's own";
+    body.innerHTML = `<p class="srcpane-empty"><b>[M]</b> “${esc(s.text)}” carries nothing from the record — the mouth's own words. There is no source span to open; it stands as <b>self-model</b>, never as fact.</p>`;
+    return;
+  }
+  title.textContent = `${PASSAGES[s.source].n} · ${PASSAGES[s.source].domain}`;
+  body.innerHTML = `<div class="srclist">${card(s, true)}</div>`;
+  const mark = body.querySelector(".src-quote"); if (mark) mark.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+document.getElementById("pane-x").addEventListener("click", () => {
+  document.getElementById("pane-title").textContent = "source";
+  document.getElementById("pane-body").innerHTML = `<p class="srcpane-empty">Click a proposition on the left.</p>`;
+  document.querySelectorAll(".prop.active").forEach((c) => c.classList.remove("active"));
+});
+
+render();
+</script>
+</body>
+</html>

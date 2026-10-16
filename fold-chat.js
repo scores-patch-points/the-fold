@@ -87,7 +87,10 @@ import { noteRun as noteGates, gatesLine } from "./fold-chat-gates.js";
 // a reply CUT OFF at the token limit is continued (bounded) and the drafts joined mechanically before the Pivot reads them
 import { CONTINUE, cutOff, continueMessages, joinDraft } from "./fold-chat-continue.js";
 import { renderStrand } from "./fold-chat-strandview.js";
+import { standingText, flagText } from "./fold-chat-provenanceview.js";
 import { ANSWER_MODES, normAnswerMode, resolveAnswerMode, answerModeOfTurn } from "./fold-chat-answer.js";
+import { normLayers, toggleLayer, layerEnabled, LAYER_KEY } from "./fold-chat-layers.js";
+import { layersControlHtml } from "./fold-chat-layersview.js";
 import { stripScaffolding, checkAttributions, attributionNotice } from "./fold-chat-attribution.js";
 import { originatePassages } from "./fold-chat-originwire.js";
 import { isTertiary, traceWords } from "./fold-chat-origin.js";
@@ -1644,25 +1647,56 @@ export function mount(root, opts = {}) {
   }
 
   // THE SOURCE LINE (fold-chat-provenance.js): the app's words and the source's own words, drawn under the answer ALWAYS. Quotes are the page's verbatim sentences, linked to the page.
+  // The layers a turn is read with, from the switch (fold-chat-layers.js). Defaults when unset.
+  const readLayers = () => { try { return normLayers(JSON.parse(localStorage.getItem(LAYER_KEY) || "null")); } catch { return normLayers(null); } };
+
+  // THE SWITCH, always drawn — so the person moves between the layers of this reply. The chips are
+  // declared constants (fold-chat-layersview.js), so setting them as markup is safe; one delegated
+  // handler (below) flips them.
+  function appendLayerSwitch(body, prov) {
+    const sw = el("div", "prov-layers");
+    sw.innerHTML = layersControlHtml(readLayers(), prov);
+    body.append(sw);
+  }
+
   function renderProvenance(body, prov) {
-    if (!prov || !Array.isArray(prov.parts) || !prov.parts.length) return;
-    if (body.querySelector(".pv-sen")) return;   // the sentences carry their own evidence on hover (fold-chat-presentview.js); no narration under them
-    const box = el("div", "prov");
-    box.setAttribute("role", "note");
-    for (const part of prov.parts) {
-      if (part.kind === "quote") {
-        const q = el("q", "prov-q", part.text.replace(/^\u201c|\u201d$/g, ""));
-        const ptr = (prov.pointers || []).find((p) => p.start === part.start && p.index === part.index);
-        box.append(" ", q);
-        if (ptr && ptr.url && /^https?:\/\//i.test(ptr.url)) { const a = el("a", "prov-open", "open \u2197"); a.href = ptr.url; a.target = "_blank"; a.rel = "noopener"; a.setAttribute("aria-label", "Open " + (ptr.host || "the source") + " in a new tab"); box.append(" ", a); }
-      } else box.append(box.childNodes.length ? " " : "", el("span", "prov-app", part.text));
+    if (!prov) return;
+    const layers = readLayers();
+    // THE STANDING LAYER (fold-chat-provenanceview.js): WHERE the claim stands — the cube cell the
+    // reading judged at, and each verifiable failure's owed cell. Shown only when the switch has it on;
+    // a no-op until a turn's provenance carries `standing`/`flags` (fed by the door's ground). It never
+    // edits the model's words, and standing is provenance, never truth.
+    if (layerEnabled(layers, "standing")) {
+      const stText = standingText(prov.standing);
+      const flagLines = Array.isArray(prov.flags) ? prov.flags.map(flagText) : [];
+      if (stText || flagLines.length) {
+        const sb = el("div", "prov-stand");
+        sb.setAttribute("role", "note");
+        if (stText) sb.append(el("div", "prov-stand-cell", stText));
+        for (const line of flagLines) sb.append(el("div", "prov-flag", line));
+        body.append(sb);
+      }
     }
-    if (prov.verified === 0) box.classList.add("prov-none");
-    // under a disclosure: the page already shows the source and its excerpt, so the narration is one quiet line until asked for
-    const hosts = [...new Set((prov.pointers || []).filter((p) => p && p.ok && p.host).map((p) => String(p.host).replace(/^www\./, "")))].slice(0, 2);
-    const d = el("details", "prov-d" + (prov.verified === 0 ? " none" : ""));
-    d.append(el("summary", "", prov.verified === 0 ? "No sentence found that says this" : "Where this came from" + (hosts.length ? " \u00b7 " + hosts.join(", ") : "")), box);
-    body.append(d);
+    // THE PROVENANCE NARRATION, gated by the switch; the sentences may carry their own evidence (presentview).
+    if (layerEnabled(layers, "provenance") && Array.isArray(prov.parts) && prov.parts.length && !body.querySelector(".pv-sen")) {
+      const box = el("div", "prov");
+      box.setAttribute("role", "note");
+      for (const part of prov.parts) {
+        if (part.kind === "quote") {
+          const q = el("q", "prov-q", part.text.replace(/^\u201c|\u201d$/g, ""));
+          const ptr = (prov.pointers || []).find((p) => p.start === part.start && p.index === part.index);
+          box.append(" ", q);
+          if (ptr && ptr.url && /^https?:\/\//i.test(ptr.url)) { const a = el("a", "prov-open", "open \u2197"); a.href = ptr.url; a.target = "_blank"; a.rel = "noopener"; a.setAttribute("aria-label", "Open " + (ptr.host || "the source") + " in a new tab"); box.append(" ", a); }
+        } else box.append(box.childNodes.length ? " " : "", el("span", "prov-app", part.text));
+      }
+      if (prov.verified === 0) box.classList.add("prov-none");
+      // under a disclosure: the page already shows the source and its excerpt, so the narration is one quiet line until asked for
+      const hosts = [...new Set((prov.pointers || []).filter((p) => p && p.ok && p.host).map((p) => String(p.host).replace(/^www\./, "")))].slice(0, 2);
+      const d = el("details", "prov-d" + (prov.verified === 0 ? " none" : ""));
+      d.append(el("summary", "", prov.verified === 0 ? "No sentence found that says this" : "Where this came from" + (hosts.length ? " \u00b7 " + hosts.join(", ") : "")), box);
+      body.append(d);
+    }
+    appendLayerSwitch(body, prov);
   }
 
   // One PASSAGE of a source document: its tag (S1) and a one-line lead, opening to
@@ -4347,6 +4381,15 @@ export function mount(root, opts = {}) {
   if (E.topMenu) E.topMenu.onclick = () => { setNav(true); E.railToggle.focus(); };
   if (E.scrim) E.scrim.onclick = () => setNav(false);
   $("nav")?.addEventListener("click", (e) => { const b = e.target.closest(".rail button"); if (b && b.id !== "railToggle") setNav(false); });
+  // THE LAYER SWITCH (fold-chat-layers.js): one delegated handler flips a layer, remembers it, and
+  // redraws the open thread — the same turn, read with a different stack of layers.
+  document.addEventListener("click", (e) => {
+    const chip = e.target.closest && e.target.closest(".layer-chip");
+    if (!chip || chip.disabled) return;
+    const next = toggleLayer(readLayers(), chip.dataset.layer);
+    try { localStorage.setItem(LAYER_KEY, JSON.stringify(next)); } catch { /* a private tab keeps it for the session */ }
+    if (activeId && sessions[activeId]) open(activeId);
+  });
   // An explicit ✕ on the open phone drawer (it was only closable by the sidebar
   // icon, the scrim, or Escape). Hidden on wide screens by CSS.
   const navClose = el("button", "navclose"); navClose.type = "button"; navClose.id = "navClose";

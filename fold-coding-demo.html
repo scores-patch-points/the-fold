@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the fold — a coding turn, agentic</title>
+<style>
+  :root{color-scheme:light;--bg:#fff;--side:#fff;--side2:#f1f1f4;--line:#e4e4e9;--line2:#cfcfd7;--ink:#141416;--ink2:#44444e;--mut:#5f5f6b;--dim:#666673;--link:#1d4ed8;--hl:#fdf0b0;--ag:#0d7a70;--warn:#a04a07;--ok:#16793a;--r-sm:6px;--r-md:10px;--r-lg:14px;--r-pill:999px;--fs-2xs:10.5px;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:13.5px;--fs-base:15px;--sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+  *{box-sizing:border-box}
+  body{margin:0;font:var(--fs-base)/1.55 var(--sans);color:var(--ink);background:var(--bg)}
+  .app{display:flex;min-height:100vh}
+  .main{flex:1;min-width:0;overflow-y:auto;padding:26px 28px 64px}
+  .col{max-width:760px;margin:0 auto}
+  .srcpane{width:440px;flex:none;border-left:1px solid var(--line);background:var(--side);position:sticky;top:0;height:100vh;overflow-y:auto;padding:16px 18px 40px}
+  .srcpane-h{display:flex;align-items:baseline;gap:8px;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .srcpane-h b{font:700 var(--fs-sm)/1 var(--sans);color:var(--ink)}
+  .x{margin-left:auto;border:0;background:none;color:var(--mut);font-size:18px;line-height:1;cursor:pointer}
+  .srcpane-empty{color:var(--dim);font-size:var(--fs-sm);line-height:1.6}.srcpane-empty b{color:var(--ink2)}
+  @media(max-width:940px){.app{flex-direction:column}.srcpane{width:auto;height:auto;position:static;border-left:0;border-top:1px solid var(--line)}}
+  .layer{padding:12px 0;border-top:1px solid var(--line)}.layer:first-child{border-top:0;padding-top:0}
+  .layer-k{font:600 var(--fs-2xs)/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 7px}
+  .claim{display:block;width:100%;text-align:left;margin:0 0 3px;padding:6px 9px;border:1px solid transparent;border-radius:var(--r-md);background:none;font:inherit;color:inherit;cursor:pointer}
+  .claim:hover{background:var(--side2)}.claim.active{background:#e9f3f1;border-color:var(--ag)}
+  .claim .tag{font:600 11px/1.6 var(--mono);color:var(--ag);margin-right:8px}
+  .claim .tag.owned{color:var(--mut)}.claim .tag.flag{color:var(--warn)}
+  .claim code{font:var(--fs-sm) var(--mono);background:var(--side2);border-radius:4px;padding:1px 4px}
+  .prov{margin:6px 0 2px;padding:8px 12px;border-left:2px solid var(--line);color:var(--ink2);font-size:var(--fs-sm);line-height:1.55;max-width:62ch}
+  .prov-app{color:var(--dim)}.prov-q{font-style:italic;color:var(--ink2)}.prov-q::before{content:"\201C"}.prov-q::after{content:"\201D"}
+  .prov-q[data-i]{cursor:pointer;border-bottom:1px dotted var(--line2)}.prov-q[data-i]:hover{color:var(--ink);border-bottom-color:var(--link)}
+  .prov-stand{color:var(--ink2);font-size:var(--fs-sm)}.prov-flag{color:var(--warn);font-size:var(--fs-sm)}
+  .tree{font:var(--fs-sm)/1.7 var(--mono);color:var(--ink2)}
+  .tree .op{color:var(--ok);font-weight:700}.tree .op.del{color:var(--warn)}
+  .rec{font:var(--fs-xs)/1.6 var(--mono);color:var(--mut)}
+  /* the file card in the pane (the site's .src card shape) */
+  .srcdoc{min-width:0;display:flex;flex-direction:column;gap:4px}
+  .srcdoc-h{display:flex;align-items:baseline;gap:8px}.src-title{font-weight:600;color:var(--ink)}.src-dom{color:var(--mut);font-size:var(--fs-xs)}
+  a.src-open{margin-left:auto;color:var(--link);font-size:var(--fs-xs);text-decoration:none}.src-n{font:700 var(--fs-xs)/1 var(--mono);color:var(--ink)}
+  .file{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;font:var(--fs-sm)/1.65 var(--mono);background:#fcfcfd}
+  .file .row{display:flex;gap:10px;padding:1px 10px;white-space:pre}.file .ln{flex:none;width:3ch;text-align:right;color:var(--dim)}
+  .file .row.hit{background:var(--hl)}.file .row.hit .tx{font-weight:600}
+  .file .row.del .tx{text-decoration:line-through;color:var(--mut)}
+  .mech{margin:8px 0 0;font:var(--fs-2xs)/1.5 var(--mono);color:var(--dim)}.mech b{color:var(--ink2)}
+  .exec{border:1px solid var(--line);border-radius:var(--r-md);padding:10px 12px;font:var(--fs-sm)/1.6 var(--mono);color:var(--ink2);background:#fcfcfd}
+  .exec .ok{color:var(--ok);font-weight:700}
+  .layer-switch{display:flex;flex-wrap:wrap;gap:5px}
+  .layer-chip{font:var(--fs-sm)/1.4 var(--mono);color:var(--mut);background:var(--bg);border:1px solid var(--line2);border-radius:var(--r-pill);padding:4px 11px;cursor:pointer}
+  .layer-chip:hover{color:var(--ink2);border-color:var(--dim)}.layer-chip.on{color:#fff;border-color:var(--ag);background:var(--ag)}.layer-chip.empty{opacity:.38;cursor:default}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="main"><div class="col">
+    <h1 style="font-size:20px;margin:0 0 2px">the fold — a coding turn, agentic</h1>
+    <p style="color:var(--mut);font-size:var(--fs-md);margin:0 0 6px">A real run: <code style="font:var(--fs-sm) var(--mono)">opencode run</code> on <code style="font:var(--fs-sm) var(--mono)">/tmp/foldcode</code> — the agent read, edited and ran the test. Click a claim to open the bytes it rests on.</p>
+    <p style="color:var(--dim);font-size:var(--fs-sm);margin:0 0 18px">The model <b>steered</b>; the <b>fold</b> did the snipping (the file span, the test exit) — the model never wrote the excerpt.</p>
+    <div id="app"></div>
+  </div></main>
+  <aside class="srcpane" id="srcpane" aria-label="source">
+    <div class="srcpane-h"><b id="pane-title">source</b><button class="x" id="pane-x" title="close">×</button></div>
+    <div id="pane-body"><p class="srcpane-empty">Click a claim. A grounded claim opens the <b>file span</b> (verbatim, located by the fold) or the <b>observed event</b> (the exit code the box ran) — its own bytes, never the model's copy.</p></div>
+  </aside>
+</div>
+<script type="module">
+import { normLayers, toggleLayer } from "./fold-chat-layers.js";
+import { layersControlHtml } from "./fold-chat-layersview.js";
+import { recordLine, standingHtml, flagsHtml } from "./fold-chat-provenanceview.js";
+
+// ── the artifacts, verbatim from the run ─────────────────────────────────────────────────────────
+const BEFORE_L4 = "  return xs.reduce((a, b) => a + b, 1) / xs.length;   // BUG: seeded with 1, not 0";
+const AFTER_L4  = "  return xs.reduce((a, b) => a + b, 0) / xs.length;   // seeded with 0";
+const FILE = [
+  "// calc.js — a tiny stats helper.",
+  "export function mean(xs) {",
+  "  if (!xs.length) return 0;",
+  AFTER_L4,
+  "}",
+  "export function median(xs) {",
+  "  if (!xs.length) return 0;",
+  "  const s = [...xs].sort((a, b) => a - b);",
+  "  const m = Math.floor(s.length / 2);",
+  "  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;",
+  "}",
+  "export function range(xs) {",
+  "  if (!xs.length) return 0;",
+  "  return Math.max(...xs) - Math.min(...xs);",
+  "}",
+];
+
+const CLAIMS = [
+  { text: "I'll start by reading both files and running the tests.", type: "self:model" },
+  { text: "In src/calc.js, mean() seeded the reduce accumulator with 1 instead of 0.", type: "grounded", src: { kind: "span", path: "src/calc.js", line: 4, side: "before" } },
+  { text: "The fix is one line: return xs.reduce((a, b) => a + b, 0) / xs.length.", type: "grounded", src: { kind: "span", path: "src/calc.js", line: 4, side: "after" } },
+  { text: "node --test now reports pass 3, fail 0.", type: "grounded", src: { kind: "exec", cmd: "node --test", exit: 0, judge: "door" } },
+  { text: "Changed exactly one line.", type: "grounded", src: { kind: "edit", path: "src/calc.js", line: 4, plus: 1, minus: 1 } },
+  { text: "median and range were already correct and still pass.", type: "asserted" },
+];
+const TURN = {
+  summary: { grounded: 4, asserted: 1, selfModel: 1, flagged: 0 },
+  flags: [],
+  standing: { cell: "EVA·Figure", watched: ["unreachable_guard", "insufficient", "unstable", "inconclusive"] },
+};
+
+let layers = normLayers(["answer", "provenance"]); // collapsed by default
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const show = (k) => layers.includes(k);
+const tag = (t) => t === "grounded" ? "✓" : t === "asserted" ? "~" : "∅";
+
+function fileCard(claim) {
+  const s = claim.src;
+  const src = s.side === "before" ? BEFORE_L4 : AFTER_L4;
+  const rows = FILE.map((line, i) => {
+    const n = i + 1;
+    const hit = n === s.line;
+    const del = hit && s.side === "before";
+    return `<div class="row ${hit ? "hit" : ""} ${del ? "del" : ""}"><span class="ln">${n}</span><span class="tx">${esc(line)}</span></div>`;
+  }).join("");
+  const diff = s.side === "before"
+    ? `<div class="mech">this is the bytes as read, <b>before</b> the edit — the bug, located by the fold, not the model</div>`
+    : `<div class="mech">this is the bytes on disk, <b>after</b> the edit · sha d3f60fff6f89eff1 · located by the fold</div>`;
+  return `<div class="srcdoc">
+    <div class="srcdoc-h"><span class="src-n">S1</span><span class="src-title">${esc(s.path)}</span><span class="src-dom">file span #L${s.line}</span><a class="src-open" href="#" onclick="return false">open file ↗</a></div>
+    <div class="file">${rows}</div>${diff}
+  </div>`;
+}
+function execCard(claim) {
+  const s = claim.src;
+  return `<div class="srcdoc"><div class="srcdoc-h"><span class="src-n">S2</span><span class="src-title">${esc(s.cmd)}</span><span class="src-dom">tool exec</span></div>
+    <div class="exec">$ ${esc(s.cmd)}\n<span class="ok"># exit ${s.exit} · pass 3 · fail 0</span></div>
+    <div class="mech">observed event · <b>witnessed</b> (judge: ${esc(s.judge)} — the box ran the command, the model did not report it)</div></div>`;
+}
+function editCard(claim) {
+  const s = claim.src;
+  return `<div class="srcdoc"><div class="srcdoc-h"><span class="src-n">WT</span><span class="src-title">${esc(s.path)}</span><span class="src-dom">work tree · edit #L${s.line}</span></div>
+    <div class="file"><div class="row del"><span class="ln">−</span><span class="tx">${esc(BEFORE_L4)}</span></div><div class="row"><span class="ln">+</span><span class="tx">${esc(AFTER_L4)}</span></div></div>
+    <div class="mech">an <b>edit</b> event: the door read before/after off disk (+${s.plus} −${s.minus}) · the tree is a FOLD of the log</div></div>`;
+}
+
+function render() {
+  const turn = { sentences: CLAIMS, flags: TURN.flags, standing: TURN.standing, text: "x", record: TURN.summary, snips: [1], authored: "sources" };
+  const b = [];
+  if (show("answer")) b.push(`<div class="layer"><p class="layer-k">answer · click a claim</p>${CLAIMS.map((c, i) => `<button class="claim ${c.src ? "" : "owned"}" data-i="${i}"><span class="tag ${c.type === "self:model" ? "owned" : ""}">${tag(c.type)}</span>${esc(c.text)}</button>`).join("")}</div>`);
+  if (show("provenance")) b.push(`<div class="layer"><p class="layer-k">provenance · the app's line (never the model's)</p><div class="prov"><span class="prov-app">I read </span><q class="prov-q" data-i="2">calc.js line 4</q><span class="prov-app">, changed the seed to 0, and ran </span><q class="prov-q" data-i="3">node --test</q><span class="prov-app"> — the box ran it; the exit code is the witness.</span></div></div>`);
+  if (show("standing")) b.push(`<div class="layer"><p class="layer-k">standing · where the claims stand</p>${standingHtml(TURN.standing)}${flagsHtml(TURN.flags)}<div class="rec" style="margin-top:4px">no flags: the test was actually run (exec exit 0, witnessed)</div></div>`);
+  if (show("sources")) b.push(`<div class="layer"><p class="layer-k">work tree · the fold of the log</p><div class="tree">src/calc.js  <span class="op">+1</span> <span class="op del">−1</span>  at L4 by ses_eb9eab3e · event evt_…</div><div class="rec" style="margin-top:6px">1 file touched · 1 edit · 1 exec (node --test, exit 0) · the tree opened here is a read, not git archaeology</div></div>`);
+  if (show("record")) b.push(`<div class="layer"><p class="layer-k">record · what the turn carried</p><div class="rec">${esc(recordLine(TURN.summary, TURN.flags))}</div></div>`);
+  if (!b.length) b.push(`<div class="layer"><p class="layer-k">nothing shown</p><p class="rec">every layer is off — hidden, not deleted.</p></div>`);
+  document.getElementById("app").innerHTML = b.join("") + `<div class="layer"><div class="layer-switch">${layersControlHtml(layers, turn)}</div></div>`;
+  document.querySelectorAll(".layer-chip").forEach((el) => el.addEventListener("click", () => { if (el.disabled) return; layers = toggleLayer(layers, el.dataset.layer); render(); }));
+  document.querySelectorAll(".claim").forEach((c) => c.addEventListener("click", () => openClaim(Number(c.dataset.i))));
+  document.querySelectorAll(".prov-q[data-i]").forEach((q) => q.addEventListener("click", () => openClaim(Number(q.dataset.i))));
+}
+
+function openClaim(i) {
+  const c = CLAIMS[i];
+  document.querySelectorAll(".claim.active").forEach((x) => x.classList.remove("active"));
+  const btn = document.querySelector(`.claim[data-i="${i}"]`); if (btn) btn.classList.add("active");
+  const title = document.getElementById("pane-title"), body = document.getElementById("pane-body");
+  if (!c.src) { title.textContent = c.type === "self:model" ? "the model's own" : "asserted"; body.innerHTML = `<p class="srcpane-empty"><b>${tag(c.type)}</b> “${esc(c.text)}” — ${c.type === "self:model" ? "the mouth's own words, no source" : "what an agent said; a standpoint, never fact"}. No span to open.</p>`; return; }
+  title.textContent = c.src.kind === "exec" ? `${c.src.cmd}` : `${c.src.path} · #L${c.src.line}`;
+  body.innerHTML = c.src.kind === "exec" ? execCard(c) : c.src.kind === "edit" ? editCard(c) : fileCard(c);
+}
+document.getElementById("pane-x").addEventListener("click", () => { document.getElementById("pane-title").textContent = "source"; document.getElementById("pane-body").innerHTML = `<p class="srcpane-empty">Click a claim.</p>`; document.querySelectorAll(".claim.active").forEach((c) => c.classList.remove("active")); });
+render();
+</script>
+</body>
+</html>

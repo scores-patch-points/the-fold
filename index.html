@@ -498,6 +498,14 @@
   .prov-open { margin-left: 4px; font: var(--fs-xs)/1 var(--mono); color: var(--dim); text-decoration: none; }
   .prov-open:hover { text-decoration: underline; }
   .prov-none { border-left-color: var(--warn, #b7791f); }
+  .prov-stand { margin: 6px 0 2px; font-size: var(--fs-xs); color: var(--warn, #b7791f); }
+  .prov-flag { overflow-wrap: anywhere; }
+  .layer-switch { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 2px; }
+  .layer-chip { font: var(--fs-xs)/1.4 var(--mono); color: var(--mut); background: none; border: 1px solid var(--line2); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
+  .layer-chip:hover { color: var(--ink2); border-color: var(--dim); }
+  .layer-chip.on { color: var(--ink); border-color: var(--ag); background: color-mix(in srgb, var(--ag) 12%, transparent); }
+  .layer-chip.empty { opacity: .4; cursor: default; }
+  .layer-chip:focus-visible { outline: 2px solid var(--ag); outline-offset: 2px; }
   /* The discourse panel - the conversation's running discourse, drawn while it
      is still being watched. Subtle: it is audit furniture, never part of the
      answer; the moment the thread holds, the JS side is removed with it. */
