@@ -727,7 +727,7 @@ function mountReplay(slot, rec, pres, question, onClose) {
     r.append(b, g, tx); return at(r, a);
   };
   const rp = el("div", "pv-rp");
-  const head = el("div", "pv-rp-h"); const hg = el("span", "pv-rp-g"); const say = el("span", "pv-rp-say"); const hop = el("span", "pv-rp-op");
+  const head = el("div", "pv-rp-h"); const hg = el("span", "pv-rp-g"); hg.setAttribute("aria-hidden", "true"); const say = el("span", "pv-rp-say"); say.setAttribute("role", "status"); say.setAttribute("aria-live", "polite"); say.setAttribute("aria-atomic", "true"); const hop = el("span", "pv-rp-op");
   const x = el("button", "pv-rp-x", "\u00d7"); x.type = "button"; x.setAttribute("aria-label", "Close the replay");
   head.append(hg, say, hop, x);
   const cols = el("div", "pv-rp-cols"); const L = el("div", "pv-rp-l"); const R = el("div", "pv-rp-r");
@@ -949,14 +949,23 @@ function deriveGraph(list, question) {
 }
 /** The panels: a header line (what it is doing now — the whole view when the workings are hidden), then three columns
  *  of FIXED height — 1 what it's doing · 2 the nine levels over the content · 3 the EOT ledger. */
+/** How long each live step stays up: 1 normal, 2 slower, 3 slowest. People who ask their system for reduced motion start at 2. */
+function livePace() {
+  try { const v = Number(localStorage.getItem("fold-chat:livePace")); if (v >= 1 && v <= 3) return v; } catch {}
+  try { return matchMedia("(prefers-reduced-motion: reduce)").matches ? 2 : 1; } catch { return 1; }
+}
 function buildPanels() {
   const rp = el("div", "pv-rp pv-live" + (viewMode() === "quiet" ? " quiet" : ""));
-  const head = el("div", "pv-rp-h"); const hg = el("span", "pv-rp-g"); const say = el("span", "pv-rp-say"); const hop = el("span", "pv-rp-op");
+  const head = el("div", "pv-rp-h"); const hg = el("span", "pv-rp-g"); hg.setAttribute("aria-hidden", "true"); const say = el("span", "pv-rp-say"); say.setAttribute("role", "status"); say.setAttribute("aria-live", "polite"); say.setAttribute("aria-atomic", "true"); const hop = el("span", "pv-rp-op");
   const tog = el("button", "pv-tog"); tog.type = "button";
   const paintTog = () => { const q = rp.classList.contains("quiet"); tog.textContent = q ? "show" : "hide"; tog.title = q ? "Show the workings" : "Hide the workings"; tog.setAttribute("aria-pressed", String(!q)); };
   tog.onclick = () => { const q = !rp.classList.contains("quiet"); try { localStorage.setItem(VIEW_KEY, q ? "quiet" : "full"); } catch {} for (const r of document.querySelectorAll(".pv-live")) { r.classList.toggle("quiet", q); r.querySelector(".pv-tog")?.dispatchEvent(new Event("paint")); } };
   tog.addEventListener("paint", paintTog); paintTog();
-  head.append(hg, say, hop, tog);
+  const pace = el("button", "pv-tog pv-pace"); pace.type = "button";
+  const paintPace = () => { const p = livePace(), w = p === 1 ? "normal" : p === 2 ? "slower" : "slowest"; pace.textContent = "pace: " + w; pace.title = "How long each step stays on screen while it works (applies to the next steps)"; pace.setAttribute("aria-label", `Step pace: ${w}. Press to change.`); };
+  pace.onclick = () => { const n = livePace() >= 3 ? 1 : livePace() + 1; try { localStorage.setItem("fold-chat:livePace", String(n)); } catch {} for (const b of document.querySelectorAll(".pv-pace")) b.dispatchEvent(new Event("paint")); };
+  pace.addEventListener("paint", paintPace); paintPace();
+  head.append(hg, say, hop, pace, tog);
   const cols = el("div", "pv-live-cols");
   const D = el("div", "pv-live-d"); const dlog = el("div", "pv-live-log pv-doing");
   D.append(el("div", "pv-k", "1 \u00b7 what it\u2019s doing"), dlog);
@@ -1495,9 +1504,9 @@ function tokenStage(P, en, ctx, { stage, eot, view, level }) {
       let y = 4;
       G2.rows.forEach((r, ri) => {
         put(labs[ri], 0, y, { opacity: "1" }); y += 22; let x = 0;
-        for (const role of ["s", "v", "o"]) { for (const t of toks.filter((q) => q.ri === ri && q.role === role)) { const w = width(t); if (x + w > W && x > 0) { x = 0; y += 30; } put(t.el, x, y, { opacity: "1" }); x += w + 5; } x += 18; }
+        for (const role of ["s", "v", "o"]) { for (const t of toks.filter((q) => q.ri === ri && q.role === role)) { const w = width(t); if (x + w > W && x > 0) { x = 0; y += 42; } put(t.el, x, y, { opacity: "1" }); x += w + 5; } x += 18; }
         for (const t of toks.filter((q) => q.ri === ri && (q.role === "f" || q.role === "x"))) put(t.el, 8 + (t.i % 9) * 24, y + 14, { opacity: "0" });
-        y += 46;
+        y += 56;
       });
       fitTo(y);
       stage("SEG", "Finding who does what to what");
@@ -1690,11 +1699,11 @@ export function mountLive(body, { question = "", mdHtml = null } = {}) {
       fullMat = list.map((p) => ({ ref: p.ref || "", source: p.url || p.source || "", text: String(p.text || "") }));
       let t = Math.max(now(), readEnd);
       const all = list.slice(0, 7);
-      all.forEach((ps, j) => { push("quick", { n: j + 1, of: all.length, p: slimP(ps) }, t); t += 0.9; });
+      all.forEach((ps, j) => { push("quick", { n: j + 1, of: all.length, p: slimP(ps) }, t); t += 0.9 * livePace(); });
       const seen = new Set(), pick = [];
       for (const ps of all) { const dm = domainOfUrl(ps.url || ps.source) + "|" + (ps.ref || ""); if (seen.has(dm)) continue; seen.add(dm); pick.push(slimP(ps)); if (pick.length === 3) break; }
       const key = sidOf(pick.map((p) => p.url).join("|") + question);
-      for (const [k, sub, dwell] of [[3, 0, 1.8], [3, 1, 2.0], [3, 2, 2.2], [4, 0, 2.8], [5, 0, 2.2]]) { push("deep", { k, sub, key, ps: pick }, t); t += dwell; }
+      for (const [k, sub, dwell] of [[3, 0, 1.8], [3, 1, 2.0], [3, 2, 2.2], [4, 0, 2.8], [5, 0, 2.2]]) { push("deep", { k, sub, key, ps: pick }, t); t += dwell * livePace(); }
       srcs = all.length; readEnd = t;
     },
     writing(by = "model") { if (!closed) { writingAt = Math.max(now(), readEnd); push("writing", { srcs, by }, writingAt); readEnd = Math.max(readEnd, writingAt + 0.8); } },
@@ -1711,9 +1720,9 @@ export function mountLive(body, { question = "", mdHtml = null } = {}) {
         if (!sents.length) return;
         let t = Math.max(now(), readEnd);
         const checks = sents.map((s) => computeCheck(s, fullMat.length ? fullMat : ctx.material));
-        push("check", { k: 6, text: clip(full, 3000), sents, checks }, t); t += 1.8;
-        sents.forEach((_, i) => { push("check", { k: 7, i }, t); t += 2.6; });
-        push("check", { k: 8 }, t); t += 2.6;
+        push("check", { k: 6, text: clip(full, 3000), sents, checks }, t); t += 1.8 * livePace();
+        sents.forEach((_, i) => { push("check", { k: 7, i }, t); t += 2.6 * livePace(); });
+        push("check", { k: 8 }, t); t += 2.6 * livePace();
         for (const lp of pendingLoops.splice(0)) { push("loop", lp, t); t += 2.4; }
         readEnd = t;
       }

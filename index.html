@@ -1094,6 +1094,13 @@
   .pv-tick.deep { color: var(--ink); font-weight: 700; }
   .pv-tick:hover { color: var(--link); }
   .pv-instant *, .pv-instant { animation: none !important; transition: none !important; }
+  .pv-pace { margin-left: 6px; }
+  .pv-tok .l { font-size: 10.5px; }
+  .pv-rp button:focus-visible, .pv-rp input:focus-visible, .pv-player:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .pv-rp, .pv-rp *, .pv-rp *::before, .pv-rp *::after { animation: none !important; transition: none !important; }
+    .pv-rp [data-at]:not(.pv-on) { transform: none; }
+  }
   /* CHROME: nothing in the reading panel (live or replay) moves, except the REC loop below */
   .pv-rp, .pv-rp *:not(.pv-loopfx):not(.pv-loopfx *):not(.pv-fwdfx):not(.pv-fwdfx *):not(.pv-lv.back):not(.pv-ph):not(.pv-ph *) { animation: none !important; transition: none !important; }
   /* THE LOOP, in two beats: BACK (an amber arc from the ◉ chip to the ● chip, above the levels) and then FORWARD from there
