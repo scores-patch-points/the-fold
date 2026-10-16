@@ -47,3 +47,15 @@ fast: 15 files · 90 affected tests pass · law: WARN P4 cited (false positive o
 | Holmes | coreference | fold-chat-void-declare.js:85 | noted | the perceiver-led anchor still takes its title from the title door: no alias merge by surface |
 | Diaconis | null | eval/void/null-void.mjs | noted | derangement keeps every void's base rate; 200 shuffles pre-registered |
 clean: Feynman (200 is the prereg's), Dijkstra (folding is declared English-scope), Kondo (vendored file is wired), Simon/Chekhov (module tested 9/9, 5 mutants)
+
+## 2026-10-16 — eot code-view (byte-addressed) + playback a11y/pacing + draft-lint prereg (main, staged)
+fast: 11 files · 200 affected tests (196 pass, 0 fail) · law: ok (0 citations)
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Feynman | numeric bounds | fold-chat-presentview.js:954 | false-positive-on-review | livePace's 1..3 is the documented pace enum (normal/slower/slowest), an input guard with a reduced-motion fallback, not a tuned constant |
+| Dijkstra | stage allowlist | fold-chat-eotview.js:6 | noted | MODEL_STAGES is an explicit said-vs-observed enum matching the door's stage vocabulary; a future model stage would just glyph "·" until added — display only, not an identity substitution |
+| Pearl | independence | docs/DRAFT-LINT-SPEC.md:77 | noted | "n independent drafts" is a design parameter; same-model drafts are not proven independent, and the prereg's harness does not yet measure inter-draft correlation |
+| Ostrom | baseline scope | docs/DRAFT-LINT-PREREG.md:21 | clean on review | L0 = raw draft is the correct baseline; each added layer beats it or retires — no pooled baseline, no "not found" as "does not exist" |
+| Alexander | composition | docs/DRAFT-LINT-SPEC.md:20 | clean | design only, nothing built; each lint returns a Finding {severity: block|mark|note}, the doorway composes them — no silent don't-compose seam |
+| Simon/Chekhov | wiring | fold-chat-eotview.js | clean | new module is imported by fold-chat-folds.js and unit-tested 5/5; the door serves /v1/hooks/opencode/eot/{log,tree,file} (verified in khora/opencode-doorway.mjs + opencode-eot.mjs) — a real, wired mechanism |
+clean: LeviStrauss (0 of 45 stashed pieces vs 90 open problems — nothing to reclaim here)
