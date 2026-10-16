@@ -23,9 +23,26 @@ export const LAYERS = Object.freeze([
 ]);
 export const LAYER_KEYS = Object.freeze(LAYERS.map((l) => l.key));
 export const LAYER_KEY = "fold-chat:layers";
-// The minimal stack: the answer and its provenance line; standing, sources and record start COLLAPSED
-// (off) and the switch reveals them. Hiding is not deleting — nothing is lost, only unshown.
-export const DEFAULT_LAYERS = Object.freeze(["answer", "provenance"]);
+// NAMED PRESETS — a view a session can be set to as its NORM, or one message can be overridden to.
+// `chatbot` is the ordinary reading (the model's words alone); the rest add the fold's layers.
+export const PRESETS = Object.freeze({
+  chatbot: Object.freeze(["answer"]),
+  provenance: Object.freeze(["answer", "provenance"]),
+  standing: Object.freeze(["answer", "provenance", "standing"]),
+  sources: Object.freeze(["answer", "provenance", "standing", "sources"]),
+  record: Object.freeze(["answer", "provenance", "standing", "sources", "record"]),
+});
+// The default NORM: the answer and its provenance line; standing, sources and record stay collapsed.
+// Hiding is not deleting — nothing is lost, only unshown.
+export const DEFAULT_LAYERS = PRESETS.provenance;
+
+/** The preset a layer-set equals, or null for a custom mix. */
+export function presetOf(layers) {
+  const k = normLayers(layers).join(",");
+  for (const [name, set] of Object.entries(PRESETS)) if (set.join(",") === k) return name;
+  return null;
+}
+export function forPreset(name, fallback = DEFAULT_LAYERS) { return PRESETS[name] ? [...PRESETS[name]] : normLayers(fallback); }
 
 const pick = (v) => {
   const arr = typeof v === "string" ? v.split(/[,\s]+/) : Array.isArray(v) ? v : null;

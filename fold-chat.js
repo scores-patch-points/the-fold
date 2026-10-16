@@ -90,7 +90,7 @@ import { CONTINUE, cutOff, continueMessages, joinDraft } from "./fold-chat-conti
 import { renderStrand } from "./fold-chat-strandview.js";
 import { standingText, flagText } from "./fold-chat-provenanceview.js";
 import { ANSWER_MODES, normAnswerMode, resolveAnswerMode, answerModeOfTurn } from "./fold-chat-answer.js";
-import { normLayers, toggleLayer, layerEnabled, LAYER_KEY } from "./fold-chat-layers.js";
+import { normLayers, toggleLayer, layerEnabled, layersOfTurn, LAYER_KEY } from "./fold-chat-layers.js";
 import { layersControlHtml } from "./fold-chat-layersview.js";
 import { stripScaffolding, checkAttributions, attributionNotice } from "./fold-chat-attribution.js";
 import { originatePassages } from "./fold-chat-originwire.js";
@@ -1597,7 +1597,8 @@ export function mount(root, opts = {}) {
     const unverified = (rec?.creative || rec?.noClaims) ? 0 : (face.response || []).filter((r) => !r.grounded).length;
     const gapText = gap ? (gap.kind === "legacy" ? "gap" : voidLabel(gap)) : (unverified ? `${unverified} of ${total} sentence${total === 1 ? "" : "s"} ${unverified === 1 ? "has" : "have"} no source` : "");
     const docs = ground.sourceDocs(face.sources);
-    if (face.sources.length || gapText) {
+    // the sources LAYER (fold-chat-layers.js): off ⇒ the answer stands alone, its source cards collapsed away
+    if (layerEnabled(readLayers(), "sources") && (face.sources.length || gapText)) {
       const line = el("button", "srcline");
       line.type = "button";
       line.setAttribute("aria-expanded", "false");
@@ -1648,21 +1649,24 @@ export function mount(root, opts = {}) {
   }
 
   // THE SOURCE LINE (fold-chat-provenance.js): the app's words and the source's own words, drawn under the answer ALWAYS. Quotes are the page's verbatim sentences, linked to the page.
-  // The layers a turn is read with, from the switch (fold-chat-layers.js). Defaults when unset.
+  // The global default view, when no session norm is set (fold-chat-layers.js). Defaults when unset.
   const readLayers = () => { try { return normLayers(JSON.parse(localStorage.getItem(LAYER_KEY) || "null")); } catch { return normLayers(null); } };
+  // The session's NORM — its default view; a single message overrides it with its own `layers`.
+  const sessionNorm = (s) => normLayers(s?.layers, readLayers());
 
-  // THE SWITCH, always drawn — so the person moves between the layers of this reply. The chips are
-  // declared constants (fold-chat-layersview.js), so setting them as markup is safe; one delegated
-  // handler (below) flips them.
-  function appendLayerSwitch(body, prov) {
+  // THE SWITCH, always drawn — so the person moves between the layers of THIS reply (its own override),
+  // or, with no message, sets the reading. The chips are declared constants (fold-chat-layersview.js), so
+  // setting them as markup is safe; one delegated handler (below) flips them.
+  function appendLayerSwitch(body, prov, layers, index) {
     const sw = el("div", "prov-layers");
-    sw.innerHTML = layersControlHtml(readLayers(), prov);
+    if (index != null) sw.dataset.msg = String(index);
+    sw.innerHTML = layersControlHtml(layers, prov);
     body.append(sw);
   }
 
-  function renderProvenance(body, prov) {
+  function renderProvenance(body, prov, ctx = {}) {
     if (!prov) return;
-    const layers = readLayers();
+    const layers = ctx.layers ?? readLayers();
     // THE STANDING LAYER (fold-chat-provenanceview.js): WHERE the claim stands — the cube cell the
     // reading judged at, and each verifiable failure's owed cell. Shown only when the switch has it on;
     // a no-op until a turn's provenance carries `standing`/`flags` (fed by the door's ground). It never
@@ -1697,7 +1701,7 @@ export function mount(root, opts = {}) {
       d.append(el("summary", "", prov.verified === 0 ? "No sentence found that says this" : "Where this came from" + (hosts.length ? " \u00b7 " + hosts.join(", ") : "")), box);
       body.append(d);
     }
-    appendLayerSwitch(body, prov);
+    appendLayerSwitch(body, prov, layers, ctx.index);
   }
 
   // One PASSAGE of a source document: its tag (S1) and a one-line lead, opening to
@@ -1893,11 +1897,12 @@ export function mount(root, opts = {}) {
       else if (showFace) renderFacingPage(body, meta.grounding, content, { ...meta, gap: gapV, noticed: noticeList.length > 0, appAuthored: noticeList.some((n) => n && (n.kind === "alone" || n.kind === "no-sources")), retry: retryFn, sessionId: s?.id });
       else if (gapV) body.append(renderGap(gapV, { retry: retryFn }));
       // Recipes the sources declared, shown in the creators' own words (never retyped by the model), credited.
-      renderSnips(body, meta.grounding?.snips, { toast });
+      if (layerEnabled(readLayers(), "sources")) renderSnips(body, meta.grounding?.snips, { toast });
       renderNotices(body, declined.length ? noticeList.filter((n) => !declined.includes(n)) : noticeList, retryFn, s ? (surf, turn) => { s.minds = addOp(s.minds, correctionOp("carry-rejected", surf, turn)); s.updated = now(); save("fold-chat:sessions", sessions); } : null);
       // the one "how this was answered" line sits right under the answer; the
       // (hover-only) actions come last
-      renderProvenance(body, meta.provenance);
+      // read with THIS message's layers (its own override), falling back to the session's norm.
+      renderProvenance(body, meta.provenance, { layers: layersOfTurn(s?.messages?.[meta.index], sessionNorm(s)), index: meta.index });
       if (showDisclosure && meta.grounding && meta.grounding.code) renderCodeDisclosure(body, meta.grounding, meta);
       else if (showDisclosure && meta.grounding && meta.grounding.generate) renderGenerateDisclosure(body, meta.grounding, meta);
       if (meta.index != null) {
@@ -4401,9 +4406,16 @@ export function mount(root, opts = {}) {
   document.addEventListener("click", (e) => {
     const chip = e.target.closest && e.target.closest(".layer-chip");
     if (!chip || chip.disabled) return;
-    const next = toggleLayer(readLayers(), chip.dataset.layer);
-    try { localStorage.setItem(LAYER_KEY, JSON.stringify(next)); } catch { /* a private tab keeps it for the session */ }
-    if (activeId && sessions[activeId]) open(activeId);
+    const sw = chip.closest(".prov-layers");
+    const s = activeId ? sessions[activeId] : null;
+    const i = sw && sw.dataset.msg !== undefined ? Number(sw.dataset.msg) : null;
+    const at = i != null && s?.messages?.[i] ? s.messages[i] : null;
+    const base = at ? layersOfTurn(at, sessionNorm(s)) : readLayers();
+    const next = toggleLayer(base, chip.dataset.layer);
+    // a switch on a message overrides THAT reply; with no message it sets the reading (the norm).
+    if (at) { at.layers = next; s.updated = now(); save("fold-chat:sessions", sessions); }
+    else { try { localStorage.setItem(LAYER_KEY, JSON.stringify(next)); } catch { /* a private tab keeps it for the session */ } }
+    if (s) open(activeId);
   });
   // An explicit ✕ on the open phone drawer (it was only closable by the sidebar
   // icon, the scrim, or Escape). Hidden on wide screens by CSS.

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { LAYER_KEYS, DEFAULT_LAYERS, normLayers, toggleLayer, layerEnabled, availableLayers, resolveLayers, layersOfTurn, isLayer } from "./fold-chat-layers.js";
+import { LAYER_KEYS, DEFAULT_LAYERS, PRESETS, normLayers, toggleLayer, layerEnabled, availableLayers, resolveLayers, layersOfTurn, isLayer, presetOf, forPreset } from "./fold-chat-layers.js";
 
 test("normLayers: ordered, deduped, unknown keys dropped; empty stays empty; junk falls back", () => {
   assert.deepEqual(normLayers(["standing", "answer", "answer", "bogus"]), ["answer", "standing"]);
@@ -36,6 +36,22 @@ test("resolveLayers: a re-run keeps the original turn's layers unless the switch
   assert.deepEqual(resolveLayers({ original: ["answer"], current: ["answer", "record"], changed: false }), ["answer"]);
   assert.deepEqual(resolveLayers({ original: ["answer"], current: ["answer", "record"], changed: true }), ["answer", "record"]);
   assert.deepEqual(resolveLayers({ original: null, current: ["sources"] }), ["sources"]);
+});
+
+test("presets: chatbot is the model's words alone; a named set is recognised, a custom mix is not", () => {
+  assert.deepEqual([...PRESETS.chatbot], ["answer"]);
+  assert.deepEqual([...PRESETS.record], ["answer", "provenance", "standing", "sources", "record"]);
+  assert.equal(presetOf(["answer"]), "chatbot");
+  assert.equal(presetOf(["provenance", "answer"]), "provenance");
+  assert.equal(presetOf(["answer", "sources"]), null, "a custom mix has no preset name");
+  assert.deepEqual(forPreset("chatbot"), ["answer"]);
+  assert.deepEqual(forPreset("nope", ["answer", "provenance"]), ["answer", "provenance"]);
+});
+
+test("a message overrides the session norm; absent, it inherits it", () => {
+  const norm = ["answer", "provenance", "standing"];
+  assert.deepEqual(layersOfTurn({ layers: ["answer"] }, norm), ["answer"], "the message's own view wins (chatbot)");
+  assert.deepEqual(layersOfTurn({}, norm), norm, "no override → the session norm");
 });
 
 test("layersOfTurn never throws on stored junk", () => {
