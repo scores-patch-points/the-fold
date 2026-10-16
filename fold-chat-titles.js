@@ -62,6 +62,21 @@ function readChunk(chunk, q) {
   return out;
 }
 
+/** The encyclopedia's OWN spelling suggestion for a whole question (list=search & srinfo=suggestion): "where was mzoart born" → "where was
+ *  mozart born". One request, sent only when no reading of the ask resolved (fold-chat-frame.js askFrame); nothing but the question is sent.
+ *  → the suggested text, or null (no suggestion, a failed call, an aborted call). Never throws. */
+export async function suggestQueryWikipedia(query, { fetchImpl = globalThis.fetch, edition = DECLARED.edition, signal = null } = {}) {
+  try {
+    if (!EDITION.test(String(edition)) || typeof query !== "string" || !query.trim()) return null;
+    const url = `https://${edition}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query.trim())}&srinfo=suggestion&srlimit=1&srprop=&format=json&origin=*`;
+    const r = await fetchImpl(url, signal ? { signal } : {});
+    if (!r || !r.ok) return null;
+    const j = await r.json();
+    const s = j && j.query && j.query.searchinfo && j.query.searchinfo.suggestion;
+    return typeof s === "string" && s.trim() ? s.trim() : null;
+  } catch { return null; }
+}
+
 export async function resolveTitlesWikipedia(candidates, { fetchImpl = globalThis.fetch, edition = DECLARED.edition } = {}) {
   if (!EDITION.test(String(edition))) throw new TitlesError("not a Wikipedia edition: " + JSON.stringify(edition));
   const out = new Map();

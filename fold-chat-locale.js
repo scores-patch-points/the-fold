@@ -98,3 +98,19 @@ export function localeContext({ location = null, tz = null, locale = null, now =
   if (lt) parts.push(`Their local time is ${lt}${tz ? ` (${tz})` : ""}.`);
   return parts.length ? parts.join(" ") : null;
 }
+
+/**
+ * THE CONSENT GATE for the IP lookup (user, 2026-10-11). ONE affordance owns consent: the checkbox
+ * (`ipLookup === false` = never). The one-shot action may re-run a detection (`force`), but `force`
+ * NEVER bypasses consent — the old button could, which made two affordances disagree about who
+ * decides. Returns { ok, why }: "consent-off" · "already-have-place" · "first-detect" · "re-detect".
+ */
+/** May the surface look up the coarse location from the public IP? OPT-IN (user, 2026-10-11:
+ *  "strip out it calling anything else"): an untouched store consents to NOTHING — boot makes
+ *  no outbound call until the person explicitly ticks the Memory panel's consent box
+ *  (`ipLookup === true`). `force` (a re-detect) still never bypasses an explicit "false". */
+export function mayLookupIp({ locale = null, force = false } = {}) {
+  if (locale?.location && !force) return { ok: false, why: "already-have-place" };
+  if (locale?.ipLookup !== true) return { ok: false, why: "consent-not-given" };
+  return { ok: true, why: locale?.location ? "re-detect" : "first-detect" };
+}

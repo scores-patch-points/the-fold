@@ -1,8 +1,9 @@
-// eval/ants/e2/web-patches.test.mjs — PROPOSED tests for diffs 4 (direct read cap) and 5 (read grace). Imports "./fold-chat-web.js": run where the patched file sits (repo root after the diffs; or the scratch
-// dir E2-RESULTS.md describes). Mutation check: against the tracked file both timing tests FAIL.
+// eval/ants/e2/web-patches.test.mjs — E2 diffs 4 (direct read cap) and 5 (read grace),
+// LANDED in the tracked fold-chat-web.js (commit "land 10-06/07 consumer WIP"). Imports are
+// root-relative so the suite runs in place under `node --test`.
 import test from "node:test";
 import assert from "node:assert/strict";
-import * as W from "./fold-chat-web.js";
+import * as W from "../../../fold-chat-web.js";
 const { readText, searchWeb } = W;
 const resp = (body, { ok = true, status = 200 } = {}) => ({ ok, status, json: async () => body, text: async () => (typeof body === "string" ? body : JSON.stringify(body)), body: null });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));

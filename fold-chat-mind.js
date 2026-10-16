@@ -31,6 +31,8 @@ export const DECLARED = Object.freeze({
   // activates. Declared, not measured: the surface shows the carry and the
   // person can remove it. 2 keeps a person and the place they belong to.
   carryMax: 2,
+  // How many candidates a clarifying question offers as clickable options (a presentation cap, not evidence).
+  optionsMax: 4,
   // A question this long (in word-like segments) names enough on its own that
   // carrying a referent would be a guess, even if no known referent matched.
   selfSufficientSegments: 9,
@@ -192,10 +194,11 @@ function upsert(rec, surface, add) {
     if (e && surface.length > e.surface.length) { e.forms = [...new Set([...(e.forms || []), e.surface])]; e.surface = surface; }
     else if (e) e.forms = [...new Set([...(e.forms || []), surface])];
   }
-  if (!e) { e = { surface, forms: [], weight: 0, lastTurn: rec.turn, roles: [] }; rec.entities.push(e); }
+  if (!e) { e = { surface, forms: [], weight: 0, lastTurn: rec.turn, roles: [], kinds: [] }; rec.entities.push(e); }
   e.weight += add.weight;
   e.lastTurn = rec.turn;
   if (add.role && !e.roles.includes(add.role)) e.roles.push(add.role);
+  if (add.kind) { e.kinds = e.kinds || []; if (!e.kinds.includes(add.kind)) e.kinds.push(add.kind); }
 }
 
 /**
@@ -207,9 +210,12 @@ function upsert(rec, surface, add) {
  * through title-substrings that the question or answer repeats.
  */
 export function admitReferents(record, turn, { hints = null } = {}) {
-  const rec = { entities: (record?.entities || []).map((e) => ({ ...e, forms: [...(e.forms || [])], roles: [...(e.roles || [])] })), turn: (record?.turn || 0) + 1 };
+  const rec = { entities: (record?.entities || []).map((e) => ({ ...e, forms: [...(e.forms || [])], roles: [...(e.roles || [])], kinds: [...(e.kinds || [])] })), turn: (record?.turn || 0) + 1 };
   for (const e of rec.entities) e.weight *= DECLARED.decay;
-  const q = String(turn?.question ?? ""), a = String(turn?.answer ?? "");
+  // A CONTEST turn's text is the app's own banner ("THESE SOURCES GIVE DIFFERENT ANSWERS …"): it is not the channel's words. Its names are the
+  // `candidates` the sources gave, admitted below — so "that one" / "he" after it is asked among them, never carried as the banner.
+  const cands = Array.isArray(turn?.candidates) ? turn.candidates.map((c) => String(c ?? "").trim()).filter(Boolean) : [];
+  const q = String(turn?.question ?? ""), a = cands.length ? "" : String(turn?.answer ?? "");
   const titles = (turn?.sources || []).map((s) => entityFromTitle(s?.title)).filter(Boolean);
   const titleSet = [...new Set(titles)];
   for (const t of titleSet) {
@@ -219,12 +225,32 @@ export function admitReferents(record, turn, { hints = null } = {}) {
     if (head && head !== t) upsert(rec, head, { weight: 1, role: "title-head" });
   }
   // a CREATIVE answer (a song, a poem) is invention, not a statement about the world: it names no referent (its capitalised lines were becoming ones). The question and the titles still do.
+  // THE CHANNEL (user, 2026-10-13: track what is happening in the conversation, not what the fetched pages happen to say): a name is an
+  // antecedent only if the PERSON said it (question), the FOLD said it (answer) or it was the answer itself (filler). A page title vouches
+  // for a name (+1 above) and is never an antecedent on its own — see `channel` in resolveQuestion. In a WHO-ask the question's own names
+  // are ANCHORS ("Who composed the Moonlight Sonata?": the sonata is not the person asked after).
   for (const [text, role] of [[turn?.creative ? "" : a, "answer"], [q, "question"]]) {
     for (const r of casedRuns(text, scriptOf(text))) {
       const inTitle = titleSet.some((t) => mentions(t, r.surface) || mentions(r.surface, t));
-      upsert(rec, r.surface, { weight: 2 + (inTitle ? 1 : 0), role });
+      upsert(rec, r.surface, { weight: 2 + (inTitle ? 1 : 0), role, kind: role === "question" && turn?.slot === "person" ? "anchor" : undefined });
     }
   }
+  // THE SLOT LAYER'S OWN REFERENTS (nesting audit F, D3/D6): the slot pipeline resolved the ask's names to PAGES by the title door
+  // (`frame.referents`: { surface, title, aliases }). That is the referent as the encyclopedia knows it, in any script and in any case, and
+  // it used to be dropped: the record re-read the question by capitalisation alone, so a lower-case ask named nothing and a caseless script
+  // named only what a source title echoed. They are the PERSON'S words (role "question", an anchor in a who-ask), resolved; role "frame" marks
+  // where the resolution came from. Only referents (never the frame's attributes, which are not things to carry).
+  for (const r of Array.isArray(turn?.frame) ? turn.frame : []) {
+    const title = String(r?.title ?? "").trim();
+    if (!title) continue;
+    upsert(rec, title, { weight: 3, role: "question", kind: turn?.slot === "person" ? "anchor" : undefined });
+    upsert(rec, title, { weight: 0, role: "frame" });
+    const e = rec.entities.find((x) => fold(x.surface) === fold(title) || (x.forms || []).some((f) => fold(f) === fold(title)));
+    if (e) for (const al of [r.surface, ...(Array.isArray(r.aliases) ? r.aliases : [])]) { const a = String(al ?? "").trim(); if (a && fold(a) !== fold(e.surface) && !e.forms.some((f) => fold(f) === fold(a))) e.forms.push(a); }
+  }
+  for (const c of cands) upsert(rec, c, { weight: 3, role: "answer", kind: "candidate" });
+  const fl = turn?.filler && typeof turn.filler.text === "string" ? turn.filler.text.trim() : "";
+  if (fl && !turn?.creative) upsert(rec, fl, { weight: 3, role: "filler", kind: turn.filler.slot === "person" ? "person" : "thing" });
   // Caseless scripts: a stretch of the answer/question that a source title also contains IS a name
   // (the title is the authority); take the longest common stretch of word-like segments.
   for (const [text, role] of [[turn?.creative ? "" : a, "answer"], [q, "question"]]) {
@@ -234,6 +260,11 @@ export function admitReferents(record, turn, { hints = null } = {}) {
       const common = longestCommonStretch(text, t, script);
       if (common && fold(common).length >= 2) upsert(rec, common, { weight: 2, role });
     }
+  }
+  // A title the person's question or the Fold's answer MENTIONS, in any case ("tell me about mars" says Mars), is the channel's own name for it.
+  for (const t of titleSet) {
+    if (q && mentions(q, t)) upsert(rec, t, { weight: 2, role: "question", kind: turn?.slot === "person" ? "anchor" : undefined });
+    if (a && !turn?.creative && mentions(a, t)) upsert(rec, t, { weight: 2, role: "answer" });
   }
   if (hints?.titles) rec.titlesHint = hints.titles.length; // provenance only; titles are consumed by personLike
   rec.entities.sort((x, y) => y.weight - x.weight);
@@ -268,7 +299,14 @@ export function personLike(surface, hints = null) {
   const script = scriptOf(surface);
   const segs = segments(surface, script);
   if (hints?.titles?.some((t) => fold(segs[0]?.text) === fold(t))) return true;
-  return capitalisationIsSignificant(script) && segs.length >= 2 && !/[,，]/u.test(surface);
+  if (!capitalisationIsSignificant(script) || segs.length < 2 || /[,，]/u.test(surface)) return false;
+  // A NAME is capitalised word by word: "Donald Trump", "Simón de Bolívar". The earlier test returned true for ANY multi-word string in a
+  // cased script ("elección presidencial de 2020"), so the kind was decided downstream by an English-only inanimate list. A lowercase
+  // word is allowed only BETWEEN capitalised ones and only if it is a short particle (de, van, von, bin, al, da).
+  const words = segs.map((x) => x.text);
+  const cap = (w) => { const c = [...w][0]; return !!c && c !== c.toLocaleLowerCase(); };
+  if (!cap(words[0]) || !cap(words[words.length - 1])) return false;
+  return words.every((w, i) => cap(w) || (i > 0 && i < words.length - 1 && [...w].length <= 3));
 }
 
 /** Does the question mention any referent the record already holds? → those, most active first. */
@@ -308,6 +346,12 @@ export function resolveQuestion(question, record, { hints = null, rejected = nul
   const said = String(question ?? "").trim();
   const script = scriptOf(said), segs = segments(said, script);
   const base = { said, resolved: said, carried: [], script, segments: segs.length };
+  // A referent the PERSON CHOSE from a clarifying question rides the resent ask as "(about: X)": it is carried as chosen and can never ask again.
+  const chosen = said.match(/\(about:\s*([^)]+)\)\s*$/u);
+  if (chosen) {
+    const surfaces = chosen[1].split(";").map((x) => x.trim()).filter(Boolean);
+    if (surfaces.length) return { ...base, carried: surfaces.map((surface) => ({ surface, by: "chosen" })), resolved: said, reason: "carried" };
+  }
   if (!said || !(record?.entities || []).length) return { ...base, reason: "no-record" };
   // THE ANAPHORA GATE (fold-chat-anaphora.js, G3): when the caller hands the verdict, IT decides whether the ask leans on the last answer — not the
   // ethos `carryTriggers` prior (which lists "the" and "one": every ask with an article was read as pointing back). A self-contained ask carries nothing;
@@ -325,15 +369,48 @@ export function resolveQuestion(question, record, { hints = null, rejected = nul
   // a referent the person has refused to have carried into this thread (fold-chat-minds.js rejectedSurfaces) is never carried again
   const refused = new Set((Array.isArray(rejected) ? rejected : []).map((x) => fold(x).trim()));
   const allowed = (e) => !refused.has(fold(e.surface).trim());
-  let pool = [...record.entities];
+  // THE CHANNEL (user, 2026-10-13: track what is happening in THIS conversation without being waylaid by fetched content). Tier 1: names the person
+  // said, the Fold said, or that were the answer itself. Tier 2: a name only a fetched page's title carries — it joins ONLY to break an exact tie or
+  // to fill an empty pool, never over a candidate that leads, and never for a person pronoun (a page title is not who "he" is).
+  const inChannel = (e) => (e.roles || []).some((r) => r === "question" || r === "answer" || r === "filler");
   const personal = new Set(forms(hints?.personalPronouns));
-  if (segs.some((x) => personal.has(fold(x.text)))) {
-    const people = pool.filter((e) => personLike(e.surface, hints));
-    // "her" after "not her": the person was refused, so the pool is the people left, not the things (no fall-back to a non-person)
-    if (people.length) pool = people;
+  const hasPersonalPrior = !!(hints && Array.isArray(hints.personalPronouns) && hints.personalPronouns.length);
+  const isPersonalAsk = segs.some((x) => personal.has(fold(x.text)));
+  const pronounSeg = segs.find((x) => personal.has(fold(x.text)) || triggers.has(fold(x.text)));
+  const kindsOf = (e) => e.kinds || [];
+  const typed = capitalisationIsSignificant(script);       // person-likeness is read from capitalisation: only where the script has it
+  // a surface with a digit in it ("Apollo 11", "Boeing 747", "Symphony No. 5") names a mission, a machine, a work — in any script, not a person
+  const isPerson = (e) => kindsOf(e).includes("person") || (!kindsOf(e).includes("anchor") && !kindsOf(e).includes("thing") && !/\p{Nd}/u.test(e.surface) && personLike(e.surface, hints));
+  let tier1 = record.entities.filter(inChannel).filter(allowed);
+  if (isPersonalAsk) {
+    // A PERSON pronoun takes a person: the person who was the answer to a who-ask, or a person-like name the question did not merely ANCHOR on (a
+    // work, a place). No person in the channel is SAID, never filled with a work ("Pride and Prejudice" is not who wrote it). A caseless script
+    // cannot be typed this way, so there the pool is left as it was (additive: no language is made worse).
+    const people = tier1.filter(isPerson);
+    if (people.length) tier1 = people;
+    else if (typed) return { ...base, reason: "no-person-to-carry", pronoun: pronounSeg ? pronounSeg.text : null };
+  } else if (hasPersonalPrior) {
+    // a non-personal "it" / "its" is not the person who answered (it is the work, the place)
+    const things = tier1.filter((e) => !kindsOf(e).includes("person"));
+    if (things.length) tier1 = things;
   }
-  pool = pool.filter(allowed);
+  // RECENCY: the most recent turn that holds a licensed candidate speaks; and the answer itself outranks the names it was asked with.
+  const latest = tier1.length ? Math.max(...tier1.map((e) => e.lastTurn || 0)) : 0;
+  let pool = tier1.filter((e) => (e.lastTurn || 0) === latest);
+  if (isPersonalAsk) { const fillers = pool.filter((e) => (e.roles || []).includes("filler")); if (fillers.length === 1) pool = fillers; }
   pool.sort((x, y) => y.weight - x.weight);
+  const tied = () => pool.length >= 2 && pool[0].weight === pool[1].weight;
+  if (!isPersonalAsk && (!pool.length || tied())) {
+    const titles = record.entities.filter((e) => !inChannel(e)).filter(allowed).filter((e) => !kindsOf(e).includes("person"));
+    if (titles.length) pool = pool.concat(titles).sort((x, y) => y.weight - x.weight);
+  }
+  // A PRONOUN reference that is an exact tie is ASKED (the options are the tied candidates, the answer first): never a guess between equals.
+  // An elliptical ask with no pronoun ("what else", "and in 1911?") keeps the old carry: there is nothing to ask "which one" of.
+  if (pronounSeg && hasPersonalPrior && tied()) {
+    const top = pool.filter((e) => e.weight === pool[0].weight);
+    const first = top.filter((e) => (e.roles || []).includes("filler")).concat(top.filter((e) => !(e.roles || []).includes("filler")));
+    return { ...base, reason: "ambiguous", options: first.slice(0, DECLARED.optionsMax).map((e) => e.surface), pronoun: pronounSeg.text };
+  }
   const carried = pool.slice(0, DECLARED.carryMax).map((e) => ({ surface: e.surface, by: "activation:last-answer+pronoun" }));
   if (!carried.length) return { ...base, reason: "nothing-to-carry" };
   return { ...base, carried, resolved: `${said} (about: ${carried.map((c) => c.surface).join("; ")})`, reason: "carried" };

@@ -30,9 +30,10 @@ test("UNSOURCED_ANSWERS: 'refuse' is the only behaviour — with no source the m
   assert.equal(unsourcedPlan("refuse", { live: true }).gap, "live");
 });
 
-test("ALONE_KINDS: no kind may be answered by the model alone by default; each has an app-authored turn", () => {
-  assert.deepEqual([...ALONE_KINDS], []);
-  for (const k of ["smalltalk", "compute", "code", "transform", "compose", "generate", "research"]) assert.equal(modelSpeaksAlone(k), false, k);
+test("ALONE_KINDS: only smalltalk (user, 2026-10-14) may be answered by the model alone; every other kind keeps its app-authored turn", () => {
+  assert.deepEqual([...ALONE_KINDS], ["smalltalk"]);
+  assert.equal(modelSpeaksAlone("smalltalk"), true);
+  for (const k of ["compute", "code", "transform", "compose", "generate", "research", "advice"]) assert.equal(modelSpeaksAlone(k), false, k);
   assert.equal(aloneTurn("smalltalk").notice.text, SMALLTALK_LINE);
   assert.match(SMALLTALK_LINE, /show you what the sources say/);
   assert.equal(aloneTurn("compute").notice, null, "the result card is the answer");

@@ -5,11 +5,27 @@
   "version": "0.1.0",
   "description": "The Fold's chat in your browser. Web search and page reads go straight from this computer: no relay, no account, nothing collected.",
   "minimum_chrome_version": "116",
-  "action": { "default_title": "Open The Fold" },
-  "background": { "service_worker": "fold-background.js", "type": "module" },
-  "side_panel": { "default_path": "index.html" },
-  "options_ui": { "page": "fold-options.html", "open_in_tab": true },
-  "permissions": ["sidePanel"],
+  "action": {
+    "default_title": "Open The Fold",
+    "default_icon": {
+      "16": "brand/favicon/favicon-16.png",
+      "32": "brand/favicon/favicon-32.png"
+    }
+  },
+  "background": {
+    "service_worker": "fold-background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "options_ui": {
+    "page": "fold-options.html",
+    "open_in_tab": true
+  },
+  "permissions": [
+    "sidePanel"
+  ],
   "host_permissions": [
     "https://api.github.com/*",
     "https://*.wikipedia.org/*",
@@ -21,10 +37,21 @@
     "http://127.0.0.1/*",
     "http://localhost/*"
   ],
-  "optional_host_permissions": ["https://*/*"],
-  "sandbox": { "pages": ["fold-sandbox.html"] },
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+  "sandbox": {
+    "pages": [
+      "fold-sandbox.html"
+    ]
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'none'",
     "sandbox": "sandbox allow-scripts; script-src 'self' 'unsafe-inline' 'unsafe-eval'; object-src 'none'"
+  },
+  "icons": {
+    "16": "brand/favicon/favicon-16.png",
+    "32": "brand/favicon/favicon-32.png",
+    "128": "brand/app-icon/the-fold-app-icon-dark-180.png"
   }
 }

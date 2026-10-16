@@ -49,10 +49,13 @@ test("a real subject is named from the prior (president)", () => {
   assert.equal(m.interpretation, "president");
 });
 
-test("an OOV name is disclosed as unknown, and the measured part still names the subject", () => {
+test("a Capitalized OOV is a NAME by the script's own rule, not unknown; lowercase OOV stays unknown", () => {
   const m = murmurOf({ question: "Who is Ada Lovelace?" });
-  assert.ok(m.unknown.includes("lovelace"));
-  assert.ok(m.content.includes("ada") || m.names.includes("ada"));
+  assert.ok(m.names.includes("lovelace"), "Capitalized in a case-significant script is a name (HEAD f565963)");
+  assert.ok(!m.unknown.includes("lovelace"));
+  const lower = murmurOf({ question: "who is ada lovelace?" });
+  assert.ok(lower.unknown.includes("lovelace"), "lowercase OOV is still disclosed as unknown");
+  assert.ok(lower.content.includes("ada") || lower.names.includes("ada"), "the measured part still names the subject");
 });
 
 test("the murmur is a proposal, never an answer: it carries no answer field", () => {
@@ -85,4 +88,11 @@ test("MODELESS NL: the two 2026-10-10 failures read as a plain explanation, with
   assert.match(a, /\u201cnow\u201d is a follow-up word/);
   const b = murmurText(murmurOf({ question: "who is itnow?", carried: ["Emperor of Japan"] }));
   assert.match(b, /run-together, not a name/);
+});
+
+test("UNKNOWN (referent-first 2026-10-11): an unmeasured form is an unresolved referent, never a refused word", () => {
+  const m = murmurOf({ question: "who is ada lovelace?" });
+  assert.ok(m.unknown.includes("lovelace"), "still disclosed as unknown (the array is unchanged)");
+  assert.match(murmurText(m), /names something I have not met/, "the murmur looks for what bears the name");
+  assert.ok(!murmurText(m).includes("a word I do not hold"), "the refusal sentence is gone");
 });

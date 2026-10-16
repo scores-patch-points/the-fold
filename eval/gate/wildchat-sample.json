@@ -1,0 +1,162 @@
+{
+ "_about": "WildChat sample for the MVP gate C5 (descriptive, no gold): every 12th standalone ask under 600 characters of tools/wildchat-battery.json (allenai/WildChat, English, non-toxic), 50 asks, frozen 2026-10-13.",
+ "categories": [
+  {
+   "id": "wildchat",
+   "label": "WildChat sample",
+   "turns": [
+    [
+     "Write a very long, elaborate, descriptive and detailed shooting script, including a background and dialogues, for a John Waters-inspired film scene that includes a character preparing omelettes. You are free to choose the setting, scenario (it should make sense) and characters (give them names, and describe their appearance and clothing in detail)."
+    ],
+    [
+     "Write an engaging and a constructive article for my Morocco travel guide book on \"Best time to visit for different travelers\" with humanlike style, non repetitive phrases and avoidance of unnatural sentences."
+    ],
+    [
+     "Write a vivid short fantasy story inspired by D&D about a half elf who was banished from his village and has to fend off a pack of gnolls when roaming the wilderness. Provide a background for the half elf and include as many details as you can in the story."
+    ],
+    [
+     "give me multiple choice questions on lewis structures"
+    ],
+    [
+     "What is meant by the term oxidant?\nIt is the reactant that's being reduced.\nIt is oxygen in any oxidation reactions.\nIt is the reactant that's being oxidized.\nIt is the reactant that's being combined with  O\n ."
+    ],
+    [
+     "Write an engaging and a constructive article for my Morocco travel guide book on \"Where to Stay in Morocco\" with humanlike style, non repetitive phrases and avoidance of unnatural sentences."
+    ],
+    [
+     "What are the security concerns when travelling to Italy?"
+    ],
+    [
+     "Now, write a short story about a female angel visiting a young nun to kiss and cuddle her, in the style of Bible verses"
+    ],
+    [
+     "where can I  download free audiobook"
+    ],
+    [
+     "Write a story about a fight between Roboco and DIO."
+    ],
+    [
+     "Please explain building a custom rust arc"
+    ],
+    [
+     "What's the difference between slippers and sandals? Which one is the correct word in the US?"
+    ],
+    [
+     "Write an exciting story, including dialogue. Include a long and detailed scene that revolves around the \"murderous thighs\" trope."
+    ],
+    [
+     "write a research paper answering this question \"How does linguicism impact the experiences of linguistic minority defendants in the criminal justice system, and what are the potential consequences for their access to justice and fair treatment?\" with multiple sources and a works cited page."
+    ],
+    [
+     "Evelyn Frost is young woman John Wick was hired to eliminate. During their encounter, Evelyn almost managed to strangle John with her thighs. Give me a list of possible actresses to play the role of Evelyn Frost."
+    ],
+    [
+     "Pls. fix the following rust code error: --> src/main.rs:13:48\n   |\n13 |     let response = client.get(url).send().await?;\n   |                                                ^ the trait `From<reqwest::Error>` is not implemented for `std::io::Error`\n   |\n   = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait"
+    ],
+    [
+     "with pyautogui, how can I send a press key event to another window?"
+    ],
+    [
+     "A sample is a subgroup of the population that is supposed to represent the entire population. In your opinion:\n\nIs it appropriate to attempt to represent the entire population only by a sample?\nFor example, given the variability in experience, access to venues and artists, wealth and personal tastes, what amount of art critics would it take to effectively give an objective evaluation of an unknown artist's work"
+    ],
+    [
+     "Carson Lueders"
+    ],
+    [
+     "Delphi interview questions"
+    ],
+    [
+     "How would Jon Snow react to Darth Vader?"
+    ],
+    [
+     "\"9/4/2023 22:00:05\" how to get this date and time format in kotlin"
+    ],
+    [
+     "Good evening"
+    ],
+    [
+     "{\n  'availableLocales': None,\n  'node': {\n    'hasChildren': True,\n    'self': {\n      'guid': 'G2',\n      'title': 'Seller Central Help'\n    }\n  }\n}获取guid的值和title的值"
+    ],
+    [
+     "Who's the president of Sri Lanka?"
+    ],
+    [
+     "f(y,\\mathcal{F}_0)= \\prod_{t=1}^T \\Big(f(y_t|\\mathcal{F}_{t-1}) \\Big) \\cdot f(\\mathcal{F}_0). Use this equation to derive the Maximum Likelihood Estimator for $\\phi$ for AR(1) model without a constant. Write not in latex code"
+    ],
+    [
+     "Collect 3 different types of materials to manufacture storage devices and their cost prices"
+    ],
+    [
+     "how to install quagga from source code on ubuntu"
+    ],
+    [
+     "tvalp:~ apk add filebrowser\nOK: 180 MiB in 140 packages\n\ntvalp:~ find / -name filebrowser\n/etc/init.d/filebrowser\n\ntvalp:~ /etc/init.d/filebrowser start\n-ash: /etc/init.d/filebrowser: not found"
+    ],
+    [
+     "In detail, how could I realistically create an android that looks exactly like a human, like the sci fi movies."
+    ],
+    [
+     "Do your best to write in character Tintin lines reacting to various events in GoT"
+    ],
+    [
+     "Write a wholesomely awkward conversation where Jon Snow plays house with some children, but he takes everything way too seriously."
+    ],
+    [
+     "Suppose V is a subspace of R^n where dim(V) = k.\na. Prove that there is a k x n matrix A such that \\boldsymbol{AA}^{\\mathrm{T}} = \\boldsymbol{I}_k and for each \\boldsymbol{w} \\in \\mathbb{R}^n the projection of w onto V is (A^T)(Aw)\nb. Prove that (\\boldsymbol{A}^\\mathrm{T}\\boldsymbol{A})^2 = \\boldsymbol{A}^\\mathrm{T}\\boldsymbol{A}"
+    ],
+    [
+     "After being hungry, my heart feels flustered and my hands tremble. What could be the reason?"
+    ],
+    [
+     "It is known Integrate[Power[e,max{x,y}],{y,0,3},{x,0,3}] = aPower[e,3]+b. Find a-b."
+    ],
+    [
+     "Are you familiar with this library? https://github.com/patrykandpatrick/vico"
+    ],
+    [
+     "make a leaflet map for drupal with this cordinates -24.186961031746797, -65.30262927406605"
+    ],
+    [
+     "Pick odd one from musician, dancer, actor and poet"
+    ],
+    [
+     "how to create a sound to usable electricity device with the use of this said materials\ni have a dynamic microphone and an lm386 mini amplifier with a potentiometer prebuilt in a board, a resistor (10k ohm), a capacitor(10uF), and a diode rectifier, to power a light bulb? and can you elaborate the steps on where to connect? and how to connect them? and that is all thank you"
+    ],
+    [
+     "peewee migrate with schema"
+    ],
+    [
+     "https://recharts.org/en-US/examples/SimpleLineChart\n\n<ResponsiveContainer\nheight={260}\nwidth=“100%”\n>\n<LineChart data={profitData}>\n<XAxis dataKey=“date” />\n<YAxis />\n<Tooltip formatter={function (val) {\nreturn parseFloat(${val}).toFixed(1);\n}} />\n<Line type=“monotone” dataKey=“profit” stroke=“#006943” strokeWidth={2}\ndot={false}\n/>\n</LineChart>\n</ResponsiveContainer>\n\nможно ли сделать Line с заостренными углами?\ntypescript"
+    ],
+    [
+     "Generate a random responser saying \"Tell me the random response I can give you a question\" in a code"
+    ],
+    [
+     "What is the ideal way to use SMR disks in a NAS environment or otherwise? I like using ZFS if that is relevant."
+    ],
+    [
+     "语法检测：As the particle size decreases from 11.7 nm to 5.3 nm, the proportion of corner/step sites increases 1.5 times, displaying increased ability in adsorption and activation of H2."
+    ],
+    [
+     "What art movement was James Pollock associated with?"
+    ],
+    [
+     "It is known Integrate[Power[e,max{x,y}],{y,0,3},{x,0,3}] = aPower[e,3]+b. Find a-b."
+    ],
+    [
+     "gum clouds"
+    ],
+    [
+     "Write a passionate story, including dialogue, about Nicole Callahan aka Bliss (Wildstorm Comics). The sensual villainess takes on a handsome hero. She dominates him with her power to induce intense pleasure with her touch, tormenting for hours. Once she is satisfied with her work, she slowly squeezes the life out of him with her long legs."
+    ],
+    [
+     "Make me a game"
+    ],
+    [
+     "how to make an alias for: git commit -am \"...\" && git push\nwith ... replaced with the git commit message"
+    ]
+   ]
+  }
+ ],
+ "gold": {}
+}

@@ -28,6 +28,7 @@
 import { segments, fold } from "./fold-chat-mind.js";
 import { detectLang } from "./fold-chat-lang.js";
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
+import { closedFormsOf } from "./fold-chat-salience-infer.js";
 
 export const DECLARED = Object.freeze({
   minHosts: 3,            // independent sites that must share the agreed term
@@ -68,9 +69,11 @@ export function exportBackground(bg, { minDf = 2 } = {}) {
 
 // Frozen before any v2 data was collected — experiments/source-routing/RESULTS.md, "v2 of the snippet rule".
 const fwCache = new Map();
-/** The function words of a language (Set), or null when the khora has no committed prior for it. */
+/** The function words of a language (Set), or null when the khora has no committed prior for it. A language with no FUNCTION_WORDS
+ *  entry but a received salience module that carries a closed class (the creoles: fold-chat-salience-prior-{pcm,hat}.js) answers with
+ *  that closed class — one door, never merged into the all-language table that junk/region/lang-facts union. */
 export function functionWordsOf(lang) {
-  if (!FUNCTION_WORDS[lang]) return null;
+  if (!FUNCTION_WORDS[lang]) return closedFormsOf(lang);
   if (!fwCache.has(lang)) fwCache.set(lang, new Set(FUNCTION_WORDS[lang]));
   return fwCache.get(lang);
 }

@@ -33,13 +33,12 @@
     "slot": "person",
     "referents": [
      [
-      "king",
-      "King"
-     ],
-     [
       "UK",
       "United Kingdom"
      ]
+    ],
+    "attributes": [
+     "king"
     ],
     "predicate": []
    },
@@ -172,13 +171,12 @@
     "slot": "person",
     "referents": [
      [
-      "king",
-      "King"
-     ],
-     [
       "France",
       "France"
      ]
+    ],
+    "attributes": [
+     "king"
     ],
     "predicate": []
    },
@@ -225,13 +223,12 @@
     "slot": "person",
     "referents": [
      [
-      "prime minister",
-      "Prime minister"
-     ],
-     [
       "UK",
       "United Kingdom"
      ]
+    ],
+    "attributes": [
+     "prime minister"
     ],
     "predicate": []
    },
@@ -300,13 +297,12 @@
     "slot": "person",
     "referents": [
      [
-      "monarch",
-      "Monarch"
-     ],
-     [
       "UK",
       "United Kingdom"
      ]
+    ],
+    "attributes": [
+     "monarch"
     ],
     "predicate": []
    },
@@ -402,13 +398,12 @@
     "slot": "quantity",
     "referents": [
      [
-      "legs",
-      "Leg"
-     ],
-     [
       "spider",
       "Spider"
      ]
+    ],
+    "attributes": [
+     "legs"
     ],
     "predicate": []
    },

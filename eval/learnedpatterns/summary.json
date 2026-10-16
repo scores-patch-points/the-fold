@@ -1,0 +1,801 @@
+{
+ "doorFailures": 0,
+ "pairs": 162,
+ "inScope": 100,
+ "readings": {
+  "Who wrote Pride and Prejudice?": {
+   "pids": [
+    "P50",
+    "P86"
+   ],
+   "anchors": [
+    "Pride and Prejudice"
+   ],
+   "referents": [
+    {
+     "surface": "Pride and Prejudice",
+     "title": "Pride and Prejudice",
+     "repairedFrom": null
+    }
+   ],
+   "note": "person"
+  },
+  "Who painted The Starry Night?": {
+   "pids": [
+    "P170"
+   ],
+   "anchors": [
+    "Starry Night",
+    "The Starry Night"
+   ],
+   "referents": [
+    {
+     "surface": "Starry Night",
+     "title": "The Starry Night",
+     "repairedFrom": null
+    }
+   ],
+   "note": "person"
+  },
+  "Who developed the theory of general relativity?": {
+   "pids": [
+    "P61"
+   ],
+   "anchors": [
+    "theory of general relativity",
+    "General relativity"
+   ],
+   "referents": [
+    {
+     "surface": "theory of general relativity",
+     "title": "General relativity",
+     "repairedFrom": null
+    }
+   ],
+   "note": "person"
+  },
+  "Who was the first president of the United States?": {
+   "pids": [
+    "P61",
+    "P35",
+    "P6"
+   ],
+   "anchors": [
+    "United States"
+   ],
+   "referents": [
+    {
+     "surface": "United States",
+     "title": "United States",
+     "repairedFrom": null
+    }
+   ],
+   "note": "person"
+  },
+  "Who composed the Moonlight Sonata?": {
+   "pids": [
+    "P86"
+   ],
+   "anchors": [
+    "Moonlight Sonata",
+    "Piano Sonata No. 14 (Beethoven)",
+    "Piano Sonata No. 14"
+   ],
+   "referents": [
+    {
+     "surface": "Moonlight Sonata",
+     "title": "Piano Sonata No. 14 (Beethoven)",
+     "repairedFrom": null
+    }
+   ],
+   "note": "person"
+  },
+  "When did the Berlin Wall fall?": {
+   "pids": [],
+   "anchors": [
+    "Berlin Wall fall",
+    "Fall of the Berlin Wall"
+   ],
+   "referents": [
+    {
+     "surface": "Berlin Wall fall",
+     "title": "Fall of the Berlin Wall",
+     "repairedFrom": null
+    }
+   ],
+   "note": "time"
+  },
+  "When did the Titanic sink?": {
+   "pids": [],
+   "anchors": [
+    "Titanic"
+   ],
+   "referents": [
+    {
+     "surface": "Titanic",
+     "title": "Titanic",
+     "repairedFrom": null
+    }
+   ],
+   "note": "time"
+  },
+  "When was the Magna Carta signed?": {
+   "pids": [],
+   "anchors": [
+    "Magna Carta"
+   ],
+   "referents": [
+    {
+     "surface": "Magna Carta",
+     "title": "Magna Carta",
+     "repairedFrom": null
+    }
+   ],
+   "note": "time"
+  },
+  "In what year did humans first land on the Moon?": {
+   "pids": [
+    "P61",
+    "P6"
+   ],
+   "anchors": [
+    "humans",
+    "Human",
+    "land",
+    "Land"
+   ],
+   "referents": [
+    {
+     "surface": "humans",
+     "title": "Human",
+     "repairedFrom": null
+    },
+    {
+     "surface": "land",
+     "title": "Land",
+     "repairedFrom": null
+    }
+   ],
+   "note": "time"
+  },
+  "Where is the Great Barrier Reef?": {
+   "pids": [],
+   "anchors": [
+    "Great Barrier Reef"
+   ],
+   "referents": [
+    {
+     "surface": "Great Barrier Reef",
+     "title": "Great Barrier Reef",
+     "repairedFrom": null
+    }
+   ],
+   "note": "place"
+  },
+  "Where was Mozart born?": {
+   "pids": [
+    "P19"
+   ],
+   "anchors": [
+    "Mozart",
+    "Wolfgang Amadeus Mozart"
+   ],
+   "referents": [
+    {
+     "surface": "Mozart",
+     "title": "Wolfgang Amadeus Mozart",
+     "repairedFrom": null
+    }
+   ],
+   "note": "place"
+  },
+  "Where is the Taj Mahal?": {
+   "pids": [],
+   "anchors": [
+    "Taj Mahal"
+   ],
+   "referents": [
+    {
+     "surface": "Taj Mahal",
+     "title": "Taj Mahal",
+     "repairedFrom": null
+    }
+   ],
+   "note": "place"
+  },
+  "What is the capital of Kenya?": {
+   "pids": [
+    "P36"
+   ],
+   "anchors": [
+    "Kenya"
+   ],
+   "referents": [
+    {
+     "surface": "Kenya",
+     "title": "Kenya",
+     "repairedFrom": null
+    }
+   ],
+   "note": "thing"
+  },
+  "What is the capital of Egypt?": {
+   "pids": [
+    "P36"
+   ],
+   "anchors": [
+    "Egypt"
+   ],
+   "referents": [
+    {
+     "surface": "Egypt",
+     "title": "Egypt",
+     "repairedFrom": "capital of Egypt"
+    }
+   ],
+   "note": "thing"
+  },
+  "How many bones are in the adult human body?": {
+   "pids": [],
+   "anchors": [
+    "adult human",
+    "Adult"
+   ],
+   "referents": [
+    {
+     "surface": "adult human",
+     "title": "Adult",
+     "repairedFrom": null
+    }
+   ],
+   "note": "quantity"
+  },
+  "How many continents are there?": {
+   "pids": [],
+   "anchors": [
+    "continents",
+    "Continent"
+   ],
+   "referents": [
+    {
+     "surface": "continents",
+     "title": "Continent",
+     "repairedFrom": null
+    }
+   ],
+   "note": "quantity"
+  },
+  "How many strings does a violin have?": {
+   "pids": [],
+   "anchors": [
+    "violin",
+    "Violin"
+   ],
+   "referents": [
+    {
+     "surface": "violin",
+     "title": "Violin",
+     "repairedFrom": null
+    }
+   ],
+   "note": "quantity"
+  },
+  "What is the chemical symbol for sodium?": {
+   "pids": [],
+   "anchors": [
+    "sodium",
+    "Sodium"
+   ],
+   "referents": [
+    {
+     "surface": "sodium",
+     "title": "Sodium",
+     "repairedFrom": null
+    }
+   ],
+   "note": "thing"
+  },
+  "What is the largest ocean on Earth?": {
+   "pids": [],
+   "anchors": [
+    "ocean",
+    "Ocean",
+    "Earth"
+   ],
+   "referents": [
+    {
+     "surface": "ocean",
+     "title": "Ocean",
+     "repairedFrom": null
+    },
+    {
+     "surface": "Earth",
+     "title": "Earth",
+     "repairedFrom": null
+    }
+   ],
+   "note": "thing"
+  },
+  "What is the longest river in Africa?": {
+   "pids": [],
+   "anchors": [
+    "longest river",
+    "List of river systems by length",
+    "Africa"
+   ],
+   "referents": [
+    {
+     "surface": "longest river",
+     "title": "List of river systems by length",
+     "repairedFrom": null
+    },
+    {
+     "surface": "Africa",
+     "title": "Africa",
+     "repairedFrom": null
+    }
+   ],
+   "note": "thing"
+  },
+  "What is the tallest mountain in the world?": {
+   "pids": [],
+   "anchors": [
+    "tallest mountain",
+    "Tallest mountain",
+    "world",
+    "World"
+   ],
+   "referents": [
+    {
+     "surface": "tallest mountain",
+     "title": "Tallest mountain",
+     "repairedFrom": null
+    },
+    {
+     "surface": "world",
+     "title": "World",
+     "repairedFrom": null
+    }
+   ],
+   "note": "thing"
+  },
+  "Who invented the telephone?": {
+   "pids": [
+    "P61"
+   ],
+   "anchors": [
+    "telephone",
+    "Telephone"
+   ],
+   "referents": [
+    {
+     "surface": "telephone",
+     "title": "Telephone",
+     "repairedFrom": null
+    }
+   ],
+   "note": "person"
+  },
+  "What language is spoken in Brazil?": {
+   "pids": [
+    "P37"
+   ],
+   "anchors": [
+    "Brazil"
+   ],
+   "referents": [
+    {
+     "surface": "Brazil",
+     "title": "Brazil",
+     "repairedFrom": null
+    }
+   ],
+   "note": "thing"
+  },
+  "What currency is used in Japan?": {
+   "pids": [
+    "P38"
+   ],
+   "anchors": [
+    "Japan"
+   ],
+   "referents": [
+    {
+     "surface": "Japan",
+     "title": "Japan",
+     "repairedFrom": null
+    }
+   ],
+   "note": "thing"
+  },
+  "Who is the chancellor of Germany?": {
+   "pids": [
+    "P6"
+   ],
+   "anchors": [
+    "Germany"
+   ],
+   "referents": [
+    {
+     "surface": "Germany",
+     "title": "Germany",
+     "repairedFrom": "chancellor of Germany"
+    }
+   ],
+   "note": "person"
+  },
+  "Who is the president of Brazil?": {
+   "pids": [
+    "P35",
+    "P6"
+   ],
+   "anchors": [
+    "Brazil"
+   ],
+   "referents": [
+    {
+     "surface": "Brazil",
+     "title": "Brazil",
+     "repairedFrom": "president of Brazil"
+    }
+   ],
+   "note": "person"
+  },
+  "Who is the president of Mexico?": {
+   "pids": [
+    "P35",
+    "P6"
+   ],
+   "anchors": [
+    "Mexico"
+   ],
+   "referents": [
+    {
+     "surface": "Mexico",
+     "title": "Mexico",
+     "repairedFrom": "president of Mexico"
+    }
+   ],
+   "note": "person"
+  },
+  "Who is the king of Spain?": {
+   "pids": [
+    "P35"
+   ],
+   "anchors": [
+    "Spain"
+   ],
+   "referents": [
+    {
+     "surface": "Spain",
+     "title": "Spain",
+     "repairedFrom": "king of Spain"
+    }
+   ],
+   "note": "person"
+  }
+ },
+ "asksInScope": [
+  {
+   "ask": "Who wrote Pride and Prejudice?",
+   "pids": [
+    "P50",
+    "P86"
+   ],
+   "anchors": [
+    "Pride and Prejudice"
+   ]
+  },
+  {
+   "ask": "Who painted The Starry Night?",
+   "pids": [
+    "P170"
+   ],
+   "anchors": [
+    "Starry Night",
+    "The Starry Night"
+   ]
+  },
+  {
+   "ask": "Who developed the theory of general relativity?",
+   "pids": [
+    "P61"
+   ],
+   "anchors": [
+    "theory of general relativity",
+    "General relativity"
+   ]
+  },
+  {
+   "ask": "Who was the first president of the United States?",
+   "pids": [
+    "P61",
+    "P35",
+    "P6"
+   ],
+   "anchors": [
+    "United States"
+   ]
+  },
+  {
+   "ask": "Who composed the Moonlight Sonata?",
+   "pids": [
+    "P86"
+   ],
+   "anchors": [
+    "Moonlight Sonata",
+    "Piano Sonata No. 14 (Beethoven)",
+    "Piano Sonata No. 14"
+   ]
+  },
+  {
+   "ask": "In what year did humans first land on the Moon?",
+   "pids": [
+    "P61",
+    "P6"
+   ],
+   "anchors": [
+    "humans",
+    "Human",
+    "land",
+    "Land"
+   ]
+  },
+  {
+   "ask": "Where was Mozart born?",
+   "pids": [
+    "P19"
+   ],
+   "anchors": [
+    "Mozart",
+    "Wolfgang Amadeus Mozart"
+   ]
+  },
+  {
+   "ask": "What is the capital of Kenya?",
+   "pids": [
+    "P36"
+   ],
+   "anchors": [
+    "Kenya"
+   ]
+  },
+  {
+   "ask": "What is the capital of Egypt?",
+   "pids": [
+    "P36"
+   ],
+   "anchors": [
+    "Egypt"
+   ]
+  },
+  {
+   "ask": "Who invented the telephone?",
+   "pids": [
+    "P61"
+   ],
+   "anchors": [
+    "telephone",
+    "Telephone"
+   ]
+  },
+  {
+   "ask": "What language is spoken in Brazil?",
+   "pids": [
+    "P37"
+   ],
+   "anchors": [
+    "Brazil"
+   ]
+  },
+  {
+   "ask": "What currency is used in Japan?",
+   "pids": [
+    "P38"
+   ],
+   "anchors": [
+    "Japan"
+   ]
+  },
+  {
+   "ask": "Who is the chancellor of Germany?",
+   "pids": [
+    "P6"
+   ],
+   "anchors": [
+    "Germany"
+   ]
+  },
+  {
+   "ask": "Who is the president of Brazil?",
+   "pids": [
+    "P35",
+    "P6"
+   ],
+   "anchors": [
+    "Brazil"
+   ]
+  },
+  {
+   "ask": "Who is the president of Mexico?",
+   "pids": [
+    "P35",
+    "P6"
+   ],
+   "anchors": [
+    "Mexico"
+   ]
+  },
+  {
+   "ask": "Who is the king of Spain?",
+   "pids": [
+    "P35"
+   ],
+   "anchors": [
+    "Spain"
+   ]
+  }
+ ],
+ "check3_R_all162": {
+  "strict": {
+   "pos": 20,
+   "neg": 142,
+   "correct": 8,
+   "wrong": 0,
+   "silent": 12,
+   "falseCommit": 4
+  },
+  "regex": {
+   "pos": 87,
+   "neg": 75,
+   "correct": 10,
+   "wrong": 1,
+   "silent": 76,
+   "falseCommit": 1
+  }
+ },
+ "arms": {
+  "strict": {
+   "R": {
+    "pos": 11,
+    "neg": 89,
+    "correct": 2,
+    "wrong": 0,
+    "silent": 9,
+    "falseCommit": 2
+   },
+   "P": {
+    "pos": 11,
+    "neg": 89,
+    "correct": 0,
+    "wrong": 0,
+    "silent": 11,
+    "falseCommit": 2
+   },
+   "RP": {
+    "pos": 11,
+    "neg": 89,
+    "correct": 2,
+    "wrong": 0,
+    "silent": 9,
+    "falseCommit": 4
+   },
+   "PM": {
+    "pos": 11,
+    "neg": 89,
+    "correct": 0,
+    "wrong": 0,
+    "silent": 11,
+    "falseCommit": 0
+   }
+  },
+  "regex": {
+   "R": {
+    "pos": 49,
+    "neg": 51,
+    "correct": 2,
+    "wrong": 1,
+    "silent": 46,
+    "falseCommit": 1
+   },
+   "P": {
+    "pos": 49,
+    "neg": 51,
+    "correct": 0,
+    "wrong": 0,
+    "silent": 49,
+    "falseCommit": 2
+   },
+   "RP": {
+    "pos": 49,
+    "neg": 51,
+    "correct": 2,
+    "wrong": 1,
+    "silent": 46,
+    "falseCommit": 3
+   },
+   "PM": {
+    "pos": 49,
+    "neg": 51,
+    "correct": 0,
+    "wrong": 0,
+    "silent": 49,
+    "falseCommit": 0
+   }
+  }
+ },
+ "tests": {
+  "strict": {
+   "H1_P_vs_R": {
+    "gained": 0,
+    "lost": 2,
+    "pCorrect": 1,
+    "falseCommit": [
+     2,
+     2
+    ],
+    "pMoreFC": 0.6896368038742452,
+    "wrong": [
+     0,
+     0
+    ],
+    "pMoreWrong": 1,
+    "verdict": "FALSIFIED (not better)"
+   },
+   "H2_RP_vs_R": {
+    "gained": 0,
+    "lost": 0,
+    "pCorrect": 1,
+    "falseCommit": [
+     4,
+     2
+    ],
+    "pMoreFC": 0.34105585802469884,
+    "wrong": [
+     0,
+     0
+    ],
+    "pMoreWrong": 1,
+    "verdict": "FALSIFIED (not better)"
+   }
+  },
+  "regex": {
+   "H1_P_vs_R": {
+    "gained": 0,
+    "lost": 2,
+    "pCorrect": 1,
+    "falseCommit": [
+     2,
+     1
+    ],
+    "pMoreFC": 0.5000000000000036,
+    "wrong": [
+     0,
+     1
+    ],
+    "pMoreWrong": 0.9999999999999697,
+    "verdict": "FALSIFIED (not better)"
+   },
+   "H2_RP_vs_R": {
+    "gained": 0,
+    "lost": 0,
+    "pCorrect": 1,
+    "falseCommit": [
+     3,
+     1
+    ],
+    "pMoreFC": 0.30873087308730457,
+    "wrong": [
+     1,
+     1
+    ],
+    "pMoreWrong": 0.7525773195875977,
+    "verdict": "FALSIFIED (not better)"
+   }
+  }
+ },
+ "verdict": {
+  "H1": "FALSIFIED (not better)",
+  "H2": "FALSIFIED (not better)"
+ }
+}

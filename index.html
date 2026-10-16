@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="color-scheme" content="light dark">
 <title>The Fold · Chat</title>
+<link rel="icon" type="image/svg+xml" href="brand/favicon/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="brand/favicon/favicon-32.png">
+<link rel="apple-touch-icon" href="brand/app-icon/the-fold-app-icon-dark-180.png">
 <script src="fold-theme-boot.js"></script>
 <style>
   /* Tokens. A white surface, a white sidebar + icon rail, and a neutral
@@ -200,11 +203,6 @@
   .side-search.has-q .qclear { opacity: 1; visibility: visible; }
   .side-search .qclear:hover { background: var(--line); color: var(--ink); }
   .side-search .qclear svg { width: 13px; height: 13px; }
-  .side-foot { display: flex; align-items: center; gap: 2px; margin-top: 10px; padding: 8px 8px 2px; border-top: 1px solid var(--line); }
-  .side-foot .fmark { width: 24px; height: 24px; flex: none; margin-right: 4px; border-radius: 50%; background: var(--acc-grad); display: grid; place-items: center; color: #fff; font: 700 11px/1 var(--sans); text-shadow: 0 1px 1px rgba(0,0,0,.25); }
-  .side-foot button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: var(--touch); border: none; border-radius: var(--r-md); background: transparent; color: var(--mut); font: 500 var(--fs-sm) var(--sans); cursor: pointer; transition: background .12s, color .12s; }
-  .side-foot button:hover { background: var(--side2); color: var(--ink); }
-  .side-foot svg { width: 16px; height: 16px; }
 
   /* collapsible section headers */
   .sec-head { border-radius: var(--r-md); }
@@ -500,6 +498,35 @@
   .prov-open { margin-left: 4px; font: var(--fs-xs)/1 var(--mono); color: var(--dim); text-decoration: none; }
   .prov-open:hover { text-decoration: underline; }
   .prov-none { border-left-color: var(--warn, #b7791f); }
+  .prov-stand { margin: 6px 0 2px; font-size: var(--fs-xs); color: var(--warn, #b7791f); }
+  .prov-flag { overflow-wrap: anywhere; }
+  .layer-switch { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 2px; }
+  .layer-chip { font: var(--fs-xs)/1.4 var(--mono); color: var(--mut); background: none; border: 1px solid var(--line2); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
+  .layer-chip:hover { color: var(--ink2); border-color: var(--dim); }
+  .layer-chip.on { color: var(--ink); border-color: var(--ag); background: color-mix(in srgb, var(--ag) 12%, transparent); }
+  .layer-chip.empty { opacity: .4; cursor: default; }
+  .layer-chip:focus-visible { outline: 2px solid var(--ag); outline-offset: 2px; }
+  /* The discourse panel - the conversation's running discourse, drawn while it
+     is still being watched. Subtle: it is audit furniture, never part of the
+     answer; the moment the thread holds, the JS side is removed with it. */
+  .discourse { margin: 0 0 12px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--side2); }
+  .discourse.empty { display: flex; align-items: center; gap: 10px; padding: 9px 12px; font-size: var(--fs-sm); color: var(--mut); border-style: dashed; border-color: var(--line2); }
+  .discourse-empty-txt { color: var(--dim); }
+  .discourse-bar { display: flex; align-items: center; gap: 8px; padding: 7px 10px 6px; font-size: var(--fs-sm); color: var(--mut); }
+  .discourse-title { font-weight: 600; color: var(--ink); }
+  .discourse-hide { font: inherit; font-size: var(--fs-xs); color: var(--mut); background: none; border: 1px solid var(--line2); border-radius: 999px; padding: 1px 9px; cursor: pointer; }
+  .discourse-hide:hover { color: var(--ink); border-color: var(--line); }
+  .discourse-topic { padding: 4px 12px 8px; font-size: var(--fs-sm); line-height: 1.5; color: var(--ink2); }
+  .discourse-label { color: var(--dim); }
+  .discourse-now { color: var(--ink); }
+  .discourse-flow { margin-top: 3px; color: var(--dim); font-size: var(--fs-xs); }
+  .discourse > details > summary { list-style: none; cursor: pointer; padding: 6px 10px; font-size: var(--fs-sm); color: var(--mut); border-top: 1px solid var(--line); }
+  .discourse > details > summary::-webkit-details-marker { display: none; }
+  .discourse > details > summary::before { content: "\25B8\00a0"; }
+  .discourse > details[open] > summary::before { content: "\25BE\00a0"; }
+  .discourse-block { margin: 0; padding: 8px 12px; font: var(--fs-xs)/1.5 var(--mono); white-space: pre-wrap; color: var(--ink2); background: var(--side); border-top: 1px solid var(--line); }
+  .discourse-miss { padding: 6px 12px; font-size: var(--fs-xs); color: var(--dim); }
+  .discourse-store { padding: 6px 12px; font-size: var(--fs-xs); color: var(--dim); border-top: 1px solid var(--line); }
   .srcline { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; max-width: 100%; margin: 0 0 0 -6px; padding: 5px 8px; border: 0; border-radius: var(--r-md); background: none; color: var(--mut); font-size: var(--fs-sm); text-align: left; }
   .srcline:hover { background: var(--side2); color: var(--ink2); }
   .srcline .sl-caret { color: var(--dim); transition: transform .15s ease; display: inline-block; width: 10px; }
@@ -1078,6 +1105,13 @@
   .pv-tick.deep { color: var(--ink); font-weight: 700; }
   .pv-tick:hover { color: var(--link); }
   .pv-instant *, .pv-instant { animation: none !important; transition: none !important; }
+  .pv-pace { margin-left: 6px; }
+  .pv-tok .l { font-size: 10.5px; }
+  .pv-rp button:focus-visible, .pv-rp input:focus-visible, .pv-player:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .pv-rp, .pv-rp *, .pv-rp *::before, .pv-rp *::after { animation: none !important; transition: none !important; }
+    .pv-rp [data-at]:not(.pv-on) { transform: none; }
+  }
   /* CHROME: nothing in the reading panel (live or replay) moves, except the REC loop below */
   .pv-rp, .pv-rp *:not(.pv-loopfx):not(.pv-loopfx *):not(.pv-fwdfx):not(.pv-fwdfx *):not(.pv-lv.back):not(.pv-ph):not(.pv-ph *) { animation: none !important; transition: none !important; }
   /* THE LOOP, in two beats: BACK (an amber arc from the ◉ chip to the ● chip, above the levels) and then FORWARD from there
@@ -1310,8 +1344,9 @@
   .pv-sen.ok:hover { background: transparent !important; }
   .act.act-code { font-family: var(--mono); font-size: .88em; }
   [data-bare="1"] > .e-v, [data-bare="1"] .e-v { display: none; }
-  /* HIDDEN FOR NOW: the external-calls monitor / evidence drawer and the lock / sealed indicators (flag HIDE_EXTERNAL in fold-chat.js; UI only) */
-  html[data-hide-external] #railEvidence, html[data-hide-external] #drawer, html[data-hide-external] #setKeys,
+  /* HIDDEN FOR NOW: the external-calls monitor / evidence drawer and the lock / sealed indicators (flag HIDE_EXTERNAL in fold-chat.js; UI only).
+     The API keys section is NOT hidden: on this in-browser surface the Anthropic key lives in the fold and powers Angelica (2026-10-11). */
+  html[data-hide-external] #railEvidence, html[data-hide-external] #drawer,
   html[data-hide-external] .e-lock, html[data-hide-external] #setModelsSec .hint, html[data-hide-external] .cc-monitor, html[data-hide-external] [data-monitor] { display: none !important; }
   /* HIDDEN FOR NOW: Folds and Agent mode (flag HIDE_AGENT in fold-chat.js; it sets html[data-hide-agent]) */
   html[data-hide-agent] #railFolds, html[data-hide-agent] [data-sec="folds"], html[data-hide-agent] #setAgent,
@@ -1670,6 +1705,12 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   }
+  /* Brand mark (brand/): swaps light/dark with the theme. */
+  .brandmark { background: none !important; box-shadow: none !important; text-shadow: none !important; border-radius: 0 !important; }
+  .brandmark img { width: 100%; height: 100%; display: block; }
+  .brandmark .dk { display: none; }
+  [data-theme="dark"] .brandmark .lt { display: none; }
+  [data-theme="dark"] .brandmark .dk { display: block; }
 </style>
 <link rel="stylesheet" href="styles/live-panel.css">
 <link rel="stylesheet" href="styles/answer-evidence.css">
@@ -1701,7 +1742,7 @@
   <aside class="side" id="side" aria-label="Chats and projects">
     <div class="side-head">
       <div class="side-brand" title="The Fold">
-        <span class="mark" aria-hidden="true">F</span>
+        <span class="mark brandmark" aria-hidden="true"><img class="lt" src="brand/mark/the-fold-mark-light.svg" alt=""><img class="dk" src="brand/mark/the-fold-mark-dark.svg" alt=""></span>
         <span class="name">The Fold</span>
       </div>
       <button type="button" class="side-collapse" id="sideCollapse" title="Hide sidebar" aria-label="Hide sidebar">
@@ -1743,17 +1784,6 @@
         <div class="sec-body" id="folds"></div>
       </div>
     </div>
-    <div class="side-foot">
-      <span class="fmark" aria-hidden="true">F</span>
-      <button type="button" id="sideEvidence" title="Evidence — who did the work" aria-label="Evidence — who did the work">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
-        Evidence
-      </button>
-      <button type="button" id="sideSettings" title="Settings" aria-label="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-        Settings
-      </button>
-    </div>
   </aside>
   </div>
   <div class="scrim" id="scrim"></div>
@@ -1771,7 +1801,7 @@
     </header>
 
     <div class="welcome" id="welcome">
-      <div class="mark" aria-hidden="true">F</div>
+      <span class="mark brandmark" aria-hidden="true"><img class="lt" src="brand/mark/the-fold-mark-light.svg" alt=""><img class="dk" src="brand/mark/the-fold-mark-dark.svg" alt=""></span>
       <h1>What can I help with?</h1>
       <p id="welcomeSub"></p>
     </div>
@@ -1836,6 +1866,13 @@
           </div>
         </div>
         <div class="hint">Transparency shows the “how this was answered” line under every answer.</div>
+        <div class="line stack"><label for="setDiscourse">Show the conversation’s discourse</label>
+          <label class="check"><input type="checkbox" id="setDiscourse"> Always disclose what the fold reads the thread as, each turn (mechanically generated - reversible here or with the note’s own hide button)</label>
+        </div>
+        <div class="line stack"><label for="setPublicFallback">When the fold's own relay can't read a page</label>
+          <label class="check"><input type="checkbox" id="setPublicFallback"> Try public proxy services instead</label>
+        </div>
+        <div class="hint">Off: a page only the relay could read is left out, and the answer says so. On: five public proxy services and two text readers are tried, and each of them sees the page's address.</div>
         <div class="line"><label for="setPreset">Preset</label><select id="setPreset"></select></div>
         <div class="line"><span class="flabel">Display</span><button type="button" class="btn" id="topFocus">Full screen</button></div>
       </div>
@@ -1869,9 +1906,9 @@
     <details class="set" id="setKeys">
       <summary>API keys</summary>
       <div class="set-body">
-        <div class="hint keyhint">Stored on this machine beside `heimdall key`. Never in this page, never sent to an outside model.</div>
+        <div class="hint keyhint">On a heimdall surface keys are stored server-side beside `heimdall key`. On this in-browser surface the Anthropic key is kept in this browser and used only by Angelica’s sealed steering — the ask and the machine’s counts, never your pages.</div>
         <div class="keygroup">Frontier</div>
-        <div class="keyrow"><label class="keyname" for="keyAnthropic">Anthropic</label><input type="password" id="keyAnthropic" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button type="button" class="btn" data-provider="anthropic">Save</button><a class="keyget" href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer" title="Opens Anthropic in a new tab: sign up or sign in there, create a key, and paste it here">Get a key &#8599;</a></div>
+        <div class="keyrow"><label class="keyname" for="keyAnthropic">Anthropic</label><input type="password" id="keyAnthropic" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button type="button" class="btn" id="keyAnthropicReveal" title="Show or hide the key stored in this fold">show</button><button type="button" class="btn" id="keyAnthropicClear" title="Remove the key from this fold">clear</button><button type="button" class="btn" data-provider="anthropic">Save</button><a class="keyget" href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer" title="Opens Anthropic in a new tab: sign up or sign in there, create a key, and paste it here">Get a key &#8599;</a></div>
         <div class="keyrow"><label class="keyname" for="keyOpenai">OpenAI</label><input type="password" id="keyOpenai" placeholder="sk-…" autocomplete="off" spellcheck="false"><button type="button" class="btn" data-provider="openai">Save</button><a class="keyget" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" title="Opens OpenAI in a new tab: sign up or sign in there, create a key, and paste it here">Get a key &#8599;</a></div>
         <div class="keygroup">Small hosted models <span>cents per million tokens; the Fold can ask several at once</span></div>
         <div class="keyrow"><label class="keyname" for="keyOpenrouter">OpenRouter</label><input type="password" id="keyOpenrouter" placeholder="sk-or-…" autocomplete="off" spellcheck="false"><button type="button" class="btn" data-provider="openrouter">Save</button><a class="keyget" href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" title="Opens OpenRouter in a new tab: sign up or sign in there, create a key, and paste it here">Get a key &#8599;</a></div>

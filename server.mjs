@@ -385,7 +385,11 @@ if (isMain) {
   const host = process.env.FOLD_HOST || DEFAULT_HOST;
   if (!Number.isInteger(port) || port < 0 || port > 65535) { console.error(`the-fold: FOLD_PORT "${process.env.FOLD_PORT}" is not a port`); process.exit(2); }
   try {
-    const s = await createFoldServer({ port, host, log: (m) => console.error(`the-fold: ${m}`) });
+    // IN-BROWSER ONLY (user, 2026-10-11): the fold's LLM lives in the tab — WebLLM. The mounted heimdall
+    // keeps ONLY its search/read lanes (/api/search, /api/page, /api/read — the page's web material, no
+    // model ever rides it); `floors: false` strips the model floor entirely: no embedded ollama, no
+    // /api/chat|/api/tags|/v1/* model routes, no provider upstream work. The page already runs NO_HEIMDALL.
+    const s = await createFoldServer({ port, host, heimdallOptions: { floors: false }, log: (m) => console.error(`the-fold: ${m}`) });
     console.log(`the-fold: ${s.url}/ (heimdall ${s.heimdall ? `at ${s.url}${PREFIX}/status` : "NOT mounted"}, state ${path.join(os.homedir(), ".heimdall", process.env.FOLD_NAME || "the-fold")})`);
     const stop = () => { s.close().finally(() => process.exit(0)); };
     process.once("SIGINT", stop); process.once("SIGTERM", stop);

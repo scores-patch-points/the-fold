@@ -27,7 +27,7 @@
 
 import { selfAsk } from "./fold-chat-self.js";
 import { evaluate } from "./fold-chat-compute.js";
-import { transformShape, codeShape, composeShape, adviceShape } from "./fold-chat-kinds.js";
+import { transformShape, codeShape, composeShape, adviceShape, directiveShape } from "./fold-chat-kinds.js";
 import { outputKind } from "./fold-chat-outputtype.js";
 export { skipsSearch, noClaimsLabel, KIND_PROMPT } from "./fold-chat-kinds.js";
 
@@ -61,6 +61,7 @@ export function classifyTurn(question, opts = {}) {
   if (transformShape(q, { hasMaterial: !!opts.hasMaterial })) return "transform";
   if (codeShape(q)) return "code";
   if (composeShape(q)) return "compose";
+  if (directiveShape(q)) return "smalltalk";   // "Say hello in five words.": nothing to look up, nothing to assert (fold-chat-kinds.js directiveShape)
   // What was the person asked to PRODUCE? fold-chat-outputtype.js reads the verb, the noun and what stands between them (question frames,
   // reported requests, "write down", capability questions are not requests), in en/es/fr/ru/de. GENERATE_RE (kept, exported) is only the
   // fallback if that reading throws: it matched "how do I write an essay" and "make sure you note…" and missed every non-English ask.

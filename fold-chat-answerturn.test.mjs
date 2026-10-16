@@ -281,13 +281,13 @@ test("FALSIFIER: the model is provably not called — deps carry no model, and o
   for (const id of ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"]) {
     const { turn, keys } = await (async () => { const r = await run(caseOf(id)); return { turn: r.turn, keys: r.log.keys }; })();
     assert.ok(!turn.handoff, id);
-    for (const k of keys) assert.ok(["fw", "resolveTitles", "fetchLead", "searchPassages", "signal", "then", "toJSON"].includes(k), id + " touched deps." + k);
+    for (const k of keys) assert.ok(["fw", "resolveTitles", "suggestQuery", "fetchLead", "searchPassages", "signal", "then", "toJSON"].includes(k), id + " touched deps." + k);
   }
   // and nothing in the module can reach one: no network, no clock, no randomness, no globals, no model word
   const code = SRC.replace(/^\s*\/\/.*$/gm, "");
   assert.doesNotMatch(code, /\bfetch\s*\(|XMLHttpRequest|WebSocket|Date\.now|new Date\b|Math\.random|globalThis|window\.|document\.|localStorage|heimdall|ollama|webllm|chatModel|callModel/i);
   const imports = [...code.matchAll(/from\s+"(\.\/[^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(imports.sort(), ["./fold-chat-answerspan.js", "./fold-chat-falsify.js", "./fold-chat-frame.js", "./fold-chat-lang.js", "./fold-chat-void.js", "./fold-chat-witness.js"]);   // answerspan: the extractive witness (3b), itself pure and model-free
+  assert.deepEqual(imports.sort(), ["./fold-chat-falsify.js", "./fold-chat-frame.js", "./fold-chat-lang.js", "./fold-chat-void.js", "./fold-chat-witness.js"]);
 });
 
 test("FALSIFIER: no case is read — all-lowercase and ALL-CAPS asks give the same turn as the normal-case ask", async () => {
@@ -464,30 +464,4 @@ test("realise: only the row's own words — a clause cut at the first boundary; 
 
 test("DECLARED says who gave it", () => {
   assert.ok(DECLARED.maxCandidates >= 1 && DECLARED.maxCandidates <= 3);
-});
-
-// ── the extractive witness (3b): found live — "Who built the Eiffel Tower?" was a gap although the page's second sentence says it ──
-const EIFFEL_WIKI = "The Eiffel Tower is a lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower from 1887 to 1889.";
-const EIFFEL_BRIT = "Eiffel Tower, wrought-iron lattice tower on the Champ de Mars in Paris, France. The Eiffel Tower was constructed using advanced engineering techniques and a small labor force over a period of about two years from 1887 to 1889. When the Eiffel Tower was completed, it stood at 300 meters (984 feet) high, making it the tallest structure in the world until the topping off of the Chrysler Building in New York City in 1929.";
-const eiffelDeps = () => {
-  const T = { "eiffel tower": "Eiffel Tower", "gustave eiffel": "Gustave Eiffel", "chrysler building": "Chrysler Building" };
-  return { fw: FW, resolveTitles: async (c) => new Map(c.map((x) => [x, T[caseless(x)] ? { title: T[caseless(x)], redirectedFrom: null, disambiguation: false } : null])), fetchLead: async () => null, searchPassages: async () => [] };
-};
-const pg = (title, text, i) => ({ ref: "S" + (i + 1), title, url: wiki(title), host: "en.wikipedia.org", lang: "en", text });
-test("3b: a page that says who built it in a relative clause answers the slot ask (the sentence as written, a title-verified name, no model)", async () => {
-  const turn = await runAnswerTurn({ question: "Who built the Eiffel Tower?", lang: "en", passages: [pg("Eiffel Tower", EIFFEL_WIKI, 0)], now: NOW, deps: eiffelDeps() });
-  assert.ok(turn.answer, JSON.stringify(turn).slice(0, 300));
-  assert.equal(turn.answer.filler.text, "Gustave Eiffel");
-  assert.match(turn.answer.text, /designed and built the tower/);
-  assert.equal(turn.answer.by, "mechanical");
-});
-test("3b: a page that names no builder stays a typed gap — never the Chrysler Building", async () => {
-  const turn = await runAnswerTurn({ question: "Who built the Eiffel Tower?", lang: "en", passages: [pg("Eiffel Tower | Britannica", EIFFEL_BRIT, 0)], now: NOW, deps: eiffelDeps() });
-  assert.equal(turn.answer, null);
-  assert.equal(turn.gap && turn.gap.kind, "unwitnessed");
-});
-test("3b: a filler that is no page is no witness (the title check still gates the span's name)", async () => {
-  const deps = eiffelDeps(); deps.resolveTitles = async (c) => new Map(c.map((x) => [x, caseless(x) === "eiffel tower" ? { title: "Eiffel Tower", redirectedFrom: null, disambiguation: false } : null]));
-  const turn = await runAnswerTurn({ question: "Who built the Eiffel Tower?", lang: "en", passages: [pg("Eiffel Tower", EIFFEL_WIKI, 0)], now: NOW, deps });
-  assert.equal(turn.answer, null);
 });

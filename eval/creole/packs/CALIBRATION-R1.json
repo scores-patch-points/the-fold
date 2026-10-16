@@ -1,0 +1,3893 @@
+{
+ "B": 199,
+ "adopted": {
+  "multi": true,
+  "gateClosed": true,
+  "gateOpen": false,
+  "identity": true
+ },
+ "built": "see git",
+ "conditions": {
+  "pcm_test_C1": {
+   "label": "pcm test C1 (UDHR only)",
+   "fit": {
+    "pairs": 262,
+    "creoleTokens": 9477,
+    "sources": [
+     {
+      "name": "udhr-pcm~eng",
+      "pairs": 87,
+      "creoleTokens": 3159
+     },
+     {
+      "name": "udhr-pcm~fra",
+      "pairs": 87,
+      "creoleTokens": 3159
+     },
+     {
+      "name": "udhr-pcm~spa",
+      "pairs": 88,
+      "creoleTokens": 3159
+     }
+    ],
+    "forms": 296,
+    "lambdas": [
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     }
+    ]
+   },
+   "report": {
+    "tokens": 1055,
+    "covered": 601,
+    "correct": 281,
+    "coverage": 0.5696682464454976,
+    "coverageCI": [
+     0.5428571428571428,
+     0.5953582240161454
+    ],
+    "accuracyCovered": 0.46755407653910147,
+    "accuracyCoveredCI": [
+     0.42483660130718953,
+     0.5103550295857988
+    ],
+    "accuracyAll": 0.2663507109004739,
+    "accuracyAllCI": [
+     0.23669201520912547,
+     0.2948038176033934
+    ],
+    "macroF1": 0.31915940491509154,
+    "macroF1CI": [
+     0.2923187361044902,
+     0.35753679523748405
+    ],
+    "trivial": {
+     "tokens": 363,
+     "correctByScript": 363
+    },
+    "perClass": {
+     "ADJ": {
+      "nGold": 37,
+      "nPred": 40,
+      "tp": 18,
+      "precision": 0.45,
+      "recall": 0.4864864864864865,
+      "f1": 0.4675324675324675,
+      "precisionCI": [
+       0.22580645161290322,
+       0.6153846153846154
+      ],
+      "recallCI": [
+       0.23809523809523808,
+       0.6875
+      ]
+     },
+     "ADP": {
+      "nGold": 72,
+      "nPred": 60,
+      "tp": 39,
+      "precision": 0.65,
+      "recall": 0.5416666666666666,
+      "f1": 0.5909090909090908,
+      "precisionCI": [
+       0.5384615384615384,
+       0.7543859649122807
+      ],
+      "recallCI": [
+       0.43859649122807015,
+       0.6521739130434783
+      ]
+     },
+     "ADV": {
+      "nGold": 94,
+      "nPred": 57,
+      "tp": 55,
+      "precision": 0.9649122807017544,
+      "recall": 0.5851063829787234,
+      "f1": 0.7284768211920529,
+      "precisionCI": [
+       0.9117647058823529,
+       1
+      ],
+      "recallCI": [
+       0.4827586206896552,
+       0.6891891891891891
+      ]
+     },
+     "AUX": {
+      "nGold": 155,
+      "nPred": 73,
+      "tp": 23,
+      "precision": 0.3150684931506849,
+      "recall": 0.14838709677419354,
+      "f1": 0.20175438596491227,
+      "precisionCI": [
+       0.21052631578947367,
+       0.410958904109589
+      ],
+      "recallCI": [
+       0.08333333333333333,
+       0.2152777777777778
+      ]
+     },
+     "CCONJ": {
+      "nGold": 13,
+      "nPred": 13,
+      "tp": 13,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "precisionCI": [
+       1,
+       1
+      ],
+      "recallCI": [
+       1,
+       1
+      ]
+     },
+     "DET": {
+      "nGold": 33,
+      "nPred": 63,
+      "tp": 25,
+      "precision": 0.3968253968253968,
+      "recall": 0.7575757575757576,
+      "f1": 0.5208333333333334,
+      "precisionCI": [
+       0.2777777777777778,
+       0.5283018867924528
+      ],
+      "recallCI": [
+       0.6,
+       0.9032258064516129
+      ]
+     },
+     "INTJ": {
+      "nGold": 34,
+      "nPred": 5,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "NOUN": {
+      "nGold": 142,
+      "nPred": 132,
+      "tp": 38,
+      "precision": 0.2878787878787879,
+      "recall": 0.2676056338028169,
+      "f1": 0.2773722627737226,
+      "precisionCI": [
+       0.21641791044776118,
+       0.36283185840707965
+      ],
+      "recallCI": [
+       0.2,
+       0.33858267716535434
+      ]
+     },
+     "NUM": {
+      "nGold": 22,
+      "nPred": 5,
+      "tp": 3,
+      "precision": 0.6,
+      "recall": 0.13636363636363635,
+      "f1": 0.22222222222222218,
+      "precisionCI": [
+       0,
+       1
+      ],
+      "recallCI": [
+       0,
+       0.3157894736842105
+      ]
+     },
+     "PART": {
+      "nGold": 12,
+      "nPred": 27,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PRON": {
+      "nGold": 189,
+      "nPred": 13,
+      "tp": 6,
+      "precision": 0.46153846153846156,
+      "recall": 0.031746031746031744,
+      "f1": 0.0594059405940594,
+      "precisionCI": [
+       0.16666666666666666,
+       0.75
+      ],
+      "recallCI": [
+       0.009259259259259259,
+       0.05714285714285714
+      ]
+     },
+     "PROPN": {
+      "nGold": 1,
+      "nPred": 11,
+      "tp": 1,
+      "precision": 0.09090909090909091,
+      "recall": 1,
+      "f1": 0.16666666666666669,
+      "precisionCI": [
+       0.0625,
+       0.3333333333333333
+      ],
+      "recallCI": [
+       1,
+       1
+      ]
+     },
+     "PUNCT": {
+      "nGold": 31,
+      "nPred": 0,
+      "tp": 0,
+      "precision": null,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": null,
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "SCONJ": {
+      "nGold": 33,
+      "nPred": 14,
+      "tp": 11,
+      "precision": 0.7857142857142857,
+      "recall": 0.3333333333333333,
+      "f1": 0.4680851063829786,
+      "precisionCI": [
+       0.5,
+       1
+      ],
+      "recallCI": [
+       0.15151515151515152,
+       0.53125
+      ]
+     },
+     "VERB": {
+      "nGold": 178,
+      "nPred": 65,
+      "tp": 49,
+      "precision": 0.7538461538461538,
+      "recall": 0.2752808988764045,
+      "f1": 0.40329218106995884,
+      "precisionCI": [
+       0.6190476190476191,
+       0.8666666666666667
+      ],
+      "recallCI": [
+       0.20652173913043478,
+       0.35064935064935066
+      ]
+     },
+     "X": {
+      "nGold": 9,
+      "nPred": 22,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     }
+    }
+   },
+   "falsifiers": {
+    "F1": {
+     "real": 281,
+     "nullMax": 123,
+     "holds": true
+    },
+    "chanceDiscoveries": {
+     "real": 139,
+     "nullMax": 27,
+     "beatsChance": true
+    },
+    "F5": {
+     "beatsB0": true,
+     "beatsB1": false
+    }
+   },
+   "baselines": {
+    "B0": {
+     "correct": 81,
+     "tokens": 1055,
+     "coverage": 0.5781990521327014,
+     "accuracyCovered": 0.13278688524590163,
+     "accuracyAll": 0.07677725118483412,
+     "macroF1": 0.0126720901126408
+    },
+    "B1": {
+     "correct": 330,
+     "tokens": 1055,
+     "coverage": 0.5061611374407583,
+     "accuracyCovered": 0.6179775280898876,
+     "accuracyAll": 0.3127962085308057,
+     "macroF1": 0.3609483862268537
+    }
+   },
+   "factorDeltas": {
+    "gateClosed=false": {
+     "macroF1": -0.00002426318234144409,
+     "accuracyAll": 0,
+     "coverage": 0
+    },
+    "gateOpen=true": {
+     "macroF1": -0.000019623327953688374,
+     "accuracyAll": 0,
+     "coverage": 0
+    },
+    "identity=false": {
+     "macroF1": -0.19222388081797476,
+     "accuracyAll": -0.1753554502369668,
+     "coverage": -0.2729857819905213
+    }
+   }
+  },
+  "pcm_test_C2": {
+   "label": "pcm test C2 (bitext+UDHR)",
+   "fit": {
+    "pairs": 451,
+    "creoleTokens": 11066,
+    "sources": [
+     {
+      "name": "ud-naija-text_ortho~text_en(train_sample+dev)",
+      "pairs": 189,
+      "creoleTokens": 1589
+     },
+     {
+      "name": "udhr-pcm~eng",
+      "pairs": 87,
+      "creoleTokens": 3159
+     },
+     {
+      "name": "udhr-pcm~fra",
+      "pairs": 87,
+      "creoleTokens": 3159
+     },
+     {
+      "name": "udhr-pcm~spa",
+      "pairs": 88,
+      "creoleTokens": 3159
+     }
+    ],
+    "forms": 431,
+    "lambdas": [
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     }
+    ]
+   },
+   "report": {
+    "tokens": 1055,
+    "covered": 788,
+    "correct": 499,
+    "coverage": 0.7469194312796209,
+    "coverageCI": [
+     0.7181818181818181,
+     0.7753259779338014
+    ],
+    "accuracyCovered": 0.633248730964467,
+    "accuracyCoveredCI": [
+     0.6022222222222222,
+     0.662807525325615
+    ],
+    "accuracyAll": 0.4729857819905213,
+    "accuracyAllCI": [
+     0.4403409090909091,
+     0.5055724417426545
+    ],
+    "macroF1": 0.44814052207414495,
+    "macroF1CI": [
+     0.41999895841744894,
+     0.4928966716700414
+    ],
+    "trivial": {
+     "tokens": 363,
+     "correctByScript": 363
+    },
+    "perClass": {
+     "ADJ": {
+      "nGold": 37,
+      "nPred": 26,
+      "tp": 19,
+      "precision": 0.7307692307692307,
+      "recall": 0.5135135135135135,
+      "f1": 0.6031746031746031,
+      "precisionCI": [
+       0.5238095238095238,
+       0.8787878787878788
+      ],
+      "recallCI": [
+       0.2894736842105263,
+       0.7209302325581395
+      ]
+     },
+     "ADP": {
+      "nGold": 72,
+      "nPred": 75,
+      "tp": 54,
+      "precision": 0.72,
+      "recall": 0.75,
+      "f1": 0.7346938775510204,
+      "precisionCI": [
+       0.6197183098591549,
+       0.8153846153846154
+      ],
+      "recallCI": [
+       0.64,
+       0.8571428571428571
+      ]
+     },
+     "ADV": {
+      "nGold": 94,
+      "nPred": 102,
+      "tp": 69,
+      "precision": 0.6764705882352942,
+      "recall": 0.7340425531914894,
+      "f1": 0.7040816326530612,
+      "precisionCI": [
+       0.5833333333333334,
+       0.7706422018348624
+      ],
+      "recallCI": [
+       0.6413043478260869,
+       0.8255813953488372
+      ]
+     },
+     "AUX": {
+      "nGold": 155,
+      "nPred": 63,
+      "tp": 24,
+      "precision": 0.38095238095238093,
+      "recall": 0.15483870967741936,
+      "f1": 0.22018348623853215,
+      "precisionCI": [
+       0.25925925925925924,
+       0.4838709677419355
+      ],
+      "recallCI": [
+       0.0880503144654088,
+       0.21893491124260356
+      ]
+     },
+     "CCONJ": {
+      "nGold": 13,
+      "nPred": 13,
+      "tp": 13,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "precisionCI": [
+       1,
+       1
+      ],
+      "recallCI": [
+       1,
+       1
+      ]
+     },
+     "DET": {
+      "nGold": 33,
+      "nPred": 61,
+      "tp": 28,
+      "precision": 0.45901639344262296,
+      "recall": 0.8484848484848485,
+      "f1": 0.5957446808510639,
+      "precisionCI": [
+       0.34375,
+       0.5964912280701754
+      ],
+      "recallCI": [
+       0.7297297297297297,
+       0.9655172413793104
+      ]
+     },
+     "INTJ": {
+      "nGold": 34,
+      "nPred": 15,
+      "tp": 15,
+      "precision": 1,
+      "recall": 0.4411764705882353,
+      "f1": 0.6122448979591837,
+      "precisionCI": [
+       1,
+       1
+      ],
+      "recallCI": [
+       0.2702702702702703,
+       0.6190476190476191
+      ]
+     },
+     "NOUN": {
+      "nGold": 142,
+      "nPred": 127,
+      "tp": 47,
+      "precision": 0.3700787401574803,
+      "recall": 0.33098591549295775,
+      "f1": 0.34944237918215615,
+      "precisionCI": [
+       0.2962962962962963,
+       0.4375
+      ],
+      "recallCI": [
+       0.2549019607843137,
+       0.40458015267175573
+      ]
+     },
+     "NUM": {
+      "nGold": 22,
+      "nPred": 6,
+      "tp": 5,
+      "precision": 0.8333333333333334,
+      "recall": 0.22727272727272727,
+      "f1": 0.35714285714285715,
+      "precisionCI": [
+       0.3333333333333333,
+       1
+      ],
+      "recallCI": [
+       0.05,
+       0.3939393939393939
+      ]
+     },
+     "PART": {
+      "nGold": 12,
+      "nPred": 14,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PRON": {
+      "nGold": 189,
+      "nPred": 158,
+      "tp": 149,
+      "precision": 0.9430379746835443,
+      "recall": 0.7883597883597884,
+      "f1": 0.8587896253602305,
+      "precisionCI": [
+       0.910828025477707,
+       0.9745222929936306
+      ],
+      "recallCI": [
+       0.7287234042553191,
+       0.8484848484848485
+      ]
+     },
+     "PROPN": {
+      "nGold": 1,
+      "nPred": 26,
+      "tp": 1,
+      "precision": 0.038461538461538464,
+      "recall": 1,
+      "f1": 0.07407407407407407,
+      "precisionCI": [
+       0.02857142857142857,
+       0.14814814814814814
+      ],
+      "recallCI": [
+       1,
+       1
+      ]
+     },
+     "PUNCT": {
+      "nGold": 31,
+      "nPred": 0,
+      "tp": 0,
+      "precision": null,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": null,
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "SCONJ": {
+      "nGold": 33,
+      "nPred": 18,
+      "tp": 15,
+      "precision": 0.8333333333333334,
+      "recall": 0.45454545454545453,
+      "f1": 0.5882352941176471,
+      "precisionCI": [
+       0.6428571428571429,
+       1
+      ],
+      "recallCI": [
+       0.28,
+       0.6578947368421053
+      ]
+     },
+     "VERB": {
+      "nGold": 178,
+      "nPred": 76,
+      "tp": 60,
+      "precision": 0.7894736842105263,
+      "recall": 0.33707865168539325,
+      "f1": 0.4724409448818898,
+      "precisionCI": [
+       0.7,
+       0.8846153846153846
+      ],
+      "recallCI": [
+       0.26875,
+       0.4093567251461988
+      ]
+     },
+     "X": {
+      "nGold": 9,
+      "nPred": 7,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     }
+    }
+   },
+   "falsifiers": {
+    "F1": {
+     "real": 499,
+     "nullMax": 245,
+     "holds": true
+    },
+    "chanceDiscoveries": {
+     "real": 224,
+     "nullMax": 37,
+     "beatsChance": true
+    },
+    "F5": {
+     "beatsB0": true,
+     "beatsB1": true
+    }
+   },
+   "baselines": {
+    "B0": {
+     "correct": 166,
+     "tokens": 1055,
+     "coverage": 0.7696682464454976,
+     "accuracyCovered": 0.2044334975369458,
+     "accuracyAll": 0.15734597156398103,
+     "macroF1": 0.020729270729270728
+    },
+    "B1": {
+     "correct": 460,
+     "tokens": 1055,
+     "coverage": 0.6597156398104266,
+     "accuracyCovered": 0.6609195402298851,
+     "accuracyAll": 0.43601895734597157,
+     "macroF1": 0.4260012028147109
+    }
+   },
+   "factorDeltas": {
+    "gateClosed=false": {
+     "macroF1": -0.011464098323626049,
+     "accuracyAll": -0.010426540284360186,
+     "coverage": 0
+    },
+    "gateOpen=true": {
+     "macroF1": -0.0009440680751721109,
+     "accuracyAll": -0.009478672985781977,
+     "coverage": 0
+    },
+    "identity=false": {
+     "macroF1": -0.040424860944594077,
+     "accuracyAll": -0.13270142180094785,
+     "coverage": -0.23033175355450242
+    }
+   }
+  },
+  "pcm_dev_C1": {
+   "label": "pcm dev C1 (selection fold, for reference)",
+   "fit": {
+    "pairs": 262,
+    "creoleTokens": 9477,
+    "sources": [
+     {
+      "name": "udhr-pcm~eng",
+      "pairs": 87,
+      "creoleTokens": 3159
+     },
+     {
+      "name": "udhr-pcm~fra",
+      "pairs": 87,
+      "creoleTokens": 3159
+     },
+     {
+      "name": "udhr-pcm~spa",
+      "pairs": 88,
+      "creoleTokens": 3159
+     }
+    ],
+    "forms": 296,
+    "lambdas": [
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     }
+    ]
+   },
+   "report": {
+    "tokens": 1132,
+    "covered": 586,
+    "correct": 259,
+    "coverage": 0.5176678445229682,
+    "coverageCI": [
+     0.49027552674230146,
+     0.5446584938704028
+    ],
+    "accuracyCovered": 0.44197952218430037,
+    "accuracyCoveredCI": [
+     0.4048865619546248,
+     0.47660311958405543
+    ],
+    "accuracyAll": 0.22879858657243815,
+    "accuracyAllCI": [
+     0.20423183072677092,
+     0.2510936132983377
+    ],
+    "macroF1": 0.26565131032239403,
+    "macroF1CI": [
+     0.24221767134746688,
+     0.2922971221942114
+    ],
+    "trivial": {
+     "tokens": 400,
+     "correctByScript": 400
+    },
+    "perClass": {
+     "ADJ": {
+      "nGold": 26,
+      "nPred": 25,
+      "tp": 4,
+      "precision": 0.16,
+      "recall": 0.15384615384615385,
+      "f1": 0.1568627450980392,
+      "precisionCI": [
+       0.034482758620689655,
+       0.3125
+      ],
+      "recallCI": [
+       0.03333333333333333,
+       0.2962962962962963
+      ]
+     },
+     "ADP": {
+      "nGold": 58,
+      "nPred": 57,
+      "tp": 38,
+      "precision": 0.6666666666666666,
+      "recall": 0.6551724137931034,
+      "f1": 0.6608695652173913,
+      "precisionCI": [
+       0.5192307692307693,
+       0.7962962962962963
+      ],
+      "recallCI": [
+       0.509090909090909,
+       0.7843137254901961
+      ]
+     },
+     "ADV": {
+      "nGold": 58,
+      "nPred": 38,
+      "tp": 26,
+      "precision": 0.6842105263157895,
+      "recall": 0.4482758620689655,
+      "f1": 0.5416666666666666,
+      "precisionCI": [
+       0.5135135135135135,
+       0.8421052631578947
+      ],
+      "recallCI": [
+       0.3125,
+       0.574468085106383
+      ]
+     },
+     "AUX": {
+      "nGold": 157,
+      "nPred": 105,
+      "tp": 30,
+      "precision": 0.2857142857142857,
+      "recall": 0.1910828025477707,
+      "f1": 0.22900763358778625,
+      "precisionCI": [
+       0.1981981981981982,
+       0.37168141592920356
+      ],
+      "recallCI": [
+       0.12056737588652482,
+       0.26282051282051283
+      ]
+     },
+     "CCONJ": {
+      "nGold": 16,
+      "nPred": 16,
+      "tp": 16,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "precisionCI": [
+       1,
+       1
+      ],
+      "recallCI": [
+       1,
+       1
+      ]
+     },
+     "DET": {
+      "nGold": 35,
+      "nPred": 78,
+      "tp": 29,
+      "precision": 0.3717948717948718,
+      "recall": 0.8285714285714286,
+      "f1": 0.5132743362831858,
+      "precisionCI": [
+       0.2535211267605634,
+       0.4788732394366197
+      ],
+      "recallCI": [
+       0.6666666666666666,
+       0.9574468085106383
+      ]
+     },
+     "INTJ": {
+      "nGold": 25,
+      "nPred": 1,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "NOUN": {
+      "nGold": 153,
+      "nPred": 120,
+      "tp": 32,
+      "precision": 0.26666666666666666,
+      "recall": 0.20915032679738563,
+      "f1": 0.23443223443223443,
+      "precisionCI": [
+       0.19672131147540983,
+       0.33663366336633666
+      ],
+      "recallCI": [
+       0.14285714285714285,
+       0.2803030303030303
+      ]
+     },
+     "NUM": {
+      "nGold": 17,
+      "nPred": 6,
+      "tp": 2,
+      "precision": 0.3333333333333333,
+      "recall": 0.11764705882352941,
+      "f1": 0.1739130434782609,
+      "precisionCI": [
+       0,
+       0.6666666666666666
+      ],
+      "recallCI": [
+       0,
+       0.3333333333333333
+      ]
+     },
+     "PART": {
+      "nGold": 21,
+      "nPred": 25,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PRON": {
+      "nGold": 237,
+      "nPred": 22,
+      "tp": 18,
+      "precision": 0.8181818181818182,
+      "recall": 0.0759493670886076,
+      "f1": 0.138996138996139,
+      "precisionCI": [
+       0.5882352941176471,
+       1
+      ],
+      "recallCI": [
+       0.043859649122807015,
+       0.11070110701107011
+      ]
+     },
+     "PROPN": {
+      "nGold": 12,
+      "nPred": 3,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PUNCT": {
+      "nGold": 19,
+      "nPred": 0,
+      "tp": 0,
+      "precision": null,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": null,
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "SCONJ": {
+      "nGold": 48,
+      "nPred": 18,
+      "tp": 8,
+      "precision": 0.4444444444444444,
+      "recall": 0.16666666666666666,
+      "f1": 0.24242424242424243,
+      "precisionCI": [
+       0.1875,
+       0.6666666666666666
+      ],
+      "recallCI": [
+       0.06521739130434782,
+       0.2702702702702703
+      ]
+     },
+     "VERB": {
+      "nGold": 248,
+      "nPred": 64,
+      "tp": 56,
+      "precision": 0.875,
+      "recall": 0.22580645161290322,
+      "f1": 0.358974358974359,
+      "precisionCI": [
+       0.7719298245614035,
+       0.9538461538461539
+      ],
+      "recallCI": [
+       0.17446808510638298,
+       0.275092936802974
+      ]
+     },
+     "X": {
+      "nGold": 2,
+      "nPred": 7,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     }
+    }
+   },
+   "falsifiers": {
+    "F1": {
+     "real": 259,
+     "nullMax": 142,
+     "holds": true
+    },
+    "chanceDiscoveries": {
+     "real": 139,
+     "nullMax": 27,
+     "beatsChance": true
+    },
+    "F5": {
+     "beatsB0": true,
+     "beatsB1": false
+    }
+   },
+   "baselines": {
+    "B0": {
+     "correct": 203,
+     "tokens": 1132,
+     "coverage": 0.5300353356890459,
+     "accuracyCovered": 0.3383333333333333,
+     "accuracyAll": 0.1793286219081272,
+     "macroF1": 0.029923349056603776
+    },
+    "B1": {
+     "correct": 350,
+     "tokens": 1132,
+     "coverage": 0.47703180212014135,
+     "accuracyCovered": 0.6481481481481481,
+     "accuracyAll": 0.30918727915194344,
+     "macroF1": 0.3240608614685957
+    }
+   },
+   "factorDeltas": {
+    "gateClosed=false": {
+     "macroF1": -0.000009034590633894002,
+     "accuracyAll": 0,
+     "coverage": 0
+    },
+    "gateOpen=true": {
+     "macroF1": 0.00011974113760004901,
+     "accuracyAll": 0,
+     "coverage": 0
+    },
+    "identity=false": {
+     "macroF1": -0.1161640135840542,
+     "accuracyAll": -0.127208480565371,
+     "coverage": -0.19522968197879859
+    }
+   }
+  },
+  "pcm_dev_C2": {
+   "label": "pcm dev C2 (selection fold, for reference)",
+   "fit": {
+    "pairs": 458,
+    "creoleTokens": 11009,
+    "sources": [
+     {
+      "name": "ud-naija-text_ortho~text_en(train_sample+test)",
+      "pairs": 196,
+      "creoleTokens": 1532
+     },
+     {
+      "name": "udhr-pcm~eng",
+      "pairs": 87,
+      "creoleTokens": 3159
+     },
+     {
+      "name": "udhr-pcm~fra",
+      "pairs": 87,
+      "creoleTokens": 3159
+     },
+     {
+      "name": "udhr-pcm~spa",
+      "pairs": 88,
+      "creoleTokens": 3159
+     }
+    ],
+    "forms": 457,
+    "lambdas": [
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     }
+    ]
+   },
+   "report": {
+    "tokens": 1132,
+    "covered": 895,
+    "correct": 602,
+    "coverage": 0.7906360424028268,
+    "coverageCI": [
+     0.7696867061812024,
+     0.8126747437092264
+    ],
+    "accuracyCovered": 0.6726256983240223,
+    "accuracyCoveredCI": [
+     0.6430180180180181,
+     0.7024070021881839
+    ],
+    "accuracyAll": 0.5318021201413428,
+    "accuracyAllCI": [
+     0.5047951176983435,
+     0.5602094240837696
+    ],
+    "macroF1": 0.4554424951625775,
+    "macroF1CI": [
+     0.42563003251617026,
+     0.49299025447865585
+    ],
+    "trivial": {
+     "tokens": 400,
+     "correctByScript": 400
+    },
+    "perClass": {
+     "ADJ": {
+      "nGold": 26,
+      "nPred": 38,
+      "tp": 10,
+      "precision": 0.2631578947368421,
+      "recall": 0.38461538461538464,
+      "f1": 0.3125,
+      "precisionCI": [
+       0.12121212121212122,
+       0.3902439024390244
+      ],
+      "recallCI": [
+       0.2,
+       0.5714285714285714
+      ]
+     },
+     "ADP": {
+      "nGold": 58,
+      "nPred": 64,
+      "tp": 38,
+      "precision": 0.59375,
+      "recall": 0.6551724137931034,
+      "f1": 0.6229508196721311,
+      "precisionCI": [
+       0.46774193548387094,
+       0.7078651685393258
+      ],
+      "recallCI": [
+       0.5238095238095238,
+       0.7884615384615384
+      ]
+     },
+     "ADV": {
+      "nGold": 58,
+      "nPred": 39,
+      "tp": 33,
+      "precision": 0.8461538461538461,
+      "recall": 0.5689655172413793,
+      "f1": 0.6804123711340206,
+      "precisionCI": [
+       0.7142857142857143,
+       0.9487179487179487
+      ],
+      "recallCI": [
+       0.4142857142857143,
+       0.7037037037037037
+      ]
+     },
+     "AUX": {
+      "nGold": 157,
+      "nPred": 149,
+      "tp": 59,
+      "precision": 0.3959731543624161,
+      "recall": 0.37579617834394907,
+      "f1": 0.3856209150326797,
+      "precisionCI": [
+       0.30597014925373134,
+       0.47435897435897434
+      ],
+      "recallCI": [
+       0.27972027972027974,
+       0.4533333333333333
+      ]
+     },
+     "CCONJ": {
+      "nGold": 16,
+      "nPred": 16,
+      "tp": 16,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "precisionCI": [
+       1,
+       1
+      ],
+      "recallCI": [
+       1,
+       1
+      ]
+     },
+     "DET": {
+      "nGold": 35,
+      "nPred": 38,
+      "tp": 29,
+      "precision": 0.7631578947368421,
+      "recall": 0.8285714285714286,
+      "f1": 0.7945205479452055,
+      "precisionCI": [
+       0.6296296296296297,
+       0.8809523809523809
+      ],
+      "recallCI": [
+       0.6875,
+       0.9428571428571428
+      ]
+     },
+     "INTJ": {
+      "nGold": 25,
+      "nPred": 5,
+      "tp": 5,
+      "precision": 1,
+      "recall": 0.2,
+      "f1": 0.33333333333333337,
+      "precisionCI": [
+       1,
+       1
+      ],
+      "recallCI": [
+       0.05,
+       0.36
+      ]
+     },
+     "NOUN": {
+      "nGold": 153,
+      "nPred": 113,
+      "tp": 38,
+      "precision": 0.336283185840708,
+      "recall": 0.24836601307189543,
+      "f1": 0.2857142857142857,
+      "precisionCI": [
+       0.24545454545454545,
+       0.42696629213483145
+      ],
+      "recallCI": [
+       0.17567567567567569,
+       0.32167832167832167
+      ]
+     },
+     "NUM": {
+      "nGold": 17,
+      "nPred": 8,
+      "tp": 8,
+      "precision": 1,
+      "recall": 0.47058823529411764,
+      "f1": 0.6399999999999999,
+      "precisionCI": [
+       1,
+       1
+      ],
+      "recallCI": [
+       0.21428571428571427,
+       0.6666666666666666
+      ]
+     },
+     "PART": {
+      "nGold": 21,
+      "nPred": 19,
+      "tp": 1,
+      "precision": 0.05263157894736842,
+      "recall": 0.047619047619047616,
+      "f1": 0.05,
+      "precisionCI": [
+       0,
+       0.15789473684210525
+      ],
+      "recallCI": [
+       0,
+       0.15
+      ]
+     },
+     "PRON": {
+      "nGold": 237,
+      "nPred": 228,
+      "tp": 225,
+      "precision": 0.9868421052631579,
+      "recall": 0.9493670886075949,
+      "f1": 0.967741935483871,
+      "precisionCI": [
+       0.9699248120300752,
+       1
+      ],
+      "recallCI": [
+       0.918918918918919,
+       0.9744680851063829
+      ]
+     },
+     "PROPN": {
+      "nGold": 12,
+      "nPred": 18,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PUNCT": {
+      "nGold": 19,
+      "nPred": 0,
+      "tp": 0,
+      "precision": null,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": null,
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "SCONJ": {
+      "nGold": 48,
+      "nPred": 43,
+      "tp": 27,
+      "precision": 0.627906976744186,
+      "recall": 0.5625,
+      "f1": 0.5934065934065934,
+      "precisionCI": [
+       0.475,
+       0.7692307692307693
+      ],
+      "recallCI": [
+       0.42105263157894735,
+       0.7073170731707317
+      ]
+     },
+     "VERB": {
+      "nGold": 248,
+      "nPred": 116,
+      "tp": 113,
+      "precision": 0.9741379310344828,
+      "recall": 0.45564516129032256,
+      "f1": 0.6208791208791209,
+      "precisionCI": [
+       0.9421487603305785,
+       1
+      ],
+      "recallCI": [
+       0.396,
+       0.5183673469387755
+      ]
+     },
+     "X": {
+      "nGold": 2,
+      "nPred": 0,
+      "tp": 0,
+      "precision": null,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": null,
+      "recallCI": [
+       0,
+       0
+      ]
+     }
+    }
+   },
+   "falsifiers": {
+    "F1": {
+     "real": 602,
+     "nullMax": 300,
+     "holds": true
+    },
+    "chanceDiscoveries": {
+     "real": 245,
+     "nullMax": 47,
+     "beatsChance": true
+    },
+    "F5": {
+     "beatsB0": true,
+     "beatsB1": true
+    }
+   },
+   "baselines": {
+    "B0": {
+     "correct": 220,
+     "tokens": 1132,
+     "coverage": 0.8206713780918727,
+     "accuracyCovered": 0.23681377825618946,
+     "accuracyAll": 0.19434628975265017,
+     "macroF1": 0.02336448598130841
+    },
+    "B1": {
+     "correct": 542,
+     "tokens": 1132,
+     "coverage": 0.7120141342756183,
+     "accuracyCovered": 0.6724565756823822,
+     "accuracyAll": 0.4787985865724382,
+     "macroF1": 0.38940721852209237
+    }
+   },
+   "factorDeltas": {
+    "gateClosed=false": {
+     "macroF1": -0.011838394854560064,
+     "accuracyAll": -0.02473498233215543,
+     "coverage": 0
+    },
+    "gateOpen=true": {
+     "macroF1": -0.0042751902505504535,
+     "accuracyAll": -0.0008833922261484162,
+     "coverage": 0
+    },
+    "identity=false": {
+     "macroF1": -0.05070099159720565,
+     "accuracyAll": -0.10954063604240283,
+     "coverage": -0.1987632508833922
+    }
+   }
+  },
+  "hat_C1": {
+   "label": "hat C1 (UDHR only)",
+   "fit": {
+    "pairs": 547,
+    "creoleTokens": 13515,
+    "sources": [
+     {
+      "name": "udhr-hat_kreyol~eng",
+      "pairs": 92,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_kreyol~fra",
+      "pairs": 91,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_kreyol~spa",
+      "pairs": 92,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_popular~eng",
+      "pairs": 91,
+      "creoleTokens": 2497
+     },
+     {
+      "name": "udhr-hat_popular~fra",
+      "pairs": 91,
+      "creoleTokens": 2497
+     },
+     {
+      "name": "udhr-hat_popular~spa",
+      "pairs": 90,
+      "creoleTokens": 2497
+     }
+    ],
+    "forms": 373,
+    "lambdas": [
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     }
+    ]
+   },
+   "report": {
+    "tokens": 50100,
+    "covered": 28836,
+    "correct": 9373,
+    "coverage": 0.5755688622754491,
+    "coverageCI": [
+     0.4781921324281596,
+     0.6633461913441566
+    ],
+    "accuracyCovered": 0.32504508253571923,
+    "accuracyCoveredCI": [
+     0.19365649725322184,
+     0.45887265135699373
+    ],
+    "accuracyAll": 0.18708582834331336,
+    "accuracyAllCI": [
+     0.10851004808285045,
+     0.2737343255046766
+    ],
+    "macroF1": 0.1806823443775704,
+    "macroF1CI": [
+     0.12010404781733644,
+     0.22162241175941394
+    ],
+    "trivial": {
+     "tokens": 5427,
+     "correctByScript": 5424
+    },
+    "perClass": {
+     "ADJ": {
+      "nGold": 2383,
+      "nPred": 714,
+      "tp": 194,
+      "precision": 0.27170868347338933,
+      "recall": 0.0814099874108267,
+      "f1": 0.12528253148207946,
+      "precisionCI": [
+       0.06759443339960239,
+       0.6642857142857143
+      ],
+      "recallCI": [
+       0.00819672131147541,
+       0.18582122413033905
+      ]
+     },
+     "ADP": {
+      "nGold": 3960,
+      "nPred": 7098,
+      "tp": 2133,
+      "precision": 0.30050718512256974,
+      "recall": 0.5386363636363637,
+      "f1": 0.3857840477482366,
+      "precisionCI": [
+       0.02390438247011952,
+       0.6359986617597859
+      ],
+      "recallCI": [
+       0.0531986531986532,
+       0.8237623762376237
+      ]
+     },
+     "ADV": {
+      "nGold": 3012,
+      "nPred": 224,
+      "tp": 20,
+      "precision": 0.08928571428571429,
+      "recall": 0.006640106241699867,
+      "f1": 0.012360939431396788,
+      "precisionCI": [
+       0,
+       0.73
+      ],
+      "recallCI": [
+       0,
+       0.020614546868922598
+      ]
+     },
+     "AUX": {
+      "nGold": 3763,
+      "nPred": 2993,
+      "tp": 1729,
+      "precision": 0.5776812562646174,
+      "recall": 0.4594738240765347,
+      "f1": 0.5118413262285375,
+      "precisionCI": [
+       0,
+       0.8861859252823632
+      ],
+      "recallCI": [
+       0,
+       0.8491228070175438
+      ]
+     },
+     "CCONJ": {
+      "nGold": 1215,
+      "nPred": 1320,
+      "tp": 665,
+      "precision": 0.5037878787878788,
+      "recall": 0.5473251028806584,
+      "f1": 0.52465483234714,
+      "precisionCI": [
+       0.2972972972972973,
+       0.9565972222222222
+      ],
+      "recallCI": [
+       0.055891238670694864,
+       0.9919839679358717
+      ]
+     },
+     "DET": {
+      "nGold": 3953,
+      "nPred": 4521,
+      "tp": 3257,
+      "precision": 0.7204158372041584,
+      "recall": 0.8239311915001265,
+      "f1": 0.7687042718904885,
+      "precisionCI": [
+       0.35189992919518526,
+       0.9442267803641392
+      ],
+      "recallCI": [
+       0.5056478405315614,
+       0.9330344634351359
+      ]
+     },
+     "INTJ": {
+      "nGold": 51,
+      "nPred": 43,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "NOUN": {
+      "nGold": 9012,
+      "nPred": 3371,
+      "tp": 647,
+      "precision": 0.1919311776920795,
+      "recall": 0.07179316466932978,
+      "f1": 0.10449810223693773,
+      "precisionCI": [
+       0.09717723276260991,
+       0.38385502471169686
+      ],
+      "recallCI": [
+       0.04483410331793364,
+       0.10983381232037986
+      ]
+     },
+     "NUM": {
+      "nGold": 59,
+      "nPred": 1492,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PART": {
+      "nGold": 138,
+      "nPred": 91,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PRON": {
+      "nGold": 9408,
+      "nPred": 1851,
+      "tp": 5,
+      "precision": 0.002701242571582928,
+      "recall": 0.0005314625850340137,
+      "f1": 0.0008881783462119195,
+      "precisionCI": [
+       0,
+       0.011042944785276074
+      ],
+      "recallCI": [
+       0,
+       0.001989554837105198
+      ]
+     },
+     "PROPN": {
+      "nGold": 2465,
+      "nPred": 3033,
+      "tp": 29,
+      "precision": 0.009561490273656445,
+      "recall": 0.011764705882352941,
+      "f1": 0.010549290651145871,
+      "precisionCI": [
+       0,
+       0.04720616570327553
+      ],
+      "recallCI": [
+       0,
+       0.033962264150943396
+      ]
+     },
+     "SCONJ": {
+      "nGold": 1752,
+      "nPred": 313,
+      "tp": 169,
+      "precision": 0.5399361022364217,
+      "recall": 0.09646118721461187,
+      "f1": 0.16368038740920096,
+      "precisionCI": [
+       0,
+       0.910913140311804
+      ],
+      "recallCI": [
+       0,
+       0.36475409836065575
+      ]
+     },
+     "VERB": {
+      "nGold": 8923,
+      "nPred": 1372,
+      "tp": 525,
+      "precision": 0.3826530612244898,
+      "recall": 0.05883671410960439,
+      "f1": 0.10199125789218066,
+      "precisionCI": [
+       0.15584970111016225,
+       0.7869318181818182
+      ],
+      "recallCI": [
+       0.021673080818310715,
+       0.10915402417073798
+      ]
+     },
+     "X": {
+      "nGold": 6,
+      "nPred": 400,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     }
+    }
+   },
+   "falsifiers": {
+    "F1": {
+     "real": 9373,
+     "nullMax": 8165,
+     "holds": true
+    },
+    "chanceDiscoveries": {
+     "real": 338,
+     "nullMax": 55,
+     "beatsChance": true
+    },
+    "F5": {
+     "beatsB0": true,
+     "beatsB1": true
+    }
+   },
+   "baselines": {
+    "B0": {
+     "correct": 7695,
+     "tokens": 50100,
+     "coverage": 0.701497005988024,
+     "accuracyCovered": 0.21895006402048656,
+     "accuracyAll": 0.1535928143712575,
+     "macroF1": 0.023028752272574237
+    },
+    "B1": {
+     "correct": 4872,
+     "tokens": 50100,
+     "coverage": 0.4306387225548902,
+     "accuracyCovered": 0.22581691772885285,
+     "accuracyAll": 0.09724550898203593,
+     "macroF1": 0.09644309794626844
+    }
+   },
+   "factorDeltas": {
+    "gateClosed=false": {
+     "macroF1": 0.032204228140266855,
+     "accuracyAll": 0.02732534930139721,
+     "coverage": 0
+    },
+    "gateOpen=true": {
+     "macroF1": 0.00013598402613704264,
+     "accuracyAll": 0,
+     "coverage": 0
+    },
+    "identity=false": {
+     "macroF1": -0.028995925819333163,
+     "accuracyAll": -0.04309381237524948,
+     "coverage": -0.19742514970059882
+    }
+   }
+  },
+  "hat_C2": {
+   "label": "hat C2 (kmt hat-eng + UDHR)",
+   "fit": {
+    "pairs": 692,
+    "creoleTokens": 14213,
+    "sources": [
+     {
+      "name": "kreyol-mt-hat-eng",
+      "pairs": 145,
+      "creoleTokens": 698
+     },
+     {
+      "name": "udhr-hat_kreyol~eng",
+      "pairs": 92,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_kreyol~fra",
+      "pairs": 91,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_kreyol~spa",
+      "pairs": 92,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_popular~eng",
+      "pairs": 91,
+      "creoleTokens": 2497
+     },
+     {
+      "name": "udhr-hat_popular~fra",
+      "pairs": 91,
+      "creoleTokens": 2497
+     },
+     {
+      "name": "udhr-hat_popular~spa",
+      "pairs": 90,
+      "creoleTokens": 2497
+     }
+    ],
+    "forms": 428,
+    "lambdas": [
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     }
+    ]
+   },
+   "guardLog": [
+    {
+     "source": "kreyol-mt/hat-eng",
+     "offered": 145,
+     "droppedHeldOut": 0,
+     "kept": 145
+    }
+   ],
+   "report": {
+    "tokens": 50100,
+    "covered": 31900,
+    "correct": 11338,
+    "coverage": 0.6367265469061876,
+    "coverageCI": [
+     0.544456641053787,
+     0.7082965180229728
+    ],
+    "accuracyCovered": 0.355423197492163,
+    "accuracyCoveredCI": [
+     0.22104891088233994,
+     0.4815803176256183
+    ],
+    "accuracyAll": 0.2263073852295409,
+    "accuracyAllCI": [
+     0.13504477853872027,
+     0.30946877693332286
+    ],
+    "macroF1": 0.21251967179334327,
+    "macroF1CI": [
+     0.14150632335681923,
+     0.2619246462341201
+    ],
+    "trivial": {
+     "tokens": 5427,
+     "correctByScript": 5424
+    },
+    "perClass": {
+     "ADJ": {
+      "nGold": 2383,
+      "nPred": 889,
+      "tp": 402,
+      "precision": 0.45219347581552305,
+      "recall": 0.1686949223667646,
+      "f1": 0.24572127139364303,
+      "precisionCI": [
+       0.13894455577822312,
+       0.8818897637795275
+      ],
+      "recallCI": [
+       0.030726256983240222,
+       0.3203680468423254
+      ]
+     },
+     "ADP": {
+      "nGold": 3960,
+      "nPred": 7332,
+      "tp": 2189,
+      "precision": 0.2985542825968358,
+      "recall": 0.5527777777777778,
+      "f1": 0.38770811193765503,
+      "precisionCI": [
+       0.0295510940672231,
+       0.6263755158184319
+      ],
+      "recallCI": [
+       0.06801083358411074,
+       0.8274577242762969
+      ]
+     },
+     "ADV": {
+      "nGold": 3012,
+      "nPred": 1775,
+      "tp": 72,
+      "precision": 0.04056338028169014,
+      "recall": 0.02390438247011952,
+      "f1": 0.030081470649676208,
+      "precisionCI": [
+       0.008101371001246365,
+       0.34951456310679613
+      ],
+      "recallCI": [
+       0.003354681305275999,
+       0.055697278911564625
+      ]
+     },
+     "AUX": {
+      "nGold": 3763,
+      "nPred": 2328,
+      "tp": 1729,
+      "precision": 0.7426975945017182,
+      "recall": 0.4594738240765347,
+      "f1": 0.5677228698079133,
+      "precisionCI": [
+       0,
+       0.886523509811181
+      ],
+      "recallCI": [
+       0,
+       0.8693664271717831
+      ]
+     },
+     "CCONJ": {
+      "nGold": 1215,
+      "nPred": 1318,
+      "tp": 665,
+      "precision": 0.5045523520485584,
+      "recall": 0.5473251028806584,
+      "f1": 0.5250690880378998,
+      "precisionCI": [
+       0.29979035639413,
+       0.9526462395543176
+      ],
+      "recallCI": [
+       0.056018168054504165,
+       0.9895968790637191
+      ]
+     },
+     "DET": {
+      "nGold": 3953,
+      "nPred": 3945,
+      "tp": 2859,
+      "precision": 0.7247148288973384,
+      "recall": 0.7232481659499115,
+      "f1": 0.7239807546214232,
+      "precisionCI": [
+       0.3509226286824215,
+       0.9729486023444545
+      ],
+      "recallCI": [
+       0.25214676034348166,
+       0.9036400047119802
+      ]
+     },
+     "INTJ": {
+      "nGold": 51,
+      "nPred": 120,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "NOUN": {
+      "nGold": 9012,
+      "nPred": 4149,
+      "tp": 1622,
+      "precision": 0.3909375753193541,
+      "recall": 0.17998224589436307,
+      "f1": 0.2464858293442747,
+      "precisionCI": [
+       0.15684536996012405,
+       0.6912099014902753
+      ],
+      "recallCI": [
+       0.07615133567025263,
+       0.32190496040016675
+      ]
+     },
+     "NUM": {
+      "nGold": 59,
+      "nPred": 1492,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PART": {
+      "nGold": 138,
+      "nPred": 91,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PRON": {
+      "nGold": 9408,
+      "nPred": 2373,
+      "tp": 467,
+      "precision": 0.19679730299199324,
+      "recall": 0.049638605442176874,
+      "f1": 0.07928019692725576,
+      "precisionCI": [
+       0.008077544426494346,
+       0.5855457227138643
+      ],
+      "recallCI": [
+       0.0018246094195461283,
+       0.16567667362337454
+      ]
+     },
+     "PROPN": {
+      "nGold": 2465,
+      "nPred": 3588,
+      "tp": 30,
+      "precision": 0.008361204013377926,
+      "recall": 0.012170385395537525,
+      "f1": 0.009912440112340987,
+      "precisionCI": [
+       0.0004463289444320464,
+       0.033052884615384616
+      ],
+      "recallCI": [
+       0.0005763688760806917,
+       0.03826086956521739
+      ]
+     },
+     "SCONJ": {
+      "nGold": 1752,
+      "nPred": 294,
+      "tp": 169,
+      "precision": 0.5748299319727891,
+      "recall": 0.09646118721461187,
+      "f1": 0.1652003910068426,
+      "precisionCI": [
+       0,
+       0.9426934097421203
+      ],
+      "recallCI": [
+       0,
+       0.3913894324853229
+      ]
+     },
+     "VERB": {
+      "nGold": 8923,
+      "nPred": 2053,
+      "tp": 1134,
+      "precision": 0.5523623964929372,
+      "recall": 0.1270873024767455,
+      "f1": 0.2066326530612245,
+      "precisionCI": [
+       0.30262572318647085,
+       0.851
+      ],
+      "recallCI": [
+       0.06345247991133278,
+       0.207981220657277
+      ]
+     },
+     "X": {
+      "nGold": 6,
+      "nPred": 153,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     }
+    }
+   },
+   "falsifiers": {
+    "F1": {
+     "real": 11338,
+     "nullMax": 10210,
+     "holds": true
+    },
+    "chanceDiscoveries": {
+     "real": 384,
+     "nullMax": 60,
+     "beatsChance": true
+    },
+    "F5": {
+     "beatsB0": true,
+     "beatsB1": true
+    }
+   },
+   "baselines": {
+    "B0": {
+     "correct": 8437,
+     "tokens": 50100,
+     "coverage": 0.750439121756487,
+     "accuracyCovered": 0.22440620262254968,
+     "accuracyAll": 0.16840319361277445,
+     "macroF1": 0.02393220579370989
+    },
+    "B1": {
+     "correct": 4904,
+     "tokens": 50100,
+     "coverage": 0.446686626746507,
+     "accuracyCovered": 0.2191340095625363,
+     "accuracyAll": 0.09788423153692614,
+     "macroF1": 0.09675621578086509
+    }
+   },
+   "factorDeltas": {
+    "gateClosed=false": {
+     "macroF1": 0.014924782278225968,
+     "accuracyAll": 0.012175648702594827,
+     "coverage": 0
+    },
+    "gateOpen=true": {
+     "macroF1": -0.01217110706668445,
+     "accuracyAll": -0.02075848303393213,
+     "coverage": 0
+    },
+    "identity=false": {
+     "macroF1": -0.022194343118851628,
+     "accuracyAll": -0.03461077844311378,
+     "coverage": -0.2028343313373253
+    }
+   }
+  },
+  "hat_Slarge": {
+   "label": "hat S-large (calibration only; held-out text)",
+   "fit": {
+    "pairs": 2188,
+    "creoleTokens": 31594,
+    "sources": [
+     {
+      "name": "CALIBRATION-ONLY ht-fr (held-out)",
+      "pairs": 1496,
+      "creoleTokens": 17381
+     },
+     {
+      "name": "kreyol-mt-hat-eng",
+      "pairs": 145,
+      "creoleTokens": 698
+     },
+     {
+      "name": "udhr-hat_kreyol~eng",
+      "pairs": 92,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_kreyol~fra",
+      "pairs": 91,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_kreyol~spa",
+      "pairs": 92,
+      "creoleTokens": 2008
+     },
+     {
+      "name": "udhr-hat_popular~eng",
+      "pairs": 91,
+      "creoleTokens": 2497
+     },
+     {
+      "name": "udhr-hat_popular~fra",
+      "pairs": 91,
+      "creoleTokens": 2497
+     },
+     {
+      "name": "udhr-hat_popular~spa",
+      "pairs": 90,
+      "creoleTokens": 2497
+     }
+    ],
+    "forms": 816,
+    "lambdas": [
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     },
+     {
+      "fwd": 16,
+      "rev": 16
+     }
+    ]
+   },
+   "calibrationOnly": true,
+   "note": "reads held-out creole text; nothing shipped; not used for selection",
+   "report": {
+    "tokens": 50100,
+    "covered": 36552,
+    "correct": 23366,
+    "coverage": 0.7295808383233533,
+    "coverageCI": [
+     0.6593694153689048,
+     0.7825436142345457
+    ],
+    "accuracyCovered": 0.6392536660100678,
+    "accuracyCoveredCI": [
+     0.5226682749036369,
+     0.742134220670115
+    ],
+    "accuracyAll": 0.4663872255489022,
+    "accuracyAllCI": [
+     0.37356222326662875,
+     0.5508020274921257
+    ],
+    "macroF1": 0.3991817619672103,
+    "macroF1CI": [
+     0.3084701306315357,
+     0.45766400093573895
+    ],
+    "trivial": {
+     "tokens": 5427,
+     "correctByScript": 5424
+    },
+    "perClass": {
+     "ADJ": {
+      "nGold": 2383,
+      "nPred": 1097,
+      "tp": 717,
+      "precision": 0.6536007292616226,
+      "recall": 0.3008812421317667,
+      "f1": 0.41206896551724137,
+      "precisionCI": [
+       0.40675990675990675,
+       0.8941176470588236
+      ],
+      "recallCI": [
+       0.1432225063938619,
+       0.451559934318555
+      ]
+     },
+     "ADP": {
+      "nGold": 3960,
+      "nPred": 5086,
+      "tp": 2725,
+      "precision": 0.5357845064883995,
+      "recall": 0.6881313131313131,
+      "f1": 0.6024762325889896,
+      "precisionCI": [
+       0.18377216550241807,
+       0.8359207708779444
+      ],
+      "recallCI": [
+       0.22207792207792207,
+       0.9006410256410257
+      ]
+     },
+     "ADV": {
+      "nGold": 3012,
+      "nPred": 2719,
+      "tp": 875,
+      "precision": 0.32180948878264065,
+      "recall": 0.2905046480743692,
+      "f1": 0.3053568312685395,
+      "precisionCI": [
+       0.13764274061990212,
+       0.6765988372093024
+      ],
+      "recallCI": [
+       0.12083888149134488,
+       0.48951048951048953
+      ]
+     },
+     "AUX": {
+      "nGold": 3763,
+      "nPred": 3043,
+      "tp": 2283,
+      "precision": 0.7502464673020046,
+      "recall": 0.6066967844804677,
+      "f1": 0.6708786364972082,
+      "precisionCI": [
+       0,
+       0.9183673469387755
+      ],
+      "recallCI": [
+       0,
+       0.9361702127659575
+      ]
+     },
+     "CCONJ": {
+      "nGold": 1215,
+      "nPred": 1614,
+      "tp": 796,
+      "precision": 0.49318463444857497,
+      "recall": 0.6551440329218107,
+      "f1": 0.5627430187345351,
+      "precisionCI": [
+       0.3187042842215256,
+       0.86
+      ],
+      "recallCI": [
+       0.2265193370165746,
+       0.9977341389728097
+      ]
+     },
+     "DET": {
+      "nGold": 3953,
+      "nPred": 4925,
+      "tp": 2760,
+      "precision": 0.5604060913705584,
+      "recall": 0.6982038957753605,
+      "f1": 0.6217616580310881,
+      "precisionCI": [
+       0.13563501849568435,
+       0.9537152864648486
+      ],
+      "recallCI": [
+       0.2654561175961954,
+       0.8992750858450973
+      ]
+     },
+     "INTJ": {
+      "nGold": 51,
+      "nPred": 51,
+      "tp": 18,
+      "precision": 0.35294117647058826,
+      "recall": 0.35294117647058826,
+      "f1": 0.35294117647058826,
+      "precisionCI": [
+       0,
+       0.9473684210526315
+      ],
+      "recallCI": [
+       0,
+       0.8181818181818182
+      ]
+     },
+     "NOUN": {
+      "nGold": 9012,
+      "nPred": 2924,
+      "tp": 2363,
+      "precision": 0.8081395348837209,
+      "recall": 0.26220594762538835,
+      "f1": 0.3959450402144772,
+      "precisionCI": [
+       0.6681874740771464,
+       0.8986710963455149
+      ],
+      "recallCI": [
+       0.15193798449612403,
+       0.3970722781335773
+      ]
+     },
+     "NUM": {
+      "nGold": 59,
+      "nPred": 18,
+      "tp": 13,
+      "precision": 0.7222222222222222,
+      "recall": 0.22033898305084745,
+      "f1": 0.33766233766233766,
+      "precisionCI": [
+       0.4166666666666667,
+       1
+      ],
+      "recallCI": [
+       0.061224489795918366,
+       0.41025641025641024
+      ]
+     },
+     "PART": {
+      "nGold": 138,
+      "nPred": 167,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     },
+     "PRON": {
+      "nGold": 9408,
+      "nPred": 8012,
+      "tp": 6481,
+      "precision": 0.8089116325511733,
+      "recall": 0.6888818027210885,
+      "f1": 0.7440872560275547,
+      "precisionCI": [
+       0.5738944599704093,
+       0.945014873812494
+      ],
+      "recallCI": [
+       0.35284442724458204,
+       0.9877085162423178
+      ]
+     },
+     "PROPN": {
+      "nGold": 2465,
+      "nPred": 498,
+      "tp": 71,
+      "precision": 0.142570281124498,
+      "recall": 0.028803245436105476,
+      "f1": 0.0479244009449882,
+      "precisionCI": [
+       0.03259452411994785,
+       0.3400576368876081
+      ],
+      "recallCI": [
+       0.005659448818897638,
+       0.08175803402646503
+      ]
+     },
+     "SCONJ": {
+      "nGold": 1752,
+      "nPred": 633,
+      "tp": 473,
+      "precision": 0.7472353870458136,
+      "recall": 0.2699771689497717,
+      "f1": 0.39664570230607965,
+      "precisionCI": [
+       0.1267605633802817,
+       0.943952802359882
+      ],
+      "recallCI": [
+       0.006830176963675877,
+       0.6587807097361238
+      ]
+     },
+     "VERB": {
+      "nGold": 8923,
+      "nPred": 5190,
+      "tp": 3791,
+      "precision": 0.7304431599229287,
+      "recall": 0.4248571108371624,
+      "f1": 0.5372351732445262,
+      "precisionCI": [
+       0.4412993664914409,
+       0.9528558476881233
+      ],
+      "recallCI": [
+       0.27250854754970244,
+       0.5657662675206535
+      ]
+     },
+     "X": {
+      "nGold": 6,
+      "nPred": 571,
+      "tp": 0,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "precisionCI": [
+       0,
+       0
+      ],
+      "recallCI": [
+       0,
+       0
+      ]
+     }
+    }
+   },
+   "falsifiers": {
+    "F1": {
+     "real": 23366,
+     "nullMax": 12695,
+     "holds": true
+    },
+    "chanceDiscoveries": {
+     "real": 682,
+     "nullMax": 124,
+     "beatsChance": true
+    },
+    "F5": {
+     "beatsB0": true,
+     "beatsB1": true
+    }
+   },
+   "baselines": {
+    "B0": {
+     "correct": 9408,
+     "tokens": 50100,
+     "coverage": 0.8555289421157685,
+     "accuracyCovered": 0.2194951238859596,
+     "accuracyAll": 0.18778443113772456,
+     "macroF1": 0.023998469485364455
+    },
+    "B1": {
+     "correct": 2278,
+     "tokens": 50100,
+     "coverage": 0.4919960079840319,
+     "accuracyCovered": 0.09241754229380503,
+     "accuracyAll": 0.0454690618762475,
+     "macroF1": 0.056637023340838866
+    }
+   },
+   "factorDeltas": {
+    "gateClosed=false": {
+     "macroF1": 0.01110253316185178,
+     "accuracyAll": 0.0070858283433133384,
+     "coverage": 0
+    },
+    "gateOpen=true": {
+     "macroF1": -0.042037892735023896,
+     "accuracyAll": -0.036127744510978055,
+     "coverage": 0
+    },
+    "identity=false": {
+     "macroF1": -0.002920455631487129,
+     "accuracyAll": -0.009081836327345327,
+     "coverage": -0.053912175648702654
+    }
+   }
+  }
+ },
+ "curves": {
+  "pcm_test_C2": [
+   {
+    "label": "pcm test C2 n=25",
+    "fit": {
+     "pairs": 287,
+     "creoleTokens": 9650,
+     "sources": [
+      {
+       "name": "ud-naija-text_ortho~text_en(train_sample+dev)",
+       "pairs": 25,
+       "creoleTokens": 173
+      },
+      {
+       "name": "udhr-pcm~eng",
+       "pairs": 87,
+       "creoleTokens": 3159
+      },
+      {
+       "name": "udhr-pcm~fra",
+       "pairs": 87,
+       "creoleTokens": 3159
+      },
+      {
+       "name": "udhr-pcm~spa",
+       "pairs": 88,
+       "creoleTokens": 3159
+      }
+     ],
+     "forms": 323,
+     "lambdas": [
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      }
+     ]
+    },
+    "bitextPairs": 25,
+    "report": {
+     "tokens": 1055,
+     "covered": 730,
+     "correct": 365,
+     "coverage": 0.6919431279620853,
+     "coverageCI": [
+      0.6623634558093346,
+      0.7197696737044146
+     ],
+     "accuracyCovered": 0.5,
+     "accuracyCoveredCI": [
+      0.46494992846924177,
+      0.5375335120643432
+     ],
+     "accuracyAll": 0.3459715639810427,
+     "accuracyAllCI": [
+      0.3169491525423729,
+      0.37637362637362637
+     ],
+     "macroF1": 0.35926977897325324,
+     "macroF1CI": [
+      0.332014449357419,
+      0.4032492622296201
+     ],
+     "trivial": {
+      "tokens": 363,
+      "correctByScript": 363
+     },
+     "perClass": {
+      "ADJ": {
+       "nGold": 37,
+       "nPred": 20,
+       "tp": 15,
+       "precision": 0.75,
+       "recall": 0.40540540540540543,
+       "f1": 0.5263157894736842,
+       "precisionCI": [
+        0.4444444444444444,
+        0.9259259259259259
+       ],
+       "recallCI": [
+        0.15151515151515152,
+        0.6129032258064516
+       ]
+      },
+      "ADP": {
+       "nGold": 72,
+       "nPred": 54,
+       "tp": 38,
+       "precision": 0.7037037037037037,
+       "recall": 0.5277777777777778,
+       "f1": 0.6031746031746033,
+       "precisionCI": [
+        0.5849056603773585,
+        0.8181818181818182
+       ],
+       "recallCI": [
+        0.4166666666666667,
+        0.6521739130434783
+       ]
+      },
+      "ADV": {
+       "nGold": 94,
+       "nPred": 79,
+       "tp": 57,
+       "precision": 0.7215189873417721,
+       "recall": 0.6063829787234043,
+       "f1": 0.6589595375722543,
+       "precisionCI": [
+        0.625,
+        0.821917808219178
+       ],
+       "recallCI": [
+        0.5102040816326531,
+        0.7040816326530612
+       ]
+      },
+      "AUX": {
+       "nGold": 155,
+       "nPred": 68,
+       "tp": 23,
+       "precision": 0.3382352941176471,
+       "recall": 0.14838709677419354,
+       "f1": 0.20627802690582958,
+       "precisionCI": [
+        0.22807017543859648,
+        0.4426229508196721
+       ],
+       "recallCI": [
+        0.08641975308641975,
+        0.21604938271604937
+       ]
+      },
+      "CCONJ": {
+       "nGold": 13,
+       "nPred": 13,
+       "tp": 13,
+       "precision": 1,
+       "recall": 1,
+       "f1": 1,
+       "precisionCI": [
+        1,
+        1
+       ],
+       "recallCI": [
+        1,
+        1
+       ]
+      },
+      "DET": {
+       "nGold": 33,
+       "nPred": 48,
+       "tp": 20,
+       "precision": 0.4166666666666667,
+       "recall": 0.6060606060606061,
+       "f1": 0.4938271604938272,
+       "precisionCI": [
+        0.2826086956521739,
+        0.546875
+       ],
+       "recallCI": [
+        0.43478260869565216,
+        0.7666666666666667
+       ]
+      },
+      "INTJ": {
+       "nGold": 34,
+       "nPred": 9,
+       "tp": 4,
+       "precision": 0.4444444444444444,
+       "recall": 0.11764705882352941,
+       "f1": 0.18604651162790695,
+       "precisionCI": [
+        0.125,
+        0.8
+       ],
+       "recallCI": [
+        0.02564102564102564,
+        0.24
+       ]
+      },
+      "NOUN": {
+       "nGold": 142,
+       "nPred": 161,
+       "tp": 42,
+       "precision": 0.2608695652173913,
+       "recall": 0.29577464788732394,
+       "f1": 0.27722772277227725,
+       "precisionCI": [
+        0.2,
+        0.3284671532846715
+       ],
+       "recallCI": [
+        0.22424242424242424,
+        0.3741496598639456
+       ]
+      },
+      "NUM": {
+       "nGold": 22,
+       "nPred": 7,
+       "tp": 3,
+       "precision": 0.42857142857142855,
+       "recall": 0.13636363636363635,
+       "f1": 0.20689655172413793,
+       "precisionCI": [
+        0,
+        0.8333333333333334
+       ],
+       "recallCI": [
+        0,
+        0.3333333333333333
+       ]
+      },
+      "PART": {
+       "nGold": 12,
+       "nPred": 27,
+       "tp": 0,
+       "precision": 0,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": [
+        0,
+        0
+       ],
+       "recallCI": [
+        0,
+        0
+       ]
+      },
+      "PRON": {
+       "nGold": 189,
+       "nPred": 89,
+       "tp": 78,
+       "precision": 0.8764044943820225,
+       "recall": 0.4126984126984127,
+       "f1": 0.5611510791366907,
+       "precisionCI": [
+        0.8051948051948052,
+        0.9473684210526315
+       ],
+       "recallCI": [
+        0.3423913043478261,
+        0.4808743169398907
+       ]
+      },
+      "PROPN": {
+       "nGold": 1,
+       "nPred": 20,
+       "tp": 1,
+       "precision": 0.05,
+       "recall": 1,
+       "f1": 0.09523809523809523,
+       "precisionCI": [
+        0.03571428571428571,
+        0.1875
+       ],
+       "recallCI": [
+        1,
+        1
+       ]
+      },
+      "PUNCT": {
+       "nGold": 31,
+       "nPred": 0,
+       "tp": 0,
+       "precision": null,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": null,
+       "recallCI": [
+        0,
+        0
+       ]
+      },
+      "SCONJ": {
+       "nGold": 33,
+       "nPred": 14,
+       "tp": 11,
+       "precision": 0.7857142857142857,
+       "recall": 0.3333333333333333,
+       "f1": 0.4680851063829786,
+       "precisionCI": [
+        0.5,
+        1
+       ],
+       "recallCI": [
+        0.15625,
+        0.5277777777777778
+       ]
+      },
+      "VERB": {
+       "nGold": 178,
+       "nPred": 80,
+       "tp": 60,
+       "precision": 0.75,
+       "recall": 0.33707865168539325,
+       "f1": 0.4651162790697675,
+       "precisionCI": [
+        0.6463414634146342,
+        0.8505747126436781
+       ],
+       "recallCI": [
+        0.2654320987654321,
+        0.4069767441860465
+       ]
+      },
+      "X": {
+       "nGold": 9,
+       "nPred": 22,
+       "tp": 0,
+       "precision": 0,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": [
+        0,
+        0
+       ],
+       "recallCI": [
+        0,
+        0
+       ]
+      }
+     }
+    },
+    "falsifiers": {
+     "F1": {
+      "real": 365,
+      "nullMax": 204,
+      "holds": true
+     },
+     "chanceDiscoveries": {
+      "real": 169,
+      "nullMax": 31,
+      "beatsChance": true
+     },
+     "F5": {
+      "beatsB0": true,
+      "beatsB1": false
+     }
+    },
+    "baselines": {
+     "B0": {
+      "correct": 165,
+      "tokens": 1055,
+      "coverage": 0.7203791469194313,
+      "accuracyCovered": 0.21710526315789475,
+      "accuracyAll": 0.15639810426540285,
+      "macroF1": 0.021733403582718653
+     },
+     "B1": {
+      "correct": 433,
+      "tokens": 1055,
+      "coverage": 0.6274881516587678,
+      "accuracyCovered": 0.6540785498489426,
+      "accuracyAll": 0.4104265402843602,
+      "macroF1": 0.4078258519057
+     }
+    },
+    "factorDeltas": {
+     "gateClosed=false": {
+      "macroF1": 0.00000972172509394742,
+      "accuracyAll": 0,
+      "coverage": 0
+     },
+     "gateOpen=true": {
+      "macroF1": 0,
+      "accuracyAll": 0,
+      "coverage": 0
+     },
+     "identity=false": {
+      "macroF1": -0.18109727988326751,
+      "accuracyAll": -0.18767772511848343,
+      "coverage": -0.25971563981042656
+     }
+    }
+   },
+   {
+    "label": "pcm test C2 n=50",
+    "fit": {
+     "pairs": 312,
+     "creoleTokens": 9916,
+     "sources": [
+      {
+       "name": "ud-naija-text_ortho~text_en(train_sample+dev)",
+       "pairs": 50,
+       "creoleTokens": 439
+      },
+      {
+       "name": "udhr-pcm~eng",
+       "pairs": 87,
+       "creoleTokens": 3159
+      },
+      {
+       "name": "udhr-pcm~fra",
+       "pairs": 87,
+       "creoleTokens": 3159
+      },
+      {
+       "name": "udhr-pcm~spa",
+       "pairs": 88,
+       "creoleTokens": 3159
+      }
+     ],
+     "forms": 357,
+     "lambdas": [
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      }
+     ]
+    },
+    "bitextPairs": 50,
+    "report": {
+     "tokens": 1055,
+     "covered": 738,
+     "correct": 394,
+     "coverage": 0.6995260663507109,
+     "coverageCI": [
+      0.67,
+      0.7294727744165946
+     ],
+     "accuracyCovered": 0.5338753387533876,
+     "accuracyCoveredCI": [
+      0.49356223175965663,
+      0.5735080058224163
+     ],
+     "accuracyAll": 0.37345971563981045,
+     "accuracyAllCI": [
+      0.33976833976833976,
+      0.40940254652301666
+     ],
+     "macroF1": 0.3538507301509694,
+     "macroF1CI": [
+      0.31304228243803955,
+      0.40403895899353887
+     ],
+     "trivial": {
+      "tokens": 363,
+      "correctByScript": 363
+     },
+     "perClass": {
+      "ADJ": {
+       "nGold": 37,
+       "nPred": 22,
+       "tp": 15,
+       "precision": 0.6818181818181818,
+       "recall": 0.40540540540540543,
+       "f1": 0.5084745762711864,
+       "precisionCI": [
+        0.375,
+        0.8636363636363636
+       ],
+       "recallCI": [
+        0.14705882352941177,
+        0.6181818181818182
+       ]
+      },
+      "ADP": {
+       "nGold": 72,
+       "nPred": 73,
+       "tp": 54,
+       "precision": 0.7397260273972602,
+       "recall": 0.75,
+       "f1": 0.7448275862068966,
+       "precisionCI": [
+        0.6419753086419753,
+        0.8333333333333334
+       ],
+       "recallCI": [
+        0.6447368421052632,
+        0.8554216867469879
+       ]
+      },
+      "ADV": {
+       "nGold": 94,
+       "nPred": 78,
+       "tp": 55,
+       "precision": 0.7051282051282052,
+       "recall": 0.5851063829787234,
+       "f1": 0.6395348837209303,
+       "precisionCI": [
+        0.6,
+        0.8055555555555556
+       ],
+       "recallCI": [
+        0.4845360824742268,
+        0.68
+       ]
+      },
+      "AUX": {
+       "nGold": 155,
+       "nPred": 69,
+       "tp": 23,
+       "precision": 0.3333333333333333,
+       "recall": 0.14838709677419354,
+       "f1": 0.20535714285714285,
+       "precisionCI": [
+        0.22413793103448276,
+        0.4342105263157895
+       ],
+       "recallCI": [
+        0.08024691358024691,
+        0.21428571428571427
+       ]
+      },
+      "CCONJ": {
+       "nGold": 13,
+       "nPred": 3,
+       "tp": 3,
+       "precision": 1,
+       "recall": 0.23076923076923078,
+       "f1": 0.375,
+       "precisionCI": [
+        1,
+        1
+       ],
+       "recallCI": [
+        0,
+        0.5
+       ]
+      },
+      "DET": {
+       "nGold": 33,
+       "nPred": 53,
+       "tp": 25,
+       "precision": 0.4716981132075472,
+       "recall": 0.7575757575757576,
+       "f1": 0.5813953488372093,
+       "precisionCI": [
+        0.32727272727272727,
+        0.6136363636363636
+       ],
+       "recallCI": [
+        0.6176470588235294,
+        0.8928571428571429
+       ]
+      },
+      "INTJ": {
+       "nGold": 34,
+       "nPred": 5,
+       "tp": 4,
+       "precision": 0.8,
+       "recall": 0.11764705882352941,
+       "f1": 0.20512820512820512,
+       "precisionCI": [
+        0.3333333333333333,
+        1
+       ],
+       "recallCI": [
+        0.02631578947368421,
+        0.2413793103448276
+       ]
+      },
+      "NOUN": {
+       "nGold": 142,
+       "nPred": 98,
+       "tp": 38,
+       "precision": 0.3877551020408163,
+       "recall": 0.2676056338028169,
+       "f1": 0.31666666666666665,
+       "precisionCI": [
+        0.2976190476190476,
+        0.4897959183673469
+       ],
+       "recallCI": [
+        0.19745222929936307,
+        0.3472222222222222
+       ]
+      },
+      "NUM": {
+       "nGold": 22,
+       "nPred": 10,
+       "tp": 7,
+       "precision": 0.7,
+       "recall": 0.3181818181818182,
+       "f1": 0.4375,
+       "precisionCI": [
+        0.375,
+        1
+       ],
+       "recallCI": [
+        0.11764705882352941,
+        0.5
+       ]
+      },
+      "PART": {
+       "nGold": 12,
+       "nPred": 27,
+       "tp": 0,
+       "precision": 0,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": [
+        0,
+        0
+       ],
+       "recallCI": [
+        0,
+        0
+       ]
+      },
+      "PRON": {
+       "nGold": 189,
+       "nPred": 163,
+       "tp": 92,
+       "precision": 0.5644171779141104,
+       "recall": 0.48677248677248675,
+       "f1": 0.5227272727272726,
+       "precisionCI": [
+        0.4895833333333333,
+        0.6344827586206897
+       ],
+       "recallCI": [
+        0.4076086956521739,
+        0.5670731707317073
+       ]
+      },
+      "PROPN": {
+       "nGold": 1,
+       "nPred": 11,
+       "tp": 1,
+       "precision": 0.09090909090909091,
+       "recall": 1,
+       "f1": 0.16666666666666669,
+       "precisionCI": [
+        0.0625,
+        0.3333333333333333
+       ],
+       "recallCI": [
+        1,
+        1
+       ]
+      },
+      "PUNCT": {
+       "nGold": 31,
+       "nPred": 0,
+       "tp": 0,
+       "precision": null,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": null,
+       "recallCI": [
+        0,
+        0
+       ]
+      },
+      "SCONJ": {
+       "nGold": 33,
+       "nPred": 15,
+       "tp": 11,
+       "precision": 0.7333333333333333,
+       "recall": 0.3333333333333333,
+       "f1": 0.45833333333333326,
+       "precisionCI": [
+        0.45454545454545453,
+        0.9375
+       ],
+       "recallCI": [
+        0.15151515151515152,
+        0.5428571428571428
+       ]
+      },
+      "VERB": {
+       "nGold": 178,
+       "nPred": 86,
+       "tp": 66,
+       "precision": 0.7674418604651163,
+       "recall": 0.3707865168539326,
+       "f1": 0.5,
+       "precisionCI": [
+        0.6785714285714286,
+        0.8591549295774648
+       ],
+       "recallCI": [
+        0.3010752688172043,
+        0.4431137724550898
+       ]
+      },
+      "X": {
+       "nGold": 9,
+       "nPred": 6,
+       "tp": 0,
+       "precision": 0,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": [
+        0,
+        0
+       ],
+       "recallCI": [
+        0,
+        0
+       ]
+      }
+     }
+    },
+    "falsifiers": {
+     "F1": {
+      "real": 394,
+      "nullMax": 188,
+      "holds": true
+     },
+     "chanceDiscoveries": {
+      "real": 176,
+      "nullMax": 36,
+      "beatsChance": true
+     },
+     "F5": {
+      "beatsB0": true,
+      "beatsB1": false
+     }
+    },
+    "baselines": {
+     "B0": {
+      "correct": 166,
+      "tokens": 1055,
+      "coverage": 0.7279620853080568,
+      "accuracyCovered": 0.21614583333333334,
+      "accuracyAll": 0.15734597156398103,
+      "macroF1": 0.021682340647857887
+     },
+     "B1": {
+      "correct": 435,
+      "tokens": 1055,
+      "coverage": 0.6303317535545023,
+      "accuracyCovered": 0.6541353383458647,
+      "accuracyAll": 0.41232227488151657,
+      "macroF1": 0.41041562467416753
+     }
+    },
+    "factorDeltas": {
+     "gateClosed=false": {
+      "macroF1": 0.0030934343434343425,
+      "accuracyAll": 0,
+      "coverage": 0
+     },
+     "gateOpen=true": {
+      "macroF1": -0.0013634971878939695,
+      "accuracyAll": 0,
+      "coverage": 0
+     },
+     "identity=false": {
+      "macroF1": -0.11840598037857672,
+      "accuracyAll": -0.19620853080568723,
+      "coverage": -0.29289099526066353
+     }
+    }
+   },
+   {
+    "label": "pcm test C2 n=100",
+    "fit": {
+     "pairs": 362,
+     "creoleTokens": 10357,
+     "sources": [
+      {
+       "name": "ud-naija-text_ortho~text_en(train_sample+dev)",
+       "pairs": 100,
+       "creoleTokens": 880
+      },
+      {
+       "name": "udhr-pcm~eng",
+       "pairs": 87,
+       "creoleTokens": 3159
+      },
+      {
+       "name": "udhr-pcm~fra",
+       "pairs": 87,
+       "creoleTokens": 3159
+      },
+      {
+       "name": "udhr-pcm~spa",
+       "pairs": 88,
+       "creoleTokens": 3159
+      }
+     ],
+     "forms": 391,
+     "lambdas": [
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      },
+      {
+       "fwd": 16,
+       "rev": 16
+      }
+     ]
+    },
+    "bitextPairs": 100,
+    "report": {
+     "tokens": 1055,
+     "covered": 761,
+     "correct": 439,
+     "coverage": 0.7213270142180095,
+     "coverageCI": [
+      0.6910798122065728,
+      0.7523277467411545
+     ],
+     "accuracyCovered": 0.5768725361366623,
+     "accuracyCoveredCI": [
+      0.5381727158948686,
+      0.6111111111111112
+     ],
+     "accuracyAll": 0.4161137440758294,
+     "accuracyAllCI": [
+      0.3816651075771749,
+      0.4520547945205479
+     ],
+     "macroF1": 0.4178922768883892,
+     "macroF1CI": [
+      0.3920994880037873,
+      0.4617904865142727
+     ],
+     "trivial": {
+      "tokens": 363,
+      "correctByScript": 363
+     },
+     "perClass": {
+      "ADJ": {
+       "nGold": 37,
+       "nPred": 25,
+       "tp": 19,
+       "precision": 0.76,
+       "recall": 0.5135135135135135,
+       "f1": 0.6129032258064517,
+       "precisionCI": [
+        0.5217391304347826,
+        0.9230769230769231
+       ],
+       "recallCI": [
+        0.25925925925925924,
+        0.7
+       ]
+      },
+      "ADP": {
+       "nGold": 72,
+       "nPred": 89,
+       "tp": 54,
+       "precision": 0.6067415730337079,
+       "recall": 0.75,
+       "f1": 0.670807453416149,
+       "precisionCI": [
+        0.5051546391752577,
+        0.7083333333333334
+       ],
+       "recallCI": [
+        0.6451612903225806,
+        0.8596491228070176
+       ]
+      },
+      "ADV": {
+       "nGold": 94,
+       "nPred": 50,
+       "tp": 48,
+       "precision": 0.96,
+       "recall": 0.5106382978723404,
+       "f1": 0.6666666666666666,
+       "precisionCI": [
+        0.9038461538461539,
+        1
+       ],
+       "recallCI": [
+        0.40816326530612246,
+        0.6125
+       ]
+      },
+      "AUX": {
+       "nGold": 155,
+       "nPred": 68,
+       "tp": 28,
+       "precision": 0.4117647058823529,
+       "recall": 0.18064516129032257,
+       "f1": 0.2511210762331838,
+       "precisionCI": [
+        0.29411764705882354,
+        0.5135135135135135
+       ],
+       "recallCI": [
+        0.1103448275862069,
+        0.24503311258278146
+       ]
+      },
+      "CCONJ": {
+       "nGold": 13,
+       "nPred": 13,
+       "tp": 13,
+       "precision": 1,
+       "recall": 1,
+       "f1": 1,
+       "precisionCI": [
+        1,
+        1
+       ],
+       "recallCI": [
+        1,
+        1
+       ]
+      },
+      "DET": {
+       "nGold": 33,
+       "nPred": 41,
+       "tp": 25,
+       "precision": 0.6097560975609756,
+       "recall": 0.7575757575757576,
+       "f1": 0.6756756756756757,
+       "precisionCI": [
+        0.46153846153846156,
+        0.7659574468085106
+       ],
+       "recallCI": [
+        0.5714285714285714,
+        0.9310344827586207
+       ]
+      },
+      "INTJ": {
+       "nGold": 34,
+       "nPred": 18,
+       "tp": 14,
+       "precision": 0.7777777777777778,
+       "recall": 0.4117647058823529,
+       "f1": 0.5384615384615384,
+       "precisionCI": [
+        0.5833333333333334,
+        0.9583333333333334
+       ],
+       "recallCI": [
+        0.22857142857142856,
+        0.5882352941176471
+       ]
+      },
+      "NOUN": {
+       "nGold": 142,
+       "nPred": 156,
+       "tp": 45,
+       "precision": 0.28846153846153844,
+       "recall": 0.31690140845070425,
+       "f1": 0.30201342281879195,
+       "precisionCI": [
+        0.22377622377622378,
+        0.35294117647058826
+       ],
+       "recallCI": [
+        0.24,
+        0.39864864864864863
+       ]
+      },
+      "NUM": {
+       "nGold": 22,
+       "nPred": 26,
+       "tp": 4,
+       "precision": 0.15384615384615385,
+       "recall": 0.18181818181818182,
+       "f1": 0.16666666666666669,
+       "precisionCI": [
+        0.037037037037037035,
+        0.3181818181818182
+       ],
+       "recallCI": [
+        0.047619047619047616,
+        0.35294117647058826
+       ]
+      },
+      "PART": {
+       "nGold": 12,
+       "nPred": 27,
+       "tp": 0,
+       "precision": 0,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": [
+        0,
+        0
+       ],
+       "recallCI": [
+        0,
+        0
+       ]
+      },
+      "PRON": {
+       "nGold": 189,
+       "nPred": 115,
+       "tp": 113,
+       "precision": 0.9826086956521739,
+       "recall": 0.5978835978835979,
+       "f1": 0.743421052631579,
+       "precisionCI": [
+        0.956140350877193,
+        1
+       ],
+       "recallCI": [
+        0.5087719298245614,
+        0.6752577319587629
+       ]
+      },
+      "PROPN": {
+       "nGold": 1,
+       "nPred": 15,
+       "tp": 1,
+       "precision": 0.06666666666666667,
+       "recall": 1,
+       "f1": 0.125,
+       "precisionCI": [
+        0.045454545454545456,
+        0.25
+       ],
+       "recallCI": [
+        1,
+        1
+       ]
+      },
+      "PUNCT": {
+       "nGold": 31,
+       "nPred": 0,
+       "tp": 0,
+       "precision": null,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": null,
+       "recallCI": [
+        0,
+        0
+       ]
+      },
+      "SCONJ": {
+       "nGold": 33,
+       "nPred": 14,
+       "tp": 11,
+       "precision": 0.7857142857142857,
+       "recall": 0.3333333333333333,
+       "f1": 0.4680851063829786,
+       "precisionCI": [
+        0.5294117647058824,
+        1
+       ],
+       "recallCI": [
+        0.16666666666666666,
+        0.5384615384615384
+       ]
+      },
+      "VERB": {
+       "nGold": 178,
+       "nPred": 97,
+       "tp": 64,
+       "precision": 0.6597938144329897,
+       "recall": 0.3595505617977528,
+       "f1": 0.4654545454545455,
+       "precisionCI": [
+        0.5643564356435643,
+        0.7582417582417582
+       ],
+       "recallCI": [
+        0.28804347826086957,
+        0.43209876543209874
+       ]
+      },
+      "X": {
+       "nGold": 9,
+       "nPred": 7,
+       "tp": 0,
+       "precision": 0,
+       "recall": 0,
+       "f1": 0,
+       "precisionCI": [
+        0,
+        0
+       ],
+       "recallCI": [
+        0,
+        0
+       ]
+      }
+     }
+    },
+    "falsifiers": {
+     "F1": {
+      "real": 439,
+      "nullMax": 203,
+      "holds": true
+     },
+     "chanceDiscoveries": {
+      "real": 187,
+      "nullMax": 38,
+      "beatsChance": true
+     },
+     "F5": {
+      "beatsB0": true,
+      "beatsB1": false
+     }
+    },
+    "baselines": {
+     "B0": {
+      "correct": 166,
+      "tokens": 1055,
+      "coverage": 0.7563981042654029,
+      "accuracyCovered": 0.20802005012531327,
+      "accuracyAll": 0.15734597156398103,
+      "macroF1": 0.021023302938196552
+     },
+     "B1": {
+      "correct": 451,
+      "tokens": 1055,
+      "coverage": 0.6464454976303318,
+      "accuracyCovered": 0.6612903225806451,
+      "accuracyAll": 0.42748815165876775,
+      "macroF1": 0.41836734986328106
+     }
+    },
+    "factorDeltas": {
+     "gateClosed=false": {
+      "macroF1": 0,
+      "accuracyAll": 0,
+      "coverage": 0
+     },
+     "gateOpen=true": {
+      "macroF1": 0,
+      "accuracyAll": 0,
+      "coverage": 0
+     },
+     "identity=false": {
+      "macroF1": -0.16732747904786632,
+      "accuracyAll": -0.19810426540284362,
+      "coverage": -0.2919431279620853
+     }
+    }
+   }
+  ]
+ },
+ "baselines": {},
+ "falsifiers": {},
+ "factorDeltas": {},
+ "guardLog": {
+  "hat": [
+   {
+    "source": "kreyol-mt/hat-eng",
+    "offered": 145,
+    "droppedHeldOut": 0,
+    "kept": 145
+   }
+  ]
+ }
+}

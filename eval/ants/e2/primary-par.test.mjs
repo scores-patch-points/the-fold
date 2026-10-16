@@ -1,9 +1,10 @@
-// eval/ants/e2/primary-par.test.mjs — PROPOSED test for the findPrimary parallel patch (diff: primary-par.diff). It imports "./fold-chat-primary.js", so it runs where that
-// file sits (the repo root after the diff is applied; or a scratch dir holding the patched copy — see E2-RESULTS.md). Mutation check: against the tracked (serial) file the timing test FAILS.
+// eval/ants/e2/primary-par.test.mjs — the findPrimary parallel patch (E2 diff 3-primary-parallel.diff),
+// LANDED in the tracked fold-chat-primary.js (commit "land 10-06/07 consumer WIP"). Imports are
+// root-relative so the suite runs in place under `node --test`.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { functionWordsOf } from "./fold-chat-snippets.js";
-import { findPrimary } from "./fold-chat-primary.js";
+import { functionWordsOf } from "../../../fold-chat-snippets.js";
+import { findPrimary } from "../../../fold-chat-primary.js";
 const FW = functionWordsOf("en");
 const CLAIM = "The Eiffel Tower is 330 metres tall.";
 const SENTENCE = "The Eiffel Tower is 330 metres (1,083 ft) tall, about the same height as an 81-storey building.";

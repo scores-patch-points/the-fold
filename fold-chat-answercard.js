@@ -345,6 +345,7 @@ export function renderAnswerCard(turn, { doc = document } = {}) {
 /** Append the card to an assistant message element when `msg.answerTurn` exists; a no-op (returns null) otherwise. Re-mounting replaces. */
 export function mountAnswerCard(msgEl, msg) {
   if (!msgEl || !msg || !msg.answerTurn || typeof msg.answerTurn !== "object") return null;
+  if (Array.isArray(msg.answerTurn.parts) && msg.answerTurn.parts.length) return null;   // a COMPOUND one shot (fold-chat-split.js): the joined per-line content IS the card, drawn as the sources' own prose
   const doc = msgEl.ownerDocument || (typeof document !== "undefined" ? document : null);
   if (!doc) return null;
   for (const k of Array.from(msgEl.children || [])) if (k.classList?.contains("answer-card")) k.remove?.();

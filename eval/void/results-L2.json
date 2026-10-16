@@ -1,0 +1,1116 @@
+{
+ "arm": "L2",
+ "record": false,
+ "at": "2026-10-14T12:00:00.000Z",
+ "fetch": {
+  "live": 0,
+  "hits": 764,
+  "misses": 6,
+  "hosts": {
+   "en.wikipedia.org": 726,
+   "www.sfgate.com": 1,
+   "www.onlinenevada.org": 1,
+   "www.newspapers.com": 1,
+   "holodeck-proxy.prometheoid.workers.dev": 24,
+   "news.bbc.co.uk": 1,
+   "www.chicagotribune.com": 2,
+   "search.worldcat.org": 1,
+   "conservation-science.unibo.it": 1,
+   "doi.org": 1,
+   "www.nobelprize.org": 1,
+   "www.swissinfo.ch": 1,
+   "www.teara.govt.nz": 1,
+   "www.theartnewspaper.com": 1,
+   "www.france24.com": 1,
+   "www.bbc.com": 1,
+   "www.washingtonpost.com": 1,
+   "www.iau.org": 1,
+   "planetarynames.wr.usgs.gov": 1,
+   "archive.org": 1,
+   "web.archive.org": 1
+  }
+ },
+ "dev": {
+  "n": 29,
+  "RIGHT": 8,
+  "WRONG": 0,
+  "GAP": 21,
+  "informativeGap": 12,
+  "useful": 20
+ },
+ "held": {
+  "n": 29,
+  "RIGHT": 6,
+  "WRONG": 4,
+  "GAP": 19,
+  "informativeGap": 11,
+  "useful": 17
+ },
+ "all": {
+  "n": 58,
+  "RIGHT": 14,
+  "WRONG": 4,
+  "GAP": 40,
+  "informativeGap": 23,
+  "useful": 37
+ },
+ "voidFields": {
+  "dev": {
+   "slot": 28,
+   "admits": 20,
+   "anchor": 23,
+   "relation": 20,
+   "cardinality": 28,
+   "n": 29
+  },
+  "held": {
+   "slot": 28,
+   "admits": 20,
+   "anchor": 23,
+   "relation": 21,
+   "cardinality": 24,
+   "n": 29
+  }
+ },
+ "rows": [
+  {
+   "id": "v01",
+   "set": "dev",
+   "q": "When was the Sydney Opera House opened?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The orchestra has performed at the Sydney Opera House as its home concert hall, since the venue's opening in 1973.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Sydney Opera House",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "open"
+     ],
+     "cardinality": 1
+    },
+    "l2": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v03",
+   "set": "dev",
+   "q": "When was the Eiffel Tower completed?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Completed in 1889.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Eiffel Tower",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "complet"
+     ],
+     "cardinality": 1
+    },
+    "l2": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v05",
+   "set": "dev",
+   "q": "When did the Titanic sink?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Titanic",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "sink"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Sinking of the Titanic",
+      "Titanic Sinks Tonight",
+      "Legends and myths regarding the Titanic",
+      "Wreck of the Titanic"
+     ],
+     "kinds": [],
+     "edges": 4,
+     "fillers": [
+      {
+       "key": "1912",
+       "value": "15 April 1912",
+       "n": 3,
+       "about": [
+        "name"
+       ]
+      },
+      {
+       "key": "2025",
+       "value": "31 December 2025",
+       "n": 1,
+       "about": [
+        "name"
+       ]
+      }
+     ],
+     "answered": false,
+     "why": "contest"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v07",
+   "set": "dev",
+   "q": "When did Apollo 11 land on the Moon?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Apollo 11 (July 16–24, 1969) was the American spaceflight that first landed humans on the Moon,",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Apollo 11",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "moon"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Apollo 11",
+      "Moon landing conspiracy theories",
+      "List of Apollo astronauts",
+      "Apollo program"
+     ],
+     "kinds": [],
+     "edges": 1,
+     "fillers": [
+      {
+       "key": "1969",
+       "value": "1969",
+       "n": 1,
+       "about": [
+        "name"
+       ]
+      }
+     ],
+     "answered": true,
+     "at": "Wikipedia — Apollo 11#0-95"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v09",
+   "set": "dev",
+   "q": "When did the Berlin Wall fall?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The Berlin Wall fell on 9 November 1989.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Fall of the Berlin Wall",
+     "admits": "date",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "l2": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v11",
+   "set": "dev",
+   "q": "In what year did the Chernobyl disaster happen?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Chernobyl disaster",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "happen"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Effects of the Chernobyl disaster",
+      "Chernobyl disaster",
+      "Chernobyl (miniseries)",
+      "Chernobyl exclusion zone"
+     ],
+     "kinds": [],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v13",
+   "set": "dev",
+   "q": "When did Queen Victoria die?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "On 22 January 1901, Queen Victoria died.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Queen Victoria",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "die"
+     ],
+     "cardinality": 1
+    },
+    "l2": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v15",
+   "set": "dev",
+   "q": "When was the Empire State Building completed?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Some 151,000 barrels of Atlas cement were used in constructing the Empire State Building, completed in 1931.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "time",
+    "void": {
+     "slot": "time",
+     "anchor": "Empire State Building",
+     "admits": "date",
+     "extent": null,
+     "relation": [
+      "complet"
+     ],
+     "cardinality": 1
+    },
+    "l2": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v17",
+   "set": "dev",
+   "q": "Who painted the Mona Lisa?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Mona Lisa",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "paint"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Mona Lisa",
+      "Mona Lisa (Prado)",
+      "Two–Mona Lisa theory",
+      "Isleworth Mona Lisa"
+     ],
+     "kinds": [
+      "paint",
+      "masterpiec",
+      "painting"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v19",
+   "set": "dev",
+   "q": "Who discovered penicillin?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Penicillin",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "discover"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Penicillin",
+      "Penicillin (cocktail)",
+      "History of penicillin",
+      "Alexander Fleming"
+     ],
+     "kinds": [
+      "group",
+      "mixtur",
+      "precursor",
+      "mixtur",
+      "unit"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v21",
+   "set": "dev",
+   "q": "Who wrote Pride and Prejudice?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Pride and Prejudice",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "writ"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Pride and Prejudice and Zombies (film)",
+      "Pride & Prejudice (2005 film)",
+      "Pride and Prejudice",
+      "Pride and Prejudice and Zombies"
+     ],
+     "kinds": [
+      "novel",
+      "plot"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v23",
+   "set": "dev",
+   "q": "Who composed The Four Seasons?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "4",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "compos"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Dhamaal 4",
+      "Streets of Rage 4",
+      "Compose key",
+      "Persona 4 Revival"
+     ],
+     "kinds": [],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v25",
+   "set": "dev",
+   "q": "Who invented the telephone?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Telephone",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "invent"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "History of the telephone",
+      "Telephone",
+      "Elisha Gray and Alexander Bell telephone controversy",
+      "Invention of the telephone"
+     ],
+     "kinds": [
+      "devic",
+      "transmitter"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v27",
+   "set": "dev",
+   "q": "Who wrote One Hundred Years of Solitude?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "1",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "writ"
+     ],
+     "cardinality": "many"
+    },
+    "l2": {
+     "pages": [
+      "List of Murder, She Wrote episodes",
+      "Wrote a Song About You",
+      "Murder, She Wrote",
+      "187 He Wrote"
+     ],
+     "kinds": [],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v29",
+   "set": "dev",
+   "q": "What is the capital of Canada?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "Ottawa (,; Canadian French:) is the capital city of Canada.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing",
+    "void": {
+     "slot": "thing",
+     "anchor": "Canada",
+     "admits": "capital",
+     "extent": null,
+     "relation": [
+      "capital"
+     ],
+     "cardinality": 1
+    },
+    "l2": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v31",
+   "set": "dev",
+   "q": "What is the currency of Japan?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
+    "void": {
+     "slot": "thing",
+     "anchor": "Japan",
+     "admits": "currency",
+     "extent": null,
+     "relation": [
+      "currency"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Japan",
+      "Japanese",
+      "Japan Japan",
+      "Made in Japan"
+     ],
+     "kinds": [
+      "country",
+      "ally",
+      "monarchy",
+      "power",
+      "leader"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v33",
+   "set": "dev",
+   "q": "What is the largest planet in the Solar System?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "thing",
+    "void": {
+     "slot": "thing",
+     "anchor": "List of largest exoplanets",
+     "admits": null,
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "l2": "no-anchor-or-admits"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v35",
+   "set": "dev",
+   "q": "What is the capital of New Zealand?",
+   "tier": "RIGHT",
+   "informative": null,
+   "answer": "The capital of New Zealand has been Wellington since 1865.",
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "thing",
+    "void": {
+     "slot": "thing",
+     "anchor": "Capital of New Zealand",
+     "admits": null,
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "l2": "kept-L0-answer"
+   },
+   "solvable": true
+  },
+  {
+   "id": "v37",
+   "set": "dev",
+   "q": "Where is the Taj Mahal?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": null,
+    "slot": "place",
+    "void": {
+     "slot": "place",
+     "anchor": "Taj Mahal",
+     "admits": "place",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Taj Mahal",
+      "Taj Mahal (musician)",
+      "Taj Mahal Palace Hotel",
+      "The Taj Story"
+     ],
+     "kinds": [
+      "exampl",
+      "attraction",
+      "monument",
+      "stand"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v39",
+   "set": "dev",
+   "q": "Where is Machu Picchu located?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
+    "void": {
+     "slot": "place",
+     "anchor": "Machu Picchu",
+     "admits": "place",
+     "extent": null,
+     "relation": [
+      "locat"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Huayna Picchu",
+      "Machu Picchu",
+      "Historic Sanctuary of Machu Picchu",
+      "Inca Trail to Machu Picchu"
+     ],
+     "kinds": [
+      "citadel"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v41",
+   "set": "dev",
+   "q": "Where was Albert Einstein born?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "place",
+    "void": {
+     "slot": "place",
+     "anchor": "Albert Einstein",
+     "admits": "place",
+     "extent": null,
+     "relation": [
+      "bear"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Hans Albert Einstein",
+      "Elsa Einstein",
+      "Bernhard Einstein",
+      "Einstein family"
+     ],
+     "kinds": [],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v43",
+   "set": "dev",
+   "q": "How long is the Nile?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "quantity",
+     "anchor": "Nile",
+     "admits": "length",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Nile",
+      "Nile (disambiguation)",
+      "Nile Rodgers",
+      "Nile crocodile"
+     ],
+     "kinds": [
+      "river",
+      "river",
+      "translation",
+      "tributary",
+      "river",
+      "amount",
+      "tributary"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v45",
+   "set": "dev",
+   "q": "How tall is the Eiffel Tower?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "quantity",
+     "anchor": "Eiffel Tower",
+     "admits": "length",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Eiffel Tower",
+      "Eiffel Tower replicas and derivatives",
+      "List of names on the Eiffel Tower",
+      "Gustave Eiffel"
+     ],
+     "kinds": [
+      "tower",
+      "staircas"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v47",
+   "set": "dev",
+   "q": "How deep is the Mariana Trench?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "quantity",
+     "anchor": "Mariana Trench",
+     "admits": "length",
+     "extent": null,
+     "relation": null,
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Mariana Trench",
+      "Marianas Trench (band)",
+      "Challenger Deep",
+      "Mariana plate"
+     ],
+     "kinds": [
+      "choos"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v49",
+   "set": "dev",
+   "q": "capital of Australia?",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "thing",
+     "anchor": "Australia",
+     "admits": "capital",
+     "extent": null,
+     "relation": [
+      "capital"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Australian Capital Territory",
+      "Capital punishment in Australia",
+      "List of Australian capital cities",
+      "Canberra"
+     ],
+     "kinds": [],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v51",
+   "set": "dev",
+   "q": "year the Titanic sank",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "thing",
+     "anchor": "Titanic",
+     "admits": "sink",
+     "extent": null,
+     "relation": [
+      "sink"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Titanic",
+      "Titanic (1997 film)",
+      "Sinking of the Titanic",
+      "Wreck of the Titanic"
+     ],
+     "kinds": [
+      "liner"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v53",
+   "set": "dev",
+   "q": "tallest mountain in Africa",
+   "tier": "GAP",
+   "informative": false,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "thing",
+     "anchor": "Mountain",
+     "admits": "tallest",
+     "extent": null,
+     "relation": [
+      "tallest"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Tallest mountain",
+      "List of highest mountains on Earth",
+      "List of mountain peaks by prominence",
+      "List of tallest mountains in the Solar System"
+     ],
+     "kinds": [],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v55",
+   "set": "dev",
+   "q": "Name the author of Don Quixote",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": "not_a_slot_ask",
+    "gap": null,
+    "slot": null,
+    "void": {
+     "slot": "person",
+     "anchor": "Don Quixote",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "author"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Don Quixote",
+      "Don Quixote (character)",
+      "List of works influenced by Don Quixote",
+      "Miguel de Cervantes"
+     ],
+     "kinds": [
+      "novel",
+      "work",
+      "book",
+      "fabrication"
+     ],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": true
+  },
+  {
+   "id": "v57",
+   "set": "dev",
+   "q": "Who was the first president of Antarctica?",
+   "tier": "GAP",
+   "informative": true,
+   "answer": null,
+   "raw": {
+    "handoff": null,
+    "gap": "unwitnessed",
+    "slot": "person",
+    "void": {
+     "slot": "person",
+     "anchor": "Antarctica",
+     "admits": "person",
+     "extent": null,
+     "relation": [
+      "first",
+      "president"
+     ],
+     "cardinality": 1
+    },
+    "l2": {
+     "pages": [
+      "Territorial claims in Antarctica",
+      "History of Antarctica",
+      "2025 in Antarctica",
+      "Argentine Antarctica"
+     ],
+     "kinds": [],
+     "edges": 0,
+     "fillers": [],
+     "answered": false,
+     "why": "no-edge"
+    }
+   },
+   "solvable": null
+  }
+ ]
+}

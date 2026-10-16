@@ -116,11 +116,14 @@ test("locale rides the store, is correctable, and reaches the context only when 
   const kept = normalizeStore(JSON.parse(JSON.stringify(withLocale)));
   assert.equal(kept.locale.tz, "America/Chicago");
   assert.equal(kept.locale.location.city, "Nashville");
-  assert.equal(kept.locale.ipLookup, true);
+  assert.equal(kept.locale.ipLookup, false, "a location does not imply consent — IP lookup is opt-in (user, 2026-10-11)");
   assert.match(contextFor(withLocale, { localeLine: "Their local time is noon." }), /local time is noon/);
   assert.doesNotMatch(contextFor(withLocale, { contextFree: true, localeLine: "Their local time is noon." }), /local time is noon/);
-  // the IP switch is a store field, off only when explicitly off
+  // the IP switch is opt-in: only an explicit stored true consents; false and unset both refuse
   assert.equal(normalizeStore({ locale: { ipLookup: false } }).locale.ipLookup, false);
+  assert.equal(normalizeStore({ locale: { ipLookup: true } }).locale.ipLookup, true);
+  assert.equal(normalizeStore({ locale: {} }).locale.ipLookup, false);
+  assert.equal(normalizeStore(null).locale.ipLookup, false);
 });
 
 test("FALSIFIER — the store has no score, no count-of-use, no acceptance: only what the person filed", () => {

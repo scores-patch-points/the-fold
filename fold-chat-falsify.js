@@ -107,6 +107,10 @@ export function askTense(frame, opts = {}) {
   const w = words.map((x) => x.replace(/’/g, "'"));
   if (w.some((x) => t.past.includes(x))) return "past";
   if (w.some((x) => t.present.includes(x))) return "present";
+  // no copula (the archon panel, MF17): "who LEADS the United Nations?" — a third-person -s verb right after the wh-word is present;
+  // "does/do" are present, "did" is past
+  if (w.includes("did")) return "past";
+  if (w.includes("does") || w.includes("do") || (w.length > 1 && /^(who|what|which)$/.test(w[0]) && w[1].length > 3 && /[^s]s$/.test(w[1]))) return "present";
   return "unknown";
 }
 
@@ -218,7 +222,7 @@ const yearOfRow = (row, nowYear) => {
 
 const passageOf = (row) => ({ text: row.sentence, url: (row.source && row.source.url) || null, title: (row.source && row.source.title) || null });
 
-function localCheck(probe, c, pool, nowYear) {
+function localCheck(probe, c, pool, nowYear, negationScope = null) {
   const un = (reason) => ({ probe, outcome: "unmeasured", reason, text: null });
   const others = (Array.isArray(pool) ? pool : []).filter((r) => r && typeof r.sentence === "string" && !sameRow(r, c.row));
   if (!others.length) return un(SAY.noOther);
@@ -226,7 +230,14 @@ function localCheck(probe, c, pool, nowYear) {
   const nSources = new Set(others.map(sourceKey).filter((k) => k && k !== mine)).size;
   const scope = nSources > 0 ? SAY.scopeOther(nSources) : SAY.scopePage;
   const witnessing = others.filter((r) => r.tier !== "T2");
-  const rivals = witnessing.filter((r) => r.polarity !== "-" && fillerText(r.filler) && !sameFiller(fillerText(r.filler), c.name)
+  // the SAME ENTITY by the title door is one claimant however it is written ("Leo Tolstoy" / "Count Tolstoy", "Wien" / "Vienna"): a
+  // row whose filler resolved to the claim's own page is no rival, and a negation of that page is a negation of the claim
+  const titleOf = (r) => (r && r.filler && typeof r.filler.title === "string" ? r.filler.title.trim().toLowerCase() : null);
+  const claimTitle = titleOf(c.row);
+  const sameClaim = (r) => sameFiller(fillerText(r.filler), c.name) || (!!claimTitle && titleOf(r) === claimTitle);
+  // a hedged, conditional or asking row (polarity "?") is neither a witness nor a denial (the binder's stance read): it is no rival
+  // either — "you may have learned that there are five, six, or even four continents" must not contest "seven"
+  const rivals = witnessing.filter((r) => (r.polarity == null || r.polarity === "+") && fillerText(r.filler) && !sameClaim(r)
     && (!probe.current || r.tense === "present" || r.tense === "unknown" || r.tense == null));
   if (probe.kind === "rival-holder") {
     if (!rivals.length) return { probe, outcome: "none", scope, text: SAY.noRival(scope) };
@@ -237,7 +248,10 @@ function localCheck(probe, c, pool, nowYear) {
     // a negation only contradicts a claim of the SAME tense: "France has had no king since 1848" does not refute "Louis XVI was the last king"
     const known = (t) => t === "present" || t === "past" || t === "future";
     const sameTime = (r) => !(c.row && known(c.row.tense) && known(r.tense) && c.row.tense !== r.tense);
-    const negs = witnessing.filter((r) => r.polarity === "-" && sameTime(r) && (!fillerText(r.filler) || sameFiller(fillerText(r.filler), c.name)));
+    // a negation with NO filler denies the claim only if it says what was asked about (the live Japan gate: "These … cannot be used inside
+    // Japan" says no word of 'currency' — it is about something else). Given a scope, the row must cover it; without one, as before.
+    const aboutIt = (r) => !!fillerText(r.filler) || typeof negationScope !== "function" || negationScope(r);
+    const negs = witnessing.filter((r) => r.polarity === "-" && sameTime(r) && (!fillerText(r.filler) || sameClaim(r)) && aboutIt(r));
     if (!negs.length) return { probe, outcome: "none", scope, text: SAY.noNegation(scope) };
     return { probe, outcome: "found", scope, found: "a source saying otherwise", rows: negs,
       refuters: negs.map((r) => ({ probe, passage: passageOf(r), why: SAY.negationWhy(r.source && r.source.title), row: r })) };
@@ -256,7 +270,7 @@ function localCheck(probe, c, pool, nowYear) {
 
 /** Interpret what the probes saw. results: [{ probe, lead? | pool? | status?: 'unmeasured', reason?, error? }] (as runFalsify gathers them).
  *  -> { standing, survived: string[], unmeasured: string[], refuters, contest: Row[], checks } */
-export function judge(candidate, results, { now } = {}) {
+export function judge(candidate, results, { now, negationScope = null } = {}) {
   const c = candOf(candidate);
   const nowYear = nowYearOf(now);
   const checks = [];
@@ -264,7 +278,7 @@ export function judge(candidate, results, { now } = {}) {
     if (!r || !r.probe) continue;
     if (r.probe.kind === "life-dates") checks.push(lifeCheck(r.probe, c.name, r, nowYear));
     else if (r.status === "unmeasured") checks.push({ probe: r.probe, outcome: "unmeasured", reason: r.reason || SAY.noOther, text: null });
-    else checks.push(localCheck(r.probe, c, r.pool, nowYear));
+    else checks.push(localCheck(r.probe, c, r.pool, nowYear, negationScope));
   }
   const refuters = checks.flatMap((k) => k.refuters || []);
   const survived = checks.filter((k) => k.outcome === "none").map((k) => k.text);
@@ -273,7 +287,10 @@ export function judge(candidate, results, { now } = {}) {
   const contestRows = [];
   if (!hard && refuters.length && c.row) contestRows.push(c.row);
   for (const x of refuters) if (x.row && !contestRows.some((y) => sameRow(y, x.row))) contestRows.push(x.row);
-  const standing = hard ? "refuted" : refuters.length ? "contested" : survived.length ? "survived" : "unmeasured";
+  // A HARD check that could not be run leaves the claim UNMEASURED (2026-10-12): the local checks (rival, negation, later date) passing
+  // say nothing about whether a current holder is still living, so they cannot lift the standing to 'survived' on their own.
+  const hardUnmeasured = checks.some((k) => k.probe.kind === "life-dates" && k.outcome === "unmeasured");
+  const standing = hard ? "refuted" : refuters.length ? "contested" : survived.length && !hardUnmeasured ? "survived" : "unmeasured";
   return { standing, survived, unmeasured, refuters, contest: standing === "contested" ? contestRows : [], checks };
 }
 
@@ -297,7 +314,7 @@ function raceAbort(promise, signal) {
 
 /** Run the probes: at most DECLARED.maxQueries network queries, every one aborted by `signal`; the local probes read `rows`.
  *  -> judge(...) plus { probes, queries, results }. A failed or stopped lookup is 'unmeasured', never 'survived'. */
-export async function runFalsify({ candidate, frame, rows, now, fetchLead, signal, current } = {}) {
+export async function runFalsify({ candidate, frame, rows, now, fetchLead, signal, current, negationScope = null } = {}) {
   const probes = probesFor(candidate, frame, { now, rows, current });
   const queries = [];
   const settled = await Promise.all(probes.map(async (probe) => {
@@ -314,5 +331,5 @@ export async function runFalsify({ candidate, frame, rows, now, fetchLead, signa
       return { probe, status: "unmeasured", error: true, reason: e && e.name === "AbortError" ? SAY.cancelled : SAY.cantRead(probe.query) };
     }
   }));
-  return { ...judge(candidate, settled, { now }), probes, queries, results: settled };
+  return { ...judge(candidate, settled, { now, negationScope }), probes, queries, results: settled };
 }

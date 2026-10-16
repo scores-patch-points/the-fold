@@ -26,6 +26,8 @@
 import { functionWordsOf } from "./fold-chat-snippets.js";
 import { casedRuns, scriptOf } from "./fold-chat-mind.js";
 import { detectLang } from "./fold-chat-lang.js";
+import { PRONOUNS } from "./fold-chat-pronouns.js";
+import { ANAPHORA_DERIVED } from "./fold-chat-anaphora-classes.js";
 
 export const ANAPHORA = Object.freeze({
   weakMaxTokens: 8,       // an ask longer than this names enough on its own for a weak pronoun (it/this/that…); same limit as THREAD.ellipticalMaxWords
@@ -46,7 +48,7 @@ const CLASSES = Object.freeze({
     strong: set("he she him his her hers himself herself"),
     weak: set("it its they them their theirs this that these those one ones itself themselves"),
     connectives: set("and but also so then plus"), connective2: new Set(["what about", "how about", "and what about", "and how about", "and then", "what of"]),
-    wh: set("who whom whose which what when where why how"),
+    wh: new Set(ANAPHORA_DERIVED.en.wh),   // DERIVED: UD PronType=Int|Rel (scripts/gen-anaphora-classes.mjs); es and fr below stay declared
     frame: set("who whom whose which what when where why how tell show give explain describe say know find ask please pls thanks thank ok okay let lets go on wait hold hmm hm well really seriously honestly huh sure"),
     cont: set("more else further again another details detail elaborate continue same instead rest next"),
     comparative: /\b\p{L}{3,}ier\b|\b(?:bett|wors|cheap|easi|hard|fast|slow|bigg|small|larg|long|short|thick|thin|soft|crisp|sweet|spic|healthi|light|strong|smooth|rich|tough|tender|simpl|clear|brief)er\b|\b(?:more|less|a bit|a little|much|way|super|very)\s+\p{L}{3,}\b/iu,
@@ -111,18 +113,22 @@ const verdict = (carry, kind, why, lang, decided = true) => ({ carry, kind, why,
  * default fold-chat.js uses for the hints). `hints`: the language priors (fold-chat-hints.js) — used ONLY for a language with no declared class
  * (Russian), where its listed forms are all pronouns.
  */
-export function anaphoraOf(question, { lang = null, hints = null, demonstrativeAsPronoun = false } = {}) {
+export function anaphoraOf(question, { lang = null, hints = null, demonstrativeAsPronoun = false, generated = "fallback" } = {}) {
   const q = String(question ?? "").trim();
   if (!q) return verdict(false, null, "empty ask", lang || "en");
   let L = lang && lang !== "unknown" ? String(lang).toLowerCase().split("-")[0] : null;
   if (!L) { const d = detectLang(q); L = d.lang && d.lang !== "unknown" ? d.lang : "en"; }
-  const cls = CLASSES[L] || null;
+  let cls = CLASSES[L] || null;
+  if (cls && generated === "union" && PRONOUNS[L]) cls = { ...cls, strong: new Set([...cls.strong, ...PRONOUNS[L].strong]) };
   const fw = functionWordsOf(L);
   const toks = tokensOf(q);
   if (!toks.length) return verdict(false, null, "no words", L);
   if (!cls) {
     // a language with no declared class: only its injected pronoun forms (hints), never an article; no prior at all = undecided
-    const trig = new Set((hints?.carryTriggers || []).map((x) => String(x).toLowerCase()));
+    // The personal 3rd-person pronouns of the language, GENERATED from its Universal Dependencies treebank (fold-chat-pronouns.js, built by
+    // scripts/gen-pronoun-classes.mjs; no hand list, accents kept), then any injected hints. A language with a treebank is no longer "undecided".
+    const gen = generated !== "off" ? PRONOUNS[L]?.strong ?? [] : [];
+    const trig = new Set([...gen, ...(hints?.carryTriggers || [])].map((x) => String(x).toLowerCase()));
     if (!trig.size) return verdict(false, null, `undecided: no closed-class prior for ${L} — not carried`, L, false);
     const hit = toks.find((x) => trig.has(x.t));
     return hit ? verdict(true, "pronoun", `"${hit.t}" points back`, L) : verdict(false, null, "no pronoun of its own language's prior", L);

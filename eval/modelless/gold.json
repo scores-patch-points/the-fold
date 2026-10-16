@@ -1,0 +1,15 @@
+{
+  "_about": "Gold answers, written 2026-10-12 from world knowledge AFTER the pilot rows were seen but not from any fold output. Holder answers are as I know them at the test date and can go stale. A regex is matched against the text the page SHOWED for the last turn of the script. 'refuse' marks a false-premise prompt where the right behaviour is anything except a confident answer.",
+  "compute#0": "391", "compute#1": "\\b36\\b", "compute#2": "8\\.0[45]", "compute#3": "12\\.5", "compute#4": "86[, ]?400", "compute#5": "\\b12\\b",
+  "compute#6": "22\\.2", "compute#7": "1[, ]?024", "compute#8": "\\b59\\b", "compute#9": "7/8|0\\.875|\\b7 ?/ ?8",
+  "slot#0": "Canberra", "slot#1": "Shakespeare", "slot#2": "1945", "slot#3": "\\b(330|324|300|1[, ]?0[0-9]{2}|1[, ]?[0-9]{3} f)", "slot#4": "Leonardo|da Vinci",
+  "slot#5": "Ottawa", "slot#6": "Ulm", "slot#7": "1776|July 4|4 July|August 2", "slot#8": "Fleming", "slot#9": "Jupiter", "slot#10": "\\b(eight|8)\\b", "slot#11": "\\bAu\\b",
+  "holder#0": "Charles", "holder#1": "Macron", "holder#2": "Carney", "holder#3": "Guterres", "holder#4": "Leo", "holder#5": "Trump",
+  "compound#0": "Trump[\\s\\S]*(Queens|New York)", "compound#1": "Charles[\\s\\S]*Camilla[\\s\\S]*(London|Westminster|Bath|Plaxtol|Kent|Sussex)", "compound#2": "Canberra[\\s\\S]*(Albanese)",
+  "compound#3": "Shakespeare[\\s\\S]*(1564|Stratford)", "compound#4": "Fleming[\\s\\S]*(Darvel|Ayrshire|Scotland|Loudoun)", "compound#5": "Paris[\\s\\S]*(million|\\d[\\d,. ]{4,})",
+  "compound#6": "(Leonardo|da Vinci)[\\s\\S]*Louvre", "compound#7": "Macron[\\s\\S]*(4\\d|1977)",
+  "followup#0": "London|Buckingham|Marylebone", "followup#1": "million|\\d{2}[, ]\\d{3}[, ]\\d{3}", "followup#2": "1564|Stratford", "followup#3": "Louvre|Paris", "followup#4": "Nobel|1945", "followup#5": "Ottawa",
+  "multilingual#0": "Canberra", "multilingual#1": "Ottawa", "multilingual#2": "Shakespeare", "multilingual#3": "Шекспир|Shakespeare", "multilingual#4": "堪培拉|Canberra", "multilingual#5": "Parigi|Paris",
+  "falsepremise#0": "refuse", "falsepremise#1": "refuse", "falsepremise#2": "refuse", "falsepremise#3": "refuse", "falsepremise#4": "refuse", "falsepremise#5": "refuse",
+  "url#0": "spider|Spider", "url#1": "Australia", "url#2": "Eiffel", "url#3": "penicillin|Penicillin"
+}

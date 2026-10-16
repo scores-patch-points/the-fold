@@ -33,8 +33,7 @@
 // An answer whose checks could not be run ships as standing 'unmeasured' — the source states it, nothing was able to cross-check it, and
 // the card says so. It is never called 'survived'. No case logic anywhere: entities are what a TITLE resolves to.
 
-import { answerSpan } from "./fold-chat-answerspan.js";
-import { askFrame, GRAMMAR, tokensOf, stemOf, closedClassOf } from "./fold-chat-frame.js";
+import { askFrame, grammarOf, tokensOf, stemOf, closedClassOf, posRankOf } from "./fold-chat-frame.js";
 import { sentencesOf, bindSentence } from "./fold-chat-witness.js";
 import { runFalsify, askTense, sameFiller } from "./fold-chat-falsify.js";
 import { createTurnVoid, traceOf, noteFalsification } from "./fold-chat-void.js";
@@ -74,7 +73,7 @@ function langOf(lang, question) {
 /** Bind every sentence of the passages. A sentence the frame cannot bind on its own words gets a second chance with the page's TITLE
  *  carrying the referent it leaves unsaid ("The current prime minister is Andy Burnham" on the page "Prime Minister of the United
  *  Kingdom") — such a row is marked via the returned `viaTitle` set, and its filler MUST then resolve by title to count. */
-function bindPassages(passages, frame, { fw, code, from = 0 }) {
+function bindPassages(passages, frame, { fw, code, from = 0, pageEntity = null }) {
   const out = [], read = [], skipped = [];
   asArr(passages).forEach((p, i) => {
     if (!p || typeof p.text !== "string" || !p.text) return;
@@ -82,9 +81,10 @@ function bindPassages(passages, frame, { fw, code, from = 0 }) {
     const source = { ref: isStr(p.ref) ? p.ref : "S" + (from + i + 1), title: p.title || "", url: p.url || "", host: p.host || hostOf(p.url), lang: p.lang || code };
     read.push(source);
     sentencesOf(p.text).forEach((s, k) => {
-      let row = bindSentence(s, frame, { fw, lang: code, source }), viaTitle = false;
+      const pe = pageEntity && isStr(p.title) ? pageEntity.get(p.title) || null : null;      // what the page's own title RESOLVES to (a redirect is the same entity)
+      let row = bindSentence(s, frame, { fw, lang: code, source, page: p.title || null, pageEntity: pe }), viaTitle = false;
       if (!row && isStr(p.title)) {
-        const r2 = bindSentence(s, frame, { fw, lang: code, source, topic: p.title });
+        const r2 = bindSentence(s, frame, { fw, lang: code, source, topic: p.title, page: p.title, pageEntity: pe });
         if (r2 && r2.filler) { row = r2; viaTitle = true; }
       }
       if (row) out.push({ row, viaTitle, page: source, order: (from + i) * 10000 + k });
@@ -93,21 +93,74 @@ function bindPassages(passages, frame, { fw, code, from = 0 }) {
   return { entries: out, read, skipped };
 }
 
+/** What each page's own title resolves to (one batched title-door call, the titles of pages ALREADY read): "Microsoft Corporation" is
+ *  "Microsoft" after the redirect, so a lead that says "Microsoft Corporation" is about the referent, not a longer entity. A failed or
+ *  absent door leaves the map empty and the string test stands. */
+async function pageEntitiesOf(passages, resolveTitles) {
+  const titles = [...new Set(asArr(passages).map((p) => p && p.title).filter(isStr))];
+  const out = new Map();
+  if (!titles.length || typeof resolveTitles !== "function") return out;
+  try {
+    const table = await resolveTitles(titles);
+    for (const t of titles) { const r = table && table.get && table.get(t); if (r && isStr(r.title) && !r.disambiguation) out.set(t, r.title); }
+  } catch { /* no door: the string test stands */ }
+  return out;
+}
+
 /** One resolveTitles call over the fillers of person/place/thing rows: a filler that is no page is not a name, so it witnesses nothing
  *  (the row stays in the pool as a T1 row with no filler). A failed call leaves direct rows unverified — said so — and drops title-carried ones. */
-async function verifyFillers(entries, frame, resolveTitles) {
+async function verifyFillers(entries, frame, resolveTitles, fw = null) {
   const need = DECLARED.verifySlots.includes(frame.slot);
   const withFiller = entries.filter((e) => e.row.tier === "T1" && e.row.filler && !e.checked);
   if (!need || !withFiller.length) { entries.forEach((e) => { e.checked = true; }); return { unverified: false }; }
-  const texts = [...new Set(withFiller.map((e) => e.row.filler.text))];
+  // TITLE-DECIDED NAME (2026-10-12): an agent phrase carries its description ("the Scottish physician Alexander Fleming"); the NAME is
+  // the longest tail of it that the title door resolves, starting at a name-like word (the received POSPrior ranks it PROPN, or does not
+  // know it). Every variant rides the SAME one title call; the full phrase is always tried first.
+  const closedV = closedClassOf(fw, frame.lang || "en");
+  // THE NAME KEEPS ITS HEAD (the archon panel, MF5): from a descriptive phrase the name starts at its first name-like word (the prior
+  // ranks it PROPN or does not know it) once the leading descriptors are dropped — "the Scottish physician Alexander Fleming" is
+  // "Alexander Fleming" — and is then trimmed only from the RIGHT, never below two words of a multi-word name ("Alexander Fleming FRS"
+  // is "Alexander Fleming"; "the retired plumber Jane Paris" is "Jane Paris" or nothing — never the city Paris).
+  const variantsOf = (f) => {
+    const tk = tokensOf(f.text, frame.lang || null), out = [{ text: f.text, from: 0, to: f.text.length }];
+    let h = 0;
+    while (h < tk.length && (closedV(tk[h].fold) || ((r) => r != null && r < 8)(posRankOf(tk[h].text, frame.lang || null)))) h++;
+    if (h >= tk.length) return out;
+    // A word the prior knows ONLY as a common noun (rank 7 or 8: NOUN, never PROPN-dominant) cannot END a name that is cut short of the run:
+    // "Confederate veteran" in "Confederate veteran John W. Morton" is a description (the title door happens to have a page for it).
+    const commonAt = (k) => !closedV(tk[k].fold) && ((r) => r === 7 || r === 8)(posRankOf(tk[k].text, frame.lang || null));
+    const nameLikeAt = (k) => !closedV(tk[k].fold) && ((r) => r == null || r >= 8)(posRankOf(tk[k].text, frame.lang || null));
+    for (let e = tk.length; e > h; e--) {
+      if (e - h < 2 && tk.length - h >= 2) break;
+      const v = { text: f.text.slice(tk[h].start, tk[e - 1].end), from: tk[h].start, to: tk[e - 1].end, descriptor: e < tk.length && commonAt(e - 1) };
+      if (!out.some((x) => x.text === v.text)) out.push(v);
+    }
+    // …and the NAME can be the TAIL of a descriptive run whose first words the prior does not know: from every name-like word that follows a
+    // common one, the rest of the run is a candidate ("Confederate veteran | John W. Morton").
+    for (let st = h + 1; st < tk.length; st++) {
+      if (!commonAt(st - 1) || !nameLikeAt(st)) continue;
+      const v = { text: f.text.slice(tk[st].start, tk[tk.length - 1].end), from: tk[st].start, to: tk[tk.length - 1].end };
+      if (!out.some((x) => x.text === v.text)) out.push(v);
+    }
+    return out;
+  };
+  // a filler may carry ALTERNATIVES (a place phrase after each locative preposition, left to right): every alternative and each of
+  // its head-keeping variants rides the SAME single title call, and the first that is a page wins
+  const candidatesOf = (f) => (Array.isArray(f.alts) && f.alts.length ? f.alts : [f]).flatMap((alt) => variantsOf(alt).map((v) => ({ ...v, base: alt })));
+  const texts = [...new Set(withFiller.flatMap((e) => candidatesOf(e.row.filler).map((v) => v.text)))];
   let table = null;
   try { table = typeof resolveTitles === "function" ? await resolveTitles(texts.slice()) : null; } catch { table = null; }
   const ok = table instanceof Map;
+  const isNamed = (res) => !!(res && typeof res.title === "string" && res.title && !res.disambiguation);
   for (const e of withFiller) {
     e.checked = true;
-    const res = ok ? table.get(e.row.filler.text) : undefined;
-    const named = ok ? !!(res && typeof res.title === "string" && res.title && !res.disambiguation) : !e.viaTitle;
-    if (!named) e.row = { ...e.row, filler: null };
+    if (!ok) { if (e.viaTitle) e.row = { ...e.row, filler: null }; continue; }
+    const f = e.row.filler;
+    const hit = candidatesOf(f).find((v) => !v.descriptor && isNamed(table.get(v.text)));
+    if (!hit) { e.row = { ...e.row, filler: null }; continue; }
+    const title = table.get(hit.text).title;                       // what the name IS: contest candidates that are one page are one entity
+    const b0 = hit.base.span[0];
+    e.row = { ...e.row, filler: { text: hit.text, span: [b0 + hit.from, b0 + hit.to], title } };
   }
   return { unverified: !ok };
 }
@@ -115,9 +168,9 @@ async function verifyFillers(entries, frame, resolveTitles) {
 // ── choosing ─────────────────────────────────────────────────────────────────────────────────────────────────────
 function makeBearing(frame, code, fw) {
   const closed = closedClassOf(fw, code);
-  const stems = (s) => tokensOf(s).map((t) => stemOf(t.fold, code));
+  const stems = (s) => tokensOf(s, code).map((t) => stemOf(t.fold, code));
   const refSeqs = frame.referents.map((r) => asArr(r.aliases).length ? r.aliases.map(stems) : [stems(r.surface), stems(r.title)]);
-  const refContent = new Set(frame.referents.flatMap((r) => asArr(r.aliases).flatMap((a) => tokensOf(a).filter((t) => !closed(t.fold)).map((t) => stemOf(t.fold, code)))));
+  const refContent = new Set(frame.referents.flatMap((r) => asArr(r.aliases).flatMap((a) => tokensOf(a, code).filter((t) => !closed(t.fold)).map((t) => stemOf(t.fold, code)))));
   const contains = (hay, seq) => { for (let i = 0; i + seq.length <= hay.length; i++) if (seq.every((s, k) => hay[i + k] === s)) return true; return false; };
   return (entry) => {
     const hay = stems(entry.row.sentence);
@@ -126,6 +179,87 @@ function makeBearing(frame, code, fw) {
     const titleAgree = stems(entry.page.title).some((s) => refContent.has(s)) ? 1 : 0;
     return [covered, pred, titleAgree, -entry.order];
   };
+}
+/** LICENCE (the live English held-out gate, 2026-10-13: "what is the capital of Kenya" contested by the word "city", "what currency is
+ *  used in Japan" by "These"): a SINGLE-token filler that cannot be an answer is not a candidate and not a rival. Per the language's own
+ *  tables — never a word list: a closed-class word ("these", "it"); a bare numeral on a name slot ("4" cut from "4,700 km"); a word the
+ *  language's POS prior ranks an adverb ("unanimously"); on a place ask, a declared kind-of-place noun ("city", "country").
+ *  A quantity ask keeps "no", "none" and numerals ("Venus has no moons"). Multi-token fillers are never touched: "The Who" is a name.
+ *  → the reason ("closed" | "numeral" | "adverb" | "kind") or null. */
+export function makeLicense(frame, code, fw) {
+  const closed = closedClassOf(fw, code);
+  const G = grammarOf(code) || {};
+  const kinds = new Set(asArr(G.placeNouns).map((w) => { const t = tokensOf(String(w), code); return t.length === 1 ? t[0].fold : null; }).filter(Boolean));
+  const slot = frame && frame.slot;
+  // a PLACE is asked for when the slot says so, or when the ask's own relation word is a kind of place ("the CAPITAL of Kenya": slot thing)
+  const asked = [...asArr(frame && frame.predicate).map((p) => p && p.surface), ...asArr(frame && frame.attributes).map((a) => a && a.surface)].filter(Boolean);
+  const placeAsk = slot === "place" || asked.some((w) => { const t = tokensOf(String(w), code); return t.length === 1 && kinds.has(t[0].fold); });
+  return (text) => {
+    if (slot === "quantity") return null;
+    const toks = tokensOf(String(text == null ? "" : text), code);
+    if (toks.length !== 1) return null;
+    const w = toks[0].fold;
+    if (closed(w)) return "closed";
+    if (slot !== "time" && /^\p{N}[\p{N}.,]*$/u.test(toks[0].text)) return "numeral";
+    if (posRankOf(toks[0].text, code) === 1) return "adverb";
+    if (placeAsk && kinds.has(w)) return "kind";
+    return null;
+  };
+}
+
+/** Set the junk fillers aside — but ONLY when a row at least as strong survives. A junk-filler row that out-bears every survivor is the
+ *  real answer wearing a mis-bound filler ("Washington was unanimously elected the first president" bound "unanimously"): dropping it
+ *  would leave a weaker, wrong row to be committed (John Hanson), so then nothing changes. Evidence is the first three bearing terms
+ *  (referents covered, predicate covered, title agreement); page order is not evidence. */
+export function setAsideJunk(entries, isJunk) {
+  const junk = [], keep = [];
+  for (const e of entries) (e.row && e.row.filler && isJunk(e.row.filler.text) ? junk : keep).push(e);
+  const none = { applied: false, kept: entries, set: [] };
+  if (!junk.length || !keep.length) return none;
+  const ev = (e) => (e.b || []).slice(0, 3);
+  const cmp = (a, b) => { for (let i = 0; i < 3; i++) if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) - (b[i] || 0); return 0; };
+  const best = (xs) => xs.map(ev).sort((a, b) => cmp(b, a))[0];
+  if (cmp(best(junk), best(keep)) > 0) return none;      // the junk row is STRICTLY stronger than every survivor
+  return { applied: true, kept: keep, set: junk };
+}
+
+/** DOMINANCE (the live held-out "how many players does a football team have on the field": 53 vs 11): one row says every word of the
+ *  ask that another row says AND more ("on the field"), so the other row speaks to a narrower or different question — it is not a
+ *  rival. No threshold: a strict superset of the ask's own content stems, over each of the others. → the dominant row, or null. */
+export function dominantRow(rows, frame, code, fw) {
+  if (!Array.isArray(rows) || rows.length < 2) return null;
+  const closed = closedClassOf(fw, code);
+  const stemsOf = (t) => tokensOf(t, code).filter((x) => !closed(x.fold)).map((x) => stemOf(x.fold, code));
+  // only the ask's SCOPE words count — predicate, attribute and counted stems. A referent's own name is never a scope word: a row that
+  // spells the same entity longer ("Wolfgang Amadeus Mozart" for "Mozart") says no more of what was asked (panel 4, second re-read).
+  const ask = new Set([
+    ...asArr(frame.predicate).map((p) => p.stem),
+    ...asArr(frame.attributes).flatMap((a) => asArr(a.stems)),
+    ...asArr(frame.counted && frame.counted.stems),
+  ].filter(Boolean));
+  if (!ask.size) return null;
+  // the words said in the CLAUSE that holds the filler (commas and semicolons bound it): "Voltaire wrote Emma, a novel, as a joke" says
+  // "novel" in an appositive, not of what Voltaire wrote
+  const clauseOf = (r) => {
+    const t = String(r.sentence || ""), f = r.filler && Array.isArray(r.filler.span) ? r.filler.span : null;
+    if (!f) return t;
+    let a = 0, b = t.length;
+    for (let i = f[0] - 1; i >= 0; i--) if (",;:()".includes(t[i])) { a = i + 1; break; }
+    for (let i = f[1]; i < t.length; i++) if (",;:()".includes(t[i])) { b = i; break; }
+    return t.slice(a, b);
+  };
+  const cover = rows.map((r) => { const have = new Set(stemsOf(clauseOf(r))); return [...ask].filter((st) => have.has(st)); });
+  // …and a crowned row must NAME every anchor in that clause: a row carried by its page's title ("Kathryn Sullivan became the first American
+  // woman to walk in space" on "Has a Woman Ever Walked on the Moon?") says nothing of the Moon — the live false premise, crowned once
+  const namesAnchors = (r) => { const have = new Set(stemsOf(clauseOf(r))); return frame.referents.every((ref) => [ref.surface, ref.title, ...asArr(ref.aliases)].filter(Boolean).some((n) => { const st = stemsOf(n); return st.length && st.every((x) => have.has(x)); })); };
+  for (let i = 0; i < rows.length; i++) {
+    const mine = new Set(cover[i]);
+    // …and the dominant row must say EVERY scope word of the ask: a row that is merely less incomplete than another still does not
+    // answer the ask (the false premise "the first WOMAN to walk on the Moon": neither row says "woman" — no row is crowned)
+    if (mine.size < ask.size || !namesAnchors(rows[i])) continue;
+    if (rows.every((_, j) => j === i || (cover[j].every((st) => mine.has(st)) && mine.size > cover[j].length))) return { row: rows[i], index: i, missing: rows.filter((_, j) => j !== i).map((r2, k) => ({ row: r2, words: [...mine].filter((st) => !new Set(cover[rows.indexOf(r2)]).has(st)) })) };
+  }
+  return null;
 }
 const byBearing = (a, b) => { for (let i = 0; i < 4; i++) if (a.b[i] !== b.b[i]) return b.b[i] - a.b[i]; return 0; };
 
@@ -143,7 +277,7 @@ const finish = (clause, row) => {
 function firstBoundary(text, from, G) {
   let at = -1;
   for (let i = Math.max(0, from); i < text.length; i++) if (",;:(（，；".includes(text[i])) { at = i; break; }
-  for (const t of tokensOf(text)) if (t.start >= from && G.clauseWords.includes(t.fold) && (at < 0 || t.start < at)) { at = t.start; break; }
+  for (const t of tokensOf(text, G.lang || null)) if (t.start >= from && G.clauseWords.includes(t.fold) && (at < 0 || t.start < at)) { at = t.start; break; }
   return at;
 }
 
@@ -153,7 +287,7 @@ function firstBoundary(text, from, G) {
  *  legs."). A time, or anything that cannot be built from the row's own words, is the row's sentence verbatim. */
 export function realise(row, frame, { fw, lang }) {
   if (row && row.viaSpan) return row.sentence;   // read by the extractive witness: the sentence as written ("…whose company designed and built the tower"), never cut to a clause that loses the verb asked about
-  const G = GRAMMAR[lang];
+  const G = grammarOf(lang);
   const f = row && row.filler;
   const text = row ? row.sentence : "";
   if (!G || !f || !Array.isArray(f.span) || text.slice(f.span[0], f.span[1]) !== f.text) return text;
@@ -175,7 +309,7 @@ export function realise(row, frame, { fw, lang }) {
       return finish(text.slice(0, end), row);
     }
     const closed = closedClassOf(fw, lang);
-    const toks = tokensOf(text);
+    const toks = tokensOf(text, lang);
     const gapless = (a, b) => /^\s+$/.test(text.slice(a.end, b.start));
     const fi = toks.findIndex((t) => t.start >= fa);
     if (fi <= 0) return text;
@@ -222,7 +356,7 @@ async function run({ question, lang, passages, now, deps }) {
   if (aborted(signal)) return bare({ aborted: true });
 
   // 1 ── the grammar of the ask
-  const frame = await askFrame(said, { fw, lang: code, resolveTitles: deps.resolveTitles });
+  const frame = await askFrame(said, { fw, lang: code, resolveTitles: deps.resolveTitles, suggestQuery: typeof deps.suggestQuery === "function" ? deps.suggestQuery : null });
   if (aborted(signal)) return bare({ aborted: true });
   if (!frame.ok) {
     const kind = frame.gap && frame.gap.kind ? frame.gap.kind : "not_a_slot_ask";
@@ -230,6 +364,8 @@ async function run({ question, lang, passages, now, deps }) {
   }
 
   const tv = createTurnVoid(frame);
+  // SURVIVE TYPING: a second reading of the ask was used — every word read differently is disclosed, never silent (fold-chat-typing.js)
+  if (Array.isArray(frame.readAs) && frame.readAs.length) tv.note("read-as", { changes: frame.readAs.map((c) => ({ typed: c.typed, read: c.read, how: c.how })) });
   const bearing = makeBearing(frame, code, fw);
   const searched = [];
   const sourcesSeen = [];
@@ -239,15 +375,21 @@ async function run({ question, lang, passages, now, deps }) {
   const finishTurn = (parts) => {
     const trace = traceOf(tv);
     const tree = tv.close();
-    return { ...bare({ slot: frame.slot, searched: uniq(searched), void: tree, trace, sources: sourcesSeen.slice() }), ...parts };
+    return { ...bare({ slot: frame.slot, searched: uniq(searched), void: tree, trace, sources: sourcesSeen.slice() }), ...parts,
+      // THE REAL FRAME rides the receipt (2026-10-11): the resolveTitles-backed referents and the
+      // predicate — what the compound one shot binds later parts against (omnilingual: a referent is
+      // whatever a TITLE resolved to, never a case rule).
+      frame: { slot: frame.slot, referents: frame.referents, predicate: frame.predicate, attributes: frame.attributes || [], counted: frame.counted || null },
+    };
   };
   const partial = () => finishTurn({ aborted: true });
 
   // 2 ── bind
-  const first = bindPassages(passages, frame, { fw, code });
+  const pageEntity = await pageEntitiesOf(passages, deps.resolveTitles);
+  const first = bindPassages(passages, frame, { fw, code, pageEntity });
   addSources(first.read);
   let entries = first.entries;
-  let unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles)).unverified;
+  let unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles, fw)).unverified;
   if (aborted(signal)) return partial();
 
   const witnesses = () => entries.filter((e) => e.row.tier === "T1" && e.row.filler && e.row.polarity === "+");
@@ -262,41 +404,30 @@ async function run({ question, lang, passages, now, deps }) {
     const have = new Set(entries.map((e) => e.page.url + "\u0000" + e.page.title));
     const fresh = more.filter((p) => p && typeof p.text === "string" && !have.has((p.url || "") + "\u0000" + (p.title || "")) && !asArr(passages).some((x) => x && x.url && x.url === p.url));
     widened = fresh;
-    const next = bindPassages(fresh, frame, { fw, code, from: asArr(passages).length });
+    const next = bindPassages(fresh, frame, { fw, code, from: asArr(passages).length, pageEntity: await pageEntitiesOf(fresh, deps.resolveTitles) });
     addSources(next.read);
     entries = entries.concat(next.entries);
     for (const p of fresh) if (isStr(p.query)) searched.push(p.query);
     tv.note("widen", { asked, read: next.read.map((s) => ({ title: s.title, host: s.host, url: s.url })), ...(reason ? { reason } : {}) });
-    unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles)).unverified || unverifiedNames;
+    unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles, fw)).unverified || unverifiedNames;
     if (aborted(signal)) return partial();
   }
 
-  // 3b ── the extractive reader as a SECOND WITNESS. The binder above wants the filler, the predicate and the referent tied by the sentence's own grammar; "whose company
-  // designed and built the tower" and "designed by his company and built for the Exposition" say who built it and bind to nothing. When nothing witnessed the slot,
-  // the page's best sentence for the same ask is read by the span module (a name that fits "who", the ask's own predicate in the sentence, never a name made of the
-  // predicate), and a span that carries a name enters the pool as a row like any other: its filler still has to resolve to a page title (verifyFillers) and goes
-  // through the same current-ness, choosing and contest below. Only the person slot: that is the class the span module types by "a name".
-  if (!witnesses().length && frame.slot === "person") {
-    const all = asArr(passages).concat(widened);
-    const query = said + " " + frame.referents.map((r) => r.surface).join(" ");
-    let spans = [];
-    try { spans = answerSpan(query, all.map((p) => ({ title: p.title || "", text: typeof p.text === "string" ? p.text : "", url: p.url || "" }))).spans || []; } catch { spans = []; }
-    let k = 0;
-    for (const sp of spans) {
-      if (!sp.atom || !sp.sentence) continue;
-      const p = all[sp.passageIndex]; if (!p) continue;
-      const source = { ref: isStr(p.ref) ? p.ref : "S" + (sp.passageIndex + 1), title: p.title || "", url: p.url || "", host: p.host || hostOf(p.url), lang: p.lang || code };
-      const sa = sp.sentence.start, a0 = sp.atom.start - sa, a1 = sp.atom.end - sa;
-      if (a0 < 0 || a1 > sp.sentence.text.length || sp.sentence.text.slice(a0, a1) !== sp.atom.text) continue;     // the filler is a slice of the sentence, or it is nothing
-      const row = { tier: "T1", sentence: sp.sentence.text, source, span: [sa, sp.sentence.end], polarity: "+", tense: "unknown", filler: { text: sp.atom.text, span: [a0, a1] }, emphasis: [[a0, a1]], viaSpan: true };
-      entries.push({ row, viaTitle: false, viaSpan: true, page: source, order: 900000 + k++ });
-      addSources([source]);
-    }
-    if (k) { unverifiedNames = (await verifyFillers(entries, frame, deps.resolveTitles)).unverified || unverifiedNames; if (aborted(signal)) return partial(); }
-  }
-
   const readTitles = sourcesSeen.map((s) => s.title || s.host || s.url).filter(isStr);
-  const scored = entries.map((e) => ({ ...e, b: bearing(e) })).sort(byBearing);
+  let scored = entries.map((e) => ({ ...e, b: bearing(e) })).sort(byBearing);
+  // 3b ── LICENCE: a filler that cannot be an answer is no candidate and no rival (set aside, said in the trace, only if a row at least as
+  //       strong survives — see setAsideJunk)
+  {
+    const license = makeLicense(frame, code, fw);
+    const live = scored.filter((e) => e.row.tier === "T1" && e.row.filler && e.row.polarity === "+");
+    const sa = setAsideJunk(live, (t) => !!license(t));
+    if (sa.applied) {
+      const gone = new Set(sa.set.map((e) => e.row));
+      tv.note("set-aside", { fillers: sa.set.map((e) => ({ text: e.row.filler.text, why: license(e.row.filler.text) })) });
+      scored = scored.filter((e) => !gone.has(e.row));
+      entries = entries.filter((e) => !gone.has(e.row));
+    }
+  }
   const closestOf = (list) => (list.length ? list[0].row : null);
 
   // 4 ── the CURRENT-ness rule
@@ -321,8 +452,9 @@ async function run({ question, lang, passages, now, deps }) {
   // 5 ── choose: distinct fillers in order of their best row's bearing
   const groups = [];
   for (const e of usable) {
-    const g = groups.find((x) => sameFiller(x.name, e.row.filler.text));
-    if (g) g.entries.push(e); else groups.push({ name: e.row.filler.text, entries: [e] });
+    const t = e.row.filler.title || null;
+    const g = groups.find((x) => sameFiller(x.name, e.row.filler.text) || (t && x.title && x.title === t));
+    if (g) { g.entries.push(e); if (!g.title && t) g.title = t; } else groups.push({ name: e.row.filler.text, title: t, entries: [e] });
   }
 
   // 6 ── falsify: the best candidate first. A refuted one is set aside (its rows leave the pool: a dead holder is not a rival) and the
@@ -335,12 +467,22 @@ async function run({ question, lang, passages, now, deps }) {
     ? (query, o) => { if (!memo.has(query)) memo.set(query, (async () => deps.fetchLead(query, o))()); return memo.get(query); }
     : null;
   const refutedRows = [], evaluated = [];
+  // a filler-less NEGATION row denies the claim only if it says what the ask is about (its attribute: "currency", "king")
+  // the ask's NOUN-like words, by the language's own prior (rank 7+: "currency", "king"; a verb such as "used" is rank 6 and is not scope);
+  // a language with no prior ranks nothing, so no scope is applied and the check is as it was
+  const attrStems = [
+    ...asArr(frame.predicate).filter((p) => p && p.surface && (posRankOf(p.surface, code) || 0) >= 7).map((p) => p.stem),
+    ...asArr(frame.attributes).flatMap((a) => asArr(a && a.stems)),
+  ].filter(Boolean);
+  const negationScope = attrStems.length
+    ? (row) => { const have = new Set(tokensOf(String((row && row.sentence) || ""), code).map((t) => stemOf(t.fold, code))); return attrStems.every((s) => have.has(s)); }
+    : null;
   let firstRefuted = null, budget = DECLARED.maxCandidates;
   const evaluate = async (g) => {
     const cand = g.entries[0].row;
     tv.note("candidate", { row: cand });
     const pool = poolAll.filter((r) => !refutedRows.includes(r));
-    const run = await runFalsify({ candidate: { filler: cand.filler, row: cand }, frame, rows: pool, now, fetchLead, signal });
+    const run = await runFalsify({ candidate: { filler: cand.filler, row: cand }, frame, rows: pool, now, fetchLead, signal, negationScope });
     for (const qy of run.queries) searched.push(qy);
     noteFalsification(tv, run, cand.filler.text);
     const outcome = { run, cand, group: g };
@@ -379,6 +521,13 @@ async function run({ question, lang, passages, now, deps }) {
   }
   if (run.standing === "contested") {
     const rows = run.contest.length >= 2 ? run.contest : [cand];
+    // one row covers strictly more of the ask's own words than every other: the others answer a narrower or different question
+    const dom = dominantRow(rows, frame, code, fw);
+    if (dom) {
+      const unmeasured = [`${dom.missing.map((m) => `another source says ${q(m.row.filler && m.row.filler.text)} but does not say ${m.words.slice(0, 3).map(q).join(", ")}`).join("; ")}`];
+      const answer = { text: realise(dom.row, frame, { fw, lang: code }), filler: dom.row.filler, row: dom.row, standing: "unmeasured", survived: [], unmeasured, by: "mechanical" };
+      return finishTurn({ answer });
+    }
     if (rows.length >= 2) return finishTurn({ contest: rows });
     return finishTurn({ gap: { kind: "unwitnessed", closest: cand, tried: readTitles, closeBy: [] } });
   }

@@ -1,0 +1,990 @@
+{
+ "schema": "POSPrior@1",
+ "language": "jam",
+ "provenance": {
+  "giver": "POS projection (annotation transfer) — word alignment by IBM Model 1 with a diagonal prior, both directions, intersection links; each link adds the anchor form's own UD UPOS distribution (soft vote, ambiguity kept); a (form, class) vote kept only if it strictly exceeds all 199 shuffled-pairing runs of the same pipeline. Anchor taggers: pos-eng (Universal Dependencies — https://raw.githubusercontent.com/UniversalDependencies/UD_English-EWT/master/en_ewt-ud-train.conllu (train split), human-annotated gold treebank); pos-fra (Universal Dependencies — https://github.com/UniversalDependencies/UD_French-GSD (train split), human-annotated gold treebank); pos-spa (Universal Dependencies — https://github.com/UniversalDependencies/UD_Spanish-AnCora (CC BY-SA 4.0) (train split), human-annotated gold treebank). Parallel text: udhr-jam~eng [73 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]; udhr-jam~fra [71 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]; udhr-jam~spa [72 pairs, public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr]. Builder: eval/creole/pos-projection-run.mjs (pre-registered in eval/creole/POS-PROJECTION-PREREG.md).",
+  "license": "CC BY-SA 4.0 (projection; anchors UD CC BY-SA 4.0; parallel sources as listed — MIT / CC BY 2.0 FR / public domain)",
+  "method": "eval/creole/pos-projection.mjs",
+  "adoptedArms": {
+   "multi": true,
+   "fine": false,
+   "heldoutLambda": false,
+   "gateClosed": true,
+   "gateOpen": false,
+   "identity": true
+  },
+  "round": 2,
+  "parallel": [
+   {
+    "name": "udhr-jam~eng",
+    "kind": "udhr",
+    "pairs": 73,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "eng"
+   },
+   {
+    "name": "udhr-jam~fra",
+    "kind": "udhr",
+    "pairs": 71,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "fra"
+   },
+   {
+    "name": "udhr-jam~spa",
+    "kind": "udhr",
+    "pairs": 72,
+    "licence": "public domain (UN GA res. 217 A (III)); unicode encodings via github.com/wooorm/udhr",
+    "anchor": "spa"
+   }
+  ],
+  "heldOutGuard": {
+   "rule": "a training sentence is dropped when its letters+digits key equals any creole sentence of any held-out file",
+   "log": []
+  },
+  "trainingSize": {
+   "pairs": 216,
+   "creoleTokens": 9546,
+   "forms": 185,
+   "rawForms": 454
+  },
+  "chance": {
+   "realKeptVotes": 141,
+   "bestShuffledRunKeptVotes": 44,
+   "beatsChance": true
+  },
+  "heldOutCoverage": {
+   "text": "creole side of the language-ID held-out file, read-only, never used to build",
+   "wordTokens": 3212,
+   "covered": 850,
+   "coverage": 0.265,
+   "commonestMissing": [
+    "ah×111",
+    "simtom×36",
+    "kiah×34",
+    "diziiz×32",
+    "kiansa×32",
+    "bai×25",
+    "mi×23",
+    "deh×23",
+    "wah×20",
+    "ingkluud×20",
+    "taip×19",
+    "az×19",
+    "infekshan×18",
+    "influenza×16",
+    "piipl×16",
+    "muos×15",
+    "rix×14",
+    "kaman×13",
+    "okor×12",
+    "ab×12",
+    "sti×11",
+    "dayabiitis×11",
+    "yuh×10",
+    "demaya×10",
+    "kies×10"
+   ]
+  },
+  "calibration": {
+   "note": "Per-UPOS precision/recall of the SAME method on languages with gold, at the nearest data size. This is the method's error bar, not a measurement of this language; domain shift is not calibrated. Abstentions count against recall. 95% bootstrap intervals are in packs/CALIBRATION.json.",
+   "condition": "C1",
+   "row": "UDHR only",
+   "pcm_ud_naija_test": {
+    "withIdentityFillAccuracyAllTokens": 0.266,
+    "withoutIdentityFill": {
+     "accuracyAll": 0.091,
+     "macroF1": 0.127,
+     "coverage": 0.297
+    },
+    "baselines": {
+     "B0_majorityClass_accuracy": 0.077,
+     "B1_identityLookupOnly": {
+      "accuracyAll": 0.313,
+      "coverage": 0.506,
+      "macroF1": 0.361
+     }
+    },
+    "nonTrivialTokens": 1055,
+    "coverage": 0.57,
+    "accuracyOnCovered": 0.468,
+    "macroF1": 0.319,
+    "macroF1CI95": [
+     0.292,
+     0.358
+    ],
+    "fitPairs": 262,
+    "fitCreoleTokens": 9477,
+    "perUPOS": {
+     "ADJ": {
+      "nGold": 37,
+      "precision": 0.45,
+      "recall": 0.49
+     },
+     "ADP": {
+      "nGold": 72,
+      "precision": 0.65,
+      "recall": 0.54
+     },
+     "ADV": {
+      "nGold": 94,
+      "precision": 0.96,
+      "recall": 0.59
+     },
+     "AUX": {
+      "nGold": 155,
+      "precision": 0.32,
+      "recall": 0.15
+     },
+     "CCONJ": {
+      "nGold": 13,
+      "precision": 1,
+      "recall": 1
+     },
+     "DET": {
+      "nGold": 33,
+      "precision": 0.4,
+      "recall": 0.76
+     },
+     "INTJ": {
+      "nGold": 34,
+      "precision": 0,
+      "recall": 0
+     },
+     "NOUN": {
+      "nGold": 142,
+      "precision": 0.29,
+      "recall": 0.27
+     },
+     "NUM": {
+      "nGold": 22,
+      "precision": 0.6,
+      "recall": 0.14
+     },
+     "PART": {
+      "nGold": 12,
+      "precision": 0,
+      "recall": 0
+     },
+     "PRON": {
+      "nGold": 189,
+      "precision": 0.46,
+      "recall": 0.03
+     },
+     "PROPN": {
+      "nGold": 1,
+      "precision": 0.09,
+      "recall": 1
+     },
+     "PUNCT": {
+      "nGold": 31,
+      "precision": null,
+      "recall": 0
+     },
+     "SCONJ": {
+      "nGold": 33,
+      "precision": 0.79,
+      "recall": 0.33
+     },
+     "VERB": {
+      "nGold": 178,
+      "precision": 0.75,
+      "recall": 0.28
+     },
+     "X": {
+      "nGold": 9,
+      "precision": 0,
+      "recall": 0
+     }
+    }
+   },
+   "hat_vs_pos_hat_lexicon": {
+    "withIdentityFillAccuracyAllTokens": 0.187,
+    "withoutIdentityFill": {
+     "accuracyAll": 0.144,
+     "macroF1": 0.152,
+     "coverage": 0.379
+    },
+    "baselines": {
+     "B0_majorityClass_accuracy": 0.154,
+     "B1_identityLookupOnly": {
+      "accuracyAll": 0.097,
+      "coverage": 0.431,
+      "macroF1": 0.096
+     }
+    },
+    "nonTrivialTokens": 50100,
+    "coverage": 0.577,
+    "accuracyOnCovered": 0.324,
+    "macroF1": 0.181,
+    "macroF1CI95": [
+     0.12,
+     0.222
+    ],
+    "fitPairs": 547,
+    "fitCreoleTokens": 13515,
+    "perUPOS": {
+     "ADJ": {
+      "nGold": 2383,
+      "precision": 0.27,
+      "recall": 0.08
+     },
+     "ADP": {
+      "nGold": 3960,
+      "precision": 0.3,
+      "recall": 0.54
+     },
+     "ADV": {
+      "nGold": 3012,
+      "precision": 0.07,
+      "recall": 0.01
+     },
+     "AUX": {
+      "nGold": 3763,
+      "precision": 0.58,
+      "recall": 0.46
+     },
+     "CCONJ": {
+      "nGold": 1215,
+      "precision": 0.5,
+      "recall": 0.55
+     },
+     "DET": {
+      "nGold": 3953,
+      "precision": 0.73,
+      "recall": 0.82
+     },
+     "INTJ": {
+      "nGold": 51,
+      "precision": 0,
+      "recall": 0
+     },
+     "NOUN": {
+      "nGold": 9012,
+      "precision": 0.19,
+      "recall": 0.07
+     },
+     "NUM": {
+      "nGold": 59,
+      "precision": 0,
+      "recall": 0
+     },
+     "PART": {
+      "nGold": 138,
+      "precision": 0,
+      "recall": 0
+     },
+     "PRON": {
+      "nGold": 9408,
+      "precision": 0,
+      "recall": 0
+     },
+     "PROPN": {
+      "nGold": 2465,
+      "precision": 0.01,
+      "recall": 0.01
+     },
+     "SCONJ": {
+      "nGold": 1752,
+      "precision": 0.54,
+      "recall": 0.1
+     },
+     "VERB": {
+      "nGold": 8923,
+      "precision": 0.38,
+      "recall": 0.06
+     },
+     "X": {
+      "nGold": 6,
+      "precision": 0,
+      "recall": 0
+     }
+    }
+   }
+  },
+  "closedLikeNoLabel": {
+   "note": "forms that behave like closed-class words (not bursty against a shuffled-text null, within the top-frequency mass of the lexifier's closed-class share) but have no projected UPOS — typically tense/aspect markers with no lexifier-side counterpart. Evidence of 'function word', not of which one.",
+   "forms": [
+    "piipl×37",
+    "aatikl×30"
+   ],
+   "calibration": {
+    "pcm_test_C1": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 507,
+     "packOnly": {
+      "precision": 0.8897338403041825,
+      "recall": 0.46153846153846156
+     },
+     "packPlusFlag": {
+      "precision": 0.8897338403041825,
+      "recall": 0.46153846153846156
+     }
+    },
+    "pcm_test_C2": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 507,
+     "packOnly": {
+      "precision": 0.8784119106699751,
+      "recall": 0.6982248520710059
+     },
+     "packPlusFlag": {
+      "precision": 0.8784119106699751,
+      "recall": 0.6982248520710059
+     }
+    },
+    "hat_C1": {
+     "unlabelledClosedLike": 1,
+     "goldClosedTokens": 24189,
+     "packOnly": {
+      "precision": 0.7663956937273426,
+      "recall": 0.5768324444995659
+     },
+     "packPlusFlag": {
+      "precision": 0.7824844340104113,
+      "recall": 0.6338418289305056
+     }
+    },
+    "hat_C2": {
+     "unlabelledClosedLike": 0,
+     "goldClosedTokens": 24189,
+     "packOnly": {
+      "precision": 0.8262953786491436,
+      "recall": 0.6342138988796561
+     },
+     "packPlusFlag": {
+      "precision": 0.8262953786491436,
+      "recall": 0.6342138988796561
+     }
+    }
+   }
+  },
+  "trust": "type-level lexicon only; a form absent here is a typed gap, not a negative; closed-class forms projected from an English/French aux/ADP/PRON are the most reliable, open-class recall is low"
+ },
+ "forms": {
+  "raits": {
+   "NOUN": 39.88
+  },
+  "siin": {
+   "SCONJ": 5.25,
+   "VERB": 14
+  },
+  "di": {
+   "DET": 138.82
+  },
+  "an": {
+   "CCONJ": 175.81
+  },
+  "iikwal": {
+   "ADJ": 5.37
+  },
+  "foundieshan": {
+   "NOUN": 5.99
+  },
+  "fi": {
+   "ADP": 56.99
+  },
+  "piis": {
+   "PART": 0.01
+  },
+  "ina": {
+   "ADP": 29.51
+  },
+  "apm": {
+   "ADP": 1
+  },
+  "fiil": {
+   "NOUN": 5.79
+  },
+  "notn": {
+   "VERB": 4.05
+  },
+  "it": {
+   "PRON": 2.5,
+   "SCONJ": 1.31
+  },
+  "if": {
+   "SCONJ": 2
+  },
+  "raiz": {
+   "PART": 1
+  },
+  "muor": {
+   "PROPN": 0.88
+  },
+  "promuot": {
+   "VERB": 2.09
+  },
+  "a": {
+   "ADP": 44.42
+  },
+  "difrent": {
+   "ADP": 2.92
+  },
+  "yuunaitid": {
+   "ADJ": 5,
+   "PROPN": 2.05
+  },
+  "nieshan": {
+   "PROPN": 5.38
+  },
+  "biesik": {
+   "ADJ": 6.75
+  },
+  "wol": {
+   "ADJ": 1.77,
+   "ADV": 1.23
+  },
+  "da": {
+   "X": 0.08
+  },
+  "alredi": {
+   "ADP": 2
+  },
+  "rispek": {
+   "X": 0.11
+  },
+  "siem": {
+   "DET": 2.67,
+   "NUM": 0.01
+  },
+  "ya": {
+   "DET": 6.07
+  },
+  "nou": {
+   "ADV": 2
+  },
+  "edikieshan": {
+   "NOUN": 8.85
+  },
+  "ova": {
+   "ADP": 1
+  },
+  "evribadi": {
+   "DET": 24.45,
+   "PRON": 24.92
+  },
+  "disorv": {
+   "AUX": 2.48,
+   "VERB": 6.69
+  },
+  "dong": {
+   "SYM": 0.01
+  },
+  "ar": {
+   "CCONJ": 45.24
+  },
+  "gruo": {
+   "NOUN": 3
+  },
+  "fordamuor": {
+   "ADV": 2.99
+  },
+  "no": {
+   "ADV": 4.2,
+   "X": 0.5
+  },
+  "paas": {
+   "SCONJ": 0.05
+  },
+  "konchri": {
+   "NOUN": 18.32
+  },
+  "anda": {
+   "SCONJ": 1.23
+  },
+  "fuli": {
+   "ADV": 2,
+   "X": 0.18
+  },
+  "eni": {
+   "DET": 9.68
+  },
+  "badi": {
+   "PRON": 0.26
+  },
+  "paat": {
+   "NOUN": 22.85
+  },
+  "nobadi": {
+   "ADJ": 4.68,
+   "DET": 6.44,
+   "INTJ": 0.76,
+   "PRON": 7.4
+  },
+  "bi": {
+   "AUX": 3.95
+  },
+  "taacha": {
+   "AUX": 1.99
+  },
+  "smadi": {
+   "NOUN": 7.02
+  },
+  "rait": {
+   "VERB": 13.34
+  },
+  "sorvis": {
+   "NOUN": 5.64
+  },
+  "bifuor": {
+   "AUX": 1.9
+  },
+  "baiyas": {
+   "NOUN": 7.57
+  },
+  "saat": {
+   "SYM": 0.01
+  },
+  "jostis": {
+   "ADJ": 2.9
+  },
+  "jiel": {
+   "AUX": 1.95
+  },
+  "uona": {
+   "DET": 2
+  },
+  "wan": {
+   "SYM": 0.01
+  },
+  "indipendent": {
+   "ADJ": 2.76
+  },
+  "wid": {
+   "NUM": 0.31
+  },
+  "kaaza": {
+   "CCONJ": 0.95
+  },
+  "neva": {
+   "DET": 1.81
+  },
+  "nashinal": {
+   "ADJ": 2.2
+  },
+  "leta": {
+   "NOUN": 3
+  },
+  "iimiel": {
+   "CCONJ": 1
+  },
+  "get": {
+   "PART": 1.91
+  },
+  "aafa": {
+   "ADJ": 3
+  },
+  "enjai": {
+   "PART": 1,
+   "VERB": 4
+  },
+  "sitisn": {
+   "ADP": 2.18,
+   "PART": 0.64
+  },
+  "nar": {
+   "CCONJ": 2.85
+  },
+  "skin": {
+   "NOUN": 3.86
+  },
+  "uu": {
+   "NOUN": 8.29,
+   "X": 0.26
+  },
+  "marid": {
+   "VERB": 3
+  },
+  "fambili": {
+   "NOUN": 10.75
+  },
+  "marij": {
+   "NOUN": 5.62
+  },
+  "agrii": {
+   "ADJ": 2.9
+  },
+  "sosaiyati": {
+   "ADJ": 4.06
+  },
+  "nofi": {
+   "AUX": 1.99,
+   "INTJ": 0.2
+  },
+  "kaaz": {
+   "ADP": 1.83
+  },
+  "rang": {
+   "NOUN": 4.01
+  },
+  "chienj": {
+   "VERB": 3
+  },
+  "tugeda": {
+   "PROPN": 0.86
+  },
+  "jain": {
+   "INTJ": 0.08
+  },
+  "bada": {
+   "PROPN": 1.38
+  },
+  "aneda": {
+   "VERB": 3
+  },
+  "schriet": {
+   "ADV": 2
+  },
+  "afi": {
+   "AUX": 1.97
+  },
+  "elp": {
+   "ADJ": 2.43
+  },
+  "til": {
+   "NOUN": 2.79
+  },
+  "i": {
+   "DET": 1
+  },
+  "spen": {
+   "ADJ": 2
+  },
+  "ikanamik": {
+   "ADJ": 2.93
+  },
+  "alidie": {
+   "ADJ": 2
+  },
+  "ded": {
+   "NOUN": 3
+  },
+  "sityuwieshan": {
+   "NOUN": 3
+  },
+  "mada": {
+   "NOUN": 3.97
+  },
+  "iz": {
+   "ADJ": 2
+  },
+  "kalij": {
+   "ADJ": 1.86
+  },
+  "naamali": {
+   "ADJ": 1.41
+  },
+  "imself": {
+   "ADJ": 3.83
+  },
+  "laaj": {
+   "CCONJ": 0.01,
+   "PART": 0.01,
+   "SYM": 0.01
+  },
+  "plies": {
+   "VERB": 3
+  },
+  "im": {
+   "PRON": 4.97
+  },
+  "dakyument": {
+   "PRON": 1.75
+  },
+  "outa": {
+   "VERB": 2
+  },
+  "du": {
+   "NOUN": 9.5
+  },
+  "stietos": {
+   "PROPN": 0.32
+  },
+  "teritori": {
+   "X": 0.08
+  },
+  "yu": {
+   "ADV": 3.01
+  },
+  "did": {
+   "NOUN": 4
+  },
+  "naida": {
+   "PRON": 1
+  },
+  "konchi": {
+   "PROPN": 1.02
+  },
+  "lain": {
+   "NUM": 0.31
+  },
+  "vuot": {
+   "ADV": 2
+  },
+  "siikrit": {
+   "ADJ": 1.79
+  },
+  "welnes": {
+   "ADJ": 2
+  },
+  "iin": {
+   "NOUN": 4
+  },
+  "liis": {
+   "ADJ": 2
+  },
+  "manijment": {
+   "ADJ": 1.22
+  },
+  "chrang": {
+   "X": 1
+  },
+  "shier": {
+   "X": 0.07
+  },
+  "we": {
+   "AUX": 0.01,
+   "NOUN": 0.01,
+   "PRON": 1
+  },
+  "se": {
+   "AUX": 0.5,
+   "PROPN": 0.5
+  },
+  "wa": {
+   "NOUN": 0.25,
+   "PROPN": 0.75
+  },
+  "mek": {
+   "PROPN": 1
+  },
+  "pan": {
+   "NOUN": 0.67,
+   "PROPN": 0.33
+  },
+  "wel": {
+   "INTJ": 1
+  },
+  "main": {
+   "ADJ": 1
+  },
+  "gud": {
+   "ADJ": 1
+  },
+  "fried": {
+   "VERB": 1
+  },
+  "in": {
+   "ADJ": 0.01,
+   "ADP": 0.93,
+   "ADV": 0.03,
+   "AUX": 0.01,
+   "NOUN": 0.01,
+   "SCONJ": 0.03,
+   "X": 0.01
+  },
+  "man": {
+   "NOUN": 1
+  },
+  "op": {
+   "NOUN": 1
+  },
+  "bad": {
+   "ADJ": 0.94,
+   "ADV": 0.04,
+   "NOUN": 0.01
+  },
+  "link": {
+   "NOUN": 0.82,
+   "PROPN": 0.05,
+   "VERB": 0.14
+  },
+  "put": {
+   "ADP": 0.01,
+   "VERB": 0.99
+  },
+  "big": {
+   "ADJ": 1
+  },
+  "beta": {
+   "NOUN": 1
+  },
+  "gi": {
+   "NOUN": 0.5,
+   "PROPN": 0.5
+  },
+  "bout": {
+   "NOUN": 0.2,
+   "PROPN": 0.8
+  },
+  "don": {
+   "PROPN": 1
+  },
+  "set": {
+   "ADJ": 0.2,
+   "NOUN": 0.15,
+   "VERB": 0.65
+  },
+  "chat": {
+   "VERB": 1
+  },
+  "worship": {
+   "NOUN": 1
+  },
+  "ada": {
+   "NOUN": 1
+  },
+  "itself": {
+   "PRON": 1
+  },
+  "ai": {
+   "AUX": 1
+  },
+  "out": {
+   "ADJ": 0.01,
+   "ADP": 0.7,
+   "ADV": 0.26,
+   "NOUN": 0.02,
+   "PRON": 0.01,
+   "X": 0.01
+  },
+  "wen": {
+   "PROPN": 1
+  },
+  "fail": {
+   "VERB": 1
+  },
+  "go": {
+   "NOUN": 0.01,
+   "PROPN": 0.01,
+   "VERB": 0.99
+  },
+  "dan": {
+   "PROPN": 1
+  },
+  "bring": {
+   "VERB": 1
+  },
+  "dat": {
+   "DET": 1
+  },
+  "do": {
+   "ADJ": 0.01,
+   "AUX": 0.68,
+   "NOUN": 0.01,
+   "PROPN": 0.01,
+   "VERB": 0.31
+  },
+  "tap": {
+   "NOUN": 1
+  },
+  "and": {
+   "ADP": 0.01,
+   "CCONJ": 1,
+   "DET": 0.01,
+   "X": 0.01
+  },
+  "ed": {
+   "NOUN": 0.13,
+   "PROPN": 0.87
+  },
+  "pie": {
+   "NOUN": 1
+  },
+  "wok": {
+   "NOUN": 1
+  },
+  "at": {
+   "ADP": 0.99,
+   "CCONJ": 0.01,
+   "SCONJ": 0.01
+  },
+  "de": {
+   "PROPN": 0.83,
+   "X": 0.17
+  },
+  "benefit": {
+   "NOUN": 0.67,
+   "PROPN": 0.06,
+   "VERB": 0.28
+  },
+  "work": {
+   "NOUN": 0.5,
+   "VERB": 0.5
+  },
+  "nat": {
+   "ADJ": 1
+  },
+  "so": {
+   "ADV": 0.87,
+   "SCONJ": 0.13,
+   "X": 0.01
+  },
+  "mash": {
+   "VERB": 1
+  },
+  "av": {
+   "PROPN": 1
+  },
+  "fier": {
+   "ADJ": 0.67,
+   "VERB": 0.33
+  },
+  "dis": {
+   "VERB": 1
+  },
+  "gens": {
+   "NOUN": 1
+  },
+  "tu": {
+   "PRON": 1
+  },
+  "fait": {
+   "AUX": 0.2,
+   "NOUN": 0.24,
+   "VERB": 0.56
+  },
+  "wie": {
+   "X": 1
+  },
+  "ou": {
+   "ADV": 0.31,
+   "CCONJ": 0.69
+  },
+  "sens": {
+   "NOUN": 0.98,
+   "VERB": 0.02
+  },
+  "breda": {
+   "PROPN": 1
+  },
+  "mata": {
+   "PROPN": 1
+  },
+  "sen": {
+   "PROPN": 1
+  },
+  "kier": {
+   "PROPN": 1
+  },
+  "si": {
+   "ADV": 0.11,
+   "NOUN": 0.01,
+   "PROPN": 0.01,
+   "SCONJ": 0.87,
+   "X": 0.01
+  },
+  "som": {
+   "X": 1
+  },
+  "baan": {
+   "PROPN": 1
+  },
+  "res": {
+   "NOUN": 1
+  },
+  "anz": {
+   "PROPN": 1
+  }
+ }
+}

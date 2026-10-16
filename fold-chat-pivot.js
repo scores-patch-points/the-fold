@@ -400,6 +400,7 @@ export function storePivot(pv) {
     ...(pv.gap ? { gap: pv.gap } : {}),
     ...(pv.gates ? { gates: pv.gates } : {}),
     ...(pv.continued ? { continued: pv.continued } : {}),
+    ...(Array.isArray(pv.notWitness) && pv.notWitness.length ? { notWitness: pv.notWitness.slice(0, 12) } : {}),   // the model's own earlier turns are not witnesses (fold-chat-record.js): the withheld sentences they alone covered, typed
   };
 }
 

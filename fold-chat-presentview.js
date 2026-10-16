@@ -727,7 +727,7 @@ function mountReplay(slot, rec, pres, question, onClose) {
     r.append(b, g, tx); return at(r, a);
   };
   const rp = el("div", "pv-rp");
-  const head = el("div", "pv-rp-h"); const hg = el("span", "pv-rp-g"); const say = el("span", "pv-rp-say"); const hop = el("span", "pv-rp-op");
+  const head = el("div", "pv-rp-h"); const hg = el("span", "pv-rp-g"); hg.setAttribute("aria-hidden", "true"); const say = el("span", "pv-rp-say"); say.setAttribute("role", "status"); say.setAttribute("aria-live", "polite"); say.setAttribute("aria-atomic", "true"); const hop = el("span", "pv-rp-op");
   const x = el("button", "pv-rp-x", "\u00d7"); x.type = "button"; x.setAttribute("aria-label", "Close the replay");
   head.append(hg, say, hop, x);
   const cols = el("div", "pv-rp-cols"); const L = el("div", "pv-rp-l"); const R = el("div", "pv-rp-r");
@@ -949,14 +949,23 @@ function deriveGraph(list, question) {
 }
 /** The panels: a header line (what it is doing now — the whole view when the workings are hidden), then three columns
  *  of FIXED height — 1 what it's doing · 2 the nine levels over the content · 3 the EOT ledger. */
+/** How long each live step stays up: 1 normal, 2 slower, 3 slowest. People who ask their system for reduced motion start at 2. */
+function livePace() {
+  try { const v = Number(localStorage.getItem("fold-chat:livePace")); if (v >= 1 && v <= 3) return v; } catch {}
+  try { return matchMedia("(prefers-reduced-motion: reduce)").matches ? 2 : 1; } catch { return 1; }
+}
 function buildPanels() {
   const rp = el("div", "pv-rp pv-live" + (viewMode() === "quiet" ? " quiet" : ""));
-  const head = el("div", "pv-rp-h"); const hg = el("span", "pv-rp-g"); const say = el("span", "pv-rp-say"); const hop = el("span", "pv-rp-op");
+  const head = el("div", "pv-rp-h"); const hg = el("span", "pv-rp-g"); hg.setAttribute("aria-hidden", "true"); const say = el("span", "pv-rp-say"); say.setAttribute("role", "status"); say.setAttribute("aria-live", "polite"); say.setAttribute("aria-atomic", "true"); const hop = el("span", "pv-rp-op");
   const tog = el("button", "pv-tog"); tog.type = "button";
   const paintTog = () => { const q = rp.classList.contains("quiet"); tog.textContent = q ? "show" : "hide"; tog.title = q ? "Show the workings" : "Hide the workings"; tog.setAttribute("aria-pressed", String(!q)); };
   tog.onclick = () => { const q = !rp.classList.contains("quiet"); try { localStorage.setItem(VIEW_KEY, q ? "quiet" : "full"); } catch {} for (const r of document.querySelectorAll(".pv-live")) { r.classList.toggle("quiet", q); r.querySelector(".pv-tog")?.dispatchEvent(new Event("paint")); } };
   tog.addEventListener("paint", paintTog); paintTog();
-  head.append(hg, say, hop, tog);
+  const pace = el("button", "pv-tog pv-pace"); pace.type = "button";
+  const paintPace = () => { const p = livePace(), w = p === 1 ? "normal" : p === 2 ? "slower" : "slowest"; pace.textContent = "pace: " + w; pace.title = "How long each step stays on screen while it works (applies to the next steps)"; pace.setAttribute("aria-label", `Step pace: ${w}. Press to change.`); };
+  pace.onclick = () => { const n = livePace() >= 3 ? 1 : livePace() + 1; try { localStorage.setItem("fold-chat:livePace", String(n)); } catch {} for (const b of document.querySelectorAll(".pv-pace")) b.dispatchEvent(new Event("paint")); };
+  pace.addEventListener("paint", paintPace); paintPace();
+  head.append(hg, say, hop, pace, tog);
   const cols = el("div", "pv-live-cols");
   const D = el("div", "pv-live-d"); const dlog = el("div", "pv-live-log pv-doing");
   D.append(el("div", "pv-k", "1 \u00b7 what it\u2019s doing"), dlog);
@@ -1000,7 +1009,7 @@ function buildPanels() {
   };
   return { rp, hg, say, hop, dlog, L, F, foot, rlog, setLevel, loopFx };
 }
-const newCtx = (question) => ({ question, drows: new Map(), rows: new Map(), looked: null, srcs: 0, g: null, material: [], level: -1 });
+const newCtx = (question) => ({ question, drows: new Map(), rows: new Map(), looked: null, srcs: 0, g: null, material: [], level: -1, liveText: "" });
 
 /** Apply one tape entry. No timers: motion comes from CSS on the nodes it inserts or moves. */
 function applyEntry(P, en, ctx) {
@@ -1375,20 +1384,28 @@ const FRAMES = [
   },
 ];
 
-/** SYN: from the web CON built, the bonds the answer will use, strongest first, as numbered steps (subject, verb, object).
- *  The step the sentence being written touches lights up; the rest recede. Beneath it, the sentence as it is written. */
+/** SYN: from the web CON built, the PATH the answer is taking — numbered steps (subject, verb, object).
+ *  THE PATH, NOT THE FORKS (user, 2026-10-11): once the answer's own words have walked a bond, the box shows
+ *  only the bonds its words touch — the forks it does not go down drop away. Before any words: all candidates.
+ *  A sentence still being drafted lights its own bond; the rest of the walked path stays lit beneath it. */
 function synFrame(ctx, ph) {
   const b = el("div", "pv-ph-b ph-syn2");
   const G2 = ctx.g?.G, draft = ph.draft;
   const nodeOf = new Map((G2?.nodes || []).map((n) => [n.id, n]));
-  const words = draft ? new Set(String(draft.s).toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []) : null;
+  const wordsOf = (s) => new Set(String(s || "").toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []);
+  const words = draft ? wordsOf(draft.s) : ctx.liveText ? wordsOf(ctx.liveText) : null;
   const lit = (n) => !!words && n.keys.some((k) => words.has(k));
-  const bonds = (G2?.edges || []).map((e) => ({ e, a: nodeOf.get(e.from), z: nodeOf.get(e.to) })).filter((x) => x.a && x.z)
-    .sort((p, q) => (q.a.rows.length + q.z.rows.length) - (p.a.rows.length + p.z.rows.length)).slice(0, 4);
+  const all = (G2?.edges || []).map((e) => ({ e, a: nodeOf.get(e.from), z: nodeOf.get(e.to) })).filter((x) => x.a && x.z)
+    .sort((p, q) => (q.a.rows.length + q.z.rows.length) - (p.a.rows.length + p.z.rows.length));
+  // fudge: a bond counts as walked when both its ends appear in the words so far; if NOTHING matches (a small
+  // model's own phrasing, no shared vocabulary), the strongest bond stands for the path rather than an empty box.
+  const walked = words ? all.filter((x) => lit(x.a) && lit(x.z)) : [];
+  const shown = (walked.length ? walked : all).slice(0, 4);
   const out = el("div", "outline");
-  out.append(el("div", "oh", bonds.length ? (draft ? "the steps this sentence follows" : "the steps the answer will follow") : "nothing linked to follow"));
+  const title = draft ? "the steps this sentence follows" : walked.length ? "the path the answer is taking" : "the steps the answer will follow";
+  out.append(el("div", "oh", shown.length ? title : "nothing linked to follow"));
   const pill = (n) => { const p = el("span", "pl" + (lit(n) ? " on" : ""), clip(n.label, 34)); if (n.rows.length > 1) p.append(el("i", "", String(n.rows.length))); return p; };
-  bonds.forEach((r, i) => { const on = lit(r.a) && lit(r.z); const line = el("div", "step" + (on ? " on" : words ? " off" : "")); line.append(el("span", "no", String(i + 1)), pill(r.a), el("span", "vb", clip(r.e.verb || "\u2192", 16)), pill(r.z)); out.append(stag(line, i)); });
+  shown.forEach((r, i) => { const on = lit(r.a) && lit(r.z); const line = el("div", "step" + (on ? " on" : words ? " off" : "")); line.append(el("span", "no", String(i + 1)), pill(r.a), el("span", "vb", clip(r.e.verb || "\u2192", 16)), pill(r.z)); out.append(stag(line, i)); });
   b.append(out, writingEl(draft));
   return b;
 }
@@ -1487,9 +1504,9 @@ function tokenStage(P, en, ctx, { stage, eot, view, level }) {
       let y = 4;
       G2.rows.forEach((r, ri) => {
         put(labs[ri], 0, y, { opacity: "1" }); y += 22; let x = 0;
-        for (const role of ["s", "v", "o"]) { for (const t of toks.filter((q) => q.ri === ri && q.role === role)) { const w = width(t); if (x + w > W && x > 0) { x = 0; y += 30; } put(t.el, x, y, { opacity: "1" }); x += w + 5; } x += 18; }
+        for (const role of ["s", "v", "o"]) { for (const t of toks.filter((q) => q.ri === ri && q.role === role)) { const w = width(t); if (x + w > W && x > 0) { x = 0; y += 42; } put(t.el, x, y, { opacity: "1" }); x += w + 5; } x += 18; }
         for (const t of toks.filter((q) => q.ri === ri && (q.role === "f" || q.role === "x"))) put(t.el, 8 + (t.i % 9) * 24, y + 14, { opacity: "0" });
-        y += 46;
+        y += 56;
       });
       fitTo(y);
       stage("SEG", "Finding who does what to what");
@@ -1682,17 +1699,18 @@ export function mountLive(body, { question = "", mdHtml = null } = {}) {
       fullMat = list.map((p) => ({ ref: p.ref || "", source: p.url || p.source || "", text: String(p.text || "") }));
       let t = Math.max(now(), readEnd);
       const all = list.slice(0, 7);
-      all.forEach((ps, j) => { push("quick", { n: j + 1, of: all.length, p: slimP(ps) }, t); t += 0.9; });
+      all.forEach((ps, j) => { push("quick", { n: j + 1, of: all.length, p: slimP(ps) }, t); t += 0.9 * livePace(); });
       const seen = new Set(), pick = [];
       for (const ps of all) { const dm = domainOfUrl(ps.url || ps.source) + "|" + (ps.ref || ""); if (seen.has(dm)) continue; seen.add(dm); pick.push(slimP(ps)); if (pick.length === 3) break; }
       const key = sidOf(pick.map((p) => p.url).join("|") + question);
-      for (const [k, sub, dwell] of [[3, 0, 1.8], [3, 1, 2.0], [3, 2, 2.2], [4, 0, 2.8], [5, 0, 2.2]]) { push("deep", { k, sub, key, ps: pick }, t); t += dwell; }
+      for (const [k, sub, dwell] of [[3, 0, 1.8], [3, 1, 2.0], [3, 2, 2.2], [4, 0, 2.8], [5, 0, 2.2]]) { push("deep", { k, sub, key, ps: pick }, t); t += dwell * livePace(); }
       srcs = all.length; readEnd = t;
     },
     writing(by = "model") { if (!closed) { writingAt = Math.max(now(), readEnd); push("writing", { srcs, by }, writingAt); readEnd = Math.max(readEnd, writingAt + 0.8); } },
     wrote(full, final = false) {
       if (closed) return;
       liveText = full;
+      ctx.liveText = full;   // the steps box reads the answer's own words to walk its path (synFrame)
       // every sentence the model has finished becomes a "draft" frame, so the middle shows the writing as it happens
       { const ss = sentencesOf(full); const doneN = final ? ss.length : Math.max(0, ss.length - 1); while (drafted < Math.min(doneN, 6)) { const at = Math.max(now(), readEnd, lastDraft + 0.9); lastDraft = at; push("draft", { i: drafted, s: ss[drafted] }, at); drafted++; readEnd = Math.max(readEnd, at); } }
       if (!painted) { painted = true; requestAnimationFrame(() => { painted = false; if (mdHtml) ansMd.innerHTML = mdHtml(liveText); else ansMd.textContent = liveText; }); }
@@ -1702,9 +1720,9 @@ export function mountLive(body, { question = "", mdHtml = null } = {}) {
         if (!sents.length) return;
         let t = Math.max(now(), readEnd);
         const checks = sents.map((s) => computeCheck(s, fullMat.length ? fullMat : ctx.material));
-        push("check", { k: 6, text: clip(full, 3000), sents, checks }, t); t += 1.8;
-        sents.forEach((_, i) => { push("check", { k: 7, i }, t); t += 2.6; });
-        push("check", { k: 8 }, t); t += 2.6;
+        push("check", { k: 6, text: clip(full, 3000), sents, checks }, t); t += 1.8 * livePace();
+        sents.forEach((_, i) => { push("check", { k: 7, i }, t); t += 2.6 * livePace(); });
+        push("check", { k: 8 }, t); t += 2.6 * livePace();
         for (const lp of pendingLoops.splice(0)) { push("loop", lp, t); t += 2.4; }
         readEnd = t;
       }

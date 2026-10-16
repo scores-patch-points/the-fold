@@ -32,6 +32,7 @@ import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope 
 import { junkOf, wallOf } from "./fold-chat-junk.js";
 import { maskNavRegion } from "./fold-chat-region.js";
 import { answerSpan, verifyRewrite } from "./fold-chat-answerspan.js";
+import { partsContentAllowed } from "./fold-chat-split.js";
 
 export const STRAND = Object.freeze({
   perPassageChars: 700,    // how much of one source a strand quotes (impression budget)
@@ -346,7 +347,12 @@ export function contentAllowed(msg, aloneKinds = []) {
   if (!String(msg.content ?? "").trim()) return true;
   if (msg.mode === "agent") return true;
   // A SLOT ANSWER (fold-chat-answerturn.js, stored with `answerTurn`, no snips): authored by the sources — the model is not called at all.
-  if (msg.authored === "sources" && msg.answerTurn && typeof msg.answerTurn === "object") return answerTurnBacksContent(msg);
+  // A COMPOUND one shot (fold-chat-split.js) stores `parts`: the content must be the parts' deterministic join, and EVERY line of it
+  // the words of ITS OWN part's source sentence — the same invariant, per line.
+  if (msg.authored === "sources" && msg.answerTurn && typeof msg.answerTurn === "object") {
+    if (Array.isArray(msg.answerTurn.parts) && msg.answerTurn.parts.length) return partsContentAllowed(msg.answerTurn, msg.content);
+    return answerTurnBacksContent(msg);
+  }
   if (msg.authored === "sources") return Array.isArray(msg.snips) && msg.snips.length > 0 && strandText(msg.snips).replace(/\s+/g, " ").trim() === String(msg.content).replace(/\s+/g, " ").trim();
   const rec = msg.grounding;
   if (!rec || rec.generate || rec.code) return true;

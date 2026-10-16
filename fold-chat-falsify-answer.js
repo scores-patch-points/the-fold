@@ -15,7 +15,7 @@
 // verdict per claim: contested (any source contradicts) · corroborated (2+ independent chains state it, swap holds)
 //                    · held (one chain) · weak (indiscriminate, or close but short) · unsupported.
 // Pure; node-testable. Every string out is a substring of the input (no wording is invented here).
-import { figuresIn, figureMatches, namesIn } from "./fold-chat-ground.js";
+import { figuresIn, figureMatches, namesIn, stemOf as groundStem } from "./fold-chat-ground.js";
 import { impressionOf } from "./fold-chat-impression.js";
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
 
@@ -28,18 +28,143 @@ const FW = new Set([...(FUNCTION_WORDS?.en || []), ..."the a an and or but of in
 const fold = (s) => String(s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const words = (s) => fold(s).match(/[\p{L}\p{N}]+/gu) || [];
 const stem = (w) => w.replace(/(?:ing|ed|es|s|ly)$/u, "").slice(0, 6);
-const contentStems = (s) => [...new Set(words(s).filter((w) => w.length > 2 && !FW.has(w) && !/^\d+$/.test(w)).map(stem))];
+/** one normal form for overlap (F2 S2b/r04-r05, C2/C3): the gate's irregular table first
+ *  (fell/fall, won/win, met/meet stay one verb). The local slice is NOT applied here — slicing
+ *  ("largest"→"larges") breaks idempotence with the predicate side; groundStem is a fixed point. */
+const contentStems = (s) => [...new Set(words(s).filter((w) => w.length > 2 && !FW.has(w) && !/^\d+$/.test(w)).map((w) => groundStem(w)))];
 const NEG = /\b(?:not|no|never|neither|nor|none|without|cannot|n't|failed to|did not|does not|is not|was not)\b/i;
 // a PREDICATE negation ("refused to concede", "denied the result") flips polarity the same way "did not" does
 const PNEG = /\b(?:refused?|denied|denies|rejected|rejects|declined|declines)\b/i;
-const neg = (s) => NEG.test(String(s)) || PNEG.test(String(s));
-/** The content stems a negation in `s` actually governs (the words right after the negator). A polarity flip counts
- *  only when the negation governs something the OTHER sentence commits to — never on a stray "no/not" elsewhere. */
+// NEGATORS THAT DO NOT NEGATE (referent-first repair, F2 C1/C5): scalar "not only/just/merely/simply" affirms,
+// epistemic "no doubt/question" asserts. Stripped before any polarity verdict, on both sides.
+const VOID_NEG = /\bnot\s+(?:only|just|merely|simply)\b|\bno\s+(?:doubt|question)\b/i;
+const stripVoid = (s) => String(s ?? "").replace(VOID_NEG, " ");
+const neg = (s) => NEG.test(stripVoid(s)) || PNEG.test(String(s));
+// polarity-transparent adverbs between a negator and its predicate ("not only divided", "did not really change")
+const SKIP_GOV = new Set(["only", "just", "merely", "simply", "even", "really", "certainly", "probably", "quite", "rather"]);
+const PRON = new Set(["he", "she", "it", "they", "we", "you", "i", "this", "that", "these", "those", "there", "here", "who", "which"]);
+const tokClean = (x) => String(x ?? "").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+/** edit distance capped at `cap` (early exit): "filed"/"file", "won"/"win" meet here; anything
+ *  farther never does. Used ONLY for predicate meeting, always behind the subject+proximity gates. */
+function levCapped(a, b, cap = 1) {
+  a = String(a); b = String(b);
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > cap) return cap + 1;
+  let prev = [];
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    let rowMin = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (cur[j] < rowMin) rowMin = cur[j];
+    }
+    if (rowMin > cap) return cap + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+/** The negated PREDICATE: the first content word after a negator, in normal form. Skips a small CLOSED
+ *  set (determiners/aux/pronouns/prepositions/transparent adverbs) — never the broad function-word list,
+ *  which eats real predicates ("seen", "stated"). Hyphenated forms split ("wrought-iron" → "wrought"). */
+const GOV_CLOSED = new Set(("the a an of in to with by for on at from as is are was were be been being has have had do does did will would could should shall may might must can it its this that these those which who whom whose and or but so than then too also there their they he she we you i my your his her our their my we our your an no not never neither nor none without cannot n't 's 'm 're 've 'll 'd s").split(" "));
+export function governedPredicate(s) {
+  const toks = String(s ?? "").toLowerCase().split(/[\s\-–—/]+/);
+  for (let i = 0; i < toks.length; i++) {
+    if (!NEG.test(toks[i]) && !PNEG.test(toks[i])) continue;
+    for (const x of toks.slice(i + 1, i + 7)) {
+      const t = tokClean(x);
+      if (t.length <= 2 || GOV_CLOSED.has(t) || SKIP_GOV.has(t)) continue;
+      return groundStem(t);
+    }
+  }
+  return null;
+}
+/** The subject of the negated clause: the last name ending before the negator (namesOf), else the first
+ *  word of the sentence. A pronoun subject ("He never returned") resolves through the neighbourhood
+ *  (`around`), never by position. */
+function negSubject(text, upto) {
+  const pre = String(text ?? "").slice(0, upto);
+  const ns = namesIn(pre);
+  // multiword names first: acronyms/date-fragments ("AD") match after the runs in namesIn's order
+  // and must never win the subject over a real being ("Eastern Roman Empire", not "AD")
+  const multi = ns.filter((n) => /\s/.test(n.trim()));
+  if (multi.length) return { name: multi[multi.length - 1], pronoun: false };
+  if (ns.length) return { name: ns[ns.length - 1], pronoun: false };
+  const first = (String(text ?? "").trim().match(/^[\p{L}'-]+/u) || [""])[0];
+  if (first && PRON.has(first.toLowerCase())) return { name: first, pronoun: true };
+  return first ? { name: first, pronoun: false } : null;
+}
+const foldEq = (a, b) => { const x = fold(a), y = fold(b); return x === y || (x && y && (x.includes(y) || y.includes(x))); };
+/** token distance between two folded forms in a text (Infinity when either is absent).
+ *  The predicate meets in any shared normal form (exact, gate-irregular, local-stem) — "filed" meets
+ *  "file" here just as it does for the flip verdict itself (F2 C3 d12). */
+function tokGap(text, a, b) {
+  const toks = wordsLc(text);
+  const ia = toks.findIndex((w) => fold(w) === fold(a) || fold(a).includes(w) || w.includes(fold(a)));
+  const ib = toks.findIndex((w) => w === b || groundStem(w) === b || levCapped(w, b) <= 1);
+  if (ia < 0 || ib < 0) return Infinity;
+  return Math.abs(ia - ib);
+}
+/** Do two clause-subjects name the same being? Full-name containment either way ("The Berlin Wall" holds
+ *  "The Wall"; "Eastern Roman Empire" does not hold "Western Roman Empire") — or the same HEAD word
+ *  ("The Berlin Wall" and "The Wall" are one being by their head; "Wall" and "barrier" are not) — AND
+ *  near the shared predicate (a joined pair can hold both names far apart: "Armstrong … Collins remained"
+ *  is two propositions, not one). A pronoun subject holds whatever the neighbourhood holds (the claim's
+ *  head must stand near it there). */
+function sameSubject(negName, negPronoun, otherText, aroundText, claimHead, predStem = "") {
+  if (!negName) return true;   // no subject to disagree on
+  if (negPronoun) {
+    const hay = fold(String(otherText ?? "") + " " + String(aroundText ?? ""));
+    return !!claimHead && hay.includes(fold(claimHead));
+  }
+  if (!subjectNamesMatch(negName, String(otherText ?? "").slice(0, 200))) return false;
+  if (predStem && tokGap(otherText, negName.split(/\s+/).pop(), predStem) > 5) return false;
+  return true;
+}
+/** two names for the same being: containment either way ("The Berlin Wall" holds "The Wall"), or the
+ *  same head word without a contradictory modifier ("Eastern Roman Empire" does NOT hold against
+ *  "Western Roman Empire" — eastern≠western; "The Berlin Wall" holds against "The Wall", which
+ *  modifies nothing). Modifiers are the capitalized non-head words of each side's phrase. */
+function subjectNamesMatch(a, bText) {
+  const x = fold(a), y = fold(bText);
+  if (!x || !y) return false;
+  if (x.includes(y) || y.includes(x)) return true;
+  const mods = (s) => { const w = String(s).split(/[^a-zA-Z]+/).filter((t) => /^[A-Z]/.test(t) && t.length > 1 && !/^(?:the|a|an)$/i.test(t)); return { head: w.length ? w[w.length - 1].toLowerCase() : "", mods: w.slice(0, -1).map((t) => t.toLowerCase()) }; };
+  const A = mods(a);
+  if (!A.head) return false;
+  const m = String(bText).match(new RegExp(`([A-Z][a-zA-Z'’-]*\\s+){0,3}${A.head.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "iu"));
+  if (!m) return false;
+  const Bm = mods(m[0]);
+  if (Bm.head !== A.head) return false;
+  return !A.mods.some((m1) => Bm.mods.some((m2) => m1 !== m2 && !m1.includes(m2) && !m2.includes(m1)));
+}
+/** A polarity flip counts only for the SAME proposition: sides differ on negation, the negated predicate
+ *  (first content after the negator) is what the other side commits to, and the negated clause's subject
+ *  is the other side's subject. Exported: fold-chat-present.js :: scopeHas delegates to it so the k6 branch
+ *  and the cross-reference branch judge polarity by one rule (F2 C1/C5). */
+export function negationFlips(negText, otherText, otherStems, aroundText = "", claimHead = "") {
+  const t = stripVoid(negText);
+  if (!NEG.test(t) && !PNEG.test(t)) return false;
+  const p = governedPredicate(t);
+  if (!p) return false;
+  // the predicate meets the other side in any shared normal form: exact, gate-irregular
+  // ("fell"/"fall", "met"/"meet"), or one edit apart ("filed"/"file")
+  const hit = (k) => k === p || groundStem(k) === p || levCapped(k, p) <= 1;
+  if (!otherStems.some(hit)) return false;
+  const idx = String(t).toLowerCase().search(NEG.test(t) ? NEG : PNEG);
+  const subj = negSubject(t, idx < 0 ? t.length : idx);
+  if (!subj) return true;
+  return sameSubject(subj.name, subj.pronoun, otherText, aroundText, claimHead, p);
+}
+/** The content stems a negation in `s` actually governs (kept for callers that list them; the flip verdict
+ *  itself goes through negationFlips/governedPredicate). */
 const negGoverns = (s) => { const toks = String(s).toLowerCase().split(/\s+/); const out = new Set(); toks.forEach((w, i) => { if (NEG.test(w) || PNEG.test(w)) for (const x of toks.slice(i + 1, i + 5)) { const t = x.replace(/[^\p{L}\p{N}]/gu, ""); if (t.length > 2) out.add(stem(t)); } }); return out; };
-const flipsPolarity = (claim, sent, cs, ss) => {
+const flipsPolarity = (claim, sent, cs, ss, around = "", cHead = "") => {
   const cn = neg(claim), sn = neg(sent);
   if (cn === sn) return false;
-  return (sn && [...negGoverns(sent)].some((k) => cs.includes(k))) || (cn && [...negGoverns(claim)].some((k) => ss.includes(k)));
+  // the negated side's predicate must be committed to by the other side, about the same subject
+  return sn ? negationFlips(sent, claim, cs, around, cHead) : negationFlips(claim, sent, ss, around, cHead);
 };
 const domainOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
 const SENT = /(?<=[.!?。！？])\s+(?=[\p{Lu}\p{N}"“(])/u;
@@ -70,9 +195,178 @@ function figuresAgree(claimFigs, sent) {
   const clash = missing.map((c) => ({ c, w: sf.find((w) => w.numeric && c.numeric && w.norm !== c.norm && ((c.unit && w.unit && c.unit.dim === w.unit.dim) || (year(c) && year(w)) || (!c.unit && !w.unit && c.norm.endsWith("%") === w.norm.endsWith("%") && c.norm.endsWith("%")))) })).filter((x) => x.w);
   return { missing, clash };
 }
+/** nearest non-be verb stem to a char offset, staying inside the figure's own clause (F2 S1 c14:
+ *  "discovered in 1930 and was reclassified" — the 1930 belongs to "discovered", not to the nearer-by-char
+ *  "reclassified" across the "and"). Figures themselves are never verbs. Clause edges: [,;] and
+ *  but/and/while/though/whereas — the same seam the role windows cut on. */
+function nearestVerb(text, offset) {
+  const s = String(text ?? "");
+  const bounds = [0];
+  for (const m of s.matchAll(/[,;]|\b(?:but|and|while|though|whereas)\b/gu)) bounds.push(m.index, m.index + m[0].length);
+  bounds.push(s.length + 1);
+  let lo = 0, hi = s.length + 1;
+  for (let i = 0; i < bounds.length; i += 2) {
+    if (offset >= bounds[i] && offset < (bounds[i + 1] ?? s.length + 1)) { lo = bounds[i]; hi = bounds[i + 1] ?? s.length + 1; break; }
+  }
+  let best = null, bd = Infinity;
+  for (const m of s.toLowerCase().matchAll(/[\p{L}\p{N}]+/gu)) {
+    if (m.index < lo || m.index >= hi) continue;
+    if (/^\d+$/.test(m[0])) continue;
+    const v = groundStem(m[0]);
+    if (!v || v.length < 3 || BE_VERB.has(v) || !isVerbish(m[0])) continue;
+    const d = Math.abs(m.index - offset);
+    if (d < bd) { bd = d; best = v; }
+  }
+  return best;
+}
 
-/** Judge one claim against one sentence (with its neighbours, for names). */
-function judge(claim, cs, cfigs, cnames, sent, around) {
+// ---- role confusion (F2 C4): the same verb with permuted roles ----
+// "Napoleon defeated Wellington" against "Napoleon was defeated by two armies" shares every word that
+// matters except the binding: who did what to whom. Words match; the ACT does not. A single-role mismatch
+// stays silent (alias pairs like Wall/barrier must never fail); BOTH roles mismatched is positive evidence
+// the edge is wrong. Negated pairs belong to polarity; be-verbs carry no roles.
+const BE_VERB = new Set(["am", "is", "are", "was", "were", "be", "been", "being"]);
+// stative/possessive predicates carry no transferable act ("stood", "has"): role-mismatch across
+// different events is expected, never a contradiction (F2 S1 c10/c16). Event verbs only.
+const STATIVE = new Set(["stand", "stood", "sit", "sat", "lie", "lay", "lain", "exist", "existed", "has", "have", "had"]);
+const wordsLc = (s) => String(s ?? "").toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+const DET = new Set(["the", "a", "an"]);
+/** crude voice/roles for one verb stem: passive = be-verb ≤3 before + "by" ≤6 after; else active.
+ *  A determiner-led occurrence ("the boiling point") is nominal, never the predicate: skipped.
+ *  Role phrases cut at clause boundaries — "divided Berlin but also stood" is about Berlin, not about
+ *  "Berlin but also stood" (F2 S1 c10). Relative pronouns keep their clause. */
+const CLAUSE_CUT = /[,;]|\b(?:but|and|while|though|whereas)\b/;
+const cutPost = (toks) => toks.join(" ").split(CLAUSE_CUT).map((x) => x.trim()).filter(Boolean)[0] || "";
+function rolesOf(text, verbStem) {
+  const toks = wordsLc(text);
+  const raw = String(text ?? "").match(/[\p{L}\p{N}]+/gu) || [];
+  // a mid-sentence capital is a name, never the predicate ("Chrysler Building" does not build;
+  // sentence-initial position capitalises by rule and stays eligible)
+  const isNameToken = (i) => { const r = raw[i] || ""; return /^\p{Lu}/u.test(r) && !/^[A-Z][a-z]?$/.test(r) && i > 0; };
+  let vi = -1;
+  for (let i = 0; i < toks.length; i++) {
+    if (groundStem(toks[i]) !== verbStem) continue;
+    if (isNameToken(i)) continue;
+    if (i > 0 && DET.has(toks[i - 1])) continue;   // "the boiling point" names, it does not boil
+    vi = i;
+    break;
+  }
+  if (vi < 0) return null;
+  const beBefore = toks.slice(Math.max(0, vi - 3), vi).some((w) => BE_VERB.has(w));
+  const byAfter = toks.slice(vi + 1, vi + 7).includes("by");
+  // the agent is the WHOLE pre-verb window, uncut: "Marie Curie and Henri Becquerel won" names joint
+  // agents, and cutting at "and" would compare only "Henri Becquerel" — manufacturing a substitution
+  // the source never made (F2 swap-test: joint winners substitute freely). The patient cuts at the
+  // first clause boundary ("divided Berlin but also stood" is about Berlin).
+  const pre = toks.slice(Math.max(0, vi - 6), vi).join(" ");
+  const post = cutPost(toks.slice(vi + 1, vi + 7));
+  if (beBefore && byAfter) {
+    const bym = String(text).toLowerCase().match(/\bby\s+([a-z][\p{L}\p{N}'’.-]*(?:\s+[a-z][\p{L}\p{N}'’.-]*){0,3})/u);
+    return { agent: bym ? bym[1] : "", patient: pre, passive: true };
+  }
+  return { agent: pre, patient: post, passive: false };
+}
+const phraseHas = (phrase, name) => { const p = fold(phrase), n = fold(name); return !!n && !!p && (p.includes(n) || n.includes(p)); };
+// light verbs too short for the morphology rule below, but real predicates ("Mars has …")
+const LIGHT_VERB = new Set(["has", "have", "had", "do", "does", "did", "make", "made"]);
+/** verb-shaped, honestly: a light verb, a regular suffix, or an irregular the gate's table reduces —
+ *  but never a bare-e strip ("people"→"peopl", "battle", "file" are not verbs; "wrote"→"write",
+ *  "fell"→"fall", "led"→"lead" are). */
+function isVerbish(w) {
+  const t = String(w ?? "").toLowerCase();
+  if (t.length < 3 || LIGHT_VERB.has(t)) return LIGHT_VERB.has(t);
+  if (/(?:ing|ed|es|s)$/.test(t) && t.length >= 4) return true;
+  const g = groundStem(t);
+  return g !== t && g !== t.replace(/e$/, "");
+}
+const rawWords = (s) => String(s ?? "").match(/[\p{L}\p{N}]+/gu) || [];
+/** the pair's FIRST shared predicate, or null. A verb candidate is lowercase in the claim (names are
+ *  capitalised; sentence position capitalises too, an accepted miss), stemmed with the gate's own
+ *  irregular table, and verb-shaped (irregular, -ed/-ing/-es/-s, or a light verb) — so "Napoleon" never
+ *  becomes the verb of a Napoleon sentence. Be-verbs carry no roles. */
+function firstSharedVerb(claim, sent, cnames) {
+  const inNames = (w) => (cnames || []).some((n) => fold(n).split(/[^a-z0-9]+/i).includes(fold(w)));
+  // proper nouns are never verbs: a mid-sentence capital ("Chrysler Building") must not supply "build"
+  // (F2 S1 c04). Sentence-initial position capitalises by rule, so index 0 stays eligible.
+  const verbStemsOf = (text) => {
+    const toks = String(text ?? "").match(/[\p{L}\p{N}]+/gu) || [];
+    const out = new Set();
+    toks.forEach((raw, i) => {
+      if (i > 0 && /^\p{Lu}/u.test(raw)) return;
+      out.add(groundStem(raw.toLowerCase()));
+    });
+    return out;
+  };
+  const sgs = verbStemsOf(sent);
+  for (const raw of rawWords(claim)) {
+    if (/^\p{Lu}/u.test(raw)) continue;                    // capitalised: a name or position, never the verb
+    const w = raw.toLowerCase();
+    if (w.length < 3 || inNames(w)) continue;
+    const v = groundStem(w);
+    if (!v || BE_VERB.has(v) || STATIVE.has(v)) continue;
+    // verb-shaped per isVerbish (irregulars, suffixes, light verbs — never bare-e strips like
+    // "people"→"peopl"). Plain nouns ("battle") rarely qualify; when they do, the
+    // both-roles-must-mismatch gate below still protects true statements.
+    if (!isVerbish(w)) continue;
+    if (sgs.has(v)) return v;
+  }
+  return null;
+}
+/** role confusion about the pair's FIRST shared verb, or null. Both sides non-negated; ≥1 shared name
+ *  (unanchored generic verbs never fire); a missing counterpart is never a mismatch (intransitives). */
+export function roleConfusion(claim, sent, cnames) {
+  if (neg(claim) || neg(sent)) return null;
+  const verb = firstSharedVerb(claim, sent, cnames);
+  if (!verb) return null;
+  const sharedName = (cnames || []).some((n) => { const nw = words(n).filter((w) => w.length > 1 && !FW.has(w)); const head = nw[nw.length - 1]; return head && (fold(sent).includes(head) || nw.every((w) => fold(sent).includes(w))); });
+  if (!sharedName) return null;
+  const cr = rolesOf(claim, verb), sr = rolesOf(sent, verb);
+  if (!cr || !sr) return null;
+  // a role phrase with no content word ("he", "they were", "it") is VACUOUS — pronouns and
+  // function words carry no role to mismatch (F2 C5 c12 "He received…" vs "Einstein received…").
+  // Vacuity can only clear mismatches, never create them.
+  const vacuous = (ph) => !String(ph ?? "").split(/[^a-z0-9]+/i).filter((w) => w.length > 1 && !FW.has(w.toLowerCase())).length;
+  const agentOk = vacuous(cr.agent) || vacuous(sr.agent) || !cr.agent || !sr.agent || phraseHas(cr.agent, sr.agent);
+  const patientOk = vacuous(cr.patient) || vacuous(sr.patient) || !cr.patient || !sr.patient || phraseHas(cr.patient, sr.patient);
+  if (!agentOk && !patientOk) return { confused: true, why: `reverses who did what to whom (${verb}): ${cr.agent.slice(0, 40)} / ${cr.patient.slice(0, 40)}` };
+  // RIVAL SUBSTITUTION (F2 S3/S5/C4 d14/d15): exactly one role mismatches, and the two values are
+  // DIFFERENT NAMED beings standing in the same role ("Wellington led" where "Blücher led").
+  // Common nouns never qualify ("moons"/"satellites", "Wall"/"barrier" are not rival beings).
+  if ((!agentOk) !== (!patientOk)) {
+    const pair = !agentOk ? [cr.agent, sr.agent] : [cr.patient, sr.patient];
+    const inNames = (ph, list) => (list || []).filter((n) => phraseHas(ph, n));
+    const a = inNames(pair[0], cnames), b = inNames(pair[1], namesOf(sent));
+    const headOf = (n) => { const w = words(n).filter((x) => x.length > 1 && !FW.has(x)); return w.length ? w[w.length - 1] : ""; };
+    // PLACE-STACKS are not rivals: "born in Ulm, in the Kingdom" names one place twice (meronymy),
+    // while "Wellington led" / "Blücher led" names two beings. A stack = both names in one sentence
+    // joined by in/near/of with no verb between (a verb between means separate clauses, separate beings).
+    const stacked = (x, y) => {
+      const both = [String(claim), String(sent)].join(" ").split(/(?<=[.!?])\s+/);
+      const fx = fold(x), fy = fold(y);
+      return both.some((s) => {
+        const ls = fold(s), ix = ls.indexOf(fx), iy = ls.indexOf(fy);
+        if (ix < 0 || iy < 0) return false;
+        const lo = Math.min(ix, iy), hi = Math.max(ix, iy);
+        const between = ls.slice(lo, hi);
+        if (!/\b(?:in|near|of)\b/.test(between)) return false;
+        return !between.split(/[^a-z0-9]+/i).filter((w) => w.length > 2).some(isVerbish);
+      });
+    };
+    for (const x of a) for (const y of b) {
+      if (headOf(x) && headOf(y) && headOf(x) !== headOf(y) && !stacked(x, y)) return { confused: true, why: `substitutes ${x.slice(0, 40)} for ${y.slice(0, 40)} (${verb})` };
+    }
+  }
+  return null;
+}
+
+/** Judge one claim against one sentence (with its neighbours, for names).
+ *  `joined` marks a pair-joined evaluation (two adjacent source sentences as one): wording-level checks
+ *  (runs, overlap, figures, polarity) read it whole, but ROLE confusion does not — roles live in clauses,
+ *  clauses live in sentences, and windows spanning the join invent bindings ("deimos they were"). */
+// The debug trace is a Node convenience (FCFA_TRACE in the environment). This module also runs IN THE BROWSER, where there is no `process`:
+// the read below was unguarded and threw "process is not defined" on every falsify of a model-written answer (audit F/B, D2).
+const TRACE = () => { try { return typeof process !== "undefined" && !!(process.env && process.env.FCFA_TRACE); } catch { return false; } };
+function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const ss = new Set(contentStems(sent));
   const shared = cs.filter((k) => ss.has(k));
   const overlap = cs.length ? shared.length / cs.length : 0;
@@ -89,16 +383,39 @@ function judge(claim, cs, cfigs, cnames, sent, around) {
     const subj = words(cnames[0]).filter((w) => w.length > 1 && !FW.has(w));
     const head = subj[subj.length - 1];
     if (head && run.text) { const stoks = words(sent); const hi = stoks.indexOf(head), ri = stoks.indexOf(fold(run.text).split(" ")[0]); if (hi >= 0 && ri >= 0 && hi > ri + 2) subjectMissing = true; }
+    // VETO, never a trigger: a sentence-initial capital the name-list dropped ("Mars has two small moons…",
+    // where namesIn skips the opener) standing at the match's start clears a false miss. It cannot create
+    // one — the Trump-won guard above still fires on its own terms.
+    if (subjectMissing) {
+      const fc = (String(claim).trim().match(/^[\p{Lu}][\p{L}'-]+/u) || [""])[0];
+      if (fc && fc.length > 1 && !/^[A-Z][a-z]?$/.test(fc)) {
+        const stoks = words(sent); const fi = stoks.indexOf(fold(fc)), ri = stoks.indexOf(fold(run.text).split(" ")[0]);
+        if (fi >= 0 && ri >= 0 && fi <= ri + 2) subjectMissing = false;
+      }
+    }
   }
-  const polarity = !flipsPolarity(claim, sent, cs, [...ss]);
-  const about = overlap >= FALSIFY.ABOUT_OVERLAP && shared.length >= 2;
+  const cHead = (() => { const w = words(cnames[0] || "").filter((x) => x.length > 1 && !FW.has(x)); return w.length ? w[w.length - 1] : (String(claim).trim().match(/^[\p{L}'-]+/u) || [""])[0].toLowerCase(); })();
+  const polarity = !flipsPolarity(claim, sent, cs, [...ss], around, cHead);
+  const about = overlap >= FALSIFY.ABOUT_OVERLAP && shared.length >= 1;
   const close = run.n >= FALSIFY.RUN || (overlap >= FALSIFY.STATE_OVERLAP && shared.length >= Math.min(FALSIFY.STATE_MIN_SHARED, cs.length));
-  let verdict = "silent", why = "";
-  if (about && !polarity) { verdict = "contradicts"; why = "same subject, opposite polarity"; }
-  else if (about && clash.length) { verdict = "contradicts"; why = `gives ${clash[0].w.raw} where the claim says ${clash[0].c.raw}`; }
+  const role = about && !joined ? roleConfusion(claim, sent, cnames) : null;
+  if (TRACE()) console.error("DBG q=" + JSON.stringify(claim.slice(0,40)) + " s=" + JSON.stringify(sent.slice(0,50)) + " about=" + about + " pol=" + polarity + " ov=" + overlap.toFixed(2) + " sh=" + shared.length + " role=" + JSON.stringify(role) + " clashN=" + clash.length);
+  // a figure-clash counts only on its own event: the figure's nearest verb is the pair's shared verb.
+  // "Fell in 1961" against fell-1989 fires; "born…1879 and died in 1955" against born-1879 does not —
+  // the 1955 belongs to another clause (F2 S1 c06/c13 truthful, S2b r01 catches).
+  const pairVerb = about ? firstSharedVerb(claim, sent, cnames) : null;
+  // figure-clashes, like roles, live in single sentences: a pair-joined text mixes two events, so any
+  // figure in it trivially "clashes" with the claim's (F2 S1 c04/c14 truthful). Single sentences only.
+  const clashHere = !joined ? clash.filter((x) => pairVerb && nearestVerb(claim, x.c.start) === pairVerb) : [];
+  if (TRACE() && clash.length) console.error("DBGCL3 pv=" + pairVerb + " nv=" + JSON.stringify(clash.map((x) => [x.c.raw, nearestVerb(claim, x.c.start)])) + " joined=" + joined);
+  let verdict = "silent", why = "", kind = null;
+  if (TRACE() && about) console.error("DBG role=" + JSON.stringify(role) + " clashN=" + clash.length + " clashHere=" + clashHere.length);
+  if (about && !polarity) { verdict = "contradicts"; kind = "polarity"; why = "same subject, opposite polarity"; }
+  else if (role && role.confused) { verdict = "contradicts"; kind = "role"; why = role.why; }
+  else if (about && clashHere.length) { verdict = "contradicts"; kind = "figure"; why = `gives ${clashHere[0].w.raw} where the claim says ${clashHere[0].c.raw}`; }
   else if (close && !missing.length && !namesMissing.length && !subjectMissing) { verdict = "states"; why = run.n >= FALSIFY.RUN ? `shares the run \u201c${run.text}\u201d` : `${shared.length} of ${cs.length} content words`; }
   else if (close) { verdict = "near"; why = subjectMissing ? `the claim's subject ${cnames[0]} is only the source's object` : missing.length ? `the figure ${missing[0].raw} is not in it` : `the name ${namesMissing[0]} is not near it`; }
-  return { verdict, why, overlap, shared: shared.length, runN: run.n, run: run.text, score: run.n * 2 + shared.length + (verdict === "states" ? 100 : verdict === "contradicts" ? 50 : 0) };
+  return { verdict, why, kind, overlap, shared: shared.length, runN: run.n, run: run.text, score: run.n * 2 + shared.length + (verdict === "states" ? 100 : verdict === "contradicts" ? 50 : 0) };
 }
 
 /** Group passages into independent sources (by domain), each with its sentences. */
@@ -118,21 +435,31 @@ export function sourcesOf(passages) {
 }
 
 function bestIn(src, claim, cs, cfigs, cnames) {
-  let best = null;
-  const consider = (sent, i, around) => { const j = judge(claim, cs, cfigs, cnames, sent, around); if (!best || j.score > best.score) best = { ...j, sentence: sent, i }; };
+  let best = null, contraAlt = null;
+  const consider = (sent, i, around, joined = false) => {
+    const j = judge(claim, cs, cfigs, cnames, sent, around, joined);
+    const w = { ...j, sentence: sent, i };
+    if (!best || j.score > best.score) best = w;
+    // a contradiction buried under a higher-scoring states-witness is still a contradiction (F2 C2/C3:
+    // "Canberra is the capital" states while "Canberra is not the largest" contradicts — the best
+    // witness must not silence it). Tracked apart so display/swap logic still reads the best.
+    if (j.verdict === "contradicts" && (!contraAlt || j.score > contraAlt.score)) contraAlt = { ...w, src: src.key };
+  };
   src.sents.forEach((sent, i) => {
     const around = [src.sents[i - 1], sent, src.sents[i + 1]].filter(Boolean).join(" ");
-    consider(sent, i, around);
+    consider(sent, i, around, false);
     // a claim often joins two adjacent sentences of its source ("X began in 2008, when Y"): judge the pair as one
     const nx = src.sents[i + 1];
-    if (nx && sent.length + nx.length < 520) consider(sent + " " + nx, i, around + " " + (src.sents[i + 2] || ""));
+    if (nx && sent.length + nx.length < 520) consider(sent + " " + nx, i, around + " " + (src.sents[i + 2] || ""), true);
   });
-  return best || { verdict: "silent", why: "nothing read from it", score: 0, sentence: "", overlap: 0, shared: 0, runN: 0, run: "" };
+  const out = best || { verdict: "silent", why: "nothing read from it", score: 0, sentence: "", overlap: 0, shared: 0, runN: 0, run: "" };
+  if (contraAlt && contraAlt !== best) out.contraAlt = contraAlt;
+  return out;
 }
 
 const CALENDAR = /^(?:January|February|March|April|May|June|July|August|September|October|November|December|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$/;
-/** The names a claim commits to — without a lone capitalised first word ("Quantitative easing began…" names nothing) and without months/days. */
-function namesOf(s) {
+/** The names a claim commits to — without a lone capitalised first word ("Quantitative easing began…" names nothing) and without months/days. Exported for the provenance non-claim gate (fold-chat-provenance.js), which needs the same strictness. */
+export function namesOf(s) {
   const first = (String(s).trim().match(/^[\p{L}'-]+/u) || [""])[0];
   return namesIn(s).map((n) => n.replace(/^(?:In|On|At|By|From|Since|During|After|Before|The)\s+/u, "").replace(/['’]s$/u, "")).filter((n) => n && !CALENDAR.test(n) && !(n === first && !/\s/.test(n) && !/^\p{Lu}{2,}$/u.test(n)));
 }
@@ -213,11 +540,12 @@ export function falsifyAnswer(sentences, passages) {
     const chains = [];
     for (const w of states) { const c = chains.find((ch) => longestRun(ch[0].sentence, w.sentence).n >= FALSIFY.SYNDICATED_RUN); if (c) { c.push(w); w.sameChainAs = c[0].src; } else chains.push([w]); }
     const contra = per.filter((w) => w.verdict === "contradicts");
+    const contraBuried = per.filter((w) => w.verdict !== "contradicts" && w.contraAlt);
     const lead = states[0] ? sources.find((x) => x.key === states[0].src) : null;
     const swap = lead && !states[0].clauseSupport ? swapTest(s, cfigs, cnames, lead, states[0]) : { armed: false };
     let verdict;
     if (!cs.length && !cfigs.length) verdict = "n/a";
-    else if (contra.length) verdict = "contested";
+    else if (contra.length || contraBuried.length) verdict = "contested";
     else if (states.length && swap.armed && !swap.discriminates) verdict = "weak";
     else if (chains.length >= 2) verdict = "corroborated";
     else if (chains.length === 1) verdict = "held";

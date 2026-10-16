@@ -49,7 +49,7 @@ test("readText: a refused direct read does not claim direct — it names the thi
     if (/allorigins/.test(url)) return resp("<title>Via proxy</title><p>" + "text ".repeat(30) + "</p>");
     throw new Error("unexpected " + url);
   };
-  const rd = await readText("https://blocked.example/a", { fetchImpl: f });
+  const rd = await readText("https://blocked.example/a", { fetchImpl: f, publicFallback: true });   // the public fallback, switched on (C8: off by default)
   assert.equal(rd.ok, true);
   assert.notEqual(rd.via, "direct");
   assert.match(rd.via, /proxy|reader/);
@@ -64,7 +64,7 @@ test("readText: a page only a text reader can read is marked as the reader", asy
     if (/r\.jina\.ai/.test(url)) return resp("Title: X\n\nMarkdown Content:\n" + "deep text ".repeat(40));
     throw new Error("unexpected " + url);
   };
-  const rd = await readText("https://spa.example/x", { fetchImpl: f });
+  const rd = await readText("https://spa.example/x", { fetchImpl: f, publicFallback: true });   // the public fallback, switched on (C8: off by default)
   assert.equal(rd.ok, true);
   assert.match(rd.via, /reader/);
 });

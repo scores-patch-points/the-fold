@@ -56,11 +56,11 @@ export const FOLDVIEW_CSS = `
 .fv-src { white-space: pre-wrap; overflow-wrap:anywhere; }
 .fv-scrub { display:flex; align-items:center; gap:8px; padding:5px 10px; border-bottom:1px solid var(--line, #e2e2e8); font-size:12px; }
 .fv-scrub.on { background: color-mix(in srgb, var(--fv-c) 9%, transparent); }
-.fv-step { font: inherit; width:22px; height:22px; border:1px solid var(--line, #e2e2e8); background: var(--bg, #fff); color: var(--ink, #16161a); border-radius:6px; cursor:pointer; line-height:1; padding:0; } .fv-step:disabled { opacity:.3; cursor:default; }
+.fv-step { font: inherit; font-size:16px; width:34px; height:34px; border:1px solid var(--line, #e2e2e8); background: var(--bg, #fff); color: var(--ink, #16161a); border-radius:6px; cursor:pointer; line-height:1; padding:0; } .fv-step:disabled { opacity:.3; cursor:default; }
 .fv-range { flex: 1 1 90px; min-width:70px; max-width:260px; accent-color: var(--fv-b); cursor:pointer; }
-.fv-play { font: inherit; font-size:12px; font-weight:700; border:1px solid var(--fv-a); color: var(--fv-a); background: transparent; border-radius:999px; padding:1px 11px; cursor:pointer; white-space:nowrap; } .fv-play:hover, .fv-play.on { background: color-mix(in srgb, var(--fv-a) 14%, transparent); }
-.fv-speed, .fv-latest { font: inherit; font-size:11.5px; border:0; background:transparent; color: var(--mut, #6b6b78); cursor:pointer; padding:0 2px; }
-.fv-where { color: var(--mut, #6b6b78); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex: 1 1 120px; }
+.fv-play { font: inherit; font-size:13px; font-weight:700; border:2px solid var(--fv-a); color: var(--fv-a); background: transparent; border-radius:999px; padding:5px 16px; min-height:34px; cursor:pointer; white-space:nowrap; } .fv-play:hover, .fv-play.on { background: color-mix(in srgb, var(--fv-a) 14%, transparent); }
+.fv-speed, .fv-latest { font: inherit; font-size:12.5px; border:1px solid var(--line, #e2e2e8); border-radius:8px; background:transparent; color: var(--ink, #16161a); cursor:pointer; padding:4px 10px; min-height:34px; }
+.fv-where { color: var(--ink, #16161a); font-weight:600; min-width:0; flex: 1 1 160px; overflow-wrap:anywhere; }
 .fv-reset { font: inherit; font-size:12px; font-weight:700; border:1px solid var(--fv-c); color: var(--fv-c); background: transparent; border-radius:999px; padding:1px 11px; cursor:pointer; white-space:nowrap; } .fv-reset:hover { background: color-mix(in srgb, var(--fv-c) 14%, transparent); }
 .fv-marker { color: var(--fv-c); font-weight:700; white-space:nowrap; } .fv-undo { font: inherit; border:0; background:transparent; color: var(--fv-b); text-decoration: underline dotted; cursor:pointer; padding:0; }
 .fv-row.future, .fv-ev.future { opacity:.38; } .fv-row.cur, .fv-ev.cur { background: color-mix(in srgb, var(--fv-b) 10%, transparent); box-shadow: inset 3px 0 0 var(--fv-b); } .fv-ev.mark { box-shadow: inset 3px 0 0 var(--fv-c); }
@@ -76,7 +76,14 @@ export const FOLDVIEW_CSS = `
 .fv-codehead { display:flex; align-items:center; gap:10px; padding:4px 8px; background: var(--side2, #f1f1f4); border-bottom:1px solid var(--line, #e2e2e8); } .fv-codehead .fv-cap { flex:1; min-width:0; overflow-wrap:anywhere; }
 .fv-codelines { max-height:360px; overflow:auto; }
 .fv-cl { display:grid; grid-template-columns: 34px 14px minmax(0,1fr); } .fv-sign { color: var(--mut, #6b6b78); font-weight:700; text-align:center; }
-.fv-cl-add { background: color-mix(in srgb, var(--fv-ok) 13%, transparent); } .fv-cl-add .fv-sign { color: var(--fv-ok); }
-.fv-cl-del { background: color-mix(in srgb, var(--fv-bad) 13%, transparent); } .fv-cl-del .fv-sign, .fv-cl-del .fv-src { color: var(--fv-bad); }
+.fv-cl { border-left:3px solid transparent; } .fv-codelines { position:relative; }
+.fv-cl-add { background: color-mix(in srgb, var(--fv-ok) 24%, transparent); border-left-color: var(--fv-ok); } .fv-cl-add .fv-sign { color: var(--fv-ok); }
+.fv-cl-del { background: color-mix(in srgb, var(--fv-bad) 24%, transparent); border-left-color: var(--fv-bad); } .fv-cl-del .fv-src { text-decoration: line-through; } .fv-cl-del .fv-sign, .fv-cl-del .fv-src { color: var(--fv-bad); }
+.fv-changed { font-size:12.5px; font-weight:700; margin:0 0 6px; }
+.fv-new { animation: fvflash 1.4s ease-out 1; } @keyframes fvflash { 0% { outline:2px solid var(--fv-b); outline-offset:-2px; filter:brightness(1.35) } 100% { outline:2px solid transparent; filter:none } }
+.fv button:focus-visible, .fv input:focus-visible, .fv summary:focus-visible { outline:3px solid var(--fv-b); outline-offset:2px; }
+.fv-ev, .fv-row { min-height:24px; }
+@media (prefers-reduced-motion: reduce) { .fv-new, .fv-live .fv-run::before { animation:none !important; } }
+@media (forced-colors: active) { .fv-cl-add, .fv-cl-del { border-left-color: Highlight; } .fv-cl-del .fv-src { text-decoration: line-through; } }
 .fv-steps { margin: 4px 0 8px; } .fv-steps > summary { cursor:pointer; color: var(--mut, #6b6b78); font-size:12.5px; padding: 3px 0; list-style:none; } .fv-steps > summary::before { content:"▸ "; } .fv-steps[open] > summary::before { content:"▾ "; }
 `;

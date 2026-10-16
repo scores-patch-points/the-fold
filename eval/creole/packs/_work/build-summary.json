@@ -1,0 +1,42 @@
+{
+ "mfe": {
+  "pairs": 728,
+  "tokens": 8132,
+  "forms": 377,
+  "heldOutCoverage": 0.648,
+  "beatsChance": true,
+  "near": "pcm bitext 189 pairs (pack has 498: beyond the largest calibrated row)"
+ },
+ "tpi": {
+  "pairs": 335,
+  "tokens": 6013,
+  "forms": 146,
+  "heldOutCoverage": 0.564,
+  "beatsChance": true,
+  "near": "pcm bitext 50 pairs"
+ },
+ "sag": {
+  "pairs": 271,
+  "tokens": 6750,
+  "forms": 144,
+  "heldOutCoverage": 0.556,
+  "beatsChance": true,
+  "near": "UDHR only"
+ },
+ "jam": {
+  "pairs": 216,
+  "tokens": 9546,
+  "forms": 185,
+  "heldOutCoverage": 0.265,
+  "beatsChance": true,
+  "near": "UDHR only"
+ },
+ "gcf": {
+  "pairs": 680,
+  "tokens": 2759,
+  "forms": 194,
+  "heldOutCoverage": 0.585,
+  "beatsChance": true,
+  "near": "pcm bitext 189 pairs (pack has 680: beyond the largest calibrated row)"
+ }
+}

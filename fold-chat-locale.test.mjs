@@ -59,3 +59,31 @@ test("localeContext with no IP still gives time + a rough zone, and never invent
   assert.doesNotMatch(line, /Nashville/);
   assert.equal(localeContext({}), null);
 });
+
+// ── THE CONSENT GATE (folded from the "multiple affordances" review, 2026-10-11) ──
+import { mayLookupIp } from "./fold-chat-locale.js";
+
+test("FALSIFIER: force NEVER bypasses consent — the old button's force:true could, and no longer can", () => {
+  const r = mayLookupIp({ locale: { ipLookup: false, location: { label: "Chicago" } }, force: true });
+  assert.equal(r.ok, false);
+  assert.equal(r.why, "consent-not-given");
+});
+
+test("consent on + no place → first-detect; consent on + place + force → re-detect", () => {
+  assert.deepEqual(mayLookupIp({ locale: { ipLookup: true }, force: false }), { ok: true, why: "first-detect" });
+  assert.deepEqual(mayLookupIp({ locale: { ipLookup: true, location: { label: "Chicago" } }, force: true }), { ok: true, why: "re-detect" });
+});
+
+test("consent on + place + no force → already-have-place (a passive call never re-hits the IP service)", () => {
+  const r = mayLookupIp({ locale: { ipLookup: true, location: { label: "Chicago" } }, force: false });
+  assert.equal(r.ok, false);
+  assert.equal(r.why, "already-have-place");
+});
+
+test("consent is OPT-IN (user, 2026-10-11): an untouched store consents to NOTHING — boot makes no outbound call", () => {
+  assert.equal(mayLookupIp({ locale: null }).ok, false);
+  assert.equal(mayLookupIp({ locale: null }).why, "consent-not-given");
+  assert.equal(mayLookupIp({ locale: {} }).ok, false);
+  assert.equal(mayLookupIp({ locale: { location: { label: "Chicago" } } }).ok, false, "a stored place does not imply consent to call out again");
+  assert.equal(mayLookupIp({ locale: { ipLookup: true } }).ok, true, "only the explicit tick turns it on");
+});

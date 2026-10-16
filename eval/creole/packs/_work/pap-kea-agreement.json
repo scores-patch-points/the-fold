@@ -1,0 +1,55 @@
+{
+ "pap": {
+  "udhrPairs": [
+   90,
+   90,
+   90
+  ],
+  "projectedForms": 383,
+  "wiktionaryForms": 789,
+  "shared": 36,
+  "agreeOnShared": 0.583,
+  "projectedOnly": 347,
+  "projectedOnlyClosedClass": 51,
+  "disagreements": [
+   "ta: proj AUX / wikt VERB",
+   "lo: proj AUX / wikt VERB",
+   "tin: proj ADP / wikt VERB",
+   "hende: proj AUX / wikt NOUN",
+   "te: proj SCONJ / wikt ADJ",
+   "pisa: proj SCONJ / wikt ADJ",
+   "por: proj ADV / wikt VERB",
+   "tene: proj ADJ / wikt VERB",
+   "parti: proj ADP / wikt VERB",
+   "a: proj DET / wikt PART",
+   "mayor: proj NOUN / wikt ADJ",
+   "bek: proj PROPN / wikt ADJ"
+  ],
+  "note": "no gold exists on disk for this language: agreement with a dictionary is not accuracy, and the 'beats Wiktionary on a held-out slice' condition cannot be tested"
+ },
+ "kea": {
+  "udhrPairs": [
+   90,
+   90,
+   90
+  ],
+  "projectedForms": 339,
+  "wiktionaryForms": 883,
+  "shared": 20,
+  "agreeOnShared": 0.55,
+  "projectedOnly": 319,
+  "projectedOnlyClosedClass": 60,
+  "disagreements": [
+   "tem: proj ADP / wikt VERB",
+   "po: proj VERB / wikt NOUN",
+   "mora: proj NOUN / wikt VERB",
+   "trabadja: proj VERB / wikt NOUN",
+   "pensa: proj SCONJ / wikt VERB",
+   "da: proj NOUN / wikt VERB",
+   "sta: proj PROPN / wikt VERB",
+   "mal: proj ADV / wikt ADJ",
+   "anda: proj PROPN / wikt VERB"
+  ],
+  "note": "no gold exists on disk for this language: agreement with a dictionary is not accuracy, and the 'beats Wiktionary on a held-out slice' condition cannot be tested"
+ }
+}

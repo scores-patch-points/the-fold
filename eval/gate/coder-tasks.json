@@ -1,0 +1,323 @@
+{
+ "_about": "fail-to-pass tasks cut from real fix commits (GATE.md coder half); frozen at extraction",
+ "extractedFrom": "2026-10-05",
+ "tasks": [
+  {
+   "id": "the-fold-9aed3c9",
+   "repo": "the-fold",
+   "sha": "9aed3c97807b7a983a7ae0e00852c4e9c92fb43b",
+   "subject": "answer pipeline: OFF by default behind a switch until it stands on real pages",
+   "body": "The slot-ask pipeline (frame -> witness -> falsify -> void/trace -> answer card)\nwas committed wired ON. An adversarial verifier ran it on the REAL Wikipedia\nMonarchy-of-the-UK page and it returned a \"the sources disagree\" contest between\n\"the British national anthem\" and \"Legislative power\" instead of Charles III; the\nold path answers that ask correctly. Its tests pass on hand-written pages only.\n\n- fold-chat-answerwire.js: slotTurnWanted() needs enabled === true; new\n  slotPipelineOn() reads localStorage \"fold-chat:answerPipeline\" === \"on\"\n  (anything else, a missing or a throwing store is o",
+   "testCommand": "node --test \"fold-chat-answerturn-wiring.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-answerwire.js",
+    "fold-chat.js"
+   ],
+   "testFiles": [
+    "fold-chat-answerturn-wiring.test.mjs"
+   ],
+   "linesChanged": 32
+  },
+  {
+   "id": "the-fold-09853ea",
+   "repo": "the-fold",
+   "sha": "09853ea77b059f1fba7091d7e49669cc8fa32dc2",
+   "subject": "self: SELF_LINE now says what the code does — unbacked wording is marked, invented names/figures are left out",
+   "body": "The line claimed the fold 'drops whatever I can't trace', but with soft grounding\n(fold-chat-pivot.js SOFT_WHY, strict off) a sentence whose only failure is that the\npages don't back its wording is SPOKEN and counted unsourced (the record draws the\nmark). The witness test (fold-chat-self.witness.test.mjs) had flagged the overclaim\nas a todo; the line is corrected, the claim is split in two (hard failures withheld,\nsoft ones marked), each half has its witness, and the todo is now a plain test.\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>",
+   "testCommand": "node --test \"fold-chat-self.witness.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-self.js"
+   ],
+   "testFiles": [
+    "fold-chat-self.witness.test.mjs"
+   ],
+   "linesChanged": 2
+  },
+  {
+   "id": "the-fold-b30160f",
+   "repo": "the-fold",
+   "sha": "b30160fd6f1c87e1b3e023d7361a0755bbb640fb",
+   "subject": "langid: fold detector debiased + two-tier (core survives; UDHR tier off), sworn-off abstention, per-sentence trails, LRU memo, UDHR falsification record",
+   "body": "",
+   "testCommand": "node --test \"fold-chat-langid.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-langid.js"
+   ],
+   "testFiles": [
+    "fold-chat-langid.test.mjs"
+   ],
+   "linesChanged": 140
+  },
+  {
+   "id": "the-fold-22e1c24",
+   "repo": "the-fold",
+   "sha": "22e1c2412941da3a6f1753ec1eeb435765dde394",
+   "subject": "grounding: disambiguation guard now covers the Wikipedia extract fast-path; falsifier checks the claim's SUBJECT (a false claim whose subject is the page's object is no longer held)",
+   "body": "",
+   "testCommand": "node --test \"fold-chat-falsify-refine.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-falsify-answer.js",
+    "fold-chat-web.js"
+   ],
+   "testFiles": [
+    "fold-chat-falsify-refine.test.mjs"
+   ],
+   "linesChanged": 15
+  },
+  {
+   "id": "the-fold-18594b4",
+   "repo": "the-fold",
+   "sha": "18594b48b5c34d54422b4e6f99a956656d42d5cc",
+   "subject": "all-WebLLM: no heimdall bridge — the fold answers from the model in the tab",
+   "body": "The surface no longer probes or routes through a heimdall bridge: it answers\nfrom the model IN THIS TAB (WebLLM). Client, footer/status copy, the loaded\nstate, README and the tests are updated to match (no \"start the server\" /\n\"bridge isn't reachable\" paths; a device with no WebGPU is told to use a WebGPU\nbrowser).\n\nFIX: mount() read `NO_HEIMDALL` ~100 lines before its `const` declaration — a\ntemporal-dead-zone ReferenceError that killed the whole app (nothing could\nsubmit, in any mode). Hoisted to the top of mount(). Verified in a real\nheadless Chromium: no page errors, Enter submits, the thr",
+   "testCommand": "node --test \"fold-chat-loaded.test.mjs\" \"fold-chat-pageengine.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-client.js",
+    "fold-chat-loaded.js",
+    "fold-chat.js"
+   ],
+   "testFiles": [
+    "fold-chat-loaded.test.mjs",
+    "fold-chat-pageengine.test.mjs"
+   ],
+   "linesChanged": 85
+  },
+  {
+   "id": "the-fold-6d39995",
+   "repo": "the-fold",
+   "sha": "6d39995cbc40cef26b5fdf12a1ddd44fbb2d0f14",
+   "subject": "mind-wander + verbatim byte-trace: the best-of-all-worlds agentic composition, measured",
+   "body": "A wandered sentence is grounded at its byte (Tarski convention-T): classifyEssay\nnow accepts a witnesses map and marks a VERBATIM source sentence grounded even\nwhere claim-matching cannot re-bind it out of context — and a verbatim negation\nis attested by its bytes, never a contradiction. Markers sit at the terminal\nposition so the reader keeps one sentence intact.\n\n- essay-seam.mjs: witnesses param, verbatim lane precedes contradiction, sentenceWitnesses()\n- fold-experiment.mjs + .test.mjs: complicated generation tasks, chat vs agentic\n- fold-e2e-essay.mjs, server.mjs: witnesses wired through\n",
+   "testCommand": "node --test \"essay-seam.test.mjs\" \"fold-experiment.test.mjs\"",
+   "srcFiles": [
+    "essay-seam.mjs",
+    "fold-e2e-essay.mjs",
+    "server.mjs"
+   ],
+   "testFiles": [
+    "essay-seam.test.mjs",
+    "fold-experiment.test.mjs"
+   ],
+   "linesChanged": 46
+  },
+  {
+   "id": "the-fold-7d0022e",
+   "repo": "the-fold",
+   "sha": "7d0022e5048df8887eef0af6d72f0a6a9dd373ea",
+   "subject": "prove upstream: the telling's ~30% discontinuity is the reader's edges, not the composer",
+   "body": "CONTROLLED EXPERIMENT, one composer, three edge inputs (locked test):\n  A raw reader  1053 edges -> the source literally says 38% of the telling\n  B attested     343 edges -> 100%\n  C shuffled(+7) 343 edges ->  2%  (falsifier control)\nΔ62 attested-vs-raw, Δ36 raw-vs-shuffled. Clean beings/acts ⟹ the mechanical\ntelling is near-totally coherent WITH the source; noise ⟹ it says what the\ntext never said. The claim is now provable, not asserted.\n\nComposer fixes the experiment surfaced, kept identical across conditions:\n- scenesOf: byte-runs -> REFERENCE COHORTS (a thread joins when its subject or\n ",
+   "testCommand": "node --test \"prove-upstream.test.mjs\" \"telling.test.mjs\"",
+   "srcFiles": [
+    "telling.mjs"
+   ],
+   "testFiles": [
+    "prove-upstream.test.mjs",
+    "telling.test.mjs"
+   ],
+   "linesChanged": 70
+  },
+  {
+   "id": "the-fold-0638d2a",
+   "repo": "the-fold",
+   "sha": "0638d2acc2f312dea74b82c26feae196e8a855dd",
+   "subject": "seam screen: a being must be a name, or fold a wide company, or participate — scene-words refused",
+   "body": "the teller's last gap: words whose surface sits in the text ('Legs', 'Morning',\n'Face') but are miseated common nouns. screenBeings multiplies three mechanical\nsignals, none decisive alone (case-free law: the capital is only corroborating):\n  - NAME: recurs capitalized mid-sentence (proper beings use name-form in prose)\n  - FOLD: company >= 8 (the protagonists)\n  - PARTICIPATE: is a patient somewhere and keeps company >= 3\nOn attested edges this cuts 343->141 edges, 57->17 telling sentences, keeps\nsource-says at 100%, and the subject roster becomes proper names (anna, prince,\npierre, andrew, n",
+   "testCommand": "node --test \"essay-seam.test.mjs\"",
+   "srcFiles": [
+    "essay-seam.mjs"
+   ],
+   "testFiles": [
+    "essay-seam.test.mjs"
+   ],
+   "linesChanged": 37
+  },
+  {
+   "id": "the-fold-b5cf4e4",
+   "repo": "the-fold",
+   "sha": "b5cf4e44d9b207d8a725afba1eafb2b59cb514de",
+   "subject": "telling: literary present, ATTESTED ONLY — the material decides presence",
+   "body": "my first inflector generated forms ('kisses', 'enters') — a regression against\nthe competency earned chasing Telemachus onto the boat: inflection is HOW A\nREADER HEARS, never how it invents (morphology.js actClosure, wall 2: only\nforms ATTESTED IN THIS MATERIAL join; the prior decides sameness, the material\ndecides presence). The teller now adopts the present-3sg candidate ONLY when\nthe source token stream contains it; otherwise the seam-bound base form (itself\nattested) stands. 'says'/'writes'/'spends' appear because the book has them;\n'ran'/'cough' keep base because their presents are absent",
+   "testCommand": "node --test \"telling.test.mjs\"",
+   "srcFiles": [
+    "telling.mjs"
+   ],
+   "testFiles": [
+    "telling.test.mjs"
+   ],
+   "linesChanged": 83
+  },
+  {
+   "id": "the-fold-9866085",
+   "repo": "the-fold",
+   "sha": "986608531355cac9bdf59c84a9234b13abbab02b",
+   "subject": "seam screen: postures of address are never beings; the screen now gates the telling path",
+   "body": "'I'll get anna.' — a first-person posture seated as a being, breaking the\nthird-person doctrine ('who the text does things to and by'). isBeing now\ncarries the received posture closed class (i/you/he/she… + contractions,\ngiver lang/en); 'i'll'/'you'/'her' are refused at the box.\n\nAlso: screenBeings now gates summarize.mjs and mechanical-telling.mjs (the\nactual telling path, not just the experiment) — 1053 -> 743 -> ~141 edges,\n'Morning'/'Exception'/'Eyes' gone, the roster is named people (anna, prince,\npetersburg, empress, funke, hippolyte, mortemart, vicomte), attestation stays\n100%, 0 model ",
+   "testCommand": "node --test \"essay-seam.test.mjs\"",
+   "srcFiles": [
+    "essay-seam.mjs"
+   ],
+   "testFiles": [
+    "essay-seam.test.mjs"
+   ],
+   "linesChanged": 6
+  },
+  {
+   "id": "the-fold-0678b06",
+   "repo": "the-fold",
+   "sha": "0678b0699ac816df7e5adca01c3cae7b16837219",
+   "subject": "telling: a teller-subject must be attested as an actor — name, or >4 acts",
+   "body": "the last actor-nonsense: pos-prior-en knows 'step'/'sort'/'round' are NOUNS and\nthe reader seats a noun as an agent. The telling now has a SUBJECT POLICY\n(janus's 'what kinds can be said about which referents'): a being opens the\nseat only when the material attests it as an actor — a NAME (mid-sentence\nsignal) or >=4 acts (the recurring-actor band, declared not tuned). 'Step\noffered contrast' / 'Saviour preached liberty' / 'Frenchman speak year' leave\nthe telling; anna, prince, empress, funke, napoleon, petersburg stay. The\nrecord keeps every edge; the telling refuses the seat. Opt-in (no name",
+   "testCommand": "node --test \"telling.test.mjs\"",
+   "srcFiles": [
+    "telling.mjs"
+   ],
+   "testFiles": [
+    "telling.test.mjs"
+   ],
+   "linesChanged": 28
+  },
+  {
+   "id": "the-fold-03bfae9",
+   "repo": "the-fold",
+   "sha": "03bfae9939f18b9122cfb2bb88830b664c0df887",
+   "subject": "telling: a told patient must be attested — name, or a patient >=3 times",
+   "body": "the object mirror of tellerSubjects: 'educate bear', 'indulged sort', 'seized\npierre's' — a noun the POS prior knows, seated once as the object — is refused\nas a TOLD patient. patVol >= 3 (a patient the material repeatedly takes) or a\nname opens the slot; else the act is not told on that thing. The worst\nobject-miseats leave the telling ('Anna greeted prince, and kissed prince').\nRecord keeps every edge; the telling refuses the slot. opt-in (no name set in\nview => legacy). 41/41.",
+   "testCommand": "node --test \"telling.test.mjs\"",
+   "srcFiles": [
+    "telling.mjs"
+   ],
+   "testFiles": [
+    "telling.test.mjs"
+   ],
+   "linesChanged": 24
+  },
+  {
+   "id": "the-fold-9bbad88",
+   "repo": "the-fold",
+   "sha": "9bbad88f9e8199069da647df883a92671d3dc349",
+   "subject": "telling: gated full-name resolution — resolve the bearer at its own act, else keep the title",
+   "body": "'prince' is a MERGED identity: Prince Vasíli Kurágin x207 and Prince Andrew\nBolkónski x1143 both recur. Resolving to 'his full name' first needs WHICH\nbearer, per act, by company: titleRuns harvest the verbatim capitalized\nmulti-word surfaces; fullName counts a bearer's family name in the window\nAROUND the act (floor 2, majority 2x); a mixed window (a reception with\nseveral Princes) REFUSES and the ambiguous-but-true title stands. So the\ntelling now renders 'Anna Pávlovna Schérer greeted Prince' (the act is at the\nmixed reception — not guessed), but 'Prince Andrew Bolkónski arms Anna' where\nth",
+   "testCommand": "node --test \"telling.test.mjs\"",
+   "srcFiles": [
+    "telling.mjs"
+   ],
+   "testFiles": [
+    "telling.test.mjs"
+   ],
+   "linesChanged": 76
+  },
+  {
+   "id": "the-fold-6fff2e5",
+   "repo": "the-fold",
+   "sha": "6fff2e51ce446f1e3cf8afe2533d1af8a98e9268",
+   "subject": "a URL is READ, not searched: urlOf() detects a bare/verb-URL ask, routes to readText (direct→relay→readers) as the single grounded material, clean 'reading the page at HOST' murmur, and skips interpret-first/the hard-gap for URL asks; a JS-rendered page gets a typed 'could not read' void",
+   "body": "",
+   "testCommand": "node --test \"fold-chat-web.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-murmur.js",
+    "fold-chat-web.js",
+    "fold-chat.js"
+   ],
+   "testFiles": [
+    "fold-chat-web.test.mjs"
+   ],
+   "linesChanged": 53
+  },
+  {
+   "id": "the-fold-387a86c",
+   "repo": "the-fold",
+   "sha": "387a86c57bc26cffd4048c2bb036372f8214aeaf",
+   "subject": "a quotation is the strictest claim: a quoted run that is not VERBATIM in any source is STRUCK by the pivot (quote_not_verbatim) — an invented 'he writes: …' never prints beside a confession. +2 tests.",
+   "body": "",
+   "testCommand": "node --test \"fold-chat-pivot.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-pivot.js"
+   ],
+   "testFiles": [
+    "fold-chat-pivot.test.mjs"
+   ],
+   "linesChanged": 10
+  },
+  {
+   "id": "the-fold-8f36d98",
+   "repo": "the-fold",
+   "sha": "8f36d98c5e6ae2e15fc432fda99bbe6ae40347f8",
+   "subject": "provenance: the retry withdraws only a pointing slip, never a verdict; F4 8/8",
+   "body": "- the bounded re-ask now fires only when the pick failed as a sentence\n  (no_such_sentence), lacks the claim's figure (figure_missing), or shares no\n  content with it (unrelated) — the failure CLASS is read before the colon\n  ('figure_missing:330' is figure_missing), or S01–S25 never retried and the\n  stumble rescue fell to 12/23\n- a pick rejected for polarity, an unstated name or an opposite is a verdict\n  on the CLAIM: re-asking shopped the rest for a weaker sentence that\n  verified (F4 P7 F12/F14 laundered; now stopped)\n- unit specs follow: the BBC sentence that says 'became king' but never",
+   "testCommand": "node --test \"fold-chat-primary.test.mjs\" \"fold-chat-provenance.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-provenance.js"
+   ],
+   "testFiles": [
+    "fold-chat-primary.test.mjs",
+    "fold-chat-provenance.test.mjs"
+   ],
+   "linesChanged": 3
+  },
+  {
+   "id": "the-fold-810501d",
+   "repo": "the-fold",
+   "sha": "810501d24d648867922689dc58d9795a115a569f",
+   "subject": "place: one affordance owns consent (user review) — the checkbox is the gate, the detect button exists only while it is on, and force never bypasses it",
+   "body": "- the old bug: Detect-from-IP called with force:true skipped the ipLookup===false consent guard, so the\n  button and the checkbox disagreed about who decides; and first-enable already detected, making the\n  button a duplicate act\n- mayLookupIp (fold-chat-locale.js): consent-off / already-have-place / first-detect / re-detect — one\n  named rule; detectLocaleFromIp routes through it; the panel renders the detect action only under\n  consent, Edit place stays as the manual override; the note line speaks the consent state\n- falsified: force NEVER bypasses consent; passive calls never re-hit the IP ",
+   "testCommand": "node --test \"fold-chat-locale.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-locale.js",
+    "fold-chat.js"
+   ],
+   "testFiles": [
+    "fold-chat-locale.test.mjs"
+   ],
+   "linesChanged": 34
+  },
+  {
+   "id": "the-fold-49cc4a2",
+   "repo": "the-fold",
+   "sha": "49cc4a26f81330004d0bb49482e3ac118a7a5b58",
+   "subject": "reason: the abstraction lattice for the model turn — L1 GROUND (read sentences, quoted) -> L2 LENS (the ask's own words) -> L3 PARADIGM (the declared reply shape), climbed with nested reasoning before speaking; every factual sentence must restate an L1 quote; the scaffold never invents a word (falsified). Also round-two falsify: the pronoun-us expansion bug fixed (determiner/noun licensing, byte-preserving spans), read-cap proven upstream (G1), garbage/homoglyph/regex-fetch controls held",
+   "body": "",
+   "testCommand": "node --test \"falsify-split-battery2.test.mjs\" \"fold-chat-lattice.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-frame.js",
+    "fold-chat.js"
+   ],
+   "testFiles": [
+    "falsify-split-battery2.test.mjs",
+    "fold-chat-lattice.test.mjs"
+   ],
+   "linesChanged": 58
+  },
+  {
+   "id": "the-fold-f61ecfa",
+   "repo": "the-fold",
+   "sha": "f61ecfa5acda0a58723483333f0a64cf3ec0fdf3",
+   "subject": "chat: the compound behaves exactly like the proof — all-handoff compounds leave the usual path (the wire's contract, transitive through dependents), a partial compound draws its missing part as a fold notice under the answer; live-verified: research triggers, model audited to zero",
+   "body": "",
+   "testCommand": "node --test \"falsify-split-battery2.test.mjs\" \"fold-chat-split-wiring.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-split.js",
+    "fold-chat.js"
+   ],
+   "testFiles": [
+    "falsify-split-battery2.test.mjs",
+    "fold-chat-split-wiring.test.mjs"
+   ],
+   "linesChanged": 16
+  },
+  {
+   "id": "the-fold-667ad95",
+   "repo": "the-fold",
+   "sha": "667ad95d4467ecc5fe6cb5a5e1acc115d67025e9",
+   "subject": "answer: real-web holder shapes bind — subject-verb-role ('Charles III became king on 8 September 2022') and the perfect copula ('King Charles III has been king since…') resolve the subject as the filler from a role-carrying page title, with the auxiliary trimmed; pronouns and role-less sentences still fill nothing (falsified); the declared predicate-carry lets a role page witness a person-role ask",
+   "body": "",
+   "testCommand": "node --test \"fold-chat-witness.test.mjs\"",
+   "srcFiles": [
+    "fold-chat-witness.js"
+   ],
+   "testFiles": [
+    "fold-chat-witness.test.mjs"
+   ],
+   "linesChanged": 67
+  }
+ ]
+}

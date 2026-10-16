@@ -1,0 +1,1 @@
+{"url":"https://www.wikidata.org/w/api.php?format=json&origin=*&action=wbsearchentities&search=tell&language=en&type=property&limit=5","method":"GET","status":200,"contentType":"application/json; charset=utf-8","sha256":"d8571961229b8f71d2b1d03ad60e7dd94e947a9b6271c55fc89112f7e1814f4b","body":"{\"searchinfo\":{\"search\":\"tell\"},\"search\":[],\"success\":1}"}

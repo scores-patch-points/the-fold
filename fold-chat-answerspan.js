@@ -24,7 +24,7 @@
 // the thresholds were pre-registered in eval/ants/P2-PREREG.md before the HELD asks were run): every number in SPAN, the wh/measure tables,
 // the unit and month tables, the discourse markers and the pronoun list. A language not in ASK has no table (an honest gap, not a guess).
 
-import { segments, fold, scriptOf, capitalisationIsSignificant, isUnspaced, casedRuns } from "./fold-chat-mind.js";
+import { segments, fold, scriptOf, capitalisationIsSignificant, isUnspaced, casedRuns, entityFromTitle } from "./fold-chat-mind.js";
 import { sentencesWithOffsets } from "./fold-chat-impression.js";
 import { functionWordsOf } from "./fold-chat-snippets.js";
 import { detectLang } from "./fold-chat-lang.js";
@@ -288,14 +288,20 @@ export function classifyAsk(question, { lang = null } = {}) {
     if (x.t.length < 2 && !/^\d/.test(x.t)) continue;
     if (UNIT_DIM.has(x.t) && x.t.length > 1) continue;                  // a unit the asker named ("in feet") says how to show the figure, not what it is about
     if (seen.has(x.k)) continue; seen.add(x.k);
-    terms.push({ t: x.t, k: x.k });
+    terms.push({ t: x.t, k: x.k, raw: x.raw });
   }
+  // PREDICATE words: where the asker's script marks names by case AND the asker used it (a capital past the first word), a word of the ask they
+  // wrote in lower case is the relation asked about ("capital", "designed"), not a name ("Australia", "Eiffel"). With no such signal: none.
+  // The case is read on the word itself, past an elided article the segmenter keeps attached ("l'Australie", "d'Italia").
+  const capped = (raw) => /^(?:\p{Ll}{1,2}['’])?\p{Lu}/u.test(raw || "");
+  const usesCase = L !== "zh" && isCased(q) && toks.slice(1).some((x) => capped(x.raw));
+  const predKs = usesCase ? terms.filter((t) => !capped(t.raw)).map((t) => t.k) : [];
   if (want === "figure" && !dim) { if (/\bhow many\b|\bcuant[oa]s\b|\bcombien\b|сколько|多少/.test(hay)) dim = "count"; else dim = "any"; }
   // the unit the asker named ("in feet", "how many metres"): a word of the question that is a known unit; it says which dimension the figure is in
   const unit = toks.map((x) => x.t).find((t) => UNIT_DIM.has(t) && UNIT_DIM.get(t) !== "temp" && t.length > 1) || null;
   if (want === "figure" && unit && (dim === "count" || dim === "any")) dim = UNIT_DIM.get(unit);
   const weakCues = L === "en" ? (WEAK_CUES[dim] || []) : [];
-  return { supported: true, lang: L, want, why, terms, cues, cueNouns: [...cueNouns], ownCue: [...ownCue], weakCues, dim, unit, tab };
+  return { supported: true, lang: L, want, why, terms, predKs, usesCase, cues, cueNouns: [...cueNouns], ownCue: [...ownCue], weakCues, dim, unit, tab };
 }
 
 // ── atoms: the thing that IS the answer inside a sentence ─────────────────────────────────────────────
@@ -417,11 +423,42 @@ function indexPassage(p, pi, ask) {
   const sents = cands.map((c) => ({ ...c, toks: tokensOf(c.text, lang) }));
   const N = sents.length || 1; const df = new Map();
   for (const s of sents) for (const k of new Set(s.toks.map((x) => x.k))) df.set(k, (df.get(k) || 0) + 1);
-  return { p, pi, text, raw, sents, N, df, titleKs: titleToks, given: new Set([...titleToks, ...leadToks]) };
+  // the page's own NAME WITNESSES: every capitalised run it carries where case is a signal (not at a sentence start). A sentence-initial single
+  // word is a sentence opener to `casedRuns`; it is a name when this same page writes it capitalised somewhere case marks names ("Canberra,
+  // the capital city of Australia, …" opens a sentence, "the city of Canberra" witnesses it). Capitalisation is one witness among several.
+  const names = isCased(text) ? new Set(casedRuns(text, scriptOf(text), { functionWords: functionWordsOf(lang) || new Set() }).map((r) => fold(r.surface))) : new Set();
+  // A title the page itself writes as a NAME ("the Australian Capital Territory is …") lends its words to a name, not to the ask's relation: a
+  // predicate word of the ask that sits in it ("capital") is that name's part, so it is not the page's given subject (a namesake, not a statement).
+  // An ask with no case of its own ("what is the capital of australia") takes its predicate words from the page: a word of the ask is a name's
+  // word only where the page writes it inside the ask's OWN name ("Australia"); one it writes in lower case, or only inside other names
+  // ("Australian Capital Territory"), is the relation's word.
+  const ownKs = new Set([...names].filter((n) => isOwnName(ask, n)).flatMap((n) => tokensOf(n, lang).map((x) => x.k)));
+  const predKs = ask.usesCase || !isCased(text) ? ask.predKs : ask.terms.filter((t) => !ownKs.has(t.k)).map((t) => t.k);
+  const titleIsName = names.has(fold(entityFromTitle(title)));
+  const titleGiven = titleIsName ? new Set([...titleToks].filter((k) => !predKs.includes(k))) : titleToks;
+  return { p, pi, text, raw, sents, N, df, names, predKs, titleKs: titleToks, given: new Set([...titleGiven, ...leadToks]) };
 }
 
 const isCapRun = (s) => /^\p{Lu}/u.test(s);
-const typeAtoms = (ask, text, toks) => {
+/** The capitalised runs of a cased sentence, with its opening word admitted when the page witnesses it as a name (`names`, from indexPassage). */
+function namedRuns(ask, text, names = null) {
+  if (!isCased(text)) return [];
+  const fw = functionWordsOf(ask.lang) || new Set();
+  const runs = casedRuns(text, scriptOf(text), { functionWords: fw });
+  const opener = /^\s*(\p{Lu}[\p{L}\p{N}'’-]*)(?![\p{L}\p{N}])/u.exec(text);
+  if (names && opener && !runs.some((r) => r.start < opener[0].length) && !fw.has(fold(opener[1])) && names.has(fold(opener[1]))) {
+    const start = opener[0].length - opener[1].length;
+    runs.unshift({ surface: opener[1], start, end: start + opener[1].length });
+  }
+  return runs;
+}
+/** A name made only of the ask's own words (and function words) is the ask's own referent, not a namesake. */
+function isOwnName(ask, surface) {
+  const fw = functionWordsOf(ask.lang) || new Set(); const askKs = new Set(ask.terms.map((t) => t.k));
+  const ks = tokensOf(surface, ask.lang).filter((x) => !fw.has(x.t)).map((x) => x.k);
+  return ks.length > 0 && ks.every((k) => askKs.has(k));
+}
+const typeAtoms = (ask, text, toks, names = null) => {
   switch (ask.want) {
     case "figure": {
       const dates = datesIn(text, ask.lang);
@@ -432,7 +469,7 @@ const typeAtoms = (ask, text, toks) => {
       if (!isCased(text)) return [];
       const fw = functionWordsOf(ask.lang) || new Set();
       const askKs = new Set(ask.terms.map((t) => t.k));
-      return casedRuns(text, scriptOf(text), { functionWords: fw }).filter((r) => {
+      return namedRuns(ask, text, names).filter((r) => {
         const ks = tokensOf(r.surface, ask.lang).filter((x) => !fw.has(x.t)).map((x) => x.k);
         if (ks.length && ks.every((k) => askKs.has(k))) return false;                 // the ask's own name is not its answer
         if (NAME_FW_EXTRA.has(fold(r.surface)) || MONTH_SET.has(fold(r.surface)) || /^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$/.test(r.surface)) return false;
@@ -566,7 +603,11 @@ function spanFor(ask, ix, s, atom, ctx) {
 function scoreSpan(ask, ix, s, si, span, atomFit, ctx, atom = null) {
   const { termKs, cueKs, weakKs, predWeight } = ctx;
   const toks = s.toks.filter((x) => x.start >= span.start && x.end <= span.end);
-  const ks = new Set(toks.map((x) => x.k));
+  // a predicate word of the ask inside ANOTHER name ("Federal Capital Territory" for "the capital of Australia") is part of that name, not the
+  // relation stated: it does not count as the sentence carrying the word. The ask's own names ("Australia") and its referent words still count.
+  const predK = new Set(ix.predKs);
+  const foreign = predK.size ? (s.foreign ??= namedRuns(ask, s.text, ix.names).filter((r) => !isOwnName(ask, r.surface))) : [];
+  const ks = new Set(toks.filter((x) => !(predK.has(x.k) && foreign.some((r) => x.start >= r.start && x.end <= r.end))).map((x) => x.k));
   const wOf = (k) => 1 + Math.log(1 + ix.N / (1 + (ix.df.get(k) || 0)));
   let tot = 0, got = 0, inSpan = 0, predN = 0, predIn = 0; const hit = [];
   for (const t of ask.terms) {
@@ -669,7 +710,7 @@ function candidatesOf(ask, ix, predWeight = SPAN.predWeight) {
     const spanJunk = new Map();
     const isJunkSpan = (span) => { const t = st.slice(span.start, span.end); if (!spanJunk.has(t)) { const j = junkOf(t, { declared: s.src === "item" }); spanJunk.set(t, !!(j.leading || j.dominated || j.markup)); } return spanJunk.get(t); };
     if (NEEDS_SUBJECT.has(ask.want)) {
-      let atoms = typeAtoms(ask, st, s.toks);
+      let atoms = typeAtoms(ask, st, s.toks, ix.names);
       if (ask.want === "figure") atoms = atoms.map((a) => ({ ...a, fit: figureFit(ask, a, s.toks, termKs, cueKs) })).filter((a) => a.fit > 0);
       else atoms = atoms.map((a) => ({ ...a, fit: 1 }));
       if (ask.want === "figure") atoms = atoms.filter((a) => a.fit >= SPAN.minFit);

@@ -39,7 +39,10 @@ export function unsourcedPlan(_policy = UNSOURCED_ANSWERS, { live = false } = {}
 //   compute    a mechanical result card (the fold's evaluator, no model wording)
 //   generate / compose / code / transform   an app-authored note: there are no sources for this kind of ask
 // ONE LINE to change: list the kinds the model may answer alone, e.g. ["smalltalk", "compute"].
-export const ALONE_KINDS = Object.freeze([]);
+// ANSWERED (user, 2026-10-14: "why is it not letting the local model answer?" → "lets just do the in browser model"): smalltalk may be answered by the in-tab model alone — a
+// greeting, a thanks, "Say hello in five words." (fold-chat-kinds.js directiveShape classifies the last as smalltalk). Nothing else changes: compute stays the evaluator's card, and
+// every kind that makes a CLAIM about the world (research, advice) still needs a source. Add a kind here only when the model writing it with no source cannot assert a fact.
+export const ALONE_KINDS = Object.freeze(["smalltalk"]);
 export const modelSpeaksAlone = (kind) => ALONE_KINDS.includes(kind);
 
 import { SELF_LINE, NO_LOOKUP_LINE } from "./fold-chat-self.js";

@@ -48,3 +48,20 @@ test("CONTROL: with casts OFF the old path still carries (backwards compatible)"
   const f = followUp("wait say more about him losing the election", PRIOR, { referents: REC, hints: HINTS, lang: "en", casts: null });
   assert.equal(f.kind, "carried");
 });
+// ── CASTS.inanimate is DECLARED (giver: the author, II.11), not derived, and its effect is NOT covered by the suites above ─────────────────────
+// Removing it passes every other test and the pronoun ratchet, and turns the things below into PERSONS (personLike is structural: any run of capitalised
+// words is "a name"). These 27 surfaces pin the list's present verdicts, so a removal or a rewrite fails here, loudly, instead of silently.
+// The three groups are what the list gets right, what it gets wrong in the other direction (a title makes a person a thing), and what it misses.
+import { castOf as castOfPinned } from "./fold-chat-casts.js";
+const isPerson = (surface) => castOfPinned([], { entities: [{ surface, weight: 1 }] }).established[0].person;
+
+test("PIN inanimate: capitalised thing-names the list calls things (removal would make every one of these a person)", () => {
+  for (const s of ["Berlin Wall", "Great Wall", "Eiffel Tower", "Golden Gate Bridge", "Hudson River", "Mississippi River", "Second World War", "Battle of Hastings", "Treaty of Versailles", "New York City", "Red Planet"]) assert.equal(isPerson(s), false, s);
+});
+test("PIN inanimate: real names stay persons", () => {
+  for (const s of ["Donald Trump", "Marie Curie", "Simón de Bolívar", "Tim Cook", "Elon Musk"]) assert.equal(isPerson(s), true, s);
+});
+test("PIN inanimate, KNOWN DEFECTS pinned as they are: a title word turns a person into a thing; some things are not on the list and read as persons", () => {
+  for (const s of ["Prime Minister Boris Johnson", "President Abraham Lincoln", "King Charles", "Queen Elizabeth"]) assert.equal(isPerson(s), false, `${s}: wrongly a thing today (a title is in the list)`);
+  for (const s of ["Mount McKinley", "United States", "Statue of Liberty", "Rolling Stones", "Abbey Road", "Solar System", "Big Ben"]) assert.equal(isPerson(s), true, `${s}: wrongly a person today (not in the list)`);
+});

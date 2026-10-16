@@ -77,13 +77,13 @@ export function mountFold(host, fold, { renderArtifact = null, tab = "live", liv
   const body = el("div", "fv-body");
   head.append(title, chip, el("span", "fv-sp"), tabs);
   const scrub = el("div", "fv-scrub"); scrub.hidden = true;
-  const prev = el("button", "fv-step", "‹"); prev.type = "button"; prev.title = "one change back (← on the slider)";
-  const next = el("button", "fv-step", "›"); next.type = "button"; next.title = "one change forward (→ on the slider)";
+  const prev = el("button", "fv-step", "‹"); prev.type = "button"; prev.title = "one change back (← on the slider)"; prev.setAttribute("aria-label", "previous change");
+  const next = el("button", "fv-step", "›"); next.type = "button"; next.title = "one change forward (→ on the slider)"; next.setAttribute("aria-label", "next change");
   const range = document.createElement("input"); range.type = "range"; range.min = "0"; range.className = "fv-range"; range.setAttribute("aria-label", "scrub through the changes to the content");
   const playBtn = el("button", "fv-play", "▶ Play"); playBtn.type = "button"; playBtn.title = "replay this fold change by change — the page, the code and the log follow";
-  const speedBtn = el("button", "fv-speed", "1×"); speedBtn.type = "button"; speedBtn.title = "playback speed";
-  const latestBtn = el("button", "fv-latest", "latest ⤓"); latestBtn.type = "button"; latestBtn.title = "back to the newest change, following the run"; latestBtn.hidden = true;
-  const where = el("span", "fv-where");
+  const speedBtn = el("button", "fv-speed", "1×"); speedBtn.type = "button"; speedBtn.title = "playback speed"; speedBtn.setAttribute("aria-label", "playback speed 1×, press to change");
+  const latestBtn = el("button", "fv-latest", "latest ⤓"); latestBtn.type = "button"; latestBtn.title = "back to the newest change, following the run"; latestBtn.setAttribute("aria-label", "jump to the newest change"); latestBtn.hidden = true;
+  const where = el("span", "fv-where"); where.setAttribute("role", "status"); where.setAttribute("aria-live", "polite"); where.setAttribute("aria-atomic", "true");
   const resetBtn = el("button", "fv-reset", "Reset from here"); resetBtn.type = "button"; resetBtn.hidden = true;
   const marker = el("span", "fv-marker"); marker.hidden = true;
   scrub.append(playBtn, speedBtn, prev, range, next, latestBtn, where, resetBtn, marker);
@@ -145,7 +145,7 @@ export function mountFold(host, fold, { renderArtifact = null, tab = "live", liv
   let timer = null, speed = 1;
   const SPEEDS = [1, 2, 4], delayMs = () => Math.round(1100 / speed);
   const isPlaying = () => timer !== null;
-  function stopPlay() { if (timer !== null) { clearTimeout(timer); timer = null; } playBtn.textContent = "▶ Play"; playBtn.classList.remove("on"); }
+  function stopPlay() { if (timer !== null) { clearTimeout(timer); timer = null; } playBtn.textContent = "▶ Play"; playBtn.classList.remove("on"); playBtn.setAttribute("aria-pressed", "false"); }
   function tick() {
     if (!root.isConnected) { stopPlay(); return; }
     const at = cursorAt();
@@ -157,12 +157,12 @@ export function mountFold(host, fold, { renderArtifact = null, tab = "live", liv
   function startPlay() {
     if (lastFrame() < 1) return;
     if (!scrubbed()) cursor = 0;                                       // at the newest frame: play it again from the beginning
-    playBtn.textContent = "❚❚ Pause"; playBtn.classList.add("on");
+    playBtn.textContent = "❚❚ Pause"; playBtn.classList.add("on"); playBtn.setAttribute("aria-pressed", "true");
     render();
     timer = setTimeout(tick, delayMs());
   }
   playBtn.onclick = () => (isPlaying() ? stopPlay() : startPlay());
-  speedBtn.onclick = () => { speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]; speedBtn.textContent = speed + "×"; if (isPlaying()) { clearTimeout(timer); timer = setTimeout(tick, delayMs()); } };
+  speedBtn.onclick = () => { speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]; speedBtn.textContent = speed + "×"; speedBtn.setAttribute("aria-label", `playback speed ${speed}×, press to change`); if (isPlaying()) { clearTimeout(timer); timer = setTimeout(tick, delayMs()); } };
 
   function paintHead() {
     let [word, cls] = STATUS[fold.status] || [fold.status, "mut"];
@@ -186,7 +186,7 @@ export function mountFold(host, fold, { renderArtifact = null, tab = "live", liv
     scrub.hidden = N < 2;                                                // no content yet: nothing to scrub, play or change
     if (scrub.hidden) return;
     const at = scrubbed(), i = cursorAt(), fr = F[i];
-    range.max = String(N - 1); range.value = String(i);
+    range.max = String(N - 1); range.value = String(i); range.setAttribute("aria-valuetext", `change ${i} of ${N - 1}: ${frameWords(fr)}`);
     where.textContent = `${String(i).padStart(2, "0")} / ${N - 1} · ${frameWords(fr)}`;
     where.title = at ? "the content as of this change — drag, or use ← →" : "following the newest change";
     scrub.classList.toggle("on", at);
@@ -455,14 +455,20 @@ export function mountFold(host, fold, { renderArtifact = null, tab = "live", liv
     const before = i > 0 && frames()[i - 1].kind !== "start" ? frames()[i - 1].code : null;
     const ops = showChanges ? diffLines(before, fr.code) : fr.code.split("\n").map((line) => ({ op: "eq", line }));
     const pre = el("div", "fv-codelines fv-fold");
+    const nAdd = ops.filter((d) => d.op === "add").length, nDel = ops.filter((d) => d.op === "del").length;
+    if (showChanges && (nAdd || nDel)) { const sum = el("div", "fv-changed", `This change: ${nAdd} line${nAdd === 1 ? "" : "s"} added (+), ${nDel} removed (−)`); sum.setAttribute("role", "note"); body.append(sum); }
     let n = 0;
     for (const d of ops) {
       if (d.op !== "del") n++;
-      const r = el("div", "fv-cl fv-cl-" + d.op);
+      const r = el("div", "fv-cl fv-cl-" + d.op + (d.op !== "eq" ? " fv-new" : ""));
+      if (d.op !== "eq") r.setAttribute("aria-label", (d.op === "add" ? "added: " : "removed: ") + (d.line || "blank line"));
       r.append(el("span", "fv-n", d.op === "del" ? "" : String(n)), el("span", "fv-sign", d.op === "add" ? "+" : d.op === "del" ? "−" : " "), el("span", "fv-src", d.line || " "));
       pre.append(r);
     }
     body.append(pre);
+    // The box resets to the top on every frame; bring the first changed line into view so the change is never off-screen.
+    const first = pre.querySelector(".fv-new");
+    if (first) pre.scrollTop = Math.max(0, first.offsetTop - pre.clientHeight / 3);
   }
 
   function render() {

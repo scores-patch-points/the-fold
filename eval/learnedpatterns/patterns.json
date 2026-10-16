@@ -1,0 +1,415 @@
+{
+ "written": "2026-10-14T04:28:54.886Z",
+ "harvestSha256": "206ba683d5c95677abbb7c02a927e2f9028409b4f9917d1bb4a9510f0543516b",
+ "B": 199,
+ "seed": "learnedpatterns:real",
+ "split": {
+  "train": {
+   "P50": 128,
+   "P170": 392,
+   "P86": 402,
+   "P61": 392,
+   "P19": 382,
+   "P36": 399,
+   "P37": 388,
+   "P38": 368,
+   "P35": 412,
+   "P6": 398,
+   "P169": 391
+  },
+  "validation": {
+   "P50": 30,
+   "P170": 101,
+   "P86": 95,
+   "P61": 98,
+   "P19": 107,
+   "P36": 97,
+   "P37": 94,
+   "P38": 78,
+   "P35": 80,
+   "P6": 97,
+   "P169": 97
+  }
+ },
+ "real": {
+  "instances": 95323,
+  "candidatePatterns": 292137,
+  "bar": 9,
+  "nullMax": {
+   "min": 2,
+   "median": 3,
+   "max": 9
+  },
+  "admittedByPid": {
+   "P50": 0,
+   "P170": 0,
+   "P86": 0,
+   "P61": 3,
+   "P19": 1,
+   "P36": 11,
+   "P37": 7,
+   "P38": 0,
+   "P35": 0,
+   "P6": 0,
+   "P169": 0
+  },
+  "admitted": [
+   {
+    "pid": "P36",
+    "key": "R|ac|capital … is",
+    "S": 33,
+    "conf": 44,
+    "ref": 11
+   },
+   {
+    "pid": "P36",
+    "key": "R|c2|city is",
+    "S": 28,
+    "conf": 44,
+    "ref": 16
+   },
+   {
+    "pid": "P36",
+    "key": "R|s|* and * is",
+    "S": 28,
+    "conf": 28,
+    "ref": 0
+   },
+   {
+    "pid": "P36",
+    "key": "R|c2|capital is",
+    "S": 27,
+    "conf": 27,
+    "ref": 0
+   },
+   {
+    "pid": "P36",
+    "key": "R|c1|is",
+    "S": 23,
+    "conf": 83,
+    "ref": 60
+   },
+   {
+    "pid": "P36",
+    "key": "R|c3|largest city is",
+    "S": 23,
+    "conf": 32,
+    "ref": 9
+   },
+   {
+    "pid": "P36",
+    "key": "R|f|capital and largest city is",
+    "S": 21,
+    "conf": 21,
+    "ref": 0
+   },
+   {
+    "pid": "P36",
+    "key": "R|a3|capital and largest",
+    "S": 17,
+    "conf": 25,
+    "ref": 8
+   },
+   {
+    "pid": "P36",
+    "key": "R|s|* is",
+    "S": 17,
+    "conf": 21,
+    "ref": 4
+   },
+   {
+    "pid": "P37",
+    "key": "L|c1|pronunciation",
+    "S": 17,
+    "conf": 17,
+    "ref": 0
+   },
+   {
+    "pid": "P37",
+    "key": "L|c2|pronunciation :",
+    "S": 17,
+    "conf": 17,
+    "ref": 0
+   },
+   {
+    "pid": "P37",
+    "key": "L|c3|pronunciation : [",
+    "S": 17,
+    "conf": 17,
+    "ref": 0
+   },
+   {
+    "pid": "P36",
+    "key": "R|f|capital is",
+    "S": 16,
+    "conf": 16,
+    "ref": 0
+   },
+   {
+    "pid": "P61",
+    "key": "R|c1|de",
+    "S": 16,
+    "conf": 23,
+    "ref": 7
+   },
+   {
+    "pid": "P61",
+    "key": "R|c2|C de",
+    "S": 16,
+    "conf": 23,
+    "ref": 7
+   },
+   {
+    "pid": "P36",
+    "key": "R|a1|capital",
+    "S": 12,
+    "conf": 61,
+    "ref": 49
+   },
+   {
+    "pid": "P37",
+    "key": "L|f|:",
+    "S": 12,
+    "conf": 31,
+    "ref": 19
+   },
+   {
+    "pid": "P37",
+    "key": "L|s|:",
+    "S": 12,
+    "conf": 31,
+    "ref": 19
+   },
+   {
+    "pid": "P61",
+    "key": "R|c3|by C de",
+    "S": 12,
+    "conf": 12,
+    "ref": 0
+   },
+   {
+    "pid": "P37",
+    "key": "L|c1|:",
+    "S": 11,
+    "conf": 82,
+    "ref": 71
+   },
+   {
+    "pid": "P19",
+    "key": "R|c2|born in",
+    "S": 10,
+    "conf": 15,
+    "ref": 5
+   },
+   {
+    "pid": "P37",
+    "key": "L|c2|: [",
+    "S": 10,
+    "conf": 15,
+    "ref": 5
+   }
+  ],
+  "validation": {
+   "P50": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 81
+   },
+   "P170": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 465
+   },
+   "P86": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 398
+   },
+   "P61": {
+    "commits": 4,
+    "confirmed": 3,
+    "refuted": 1,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 793
+   },
+   "P19": {
+    "commits": 5,
+    "confirmed": 3,
+    "refuted": 1,
+    "skipped": 1,
+    "ties": 0,
+    "sentencesWithMention": 388
+   },
+   "P36": {
+    "commits": 23,
+    "confirmed": 13,
+    "refuted": 10,
+    "skipped": 0,
+    "ties": 5,
+    "sentencesWithMention": 923
+   },
+   "P37": {
+    "commits": 12,
+    "confirmed": 6,
+    "refuted": 6,
+    "skipped": 0,
+    "ties": 3,
+    "sentencesWithMention": 991
+   },
+   "P38": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 621
+   },
+   "P35": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 622
+   },
+   "P6": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 1118
+   },
+   "P169": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 577
+   }
+  }
+ },
+ "mutation": {
+  "bar": 9,
+  "nullMax": {
+   "min": 2,
+   "median": 3,
+   "max": 9
+  },
+  "admittedByPid": {
+   "P50": 0,
+   "P170": 0,
+   "P86": 0,
+   "P61": 0,
+   "P19": 0,
+   "P36": 0,
+   "P37": 0,
+   "P38": 0,
+   "P35": 0,
+   "P6": 0,
+   "P169": 0
+  },
+  "admitted": [],
+  "validation": {
+   "P50": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 81
+   },
+   "P170": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 465
+   },
+   "P86": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 398
+   },
+   "P61": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 793
+   },
+   "P19": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 388
+   },
+   "P36": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 923
+   },
+   "P37": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 991
+   },
+   "P38": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 621
+   },
+   "P35": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 622
+   },
+   "P6": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 1118
+   },
+   "P169": {
+    "commits": 0,
+    "confirmed": 0,
+    "refuted": 0,
+    "skipped": 0,
+    "ties": 0,
+    "sentencesWithMention": 577
+   }
+  }
+ }
+}

@@ -1,0 +1,29 @@
+{
+  "note": "The make-asks of eval/agent (PREREG.md). The ask text is all the agent ever sees; the behavioural tests live in hidden.json and are never read by app code.",
+  "asks": [
+    { "id": "calc", "ask": "Make a simple calculator page." },
+    { "id": "tip", "ask": "Build a tip calculator." },
+    { "id": "km-m", "ask": "Make a kilometres to metres converter." },
+    { "id": "c-f", "ask": "Create a Celsius to Fahrenheit converter." },
+    { "id": "countdown", "ask": "Make a countdown timer that counts down from 10 seconds." },
+    { "id": "stopwatch", "ask": "Build a stopwatch." },
+    { "id": "todo", "ask": "Make a to-do list app." },
+    { "id": "counter", "ask": "Create a click counter page." },
+    { "id": "bmi", "ask": "Build a BMI calculator." },
+    { "id": "wordcount", "ask": "Make a word counter." },
+    { "id": "password", "ask": "Create a random password generator page." },
+    { "id": "dice", "ask": "Build a dice roller." },
+    { "id": "lb-kg", "ask": "Make a pounds to kilograms converter." },
+    { "id": "percent", "ask": "Create a percentage calculator." },
+    { "id": "charcount", "ask": "Make a character counter for tweets." },
+    { "id": "upper", "ask": "Create a page that converts text to uppercase." },
+    { "id": "reverse", "ask": "Make a tool that reverses a string." },
+    { "id": "interest", "ask": "Make a simple interest calculator." },
+    { "id": "mi-km", "ask": "Create a miles to kilometres converter." },
+    { "id": "darkmode", "ask": "Make a page with a light and dark mode toggle." },
+    { "id": "traffic", "ask": "Build a traffic light that cycles through red, yellow and green." },
+    { "id": "oddeven", "ask": "Make an odd or even number checker." },
+    { "id": "timestable", "ask": "Make a multiplication table generator." },
+    { "id": "circle", "ask": "Make a calculator for the area of a circle." }
+  ]
+}
