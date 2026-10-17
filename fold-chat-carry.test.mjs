@@ -91,3 +91,12 @@ test("F-D4: the carry's lens now says what was looked for and not found; the not
   const c0 = carryOf({ referents: rec, messages: messages.slice(0, 2), summary: { records: [] } }, { question: "Emmanuel Macron: where was he born?" });
   assert.ok(!c0.lines.some((l) => /looked for and not found/.test(l)));
 });
+
+test("the carry ALSO holds penelope's portable fold (fold-note): many asks fold to threads", () => {
+  const topics = ["parser", "deploy", "billing"];
+  const pairs = Array.from({ length: 20 }, (_, i) => [`work on the ${topics[i % 3]} item ${i}`, `settled the ${topics[i % 3]} work`]);
+  const rec = turn(emptyReferents(), "Who is Ada Lovelace?", "Ada Lovelace wrote notes on the Analytical Engine.", ["Ada Lovelace — Wikipedia"]);
+  const c = carryOf({ referents: rec, messages: msgs(pairs) }, { question: "what did we settle about the parser?" });
+  assert.match(c.text, /fold: the thread/); // the shared, record-free fold rides with the chat's own rich carry
+  assert.match(c.text, /thread\(s\)/);
+});

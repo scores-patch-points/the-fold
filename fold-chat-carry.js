@@ -19,6 +19,7 @@
 // Pure: no DOM, no IO, no model. Recomputed from the messages every turn, never from its own earlier output, so it cannot drift.
 import { atmosphereBlock, lensBlock, activeReferents } from "./vendor/khora/native/the-fold/resolutions.js";
 import { fold, mentions } from "./fold-chat-mind.js";
+import { foldNote } from "./vendor/penelope/fold-note.mjs";
 
 /** The index the khora blocks resolve through, built from the chat's referent record (`s.referents`). Ids are the folded surface. */
 export function indexOfReferents(record) {
@@ -93,10 +94,19 @@ export function carryOf(session, { question = null, level = 2 } = {}) {
     // conversation's own slot turns drew (voidsOfMessages); the records carry the addresses mechanical turns showed (fold-chat-record.js).
     ? lensBlock({ question: q, active: active.ids, index, voids: voidsOfMessages(session?.messages), records: session?.summary?.records || [], transcript })
     : null;
+  // THE PORTABLE FOLD (penelope/organs/fold-note.mjs): the SAME mechanical fold the opencode door carries — a
+  // session's turns folded to their threads, bounded. The chat's own carry (atmosphere + lens) is the rich reading
+  // against the referent record; this is the shared, record-free fold, so a surface with turns and no record folds
+  // the same way. Additive: it never replaces the atmosphere/lens.
+  const threads = foldNote(
+    transcript.map((t) => ({ ask: t.question, answer: t.answer })),
+    q,
+    { budget: 600, threads: 4 },
+  );
   const blocks = [atmosphere, lens].filter((b) => b && b.text);
   const entities = [...(session.referents.entities || [])].sort((a, b) => b.weight - a.weight).map((e) => e.surface);
   return {
-    text: blocks.map((b) => b.text).join("\n\n"),
+    text: [blocks.map((b) => b.text).join("\n\n"), threads].filter(Boolean).join("\n\n"),
     lines: [...atmosphere.lines, ...(lens?.lines || [])],
     entities,
     basis: [atmosphere.basis, lens?.basis, lens ? "no-notes: this surface keeps no note ledger, so the lens reads none" : null].filter(Boolean).join(" · "),
