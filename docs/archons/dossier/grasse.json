@@ -1,0 +1,52 @@
+{
+  "schema": "ArchonDossier@1",
+  "handle": "grasse",
+  "organ": "khora/opencode-worknotes.mjs (the stigmergic medium: per-agent append-only marks, atomic O_EXCL claims with TTL decay, done-final; the door injects the merged view as a note)",
+  "standing": "verified",
+  "creditAsScholarship": true,
+  "snips": [],
+  "whatTheyArgued": "Pierre-Paul Grassé (1895-1985), the French zoologist and termite specialist, coined 'stigmergy' in 1959 (Insectes Sociaux 6:41-83, 'La reconstruction du nid et les coordinations interindividuelles chez Bellicositermes natalensis et Cubitermes sp. La theorie de la stigmergie'), from Greek stigma (mark) + ergon (work). His claim was narrow and about TERMITES: nest-building is coordinated through the structure itself - a builder is triggered and oriented by the existing work (a deposit, a heap, a partly built wall), not by a plan, a foreman or direct instruction. The mound is both product and medium; each builder reads the local state the last one left. He did NOT claim that signals are absent: termites still receive tactile and pheromonal stimuli from nestmates and their own deposits. He did not propose files, locks, time-to-live, leases, or any digital log. The primary paper was not read in full here (secondary accounts only); the coinage and its meaning are widely attested.",
+  "scholarship": [
+    {
+      "ref": "Wikipedia, 'Stigmergy' (history and definition of the term)",
+      "url": "https://en.wikipedia.org/wiki/Stigmergy",
+      "supports": "Grassé coined stigmergy in 1959 from stigma+ergon; coordination through the work itself; the term's later use in swarm intelligence and ant-colony optimization",
+      "disputes": "a tertiary source; the precise scope of Grassé's own 1959 claim rests on the untranslated paper, which I did not read"
+    }
+  ],
+  "ourUse": "opencode-worknotes.mjs implements a stigmergic medium for parallel coding agents: one task directory per project; each agent writes its own append-only marks file (no writer contention); atomic claims are created with O_EXCL and decay by TTL unless renewed, and done is final; the doorway injects a note carrying what others hold and the latest facts and blocks. No agent messages another; coordination is by reading and writing the shared medium. The pheromone layers proper live elsewhere and are named for others (kernel/stigmergy.js = Wilson, The Ants; kernel/activation.js = Atta, the leafcutter) - Grassé's handle is placed on THIS medium, the log itself, specifically.",
+  "verdict": "partial",
+  "bends": [
+    {
+      "id": "mechanism-is-not-his",
+      "kind": "narrowed",
+      "ours": "Compendium role: the medium's append-only per-writer marks, atomic O_EXCL claims, TTL decay and done-is-final.",
+      "theirs": "None of that machinery is in Grassé's work. Those are engineering choices with their own ancestors - one writer owns its own file (Bernstein's Maildir) and leases that lapse when a holder dies (Gray & Cheriton). Grassé supplies the picture (the work is the message), not the mechanism."
+    },
+    {
+      "id": "no-communication-is-our-gloss",
+      "kind": "re-scoped",
+      "ours": "Role/credit phrasing that 'no agent messages another' / 'the environment is the message'.",
+      "theirs": "Stigmergy is INDIRECT coordination, not the total absence of signals; Grassé's termites still sense nestmates and deposits directly. Our 'no talking' is the agent-level reading of his indirect mechanism, not his sentence."
+    },
+    {
+      "id": "decay-rate-not-his",
+      "kind": "decorative",
+      "ours": "The 15-minute claim TTL and the kernel's exponential evaporation are presented under the stigmergy image.",
+      "theirs": "Grassé specified no decay rate. Making evaporation a tunable parameter is Dorigo's later move (ant-colony optimization); our TTL is a chosen default, not a number taken from the termites."
+    },
+    {
+      "id": "scope",
+      "kind": "re-scoped",
+      "ours": "A task directory shared by coding agents across a repository.",
+      "theirs": "Grassé's object is termite nest construction. Applying 'the structure coordinates' to a filesystem of marks is a generalization his paper does not make."
+    }
+  ],
+  "noBendReason": null,
+  "fix": [
+    "credit: keep the coinage and the image ('the work itself is the message'), but state that the marks/claims/leases are ours and name Bernstein and Gray & Cheriton for the concurrency tricks (as the essay's prior-art section already does)",
+    "role: say 'indirect coordination through a shared medium' rather than 'no agent messages another'; indirect is Grassé's, 'no talking' is the agent gloss",
+    "do not present the TTL or the evaporation half-life as Grassé's; they are our parameters (Dorigo made evaporation tunable)"
+  ],
+  "tokenized": false
+}
