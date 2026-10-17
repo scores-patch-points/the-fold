@@ -265,7 +265,7 @@ node fold-ext-e2e.mjs                 # loads the build in a real Chromium (need
 - **Artifacts** — generative UI blocks in the thread (React/HTML/Mermaid) rendered as sealed, provenance-attached artifacts.
 - **Memory** — sessions already persist; fold the record (khora reading) into the thread the way holodeck-ask does, as notes, never raw.
 - **Search** — route search through khora's retrieval so the chat can cite ground without exposing spans.
-- **Agents/MCP** — the opencode-fold fork exposes opencode's session API, and the conductor speaks that same wire, so chat drives real coding work through the same sealed door.
+- **Agents/MCP** — the openfold fork exposes opencode's session API, and the conductor speaks that same wire, so chat drives real coding work through the same sealed door.
 
 ## The Fold context
 
