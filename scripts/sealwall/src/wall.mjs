@@ -15,6 +15,7 @@ const MANDATORY = new Set(['person', 'handle', 'address', 'email', 'phone', 'ipv
 const ID_KEYS = new Set(['id', 'tool_call_id', 'tool_use_id', 'call_id', 'item_id', 'response_id', 'previous_response_id', 'message_id', 'request_id']);
 // Blobs the provider itself issued and must get back verbatim (thinking signatures, encrypted reasoning).
 const OPAQUE_KEYS = new Set(['signature', 'encrypted_content']);
+const STRUCT_KEYS = new Set(['tools', 'tool_choice', 'parameters', 'input_schema', 'function_declarations', 'functionDeclarations', 'function', 'response_format', 'json_schema', 'schema', 'properties', 'required', 'toolConfig', 'tool_config', 'generationConfig']);
 const FREE_KEYS = new Set(['input', 'arguments', 'args', 'metadata', 'params', 'extra_body']);
 const personish = (v) => /\s/.test(v) || /^[A-Z][a-z]+$/.test(v);
 
@@ -26,7 +27,7 @@ export class Wall {
 
   // Nothing is exempt: every string, key, schema and description is normalized, detected and sealed.
   // Protocol tokens (role, type, model ids, tool names) contain nothing detectable, so they pass unchanged.
-  sealText(text, stats = {}) {
+  sealText(text, stats = {}, structural = false) {
     if (!text) return text;
     let t = decodePercent(deobfuscate(text));
     // MANDATORY layer: shapes + judge PII + lexicon persons. No configuration can turn it off.
@@ -35,7 +36,7 @@ export class Wall {
     const nouns = this.nouns.detect(t);
     mandatory.push(...nouns.filter((x) => x.cls === 'person'));
     // OPTIONAL layer: noun referents
-    const optional = this.sealing ? [...nouns.filter((x) => x.cls !== 'person'), ...judged.filter((x) => !MANDATORY.has(x.cls))] : [];
+    const optional = this.sealing && !structural ? [...nouns.filter((x) => x.cls !== 'person'), ...judged.filter((x) => !MANDATORY.has(x.cls))] : [];
     const spans = resolve([...mandatory, ...optional]);
     if (!spans.length) return t;
     let out = '', pos = 0;
@@ -47,20 +48,20 @@ export class Wall {
     return out + t.slice(pos);
   }
 
-  sealJSON(node, stats = {}, key = '', free = false) {
+  sealJSON(node, stats = {}, key = '', free = false, structural = false) {
     if (typeof node === 'string') {
       if (OPAQUE_KEYS.has(key)) return node;
       if (ID_KEYS.has(key) && /^[A-Za-z0-9_-]+$/.test(node)) return looksLikeSecret(node) || detectPII(node).length ? (stats.id = (stats.id || 0) + 1, this.vault.pseudo(node)) : node;
       if (SECRET_KEY.test(key) && node.length >= 4) { stats.keysecret = (stats.keysecret || 0) + 1; return this.vault.seal('secret', node, false); }
       if (IDENT_KEY.test(key) && node.trim()) { stats.keyident = (stats.keyident || 0) + 1; return this.vault.seal(key.toLowerCase().replace(/[^a-z]/g, '') || 'ident', node, true); }
       if (this.sealing && free && /^(name|title|label|contact|person|customer|client|recipient|sender|from|to)$/i.test(key) && personish(node)) { stats.keyname = (stats.keyname || 0) + 1; return this.vault.seal('name', node, true); }
-      return this.sealText(node, stats);
+      return this.sealText(node, stats, structural);
     }
     if (Array.isArray(node)) {
-      const sealed = node.map((x) => this.sealJSON(x, stats, key, free));
+      const sealed = node.map((x) => this.sealJSON(x, stats, key, free, structural));
       // a secret may be split across string elements: if the joined text redacts differently, send the joined, sealed text
       if (node.length > 1 && node.every((x) => typeof x === 'string')) {
-        const joined = this.sealText(node.join(''), {});
+        const joined = this.sealText(node.join(''), {}, structural);
         if (joined !== sealed.join('')) return [joined, ...node.slice(1).map(() => '')];
       }
       return sealed;
@@ -69,7 +70,10 @@ export class Wall {
       if (OPAQUE.has(node.type) || 'inlineData' in node || 'fileData' in node || 'input_audio' in node || 'image_url' in node || (node.source && node.source.type === 'base64'))
         throw new Error(`opaque part (${node.type || Object.keys(node)[0]}) cannot be inspected; blocked`);
       const o = {};
-      for (const [k, v] of Object.entries(node)) o[this.sealText(k, stats)] = this.sealJSON(v, stats, k, free || FREE_KEYS.has(k));
+      // tool/function definitions and schemas are protocol structure: names, property keys and `required` lists must reach the
+      // provider intact, so inside them only the mandatory layer (PII, secrets) applies, never noun sealing.
+      const isDef = node.type === 'function' || 'parameters' in node || 'input_schema' in node || 'function_declarations' in node || 'functionDeclarations' in node;
+      for (const [k, v] of Object.entries(node)) o[this.sealText(k, stats, true)] = this.sealJSON(v, stats, k, free || FREE_KEYS.has(k), structural || STRUCT_KEYS.has(k) || (isDef && k === 'name'));
       return o;
     }
     return node;

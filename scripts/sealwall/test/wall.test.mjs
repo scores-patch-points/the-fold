@@ -153,3 +153,16 @@ test('streamed tool-call args: restored values are JSON-escaped so the fragment 
   assert.deepEqual(JSON.parse(args), { who: 'Pat "Q" O\\Brien' });
   up.close(); px.close();
 });
+
+test('tool schemas keep their structure: property keys, names and required lists are never noun-sealed', () => {
+  const w = new Wall({ vault, nouns: new NounSealer({ lexiconPath: join(home, 'lex.json'), roots: [] }) });
+  const schema = { tools: [{ function_declarations: [{ name: 'Zephyrus_lookup', description: 'Look up Zephyrus for ada@corp.com', parameters: { type: 'object', properties: { Zephyrus: { type: 'string' }, 'ada@corp.com': { type: 'string' } }, required: ['Zephyrus'] } }] }] };
+  const o = w.sealJSON(schema);
+  const d = o.tools[0].function_declarations[0];
+  assert.equal(d.name, 'Zephyrus_lookup');
+  assert.deepEqual(d.parameters.required, ['Zephyrus']);
+  assert.ok('Zephyrus' in d.parameters.properties);              // noun in a key: untouched
+  assert.ok(!JSON.stringify(o).includes('ada@corp.com'));          // but PII is still redacted, key or value
+  // and the same noun in ordinary content is still sealed
+  assert.ok(!w.sealJSON({ messages: [{ role: 'user', content: 'ask Zephyrus' }] }).messages[0].content.includes('Zephyrus'));
+});
