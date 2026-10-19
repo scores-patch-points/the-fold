@@ -166,3 +166,16 @@ test('tool schemas keep their structure: property keys, names and required lists
   // and the same noun in ordinary content is still sealed
   assert.ok(!w.sealJSON({ messages: [{ role: 'user', content: 'ask Zephyrus' }] }).messages[0].content.includes('Zephyrus'));
 });
+
+test('judge never rewrites code-like keywords inside tool schemas (minLength was sealed as a person)', async () => {
+  const { Judge } = await import('../src/judge.mjs');
+  const fake = async (url, init) => {
+    const { texts } = JSON.parse(init.body);
+    return { ok: true, json: async () => ({ spans: texts.map((t) => [...t.matchAll(/minLength|Priya/g)].map((m) => ({ start: m.index, end: m.index + m[0].length, type: 'PERSON', score: 0.9 }))) }) };
+  };
+  const w = new Wall({ vault, nouns: wall.nouns, judge: new Judge({ fetchImpl: fake }) });
+  const body = { tools: [{ type: 'function', function: { name: 'grep', description: 'search for Priya', parameters: { type: 'object', properties: { pattern: { type: 'string', minLength: 1, description: 'the regex' } } } } }], messages: [{ role: 'user', content: 'ask Priya' }] };
+  const out = await w.sealRequest(body);
+  assert.ok('minLength' in out.tools[0].function.parameters.properties.pattern);           // keyword intact
+  assert.ok(!JSON.stringify(out).includes('Priya'));                                        // real names still sealed, in prose and in messages
+});

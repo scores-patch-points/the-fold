@@ -42,7 +42,9 @@ export function createServer({ wall, vault, upstreams, allowHosts = [], log = co
       if (body.length) {
         const j = JSON.parse(body.toString('utf8'));
         stream = !!j.stream;
-        body = Buffer.from(JSON.stringify(await wall.sealRequest(j, stats)));
+        const sealedBody = await wall.sealRequest(j, stats);
+        stats.__changed = changedPaths(j, sealedBody);
+        body = Buffer.from(JSON.stringify(sealedBody));
       }
     } catch (e) {            // fail closed: nothing leaves unsealed
       audit({ route: m[1], blocked: String(e.message) });
@@ -69,6 +71,12 @@ export function createServer({ wall, vault, upstreams, allowHosts = [], log = co
     const up = lib.request(target, { method: req.method, headers }, (ur) => {
       const ct = ur.headers['content-type'] || '';
       const out = { ...ur.headers }; delete out['content-length']; delete out['content-encoding']; delete out['transfer-encoding'];
+      // diagnostics: record what the upstream said when it refused (status + first 400 chars; never request content)
+      if (ur.statusCode >= 400) {
+        let eb = '';
+        ur.on('data', (c) => { if (eb.length < 400) eb += c.toString('utf8'); });
+        ur.on('end', () => audit({ route: m[1], path: m[2], status: ur.statusCode, upstreamError: eb.slice(0, 400) }));
+      }
       if (/event-stream/.test(ct)) {
         res.writeHead(ur.statusCode, out);
         pipeSSE(ur, res, vault);
@@ -89,6 +97,18 @@ export function createServer({ wall, vault, upstreams, allowHosts = [], log = co
     up.on('error', (e) => { res.writeHead(502); res.end(`sealwall upstream error: ${e.message}`); });
     up.end(body);
   }
+}
+
+// Diagnostics: JSON paths (never values) where sealing changed a string, ignoring ordinary message text.
+function changedPaths(a, b, path = '', out = []) {
+  if (out.length >= 40) return out;
+  if (typeof a === 'string') { if (a !== b && !/^\.messages\[\d+\]\.content(\[\d+\](\.text)?)?$/.test(path)) out.push(path || '.'); }
+  else if (Array.isArray(a) && Array.isArray(b)) a.forEach((x, i) => changedPaths(x, b[i], `${path}[${i}]`, out));
+  else if (a && typeof a === 'object' && b && typeof b === 'object') {
+    const bk = Object.keys(b);
+    Object.keys(a).forEach((k, i) => { if (bk[i] !== k) out.push(`${path}.<key ${i}: ${/^\.tools\[/.test(path) ? `${k.slice(0, 60)} -> ${String(bk[i]).slice(0, 60)}` : 'renamed'}>`); changedPaths(a[k], b[bk[i]], `${path}.${k}`, out); });
+  }
+  return out;
 }
 
 function pipeSSE(ur, res, vault) {

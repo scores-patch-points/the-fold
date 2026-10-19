@@ -31,7 +31,8 @@ export class Wall {
     if (!text) return text;
     let t = decodePercent(deobfuscate(text));
     // MANDATORY layer: shapes + judge PII + lexicon persons. No configuration can turn it off.
-    const judged = this.judged.get(t) || [];
+    // NER models read identifiers like `minLength` as names; inside tool schemas, single code-like tokens are protocol keywords
+    const judged = structural && /^[A-Za-z_$][\w$.-]*$/.test(t) ? [] : (this.judged.get(t) || []);
     const mandatory = [...b64Spans(t), ...detectPII(t, this.script ? [this.script] : []), ...judged.filter((x) => MANDATORY.has(x.cls))];
     const nouns = this.nouns.detect(t);
     mandatory.push(...nouns.filter((x) => x.cls === 'person'));
@@ -80,11 +81,17 @@ export class Wall {
   }
 
   // strings exactly as sealText will see them (values and keys)
-  collect(node, out = new Set(), key = '') {
+  collect(node, out = new Set(), key = '', structural = false) {
     const norm = (x) => decodePercent(deobfuscate(x));
-    if (typeof node === 'string') { if (!OPAQUE_KEYS.has(key) && !(ID_KEYS.has(key) && /^[A-Za-z0-9_-]+$/.test(node))) out.add(norm(node)); }
-    else if (Array.isArray(node)) node.forEach((x) => this.collect(x, out, key));
-    else if (node && typeof node === 'object') for (const [k, v] of Object.entries(node)) { out.add(norm(k)); this.collect(v, out, k); }
+    const IDENT = /^[A-Za-z_$][\w$.-]*$/;
+    // same exemption as sealText: inside tool schemas, single code-like tokens are protocol keywords the NER judge misreads
+    const add = (x) => { const n = norm(x); if (!(structural && IDENT.test(n))) out.add(n); };
+    if (typeof node === 'string') { if (!OPAQUE_KEYS.has(key) && !(ID_KEYS.has(key) && /^[A-Za-z0-9_-]+$/.test(node))) add(node); }
+    else if (Array.isArray(node)) node.forEach((x) => this.collect(x, out, key, structural));
+    else if (node && typeof node === 'object') {
+      const isDef = node.type === 'function' || 'parameters' in node || 'input_schema' in node || 'function_declarations' in node || 'functionDeclarations' in node;
+      for (const [k, v] of Object.entries(node)) { add(k); this.collect(v, out, k, structural || STRUCT_KEYS.has(k) || (isDef && k === 'name')); }
+    }
     return out;
   }
 
