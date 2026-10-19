@@ -130,6 +130,18 @@ test('opencode session headers are forwarded (upstream requires them); identity 
   up.close(); px.close();
 });
 
+test('routing and session ids reach the upstream intact; the entropy detector never rewrites them', async () => {
+  const sid = 'ses_eaa4d28d8ffe2n8imy4IDwRoDC', affinity = 'ses_' + 'c14c75a014003f5266fc664b587da4f1'.repeat(2);
+  assert.notEqual(wall.sealText(sid), sid);   // the detector does see these as secrets
+  let seen;
+  const up = http.createServer((req, res) => { seen = req.headers; res.end('{}'); }).listen(0);
+  const px = createServer({ wall, vault, upstreams: { t: `http://127.0.0.1:${up.address().port}` } }).listen(0);
+  await fetch(`http://127.0.0.1:${px.address().port}/u/t/v1/x`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-opencode-session': sid, 'x-session-affinity': affinity, 'x-opencode-project': '4c9a4c97d118f6ed15002f53c854bab198a1b2c3' }, body: '{}' });
+  assert.equal(seen['x-opencode-session'], sid); assert.equal(seen['x-session-affinity'], affinity);
+  assert.equal(seen['x-opencode-project'], '4c9a4c97d118f6ed15002f53c854bab198a1b2c3');
+  up.close(); px.close();
+});
+
 test('key=value detectors redact real secrets but leave code alone', () => {
   for (const code of ['password: string', 'token = config.token', 'secret: Buffer', 'const apiKey = getKey()']) assert.equal(wall.sealText(code), code, code);
   for (const sec of ['password: hunter2pw9', 'API_TOKEN=abc123def456ghi', 'the password is correct-horse-battery-staple', 'my social is 123 45 6789']) assert.ok(/⟦/.test(wall.sealText(sec)), sec);
