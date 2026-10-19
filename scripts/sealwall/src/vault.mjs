@@ -43,10 +43,12 @@ export class Vault {
     const h = createHmac('sha256', this.key).update(`id|${value}`).digest('hex');
     return `${m[1] || ''}${h.slice(0, Math.max(16, Math.min(value.length - (m[1] || '').length, 48)))}`;
   }
-  unseal(text) {
+  // asJsonFragment: the text sits inside a JSON string (streamed tool-call arguments), so restored values are escaped
+  unseal(text, asJsonFragment = false) {
     return text.replace(TOKEN_RE, (m, cls, id) => {
       const r = this.byId.get(`${cls}.${id}`);
-      return r && r.restore && r.value != null ? r.value : m;
+      if (!(r && r.restore && r.value != null)) return m;
+      return asJsonFragment ? JSON.stringify(r.value).slice(1, -1) : r.value;
     });
   }
 }

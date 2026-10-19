@@ -13,12 +13,20 @@ const HEADER_ALLOW = new Set(['content-type', 'accept', 'authorization', 'x-api-
 const HEADER_ALLOW_PREFIX = /^(x-opencode-|x-session-|x-parent-session|x-title$|http-referer$)/;
 const QUERY_PASS = new Set(['alt', 'key', 'api-version', 'beta', 'limit', 'after', 'before']);
 
+// Header values must be latin-1/ASCII: sealed tokens use [ ] there and anything non-printable becomes '?'.
+const asciiHeader = (t) => t.replace(/⟦/g, '[').replace(/⟧/g, ']').replace(/[^\x20-\x7e]/g, '?');
+
 export function createServer({ wall, vault, upstreams, allowHosts = [], log = console.error }) {
   const hostOk = (h) => allowHosts.some((a) => (a.startsWith('*.') ? h.endsWith(a.slice(1)) : h === a));
   const auditFile = join(vault.dir, 'audit.jsonl');
   const audit = (rec) => { try { appendFileSync(auditFile, JSON.stringify({ t: new Date().toISOString(), ...rec }) + '\n', { mode: 0o600 }); } catch {} };
 
-  return http.createServer(async (req, res) => {
+  return http.createServer((req, res) => handle(req, res).catch((e) => {
+    audit({ route: 'internal', blocked: `handler error: ${e.message}` });
+    try { if (!res.headersSent) res.writeHead(502, { 'content-type': 'application/json' }); res.end(JSON.stringify({ error: { message: `sealwall: refused (${e.message})` } })); } catch {}
+  }));
+
+  async function handle(req, res) {
     if (req.url === '/health') return res.end('ok');
     // /u/<name>/...  named upstream      /h/<host>/...  any allow-listed https host
     let m = req.url.match(/^\/u\/([^/]+)(\/.*)?$/), target;
@@ -44,11 +52,13 @@ export function createServer({ wall, vault, upstreams, allowHosts = [], log = co
     audit({ route: m[1], path: m[2], sealed: stats, bytes: body.length });
 
     const headers = {};
-    for (const [k, v] of Object.entries(req.headers)) if (HEADER_ALLOW.has(k) || HEADER_ALLOW_PREFIX.test(k)) headers[k] = (k === 'user-agent' || HEADER_ALLOW_PREFIX.test(k)) ? wall.sealText(String(v)) : v;
+    for (const [k, v] of Object.entries(req.headers)) if (HEADER_ALLOW.has(k) || HEADER_ALLOW_PREFIX.test(k)) headers[k] = (k === 'user-agent' || HEADER_ALLOW_PREFIX.test(k)) ? asciiHeader(wall.sealText(String(v))) : v;
     // query string: pass only protocol params; seal the rest. The path itself must be PII-free or the call is refused.
     try {
       if (wall.sealText(decodeURIComponent(target.pathname)) !== decodeURIComponent(target.pathname)) throw new Error('PII in URL path');
-      for (const [k, v] of [...target.searchParams]) if (!QUERY_PASS.has(k.toLowerCase())) target.searchParams.set(k, wall.sealText(v));
+      const qs = new URLSearchParams();
+      for (const [k, v] of target.searchParams) qs.append(QUERY_PASS.has(k.toLowerCase()) ? k : wall.sealText(k), QUERY_PASS.has(k.toLowerCase()) ? v : wall.sealText(v));
+      target.search = qs.toString();
     } catch (e) {
       audit({ route: m[1], blocked: String(e.message) });
       res.writeHead(502, { 'content-type': 'application/json' });
@@ -78,7 +88,7 @@ export function createServer({ wall, vault, upstreams, allowHosts = [], log = co
     });
     up.on('error', (e) => { res.writeHead(502); res.end(`sealwall upstream error: ${e.message}`); });
     up.end(body);
-  });
+  }
 }
 
 function pipeSSE(ur, res, vault) {
@@ -91,7 +101,7 @@ function pipeSSE(ur, res, vault) {
     const data = lines[di].slice(5).trim();
     if (data === '[DONE]') return flushAll() + raw + '\n\n';
     let ev; try { ev = JSON.parse(data); } catch { return vault.unseal(raw) + '\n\n'; }
-    for (const s of streamSlots(ev)) s.set(sr.push(s.f, s.get()));
+    for (const s of streamSlots(ev)) s.set(sr.push(s.f, s.get(), s.json));
     last = ev;
     const stop = ev.type === 'content_block_stop' || ev.type === 'message_stop' || (ev.choices || []).some((c) => c.finish_reason) || (ev.candidates || []).some((c) => c.finishReason);
     lines[di] = 'data: ' + JSON.stringify(ev);
@@ -101,7 +111,7 @@ function pipeSSE(ur, res, vault) {
   const flushAll = () => {
     let o = '';
     for (const f of sr.fields()) {
-      const txt = sr.flush(f);
+      const txt = sr.flush(f, /\.(arguments|partial_json)$/.test(f));
       if (!txt || !last) continue;
       const ev = JSON.parse(JSON.stringify(last));
       for (const s of streamSlots(ev)) if (s.f === f) s.set(txt);

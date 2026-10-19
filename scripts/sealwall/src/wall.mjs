@@ -1,5 +1,5 @@
 // Wall: sanitize outbound JSON, restore inbound JSON/SSE. Fails closed (throws) on any error.
-import { detectPII, looksLikeSecret, resolve, deobfuscate, decodePercent, b64Spans } from './pii.mjs';
+import { scriptRunDetector, detectPII, looksLikeSecret, resolve, deobfuscate, decodePercent, b64Spans } from './pii.mjs';
 import { OPEN, CLOSE, TOKEN_RE } from './vault.mjs';
 
 // keys whose string values are protocol structure, not content
@@ -19,7 +19,8 @@ const FREE_KEYS = new Set(['input', 'arguments', 'args', 'metadata', 'params', '
 const personish = (v) => /\s/.test(v) || /^[A-Z][a-z]+$/.test(v);
 
 export class Wall {
-  constructor({ vault, nouns, judge = null, verify = true, sealing = true, audit = () => {} }) {
+  constructor({ vault, nouns, judge = null, verify = true, sealing = true, coveredScripts = [], audit = () => {} }) {
+    this.script = scriptRunDetector(coveredScripts);   // fail-safe for scripts no judge reads (see pii.mjs)
     // sealing is the OPTIONAL layer (noun referents). Redaction (PII, secrets, suspected keys) has no switch.
     this.sealing = sealing; this.vault = vault; this.nouns = nouns; this.judge = judge; this.verify = verify; this.audit = audit; this.judged = new Map(); }
 
@@ -30,7 +31,7 @@ export class Wall {
     let t = decodePercent(deobfuscate(text));
     // MANDATORY layer: shapes + judge PII + lexicon persons. No configuration can turn it off.
     const judged = this.judged.get(t) || [];
-    const mandatory = [...b64Spans(t), ...detectPII(t), ...judged.filter((x) => MANDATORY.has(x.cls))];
+    const mandatory = [...b64Spans(t), ...detectPII(t, this.script ? [this.script] : []), ...judged.filter((x) => MANDATORY.has(x.cls))];
     const nouns = this.nouns.detect(t);
     mandatory.push(...nouns.filter((x) => x.cls === 'person'));
     // OPTIONAL layer: noun referents
@@ -55,7 +56,15 @@ export class Wall {
       if (this.sealing && free && /^(name|title|label|contact|person|customer|client|recipient|sender|from|to)$/i.test(key) && personish(node)) { stats.keyname = (stats.keyname || 0) + 1; return this.vault.seal('name', node, true); }
       return this.sealText(node, stats);
     }
-    if (Array.isArray(node)) return node.map((x) => this.sealJSON(x, stats, key, free));
+    if (Array.isArray(node)) {
+      const sealed = node.map((x) => this.sealJSON(x, stats, key, free));
+      // a secret may be split across string elements: if the joined text redacts differently, send the joined, sealed text
+      if (node.length > 1 && node.every((x) => typeof x === 'string')) {
+        const joined = this.sealText(node.join(''), {});
+        if (joined !== sealed.join('')) return [joined, ...node.slice(1).map(() => '')];
+      }
+      return sealed;
+    }
     if (node && typeof node === 'object') {
       if (OPAQUE.has(node.type) || 'inlineData' in node || 'fileData' in node || 'input_audio' in node || 'image_url' in node || (node.source && node.source.type === 'base64'))
         throw new Error(`opaque part (${node.type || Object.keys(node)[0]}) cannot be inspected; blocked`);
@@ -117,16 +126,16 @@ export class Wall {
 // Streaming: tokens may be split across deltas. Hold back from the last unclosed OPEN.
 export class StreamRestorer {
   constructor(vault) { this.vault = vault; this.buf = new Map(); }
-  push(field, piece) {
+  push(field, piece, json = false) {
     const s = (this.buf.get(field) || '') + piece;
     const i = s.lastIndexOf(OPEN);
     let hold = '';
     let emit = s;
     if (i !== -1 && s.indexOf(CLOSE, i) === -1 && s.length - i <= 32) { emit = s.slice(0, i); hold = s.slice(i); }
     this.buf.set(field, hold);
-    return this.vault.unseal(emit);
+    return this.vault.unseal(emit, json);
   }
-  flush(field) { const h = this.buf.get(field) || ''; this.buf.set(field, ''); return this.vault.unseal(h); }
+  flush(field, json = false) { const h = this.buf.get(field) || ''; this.buf.set(field, ''); return this.vault.unseal(h, json); }
   fields() { return [...this.buf.entries()].filter(([, v]) => v).map(([k]) => k); }
 }
 
@@ -138,7 +147,7 @@ export function streamSlots(ev) {
     if (Array.isArray(node)) return node.forEach((x, i) => walk(x, `${path}[${i}]`));
     if (!node || typeof node !== 'object') return;
     for (const [k, v] of Object.entries(node)) {
-      if (typeof v === 'string') { if (!SKIP.has(k)) slots.push({ f: `${path}.${k}`, get: () => node[k], set: (x) => { node[k] = x; } }); }
+      if (typeof v === 'string') { if (!SKIP.has(k)) slots.push({ f: `${path}.${k}`, json: k === 'arguments' || k === 'partial_json', get: () => node[k], set: (x) => { node[k] = x; } }); }
       else walk(v, `${path}.${k}`);
     }
   };

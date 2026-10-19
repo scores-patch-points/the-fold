@@ -129,3 +129,27 @@ test('opencode session headers are forwarded (upstream requires them); identity 
   assert.equal(seen['x-er7-workspace'], undefined); assert.equal(seen['x-user-email'], undefined);
   up.close(); px.close();
 });
+
+test('key=value detectors redact real secrets but leave code alone', () => {
+  for (const code of ['password: string', 'token = config.token', 'secret: Buffer', 'const apiKey = getKey()']) assert.equal(wall.sealText(code), code, code);
+  for (const sec of ['password: hunter2pw9', 'API_TOKEN=abc123def456ghi', 'the password is correct-horse-battery-staple', 'my social is 123 45 6789']) assert.ok(/⟦/.test(wall.sealText(sec)), sec);
+  const parts = wall.sealJSON({ c: ['sk-ant-api03-', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'] });
+  assert.ok(!JSON.stringify(parts).includes('ABCDEFGHIJKL'));
+});
+
+test('streamed tool-call args: restored values are JSON-escaped so the fragment stays valid JSON', async () => {
+  const w = new Wall({ vault, nouns: wall.nouns });
+  const tok = vault.seal('name', 'Pat "Q" O\\Brien', true);
+  const up = http.createServer((req, res) => {
+    res.writeHead(200, { 'content-type': 'text/event-stream' });
+    const frag = (a) => `data: ${JSON.stringify({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, function: { arguments: a } }] } }] })}\n\n`;
+    const mid = Math.floor(tok.length / 2);
+    for (const a of ['{"who":"', tok.slice(0, mid), tok.slice(mid), '"}']) res.write(frag(a));
+    res.end('data: [DONE]\n\n');
+  }).listen(0);
+  const px = createServer({ wall: w, vault, upstreams: { t: `http://127.0.0.1:${up.address().port}` } }).listen(0);
+  const r = await fetch(`http://127.0.0.1:${px.address().port}/u/t/v1/chat/completions`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ stream: true, messages: [{ role: 'user', content: 'x' }] }) });
+  const args = (await r.text()).split('\n').filter((l) => l.startsWith('data: {')).map((l) => JSON.parse(l.slice(6)).choices[0].delta.tool_calls?.[0]?.function?.arguments ?? '').join('');
+  assert.deepEqual(JSON.parse(args), { who: 'Pat "Q" O\\Brien' });
+  up.close(); px.close();
+});

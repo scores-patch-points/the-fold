@@ -4,5 +4,5 @@
   "description": "Egress firewall for opencode / foldcode: PII redaction + stable sealed referents for nouns",
   "type": "module",
   "bin": { "sealwall": "src/cli.mjs" },
-  "scripts": { "start": "node src/cli.mjs serve", "test": "node --test test/*.test.mjs", "attack": "node test/attack.mjs" }
+  "scripts": { "start": "node src/cli.mjs serve", "test": "node --test test/*.test.mjs", "attack": "node test/attack.mjs && node test/attack2.mjs", "omni": "JUDGE=1 node test/omni.mjs" }
 }
