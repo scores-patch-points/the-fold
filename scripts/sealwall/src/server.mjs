@@ -11,6 +11,9 @@ import { Wall, StreamRestorer, streamSlots } from './wall.mjs';
 const HEADER_ALLOW = new Set(['content-type', 'accept', 'authorization', 'x-api-key', 'x-goog-api-key', 'anthropic-version', 'anthropic-beta', 'openai-beta', 'user-agent']);
 // opencode/foldcode routing + session headers: the upstream rejects a request without them. Values are sealed like any other text.
 const HEADER_ALLOW_PREFIX = /^(x-opencode-|x-session-|x-parent-session|x-title$|http-referer$)/;
+// Routing and session ids are opaque protocol tokens, not content. The entropy detector reads them as secrets and
+// would rewrite them to [entropy.xxxx], which the upstream cannot route and refuses with a bare 400.
+const HEADER_ROUTING = /^(x-opencode-|x-session-|x-parent-session)/;
 const QUERY_PASS = new Set(['alt', 'key', 'api-version', 'beta', 'limit', 'after', 'before']);
 
 // Header values must be latin-1/ASCII: sealed tokens use [ ] there and anything non-printable becomes '?'.
@@ -54,7 +57,7 @@ export function createServer({ wall, vault, upstreams, allowHosts = [], log = co
     audit({ route: m[1], path: m[2], sealed: stats, bytes: body.length });
 
     const headers = {};
-    for (const [k, v] of Object.entries(req.headers)) if (HEADER_ALLOW.has(k) || HEADER_ALLOW_PREFIX.test(k)) headers[k] = (k === 'user-agent' || HEADER_ALLOW_PREFIX.test(k)) ? asciiHeader(wall.sealText(String(v))) : v;
+    for (const [k, v] of Object.entries(req.headers)) if (HEADER_ALLOW.has(k) || HEADER_ALLOW_PREFIX.test(k)) headers[k] = HEADER_ROUTING.test(k) ? asciiHeader(String(v)) : (k === 'user-agent' || HEADER_ALLOW_PREFIX.test(k)) ? asciiHeader(wall.sealText(String(v))) : v;
     // query string: pass only protocol params; seal the rest. The path itself must be PII-free or the call is refused.
     try {
       if (wall.sealText(decodeURIComponent(target.pathname)) !== decodeURIComponent(target.pathname)) throw new Error('PII in URL path');
