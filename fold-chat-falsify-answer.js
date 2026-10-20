@@ -416,6 +416,21 @@ function headIsSame(name, nw, head, around) {
   });
 }
 const SUBJECT_REACH = 3;   // tokens: the name of a claim's subject sits within the first few words
+/** "converts chemical energy into solar energy" against "converts solar energy into chemical energy": the same two phrases around "into", in the other order. Role
+ *  windows compare bags of words and cannot see direction; this reads the order of the two phrases the connector joins (two content words each side). */
+function directionSwapped(claim, sent) {
+  const sides = (text) => {
+    const ws = [...String(text).toLowerCase().matchAll(/[\p{L}\p{N}]+/gu)].map((m) => m[0]);
+    const at = ws.indexOf("into");
+    if (at < 1 || at > ws.length - 2) return null;
+    const stems = (list) => list.filter((w) => w.length > 2 && !FW.has(w)).map((w) => groundStem(w));
+    return { left: stems(ws.slice(Math.max(0, at - 3), at)).slice(-2), right: stems(ws.slice(at + 1, at + 4)).slice(0, 2) };
+  };
+  const c = sides(claim), w = sides(sent);
+  if (!c || !w || !c.left.length || !c.right.length) return false;
+  const same = (x, y) => x.length === y.length && x.every((k) => y.includes(k));
+  return same(c.left, w.right) && same(c.right, w.left) && !same(c.left, c.right);
+}
 /** Two figures that the sentence pairs with the OTHER names: "Māui’s dolphins reach 8 m and orcas 1.7 m" against "Māui’s dolphins ( 1.7 m ) to large Orcas ( 8 m )". Each figure is tied to the nearest word
  *  both texts share; when two or more figures sit beside a different shared word in the sentence than in the claim, the claim has swapped them. Needs two figures the sentence also holds. */
 function figuresSwapped(claim, sent, cfigs) {
@@ -503,6 +518,7 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   let verdict = "silent", why = "", kind = null;
   if (TRACE() && about) console.error("DBG role=" + JSON.stringify(role) + " clashN=" + clash.length + " clashHere=" + clashHere.length);
   if (about && !polarity) { verdict = "contradicts"; kind = "polarity"; why = "same subject, opposite polarity"; }
+  else if (about && !joined && directionSwapped(claim, sent)) { verdict = "contradicts"; kind = "direction"; why = "runs the other way (into)"; }
   else if (about && !joined && figuresSwapped(claim, sent, cfigs)) { verdict = "contradicts"; kind = "pairing"; why = "gives the figures to the other names"; }
   else if (role && role.confused) { verdict = "contradicts"; kind = "role"; why = role.why; }
   else if (about && clashHere.length) { verdict = "contradicts"; kind = "figure"; why = `gives ${clashHere[0].w.raw} where the claim says ${clashHere[0].c.raw}`; }
