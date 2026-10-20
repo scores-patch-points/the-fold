@@ -397,6 +397,7 @@ function headIsSame(name, nw, head, around) {
     return nw.some((w) => w === fold(before));                                        // behind one of the claim's own name words
   });
 }
+const SUBJECT_REACH = 3;   // tokens: the name of a claim's subject sits within the first few words
 function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const ss = new Set(contentStems(sent));
   const shared = cs.filter((k) => ss.has(k));
@@ -413,7 +414,8 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   if (cnames.length) {
     const subj = words(cnames[0]).filter((w) => w.length > 1 && !FW.has(w));
     const head = subj[subj.length - 1];
-    if (head && run.text) { const stoks = words(sent); const hi = stoks.indexOf(head), ri = stoks.indexOf(fold(run.text).split(" ")[0]); if (hi >= 0 && ri >= 0 && hi > ri + 2) subjectMissing = true; }
+    const openIdx = words(claim).indexOf(subj[0]);   // a SUBJECT name opens the claim ("The Eiffel Tower", "In 1903 Marie Curie"); one further in is an object
+    if (head && run.text && openIdx >= 0 && openIdx <= SUBJECT_REACH) { const stoks = words(sent); const hi = stoks.indexOf(head), ri = stoks.indexOf(fold(run.text).split(" ")[0]); if (hi >= 0 && ri >= 0 && hi > ri + 2) subjectMissing = true; }
     // VETO, never a trigger: a sentence-initial capital the name-list dropped ("Mars has two small moons…",
     // where namesIn skips the opener) standing at the match's start clears a false miss. It cannot create
     // one — the Trump-won guard above still fires on its own terms.
