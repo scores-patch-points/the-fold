@@ -277,6 +277,8 @@ const phraseHas = (phrase, name) => {
   const within = (x, y) => x.size > 0 && [...x].every((k) => y.has(k));
   return within(a, b) || within(b, a);
 };
+/** a numeral: digits or a number word, which makes the word after it a counted noun */
+const COUNTING = /^(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion|dozen|several|many|few|both)$/i;
 // light verbs too short for the morphology rule below, but real predicates ("Mars has …")
 const LIGHT_VERB = new Set(["has", "have", "had", "do", "does", "did", "make", "made"]);
 /** verb-shaped, honestly: a light verb, a regular suffix, or an irregular the gate's table reduces —
@@ -308,8 +310,12 @@ function firstSharedVerb(claim, sent, cnames) {
     return out;
   };
   const sgs = verbStemsOf(sent);
-  for (const raw of rawWords(claim)) {
+  const claimWords = rawWords(claim);
+  for (let i = 0; i < claimWords.length; i++) {
+    const raw = claimWords[i];
     if (/^\p{Lu}/u.test(raw)) continue;                    // capitalised: a name or position, never the verb
+    // a word counted by a numeral is a noun, not a verb ("seven languages", "199 pages", "13,353 text lines"): a plural -s is not a third-person verb
+    if (i > 0 && COUNTING.test(claimWords[i - 1])) continue;
     const w = raw.toLowerCase();
     if (w.length < 3 || inNames(w)) continue;
     const v = groundStem(w);
