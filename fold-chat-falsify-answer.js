@@ -343,11 +343,15 @@ export function roleConfusion(claim, sent, cnames) {
   if (!verb) return null;
   // A PASSIVE or NAMING use has no agent and patient to reverse: "was born", "is known as", "was named". rolesOf reads every verb as active, so
   // "Ada was born in 1815 to Byron" against "Byron's daughter Ada, born in 1815" looked like a swap.
-  const toks = rawWords(claim).map((w) => w.toLowerCase());
-  const at = toks.findIndex((w) => groundStem(w) === verb);
-  // a participle opening an appositive ("Ada, born in 1815 in London, was the daughter…") modifies a name, it does not act on one
-  const appositive = at >= 0 && String(claim).toLowerCase().includes(", " + toks[at] + " ");
-  if (appositive || (at > 0 && (BE_VERB.has(groundStem(toks[at - 1])) || toks[at + 1] === "as"))) return null;
+  // either side: "the light reaction converts energy" against "energy … which is converted into chemical energy" is one event told actively and passively
+  const noRoles = (text) => {
+    const toks = rawWords(text).map((w) => w.toLowerCase());
+    const at = toks.findIndex((w) => groundStem(w) === verb);
+    // a participle opening an appositive ("Ada, born in 1815 in London, was the daughter…") modifies a name, it does not act on one
+    const appositive = at >= 0 && String(text).toLowerCase().includes(", " + toks[at] + " ");
+    return appositive || (at > 0 && (BE_VERB.has(groundStem(toks[at - 1])) || toks[at + 1] === "as"));
+  };
+  if (noRoles(claim) || noRoles(sent)) return null;
   const sharedName = (cnames || []).some((n) => { const nw = words(n).filter((w) => w.length > 1 && !FW.has(w)); const head = nw[nw.length - 1]; return head && (fold(sent).includes(head) || nw.every((w) => fold(sent).includes(w))); });
   if (!sharedName) return null;
   const cr = rolesOf(claim, verb), sr = rolesOf(sent, verb);
@@ -548,7 +552,7 @@ function swapTest(claim, cfigs, cnames, src, witness) {
   // a rival NAME is a name of the same shape: a person for a person (two or more capitalised words), a single word for a
   // single word; never a lone capitalised word that follows an article or sits inside another name ("a Polish physicist",
   // "the Guinness World Records"): an adjective or a fragment is not someone the claim could have been about.
-  const capSeq = /(?<![\p{L}])\p{Lu}[\p{L}'’-]+(?:\s+\p{Lu}[\p{L}'’-]+)*/gu;
+  const capSeq = /(?<![\p{L}])\p{Lu}[\p{L}\p{N}'’-]+(?:\s+\p{Lu}[\p{L}\p{N}'’-]+)*/gu;   // digits stay in a name: "CO2" is not the rival "CO"
   const inClaim = new Set(words(claim));
   for (const n of cnames) {
     const multi = /\s/.test(n.trim());
@@ -601,11 +605,16 @@ export function withoutSourceTag(text) {
   const body = t.slice(0, open).trimEnd();
   return /[.!?]$/.test(body) || !/[.!?]$/.test(t) ? body : body + t.slice(-1);
 }
+/** One spelling for what pages spell many ways: compatibility forms ("CO₂", ligatures, full-width) and HTML sub/superscript tags ("CO<sub>2</sub>"), so "CO2" is one name. */
+export function normalizeForms(text) {
+  const t = String(text ?? "").normalize("NFKC");
+  return t.includes("<su") ? t.replace(/<\/?su[bp]>/gi, "") : t;
+}
 export function falsifyAnswer(sentences, passages) {
-  const sources = sourcesOf(passages);
+  const sources = sourcesOf((passages || []).map((p) => (p && typeof p === "object" && typeof p.text === "string" ? { ...p, text: normalizeForms(p.text) } : p)));
   const claims = (sentences || []).map((raw, i) => {
     const shown = String(raw ?? "").trim();
-    const s = withoutSourceTag(shown);
+    const s = withoutSourceTag(normalizeForms(shown));
     const cs = contentStems(s), cfigs = figuresIn(s), cnames = namesOf(s);
     const per = sources.map((src) => {
       const b = bestIn(src, s, cs, cfigs, cnames);
