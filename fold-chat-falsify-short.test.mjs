@@ -12,3 +12,8 @@ test("'Dolphins are fish.' is not held by sentences that name both words in anot
 test("a short claim the source states in order is still held", () => {
   assert.equal(verdict("Dolphins are mammals.", "Dolphins are mammals that live in the sea."), "held");
 });
+
+test("'Dolphins are fish.' is not held by a sentence that names fish many words after dolphins", () => {
+  assert.notEqual(verdict("Dolphins are fish.", "In Shark Bay in Western Australia, dolphins fit marine sponges over their beaks to protect them from sharp, harmful rocks as they forage for fish."), "held");
+  assert.equal(verdict("Dolphins are mammals.", "Dolphins are mammals that live in the sea."), "held");
+});

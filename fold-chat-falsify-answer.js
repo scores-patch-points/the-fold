@@ -455,9 +455,9 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const scopedNeg = neg(sent) && !neg(claim) && figuresIn(sent).some((f) => f.numeric && !f.unit && /^\d{4}$/.test(f.norm) && f.v >= 1000 && f.v <= 2200) && !cfigs.some((f) => /^\d{4}$/.test(f.norm));
   const polarity = clash.length || joined || scopedNeg ? true : !flipsPolarity(claim, sent, cs, [...ss], around, cHead);
   const about = overlap >= FALSIFY.ABOUT_OVERLAP && shared.length >= 1;
-  // A claim of two or three content words is "stated" by overlap only when its words come in the claim's order: "Dolphins are fish." is not
+  // A claim of two or three content words is "stated" by overlap only when its words come in the claim's order and close together (within three content words): "Dolphins are fish." is not
   // stated by "Unlike fish, dolphins breathe air" or "Many fish are prey of dolphins", which hold both words and say another thing.
-  const ordered = cs.length > 3 || !joined && (() => { const ssArr = contentStems(sent); let from = 0; for (const k of cs) { const i = ssArr.indexOf(k, from); if (i < 0) return false; from = i + 1; } return true; })();
+  const ordered = cs.length > 3 || !joined && (() => { const ssArr = contentStems(sent); let from = 0, prev = -1; for (const k of cs) { const i = ssArr.indexOf(k, from); if (i < 0 || (prev >= 0 && i - prev > 3)) return false; prev = i; from = i + 1; } return true; })();
   const close = run.n >= FALSIFY.RUN || (overlap >= FALSIFY.STATE_OVERLAP && shared.length >= Math.min(FALSIFY.STATE_MIN_SHARED, cs.length) && ordered);
   const role = about && !joined ? roleConfusion(claim, sent, cnames) : null;
   if (TRACE()) console.error("DBG q=" + JSON.stringify(claim.slice(0,40)) + " s=" + JSON.stringify(sent.slice(0,50)) + " about=" + about + " pol=" + polarity + " ov=" + overlap.toFixed(2) + " sh=" + shared.length + " role=" + JSON.stringify(role) + " clashN=" + clash.length);
