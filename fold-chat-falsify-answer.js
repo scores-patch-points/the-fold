@@ -187,12 +187,18 @@ function longestRun(claim, sent) {
   return { n: best, text: best ? bRaw.slice(end - best, end).join(" ") : "" };
 }
 
+/** A figure that is a BOUND, not a value ("higher than 15,000 feet", "over 100 m", "at least 3"): it says where a value lies, so it is no rival to the claim's own figure. */
+function isBound(sent, fig) {
+  if (typeof fig?.start !== "number") return false;
+  const before = String(sent).slice(Math.max(0, fig.start - 16), fig.start).toLowerCase().trimEnd();
+  return /(?:than|over|above|under|below|beyond|exceeding|least|most)$/.test(before);
+}
 function figuresAgree(claimFigs, sent) {
   const sf = figuresIn(sent);
   const missing = claimFigs.filter((c) => !sf.some((w) => figureMatches(c, w)));
   // a DIFFERENT figure of the same kind where the claim's is absent: same unit dimension, or both bare years
   const year = (f) => f.numeric && !f.unit && /^\d{4}$/.test(f.norm) && f.v >= 1000 && f.v <= 2200;
-  const clash = missing.map((c) => ({ c, w: sf.find((w) => w.numeric && c.numeric && w.norm !== c.norm && ((c.unit && w.unit && c.unit.dim === w.unit.dim) || (year(c) && year(w)) || (!c.unit && !w.unit && c.norm.endsWith("%") === w.norm.endsWith("%") && c.norm.endsWith("%")))) })).filter((x) => x.w);
+  const clash = missing.map((c) => ({ c, w: sf.find((w) => !isBound(sent, w) && w.numeric && c.numeric && w.norm !== c.norm && ((c.unit && w.unit && c.unit.dim === w.unit.dim) || (year(c) && year(w)) || (!c.unit && !w.unit && c.norm.endsWith("%") === w.norm.endsWith("%") && c.norm.endsWith("%")))) })).filter((x) => x.w);
   return { missing, clash };
 }
 /** nearest non-be verb stem to a char offset, staying inside the figure's own clause (F2 S1 c14:
@@ -592,7 +598,9 @@ export function falsifyAnswer(sentences, passages) {
     const chains = [];
     for (const w of states) { const c = chains.find((ch) => longestRun(ch[0].sentence, w.sentence).n >= FALSIFY.SYNDICATED_RUN); if (c) { c.push(w); w.sameChainAs = c[0].src; } else chains.push([w]); }
     const contra = per.filter((w) => w.verdict === "contradicts");
-    const contraBuried = per.filter((w) => w.verdict !== "contradicts" && w.contraAlt);
+    // a contradiction READ INTO another sentence of a source that never states this claim is not weighed against a source that states it word for word
+    const stated = states.some((w) => words(w.sentence).join(" ").includes(words(s).join(" ")));
+    const contraBuried = stated ? [] : per.filter((w) => w.verdict !== "contradicts" && w.contraAlt);
     const lead = states[0] ? sources.find((x) => x.key === states[0].src) : null;
     const swap = lead && !states[0].clauseSupport ? swapTest(s, cfigs, cnames, lead, states[0]) : { armed: false };
     let verdict;

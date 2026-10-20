@@ -17,3 +17,12 @@ test("a real swap is still caught", () => {
   const src = [{ ref: "w", title: "w", url: "", text: "Brutus killed Caesar in 44 BC." }];
   assert.equal(falsifyAnswer(["Caesar killed Brutus in 44 BC."], src).claims[0].verdict, "contested");
 });
+
+test("a buried role reading from another source does not outvote a word-for-word statement", () => {
+  const claim = "The tallest building in Canada outside of Toronto is Stantec Tower in Edmonton, which has a height of 249 m (817 ft).";
+  const src = [
+    { ref: "a", title: "a", url: "", text: claim },
+    { ref: "b", title: "b", url: "", text: "TD Tower, which is connected to the Pacific Centre shopping mall, overtook the Hotel Vancouver to briefly become the tallest building in Vancouver." },
+  ];
+  assert.notEqual(falsifyAnswer([claim], src).claims[0].verdict, "contested");
+});
