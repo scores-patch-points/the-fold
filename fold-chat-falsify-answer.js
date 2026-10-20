@@ -187,12 +187,18 @@ function longestRun(claim, sent) {
   return { n: best, text: best ? bRaw.slice(end - best, end).join(" ") : "" };
 }
 
+/** A figure that is a BOUND, not a value ("higher than 15,000 feet", "over 100 m", "at least 3"): it says where a value lies, so it is no rival to the claim's own figure. */
+function isBound(sent, fig) {
+  if (typeof fig?.start !== "number") return false;
+  const before = String(sent).slice(Math.max(0, fig.start - 16), fig.start).toLowerCase().trimEnd();
+  return /(?:than|over|above|under|below|beyond|exceeding|least|most)$/.test(before);
+}
 function figuresAgree(claimFigs, sent) {
   const sf = figuresIn(sent);
   const missing = claimFigs.filter((c) => !sf.some((w) => figureMatches(c, w)));
   // a DIFFERENT figure of the same kind where the claim's is absent: same unit dimension, or both bare years
   const year = (f) => f.numeric && !f.unit && /^\d{4}$/.test(f.norm) && f.v >= 1000 && f.v <= 2200;
-  const clash = missing.map((c) => ({ c, w: sf.find((w) => w.numeric && c.numeric && w.norm !== c.norm && ((c.unit && w.unit && c.unit.dim === w.unit.dim) || (year(c) && year(w)) || (!c.unit && !w.unit && c.norm.endsWith("%") === w.norm.endsWith("%") && c.norm.endsWith("%")))) })).filter((x) => x.w);
+  const clash = missing.map((c) => ({ c, w: sf.find((w) => !isBound(sent, w) && w.numeric && c.numeric && w.norm !== c.norm && ((c.unit && w.unit && c.unit.dim === w.unit.dim) || (year(c) && year(w)) || (!c.unit && !w.unit && c.norm.endsWith("%") === w.norm.endsWith("%") && c.norm.endsWith("%")))) })).filter((x) => x.w);
   return { missing, clash };
 }
 /** nearest non-be verb stem to a char offset, staying inside the figure's own clause (F2 S1 c14:
@@ -334,6 +340,13 @@ export function roleConfusion(claim, sent, cnames) {
   if (neg(claim) || neg(sent)) return null;
   const verb = firstSharedVerb(claim, sent, cnames);
   if (!verb) return null;
+  // A PASSIVE or NAMING use has no agent and patient to reverse: "was born", "is known as", "was named". rolesOf reads every verb as active, so
+  // "Ada was born in 1815 to Byron" against "Byron's daughter Ada, born in 1815" looked like a swap.
+  const toks = rawWords(claim).map((w) => w.toLowerCase());
+  const at = toks.findIndex((w) => groundStem(w) === verb);
+  // a participle opening an appositive ("Ada, born in 1815 in London, was the daughter…") modifies a name, it does not act on one
+  const appositive = at >= 0 && String(claim).toLowerCase().includes(", " + toks[at] + " ");
+  if (appositive || (at > 0 && (BE_VERB.has(groundStem(toks[at - 1])) || toks[at + 1] === "as"))) return null;
   const sharedName = (cnames || []).some((n) => { const nw = words(n).filter((w) => w.length > 1 && !FW.has(w)); const head = nw[nw.length - 1]; return head && (fold(sent).includes(head) || nw.every((w) => fold(sent).includes(w))); });
   if (!sharedName) return null;
   const cr = rolesOf(claim, verb), sr = rolesOf(sent, verb);
@@ -437,7 +450,10 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const scopedNeg = neg(sent) && !neg(claim) && figuresIn(sent).some((f) => f.numeric && !f.unit && /^\d{4}$/.test(f.norm) && f.v >= 1000 && f.v <= 2200) && !cfigs.some((f) => /^\d{4}$/.test(f.norm));
   const polarity = clash.length || joined || scopedNeg ? true : !flipsPolarity(claim, sent, cs, [...ss], around, cHead);
   const about = overlap >= FALSIFY.ABOUT_OVERLAP && shared.length >= 1;
-  const close = run.n >= FALSIFY.RUN || (overlap >= FALSIFY.STATE_OVERLAP && shared.length >= Math.min(FALSIFY.STATE_MIN_SHARED, cs.length));
+  // A claim of two or three content words is "stated" by overlap only when its words come in the claim's order: "Dolphins are fish." is not
+  // stated by "Unlike fish, dolphins breathe air" or "Many fish are prey of dolphins", which hold both words and say another thing.
+  const ordered = cs.length > 3 || !joined && (() => { const ssArr = contentStems(sent); let from = 0; for (const k of cs) { const i = ssArr.indexOf(k, from); if (i < 0) return false; from = i + 1; } return true; })();
+  const close = run.n >= FALSIFY.RUN || (overlap >= FALSIFY.STATE_OVERLAP && shared.length >= Math.min(FALSIFY.STATE_MIN_SHARED, cs.length) && ordered);
   const role = about && !joined ? roleConfusion(claim, sent, cnames) : null;
   if (TRACE()) console.error("DBG q=" + JSON.stringify(claim.slice(0,40)) + " s=" + JSON.stringify(sent.slice(0,50)) + " about=" + about + " pol=" + polarity + " ov=" + overlap.toFixed(2) + " sh=" + shared.length + " role=" + JSON.stringify(role) + " clashN=" + clash.length);
   // a figure-clash counts only on its own event: the figure's nearest verb is the pair's shared verb.
@@ -582,7 +598,9 @@ export function falsifyAnswer(sentences, passages) {
     const chains = [];
     for (const w of states) { const c = chains.find((ch) => longestRun(ch[0].sentence, w.sentence).n >= FALSIFY.SYNDICATED_RUN); if (c) { c.push(w); w.sameChainAs = c[0].src; } else chains.push([w]); }
     const contra = per.filter((w) => w.verdict === "contradicts");
-    const contraBuried = per.filter((w) => w.verdict !== "contradicts" && w.contraAlt);
+    // a contradiction READ INTO another sentence of a source that never states this claim is not weighed against a source that states it word for word
+    const stated = states.some((w) => words(w.sentence).join(" ").includes(words(s).join(" ")));
+    const contraBuried = stated ? [] : per.filter((w) => w.verdict !== "contradicts" && w.contraAlt);
     const lead = states[0] ? sources.find((x) => x.key === states[0].src) : null;
     const swap = lead && !states[0].clauseSupport ? swapTest(s, cfigs, cnames, lead, states[0]) : { armed: false };
     let verdict;
