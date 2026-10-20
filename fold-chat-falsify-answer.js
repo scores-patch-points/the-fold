@@ -584,10 +584,27 @@ export function clausesOf(s) {
 }
 
 /** Falsify an answer. `sentences`: the answer's sentences (strings). `passages`: everything read ({ text | before/mark/after, url, ref }). */
+/** A closing SOURCE TAG is provenance, not a claim: "(MarineBio, “Dolphin Biology”).", "([MarineBio](https://…))." — a trailing parenthetical that holds a link, a URL or a quoted title.
+ *  A figure or a unit in parentheses ("(22,838 ft)") is kept: only a group with a link or quotes is a tag. Returns the sentence without it. */
+export function withoutSourceTag(text) {
+  const t = String(text ?? "").trim();
+  let end = t.length;
+  while (end > 0 && ".!?;:\"”’' ".includes(t[end - 1]) && t[end - 1] !== ")") end--;
+  if (t[end - 1] !== ")") return t;
+  let depth = 0, open = -1;
+  for (let i = end - 1; i >= 0; i--) { if (t[i] === ")") depth++; else if (t[i] === "(") { depth--; if (depth === 0) { open = i; break; } } }
+  if (open <= 0) return t;
+  const group = t.slice(open, end);
+  const isTag = group.includes("](") || group.includes("http") || group.includes("“") || group.includes("\"") || group.includes("«");
+  if (!isTag) return t;
+  const body = t.slice(0, open).trimEnd();
+  return /[.!?]$/.test(body) || !/[.!?]$/.test(t) ? body : body + t.slice(-1);
+}
 export function falsifyAnswer(sentences, passages) {
   const sources = sourcesOf(passages);
   const claims = (sentences || []).map((raw, i) => {
-    const s = String(raw ?? "").trim();
+    const shown = String(raw ?? "").trim();
+    const s = withoutSourceTag(shown);
     const cs = contentStems(s), cfigs = figuresIn(s), cnames = namesOf(s);
     const per = sources.map((src) => {
       const b = bestIn(src, s, cs, cfigs, cnames);
@@ -619,7 +636,7 @@ export function falsifyAnswer(sentences, passages) {
     else if (chains.length === 1) verdict = "held";
     else if (per.some((w) => w.verdict === "near")) verdict = "weak";
     else verdict = "unsupported";
-    return { i, s, figures: cfigs.map((f) => f.raw), names: cnames, witnesses: per, chains: chains.length, contradictions: contra.length, swap, verdict };
+    return { i, s: shown, figures: cfigs.map((f) => f.raw), names: cnames, witnesses: per, chains: chains.length, contradictions: contra.length, swap, verdict };
   });
   const count = (v) => claims.filter((c) => c.verdict === v).length;
   const scored = claims.filter((c) => c.verdict !== "n/a");
