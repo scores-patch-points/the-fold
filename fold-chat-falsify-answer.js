@@ -464,7 +464,15 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   // figure in it trivially "clashes" with the claim's (F2 S1 c04/c14 truthful). Single sentences only.
   // ... and only between sentences of the SAME polarity: "did not win … in 1900" gives no rival year for "won … in 1903" (it says no
   // event happened then), so a figure read from a negated sentence is not a clash for an affirmed claim, nor the reverse.
-  const clashHere = !joined && neg(claim) === neg(sent) ? clash.filter((x) => pairVerb && nearestVerb(claim, x.c.start) === pairVerb) : [];
+  // A rival figure counts only from a sentence about the claim's own subject: "reaching 6,793 m" of ANOTHER peak shares the verb and the range, and is no
+  // rival to Aconcagua's 6,961 m. The subject is the claim's first name; a claim that names nothing keeps the old rule.
+  const aboutSubject = !cnames.length || (() => {
+    // the name list drops a sentence opener ("Aconcagua is…"): the opening capital word is the subject when it is no function word
+    const opener = fold((String(claim).trim().match(/^[\p{Lu}][\p{L}'-]+/u) || [""])[0]);
+    const sw = opener.length > 2 && !FW.has(opener) ? [opener] : words(cnames[0]).filter((w) => w.length > 1 && !FW.has(w));
+    return !sw.length || sw.some((w) => fold(sent).includes(w));
+  })();
+  const clashHere = !joined && aboutSubject && neg(claim) === neg(sent) ? clash.filter((x) => pairVerb && nearestVerb(claim, x.c.start) === pairVerb) : [];
   if (TRACE() && clash.length) console.error("DBGCL3 pv=" + pairVerb + " nv=" + JSON.stringify(clash.map((x) => [x.c.raw, nearestVerb(claim, x.c.start)])) + " joined=" + joined);
   let verdict = "silent", why = "", kind = null;
   if (TRACE() && about) console.error("DBG role=" + JSON.stringify(role) + " clashN=" + clash.length + " clashHere=" + clashHere.length);
