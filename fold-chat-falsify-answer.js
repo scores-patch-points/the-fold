@@ -334,6 +334,13 @@ export function roleConfusion(claim, sent, cnames) {
   if (neg(claim) || neg(sent)) return null;
   const verb = firstSharedVerb(claim, sent, cnames);
   if (!verb) return null;
+  // A PASSIVE or NAMING use has no agent and patient to reverse: "was born", "is known as", "was named". rolesOf reads every verb as active, so
+  // "Ada was born in 1815 to Byron" against "Byron's daughter Ada, born in 1815" looked like a swap.
+  const toks = rawWords(claim).map((w) => w.toLowerCase());
+  const at = toks.findIndex((w) => groundStem(w) === verb);
+  // a participle opening an appositive ("Ada, born in 1815 in London, was the daughter…") modifies a name, it does not act on one
+  const appositive = at >= 0 && String(claim).toLowerCase().includes(", " + toks[at] + " ");
+  if (appositive || (at > 0 && (BE_VERB.has(groundStem(toks[at - 1])) || toks[at + 1] === "as"))) return null;
   const sharedName = (cnames || []).some((n) => { const nw = words(n).filter((w) => w.length > 1 && !FW.has(w)); const head = nw[nw.length - 1]; return head && (fold(sent).includes(head) || nw.every((w) => fold(sent).includes(w))); });
   if (!sharedName) return null;
   const cr = rolesOf(claim, verb), sr = rolesOf(sent, verb);
