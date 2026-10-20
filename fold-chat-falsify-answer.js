@@ -326,6 +326,7 @@ function firstSharedVerb(claim, sent, cnames) {
     if (w.length < 3 || inNames(w)) continue;
     const v = groundStem(w);
     if (!v || BE_VERB.has(v) || STATIVE.has(v)) continue;
+    if (i > 0 && v === groundStem((claimWords[0] || "").toLowerCase())) continue;   // the subject noun again ("Dolphins vary… Māui’s dolphins"): a plural -s is not a verb
     // verb-shaped per isVerbish (irregulars, suffixes, light verbs — never bare-e strips like
     // "people"→"peopl"). Plain nouns ("battle") rarely qualify; when they do, the
     // both-roles-must-mismatch gate below still protects true statements.
