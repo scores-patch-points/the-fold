@@ -266,7 +266,17 @@ function rolesOf(text, verbStem) {
   }
   return { agent: pre, patient: post, passive: false };
 }
-const phraseHas = (phrase, name) => { const p = fold(phrase), n = fold(name); return !!n && !!p && (p.includes(n) || n.includes(p)); };
+const phraseHas = (phrase, name) => {
+  const p = fold(phrase), n = fold(name);
+  if (!n || !p) return false;
+  if (p.includes(n) || n.includes(p)) return true;
+  // by STEM, content words only: "two Nobel Prizes" is in "the Nobel Prize in Physics" (a plural, a determiner and a qualifier are not another being)
+  const NUMW = /^(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twice|thrice|several|few|many|both)$/;
+  const stems = (x) => new Set(words(x).filter((w) => w.length > 1 && !FW.has(w) && !NUMW.test(w) && !/^\d+$/.test(w)).map((w) => groundStem(w)));
+  const a = stems(p), b = stems(n);
+  const within = (x, y) => x.size > 0 && [...x].every((k) => y.has(k));
+  return within(a, b) || within(b, a);
+};
 // light verbs too short for the morphology rule below, but real predicates ("Mars has …")
 const LIGHT_VERB = new Set(["has", "have", "had", "do", "does", "did", "make", "made"]);
 /** verb-shaped, honestly: a light verb, a regular suffix, or an irregular the gate's table reduces —
@@ -336,7 +346,8 @@ export function roleConfusion(claim, sent, cnames) {
     const pair = !agentOk ? [cr.agent, sr.agent] : [cr.patient, sr.patient];
     const inNames = (ph, list) => (list || []).filter((n) => phraseHas(ph, n));
     const a = inNames(pair[0], cnames), b = inNames(pair[1], namesOf(sent));
-    const headOf = (n) => { const w = words(n).filter((x) => x.length > 1 && !FW.has(x)); return w.length ? w[w.length - 1] : ""; };
+    // heads compare by STEM: "Nobel Prizes" and "Nobel Prize" are one being, not a rival substituted for another
+    const headOf = (n) => { const w = words(n).filter((x) => x.length > 1 && !FW.has(x)); return w.length ? groundStem(w[w.length - 1]) : ""; };
     // PLACE-STACKS are not rivals: "born in Ulm, in the Kingdom" names one place twice (meronymy),
     // while "Wellington led" / "Blücher led" names two beings. A stack = both names in one sentence
     // joined by in/near/of with no verb between (a verb between means separate clauses, separate beings).
@@ -366,6 +377,20 @@ export function roleConfusion(claim, sent, cnames) {
 // The debug trace is a Node convenience (FCFA_TRACE in the environment). This module also runs IN THE BROWSER, where there is no `process`:
 // the read below was unguarded and threw "process is not defined" on every falsify of a model-written answer (audit F/B, D2).
 const TRACE = () => { try { return typeof process !== "undefined" && !!(process.env && process.env.FCFA_TRACE); } catch { return false; } };
+/** A claim's multi-word name ("Pierre Curie") is present where only its HEAD is ("Curie"), unless every place the source writes that head it
+ *  is behind a DIFFERENT given name ("Marie Curie"): then the source speaks of another person who shares the surname. A bare head, or a
+ *  head behind one of the claim name's own words, keeps the match (the source's own subject may be written by surname alone). */
+function headIsSame(name, nw, head, around) {
+  if (nw.length < 2) return true;
+  const raw = String(around).match(/[\p{L}\p{N}'’-]+/gu) || [];
+  const at = raw.map((w, i) => (fold(w) === head ? i : -1)).filter((i) => i >= 0);
+  if (!at.length) return true;
+  return at.some((i) => {
+    const before = raw[i - 1];
+    if (!before || !/^\p{Lu}/u.test(before) || FW.has(fold(before))) return true;   // bare surname (or after a lowercase word)
+    return nw.some((w) => w === fold(before));                                        // behind one of the claim's own name words
+  });
+}
 function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const ss = new Set(contentStems(sent));
   const shared = cs.filter((k) => ss.has(k));
@@ -375,7 +400,7 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const hay = fold(around);
   // a name is present when its HEAD token is ("Joe Biden" is present where the source says "Biden"); a wholly different
   // name is still missing, so a rival is never silently accepted
-  const namesMissing = cnames.filter((n) => { const nw = words(n).filter((w) => w.length > 1 && !FW.has(w)); if (!nw.length) return false; const head = nw[nw.length - 1]; return !(hay.includes(head) || nw.every((w) => hay.includes(w))); });
+  const namesMissing = cnames.filter((n) => { const nw = words(n).filter((w) => w.length > 1 && !FW.has(w)); if (!nw.length) return false; const head = nw[nw.length - 1]; if (nw.every((w) => hay.includes(w))) return false; if (!hay.includes(head)) return true; return !headIsSame(n, nw, head, around); });
   // SUBJECT/FILLER: a claim's FIRST name is its subject; it must sit at the START of the matched region, not merely
   // appear somewhere — else a page that says "Biden won … defeating incumbent Donald Trump" would clear "Trump won".
   let subjectMissing = false;
@@ -395,7 +420,14 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
     }
   }
   const cHead = (() => { const w = words(cnames[0] || "").filter((x) => x.length > 1 && !FW.has(x)); return w.length ? w[w.length - 1] : (String(claim).trim().match(/^[\p{L}'-]+/u) || [""])[0].toLowerCase(); })();
-  const polarity = !flipsPolarity(claim, sent, cs, [...ss], around, cHead);
+  // A negated sentence that gives a DIFFERENT figure of the same kind ("did not win … in 1900") says nothing against a claim
+  // about another event ("won … in 1903"): the figure separates the events, so the polarity is not read across them.
+  // A pair-JOINED window mixes two events (the comment on roles above): polarity is read in each sentence ALONE, where the
+  // figures of its own event are compared, never across the join.
+  // A negation SCOPED to a year the claim never states ("did not win … in 1900" against "won two prizes") limits itself to that
+  // time; it denies nothing the claim says about another or no time.
+  const scopedNeg = neg(sent) && !neg(claim) && figuresIn(sent).some((f) => f.numeric && !f.unit && /^\d{4}$/.test(f.norm) && f.v >= 1000 && f.v <= 2200) && !cfigs.some((f) => /^\d{4}$/.test(f.norm));
+  const polarity = clash.length || joined || scopedNeg ? true : !flipsPolarity(claim, sent, cs, [...ss], around, cHead);
   const about = overlap >= FALSIFY.ABOUT_OVERLAP && shared.length >= 1;
   const close = run.n >= FALSIFY.RUN || (overlap >= FALSIFY.STATE_OVERLAP && shared.length >= Math.min(FALSIFY.STATE_MIN_SHARED, cs.length));
   const role = about && !joined ? roleConfusion(claim, sent, cnames) : null;
@@ -406,7 +438,9 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const pairVerb = about ? firstSharedVerb(claim, sent, cnames) : null;
   // figure-clashes, like roles, live in single sentences: a pair-joined text mixes two events, so any
   // figure in it trivially "clashes" with the claim's (F2 S1 c04/c14 truthful). Single sentences only.
-  const clashHere = !joined ? clash.filter((x) => pairVerb && nearestVerb(claim, x.c.start) === pairVerb) : [];
+  // ... and only between sentences of the SAME polarity: "did not win … in 1900" gives no rival year for "won … in 1903" (it says no
+  // event happened then), so a figure read from a negated sentence is not a clash for an affirmed claim, nor the reverse.
+  const clashHere = !joined && neg(claim) === neg(sent) ? clash.filter((x) => pairVerb && nearestVerb(claim, x.c.start) === pairVerb) : [];
   if (TRACE() && clash.length) console.error("DBGCL3 pv=" + pairVerb + " nv=" + JSON.stringify(clash.map((x) => [x.c.raw, nearestVerb(claim, x.c.start)])) + " joined=" + joined);
   let verdict = "silent", why = "", kind = null;
   if (TRACE() && about) console.error("DBG role=" + JSON.stringify(role) + " clashN=" + clash.length + " clashHere=" + clashHere.length);
