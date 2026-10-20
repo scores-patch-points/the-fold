@@ -416,6 +416,27 @@ function headIsSame(name, nw, head, around) {
   });
 }
 const SUBJECT_REACH = 3;   // tokens: the name of a claim's subject sits within the first few words
+/** Two figures that the sentence pairs with the OTHER names: "Māui’s dolphins reach 8 m and orcas 1.7 m" against "Māui’s dolphins ( 1.7 m ) to large Orcas ( 8 m )". Each figure is tied to the nearest word
+ *  both texts share; when two or more figures sit beside a different shared word in the sentence than in the claim, the claim has swapped them. Needs two figures the sentence also holds. */
+function figuresSwapped(claim, sent, cfigs) {
+  if ((cfigs || []).length < 2) return false;
+  const sfigs = figuresIn(sent);
+  const pairs = cfigs.map((c) => ({ c, w: sfigs.find((w) => figureMatches(c, w)) }));
+  if (pairs.some((x) => !x.w) || new Set(pairs.map((x) => x.c.norm)).size < 2) return false;
+  const shared = new Set(contentStems(claim).filter((k) => contentStems(sent).includes(k)));
+  const toks = (text) => [...String(text).matchAll(/[\p{L}\p{N}]+/gu)].map((m) => ({ at: m.index, stem: /^\p{N}+$/u.test(m[0]) ? null : groundStem(fold(m[0])) }));
+  const anchorOf = (text, figStart) => {
+    const ts = toks(text);
+    const fi = ts.findIndex((t) => t.at >= figStart);
+    if (fi < 0) return null;
+    let best = null, bd = Infinity;
+    ts.forEach((t, i) => { if (!t.stem || !shared.has(t.stem)) return; const d = Math.abs(i - fi) + (i > fi ? 0.5 : 0); if (d < bd) { bd = d; best = t.stem; } });
+    return best;
+  };
+  const moved = pairs.filter((x) => { const a = anchorOf(claim, x.c.start), b = anchorOf(sent, x.w.start); return a && b && a !== b; });
+  const anchors = new Set(pairs.map((x) => anchorOf(claim, x.c.start)).filter(Boolean));
+  return moved.length >= 2 && anchors.size >= 2;
+}
 function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   const ss = new Set(contentStems(sent));
   const shared = cs.filter((k) => ss.has(k));
@@ -482,6 +503,7 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   let verdict = "silent", why = "", kind = null;
   if (TRACE() && about) console.error("DBG role=" + JSON.stringify(role) + " clashN=" + clash.length + " clashHere=" + clashHere.length);
   if (about && !polarity) { verdict = "contradicts"; kind = "polarity"; why = "same subject, opposite polarity"; }
+  else if (about && !joined && figuresSwapped(claim, sent, cfigs)) { verdict = "contradicts"; kind = "pairing"; why = "gives the figures to the other names"; }
   else if (role && role.confused) { verdict = "contradicts"; kind = "role"; why = role.why; }
   else if (about && clashHere.length) { verdict = "contradicts"; kind = "figure"; why = `gives ${clashHere[0].w.raw} where the claim says ${clashHere[0].c.raw}`; }
   else if (close && !missing.length && !namesMissing.length && !subjectMissing) { verdict = "states"; why = run.n >= FALSIFY.RUN ? `shares the run \u201c${run.text}\u201d` : `${shared.length} of ${cs.length} content words`; }
