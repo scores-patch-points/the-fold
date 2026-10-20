@@ -17,7 +17,8 @@ import { SUPPORT_ROUTES as DEF } from "./fold-chat-support-routes-def.js";
 const R = DEF.emailRules;
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const alt = (list) => list.map(esc).join("|");
-const EMAIL = /[A-Z0-9][A-Z0-9._%+-]*@[A-Z0-9][A-Z0-9.-]*\.[A-Z]{2,}/gi;
+// a match starts only at the beginning of a run of address characters: without the lookbehind a long run with no "@" (a base64 or minified blob) is rescanned from every start, quadratic
+const EMAIL = /(?<![A-Z0-9._%+-])[A-Z0-9][A-Z0-9._%+-]*@[A-Z0-9][A-Z0-9.-]*\.[A-Z]{2,}/gi;
 // Role mailboxes that are not for a person who wrote something (abuse desks, legal notices, bounce handlers…).
 const MACHINERY = new RegExp("^(" + alt(R.machinery) + ")$", "i");
 // SERVICE / OPS mailboxes (customer service, fulfilment, billing, subscriptions…): never where a thank-you goes.
@@ -77,7 +78,7 @@ const ELSEWHERE = new RegExp(R.elsewhereWords.map((w) => (w.startsWith("^") ? "\
 /** Simple human obfuscations a person reads as an address: "name [at] site [dot] com", "name (at) site.com". */
 function deobfuscated(text) {
   const out = [];
-  const re = /([A-Z0-9][A-Z0-9._%+-]*)\s*[\[(]\s*at\s*[\])]\s*([A-Z0-9][A-Z0-9-]*(?:\s*[\[(]?\s*(?:dot|\.)\s*[\])]?\s*[A-Z0-9-]+)+)/gi;
+  const re = /(?<![A-Z0-9._%+-])([A-Z0-9][A-Z0-9._%+-]*)\s*[\[(]\s*at\s*[\])]\s*([A-Z0-9][A-Z0-9-]*(?:\s*[\[(]?\s*(?:dot|\.)\s*[\])]?\s*[A-Z0-9-]+)+)/gi;
   for (const m of text.matchAll(re)) out.push((m[1] + "@" + m[2].replace(/\s*[\[(]?\s*dot\s*[\])]?\s*/gi, ".").replace(/\s+/g, "")).toLowerCase());
   return out;
 }
