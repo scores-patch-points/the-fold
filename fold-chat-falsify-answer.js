@@ -632,10 +632,12 @@ export function falsifyAnswer(sentences, passages) {
     const states = per.filter((w) => w.verdict === "states");
     const chains = [];
     for (const w of states) { const c = chains.find((ch) => longestRun(ch[0].sentence, w.sentence).n >= FALSIFY.SYNDICATED_RUN); if (c) { c.push(w); w.sameChainAs = c[0].src; } else chains.push([w]); }
-    const contra = per.filter((w) => w.verdict === "contradicts");
+    // A ROLE reading ("reverses who did what to whom") is the weakest signal here, a parse of word order: when another source states the claim
+    // (a shared run, every clause, or word for word) it does not make the claim contested. Figure and polarity contradictions still do.
+    const contra = per.filter((w) => w.verdict === "contradicts" && !(w.kind === "role" && states.length));
     // a contradiction READ INTO another sentence of a source that never states this claim is not weighed against a source that states it word for word
     const stated = states.some((w) => words(w.sentence).join(" ").includes(words(s).join(" ")));
-    const contraBuried = stated ? [] : per.filter((w) => w.verdict !== "contradicts" && w.contraAlt);
+    const contraBuried = stated ? [] : per.filter((w) => w.verdict !== "contradicts" && w.contraAlt && !(w.contraAlt.kind === "role" && states.length));
     const lead = states[0] ? sources.find((x) => x.key === states[0].src) : null;
     const swap = lead && !states[0].clauseSupport ? swapTest(s, cfigs, cnames, lead, states[0]) : { armed: false };
     let verdict;
