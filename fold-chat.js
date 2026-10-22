@@ -98,6 +98,7 @@ import { originatePassages } from "./fold-chat-originwire.js";
 import { isTertiary, traceWords } from "./fold-chat-origin.js";
 import { detectLang, sameLanguage, languageInstruction, restateMessages, languageNotice, threadLanguage } from "./fold-chat-lang.js";
 import { senseTerm, disambiguationOf, sensesLine } from "./fold-chat-senses.js";
+import { whichSense, whichLine } from "./fold-chat-which.js";   // WHICH sense (janus identity organ, vendored): odds from the thread, never a model
 import { voidReport, voidText, voidLabel, normVoid, migrateSessions, modelHistory } from "./fold-chat-channels.js";
 import { recipeSnips, CARD_PROMPT } from "./fold-chat-snip.js";
 import { renderSnips } from "./fold-chat-snipview.js";
@@ -2626,6 +2627,9 @@ export function mount(root, opts = {}) {
     // parallel with the search (the search reads ONE sense; this lists the others).
     let sensesProbe = null;
     const probeTerm = wantWeb && (kind === "research" || kind === "chat") ? senseTerm(question) : null;
+    // WHICH sense (fold-chat-which.js): what the thread was already about is the evidence a bare term's senses are weighed by. App-authored; no model, no fetch.
+    let sensePick = null;
+    const senseContext = (() => { try { return s.messages.slice(Math.max(0, askAt - 4), askAt).map((m) => String(m.content ?? m.text ?? "")).join(" ").slice(-1500); } catch { return ""; } })();
     // The turn this is NOT a source of the answer, only of the list of senses: audited, time-boxed, never fatal.
     const noSources = () => wantWeb && !webPassages.length;
     if (wantWeb) {
@@ -2930,8 +2934,12 @@ export function mount(root, opts = {}) {
       followup = { question: follow.question, options: (follow.choices || []).map((c) => ({ label: c.label, ask: c.ask })) };
     }
     if (!clarify && !plan && !strand && murmur && murmur.ambiguous && sensesProbe) {
-      try { const probe = await sensesProbe; clarify = probe && probe.results ? disambiguationOf(probeTerm, probe.results) : null; } catch (e) { clarify = null; }
-      if (clarify) followup = { question: `Which ${clarify.term} did you mean?`, options: (clarify.senses || []).map((s) => s.label).filter(Boolean).slice(0, 6) };
+      try {
+        const probe = await sensesProbe; clarify = probe && probe.results ? disambiguationOf(probeTerm, probe.results) : null;
+        if (clarify) { try { sensePick = whichSense({ term: probeTerm, results: probe.results, ask: question, context: senseContext }); } catch (e) { sensePick = null; } }
+      } catch (e) { clarify = null; }
+      // the options lead with the sense the thread fits best (same options, same question; with no thread evidence the order is the encyclopedia's, as before)
+      if (clarify) followup = { question: `Which ${clarify.term} did you mean?`, options: ((sensePick && sensePick.options && sensePick.options.length ? sensePick.options : clarify.senses) || []).map((s) => s.label).filter(Boolean).slice(0, 6) };
     }
     // THE MODELLESS REASON LINT, ONCE PER TURN, ON THE FINAL PASSAGES (user, 2026-10-11): the search's reads,
     // the encyclopedia's originals, and the thread's carried passages are all in webPassages now. Derive the
@@ -3691,8 +3699,10 @@ export function mount(root, opts = {}) {
         const probe = await sensesProbe;
         const d = probe && probe.results ? disambiguationOf(probeTerm, probe.results) : null;
         if (d) {
+          const which = sensePick || (() => { try { return whichSense({ term: probeTerm, results: probe.results, ask: question, context: senseContext }); } catch (e) { return null; } })();
           record.senses = { term: d.term, senses: d.senses, page: d.page, line: sensesLine(d, { english: ["en", "unknown"].includes(detectLang(question).lang) }) };
-          record.process.push("senses · " + record.senses.line);
+          if (which) record.senses.which = { decision: which.decision, chosen: which.chosen || null, p: which.p ?? null, options: which.options.map((o) => ({ label: o.label, p: o.p ?? null })), hint: which.hint || null };
+          record.process.push("senses · " + record.senses.line + (which && whichLine(which) ? " · " + whichLine(which) : ""));
         }
       }
       // Don't persist the full passage bytes on every grounded sentence (the
