@@ -416,6 +416,69 @@ function headIsSame(name, nw, head, around) {
   });
 }
 const SUBJECT_REACH = 3;   // tokens: the name of a claim's subject sits within the first few words
+/** "converts chemical energy into solar energy" against "converts solar energy into chemical energy": the same two phrases around "into", in the other order. Role
+ *  windows compare bags of words and cannot see direction; this reads the order of the two phrases the connector joins (two content words each side). */
+function directionSwapped(claim, sent) {
+  const sides = (text) => {
+    const ws = [...String(text).toLowerCase().matchAll(/[\p{L}\p{N}]+/gu)].map((m) => m[0]);
+    const at = ws.indexOf("into");
+    if (at < 1 || at > ws.length - 2) return null;
+    const stems = (list) => list.filter((w) => w.length > 2 && !FW.has(w)).map((w) => groundStem(w));
+    return { left: stems(ws.slice(Math.max(0, at - 3), at)).slice(-2), right: stems(ws.slice(at + 1, at + 4)).slice(0, 2) };
+  };
+  const c = sides(claim), w = sides(sent);
+  if (!c || !w || !c.left.length || !c.right.length) return false;
+  const same = (x, y) => x.length === y.length && x.every((k) => y.includes(k));
+  return same(c.left, w.right) && same(c.right, w.left) && !same(c.left, c.right);
+}
+/** A claim name the sentence lacks, where the sentence puts ANOTHER word in the same slot: "the 1911 Nobel Prize in Physics" against
+ *  "In 1911 she was awarded the Nobel Prize in Chemistry". The slot is the two words before the name in the claim ("prize in", one of
+ *  them a content word); the rival is the word the sentence writes right after the same two words, of the same shape as the name
+ *  (capitalised for a capitalised name, like the swap test's rival names; in a script without case both sides read uncased, so shape
+ *  does not gate there) and in no way part of the claim. The name itself must be written
+ *  elsewhere in `source`, bound to another event: a source that never says "Massachusetts" has not misbound it when it says "founded in
+ *  Cambridge", it has only said less. Returns { name, rival } or null. */
+function slotRival(claim, sent, cnames, source = "") {
+  const toks = (text) => [...String(text).matchAll(/[\p{L}\p{N}'’-]+/gu)].map((m) => ({ raw: m[0], f: fold(m[0]) }));
+  const ct = toks(claim), st = toks(sent), sf = new Set(st.map((t) => t.f)), cf = new Set(ct.map((t) => t.f));
+  const key = (t) => (FW.has(t.f) ? t.f : groundStem(t.f));
+  for (const n of cnames) {
+    const nw = words(n).filter((w) => w.length > 1 && !FW.has(w));
+    if (!nw.length || nw.some((w) => sf.has(w)) || !nw.every((w) => words(source).includes(w))) continue;
+    const at = ct.findIndex((t) => t.f === fold(words(n)[0]));
+    if (at < 2) continue;
+    const frame = ct.slice(at - 2, at);
+    if (frame.every((t) => FW.has(t.f) || /^\p{N}+$/u.test(t.f))) continue;
+    const capital = /^\p{Lu}/u.test(ct[at].raw);
+    for (let i = 0; i + 2 < st.length; i++) {
+      if (key(st[i]) !== key(frame[0]) || key(st[i + 1]) !== key(frame[1])) continue;
+      const r = st[i + 2];
+      if (FW.has(r.f) || /^\p{N}/u.test(r.f) || cf.has(r.f) || /^\p{Lu}/u.test(r.raw) !== capital) continue;
+      return { name: n, rival: r.raw };
+    }
+  }
+  return null;
+}
+/** "Dolphins are fish." is a copula claim: it says what its subject IS. A sentence states it only where its own copula links the two sides:
+ *  "dolphins are carnivorous, feed largely on fish" holds both words, but its "are" links dolphins to carnivorous, and fish is what they eat.
+ *  The sentence's clauses are cut at punctuation; one of them must carry a be-verb with every complement word of the claim on one side of it
+ *  and a subject word of the claim, or no content word at all (a pronoun), on the other. Claims without a plain "X is Y" shape are not read.
+ *  Scope: English be-verbs only; a claim in another language has no match and passes unread, as before. */
+const COPULA = /^(.*?)\b(?:is|are|was|were)\b(.*)$/i;
+function copulaLinks(claim, sent) {
+  const cm = String(claim).trim().replace(/[.!?]+$/, "").match(COPULA);
+  if (!cm) return true;
+  const L = contentStems(cm[1]), R = contentStems(cm[2]);
+  if (!L.length || !R.length || R.length > 2) return true;
+  for (const clause of String(sent).split(/[,;:()\u2014]|\s[-\u2013]\s/)) {
+    const m = clause.match(COPULA);
+    if (!m) continue;
+    const left = contentStems(m[1]), right = contentStems(m[2]);
+    const side = (has, other) => R.every((k) => has.includes(k)) && (!other.length || L.some((k) => other.includes(k)));
+    if (side(right, left) || side(left, right)) return true;
+  }
+  return false;
+}
 /** Two figures that the sentence pairs with the OTHER names: "Māui’s dolphins reach 8 m and orcas 1.7 m" against "Māui’s dolphins ( 1.7 m ) to large Orcas ( 8 m )". Each figure is tied to the nearest word
  *  both texts share; when two or more figures sit beside a different shared word in the sentence than in the claim, the claim has swapped them. Needs two figures the sentence also holds. */
 function figuresSwapped(claim, sent, cfigs) {
@@ -437,7 +500,7 @@ function figuresSwapped(claim, sent, cfigs) {
   const anchors = new Set(pairs.map((x) => anchorOf(claim, x.c.start)).filter(Boolean));
   return moved.length >= 2 && anchors.size >= 2;
 }
-function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
+function judge(claim, cs, cfigs, cnames, sent, around, joined = false, whole = around) {
   const ss = new Set(contentStems(sent));
   const shared = cs.filter((k) => ss.has(k));
   const overlap = cs.length ? shared.length / cs.length : 0;
@@ -500,14 +563,18 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false) {
   })();
   const clashHere = !joined && aboutSubject && neg(claim) === neg(sent) ? clash.filter((x) => pairVerb && nearestVerb(claim, x.c.start) === pairVerb) : [];
   if (TRACE() && clash.length) console.error("DBGCL3 pv=" + pairVerb + " nv=" + JSON.stringify(clash.map((x) => [x.c.raw, nearestVerb(claim, x.c.start)])) + " joined=" + joined);
-  let verdict = "silent", why = "", kind = null;
+  let verdict = "silent", why = "", kind = null, rival = null;
   if (TRACE() && about) console.error("DBG role=" + JSON.stringify(role) + " clashN=" + clash.length + " clashHere=" + clashHere.length);
   if (about && !polarity) { verdict = "contradicts"; kind = "polarity"; why = "same subject, opposite polarity"; }
+  else if (about && !joined && directionSwapped(claim, sent)) { verdict = "contradicts"; kind = "direction"; why = "runs the other way (into)"; }
   else if (about && !joined && figuresSwapped(claim, sent, cfigs)) { verdict = "contradicts"; kind = "pairing"; why = "gives the figures to the other names"; }
   else if (role && role.confused) { verdict = "contradicts"; kind = "role"; why = role.why; }
   else if (about && clashHere.length) { verdict = "contradicts"; kind = "figure"; why = `gives ${clashHere[0].w.raw} where the claim says ${clashHere[0].c.raw}`; }
-  else if (close && !missing.length && !namesMissing.length && !subjectMissing) { verdict = "states"; why = run.n >= FALSIFY.RUN ? `shares the run \u201c${run.text}\u201d` : `${shared.length} of ${cs.length} content words`; }
-  else if (close) { verdict = "near"; why = subjectMissing ? `the claim's subject ${cnames[0]} is only the source's object` : missing.length ? `the figure ${missing[0].raw} is not in it` : `the name ${namesMissing[0]} is not near it`; }
+  // a slot filled by another word is a rival only where the claim's figures pin the event to this sentence: without a figure, "won the
+  // Nobel Prize in Physics" is not denied by "was awarded the Nobel Prize in Chemistry" (one person may win both)
+  else if (about && !joined && cfigs.length && !missing.length && aboutSubject && neg(claim) === neg(sent) && (rival = slotRival(claim, sent, cnames, whole))) { verdict = "contradicts"; kind = "slot"; why = `gives ${rival.rival} where the claim says ${rival.name}`; }
+  else if (close && !missing.length && !namesMissing.length && !subjectMissing && (run.n >= FALSIFY.RUN || copulaLinks(claim, sent))) { verdict = "states"; why = run.n >= FALSIFY.RUN ? `shares the run \u201c${run.text}\u201d` : `${shared.length} of ${cs.length} content words`; }
+  else if (close) { verdict = "near"; why = !missing.length && !namesMissing.length && !subjectMissing ? "its be-verb links the subject to something else" : subjectMissing ? `the claim's subject ${cnames[0]} is only the source's object` : missing.length ? `the figure ${missing[0].raw} is not in it` : `the name ${namesMissing[0]} is not near it`; }
   return { verdict, why, kind, overlap, shared: shared.length, runN: run.n, run: run.text, score: run.n * 2 + shared.length + (verdict === "states" ? 100 : verdict === "contradicts" ? 50 : 0) };
 }
 
@@ -530,7 +597,7 @@ export function sourcesOf(passages) {
 function bestIn(src, claim, cs, cfigs, cnames) {
   let best = null, contraAlt = null;
   const consider = (sent, i, around, joined = false) => {
-    const j = judge(claim, cs, cfigs, cnames, sent, around, joined);
+    const j = judge(claim, cs, cfigs, cnames, sent, around, joined, src.sents.join(" "));
     const w = { ...j, sentence: sent, i };
     if (!best || j.score > best.score) best = w;
     // a contradiction buried under a higher-scoring states-witness is still a contradiction (F2 C2/C3:
@@ -543,7 +610,10 @@ function bestIn(src, claim, cs, cfigs, cnames) {
     consider(sent, i, around, false);
     // a claim often joins two adjacent sentences of its source ("X began in 2008, when Y"): judge the pair as one
     const nx = src.sents[i + 1];
-    if (nx && sent.length + nx.length < 520) consider(sent + " " + nx, i, around + " " + (src.sents[i + 2] || ""), true);
+    // ... but not where a claim figure binds in one half while that half fills the claim's slot with a rival ("In 1911 … Prize in Chemistry"
+    // gives 1911 to Chemistry): the claim word found only in the other half ("Physics") belongs to that half's event, not this one
+    const split = (half) => cfigs.some((c) => figuresIn(half).some((w) => figureMatches(c, w))) && slotRival(claim, half, cnames, sent + " " + nx);
+    if (nx && sent.length + nx.length < 520 && !split(sent) && !split(nx)) consider(sent + " " + nx, i, around + " " + (src.sents[i + 2] || ""), true);
   });
   const out = best || { verdict: "silent", why: "nothing read from it", score: 0, sentence: "", overlap: 0, shared: 0, runN: 0, run: "" };
   if (contraAlt && contraAlt !== best) out.contraAlt = contraAlt;

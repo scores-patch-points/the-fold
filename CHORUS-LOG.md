@@ -59,3 +59,13 @@ fast: 11 files · 200 affected tests (196 pass, 0 fail) · law: ok (0 citations)
 | Alexander | composition | docs/DRAFT-LINT-SPEC.md:20 | clean | design only, nothing built; each lint returns a Finding {severity: block|mark|note}, the doorway composes them — no silent don't-compose seam |
 | Simon/Chekhov | wiring | fold-chat-eotview.js | clean | new module is imported by fold-chat-folds.js and unit-tested 5/5; the door serves /v1/hooks/opencode/eot/{log,tree,file} (verified in khora/opencode-doorway.mjs + opencode-eot.mjs) — a real, wired mechanism |
 clean: LeviStrauss (0 of 45 stashed pieces vs 90 open problems — nothing to reclaim here)
+
+## 2026-10-21 — falsify: slot rivals, split pair joins, copula links (main, staged 4 files)
+fast: 4 files · 16 affected test files, 55 pass 0 fail 1 todo · law: ok
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Feynman | numeric constant | fold-chat-falsify-answer.js:426 | false-positive-on-review | directionSwapped is origin #30, carried into this diff to match the vendored copy; the new bounds (two-word slot frame, complement of at most two words) are disclosed scope, and controls pin both sides |
+| Dijkstra | locale | fold-chat-falsify-answer.js:423 | false-positive-on-review | the same #30 line; new code compares folded tokens and stems, with no hashing or allowlist |
+| Pearl | independence | fold-chat-falsify-copula.test.mjs:7 | false-positive-on-review | HELD is just the verdict names held/corroborated; the test makes no claim about independence |
+| Frankfurt | placeholder | fold-chat-falsify-copula.test.mjs:19 | noted | a real gap pinned as a todo (green vs blue needs meaning relations), not a fake pass |
+| Greenberg | language scope | fold-chat-falsify-answer.js:467 | fixed | the copula rule now states its English-only scope; the slot rule's capital-shape test states how it treats scripts without case |
