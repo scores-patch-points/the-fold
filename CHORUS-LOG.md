@@ -69,3 +69,22 @@ fast: 4 files · 16 affected test files, 55 pass 0 fail 1 todo · law: ok
 | Pearl | independence | fold-chat-falsify-copula.test.mjs:7 | false-positive-on-review | HELD is just the verdict names held/corroborated; the test makes no claim about independence |
 | Frankfurt | placeholder | fold-chat-falsify-copula.test.mjs:19 | noted | a real gap pinned as a todo (green vs blue needs meaning relations), not a fake pass |
 | Greenberg | language scope | fold-chat-falsify-answer.js:467 | fixed | the copula rule now states its English-only scope; the slot rule's capital-shape test states how it treats scripts without case |
+
+## 2026-10-22 — vendor manifests: re-pin wordclass.js, mark janus PR #6 merged (repin-khora-wordclass, staged 2 files)
+fast: 2 files · 0 affected tests (manifest data only; vendor-self-check 84/84 byte-identical, vendor-janus --check ok) · law: ok
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Holmes | identity | vendor/janus/VENDOR-JANUS.json:5 | false-positive-on-review | the hit is the path "organs/identity" in a provenance note; no entity or coreference decision is made |
+clean: none other routed
+
+## 2026-10-22 — judge battery: one JSON case table + runner + CI step (judge-battery, staged 5 files)
+fast: 5 files · gate tests 105 (97 pass, 0 fail, 8 todo = known breaks) · law: warn S1 (a source title in a case row, not a citation)
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Feynman | skipped/constant | eval/judge/cases.json:1159 | false-positive-on-review | hit is HTML text in a source; known breaks are todo rows, reported loudly (BREAK/FIXED lines, --strict-todo in CI), never silently skipped |
+| Holmes | identity | eval/judge/cases.json:402 | false-positive-on-review | a row family label |
+| Pearl | independence | docs/JUDGE-BATTERY.md:6 | false-positive-on-review | the verdict names |
+| Ostrom, Frankfurt, Kondo | scope/placeholder/dead | cases.json notes, workflow comment | false-positive-on-review | words inside notes/comments |
+| Marshall | S1 | cases.json:726 | false-positive-on-review | "S1" is a source title |
+| Simon/Chekhov | wiring | scripts/judge-battery.mjs | clean | imported and tested by fold-chat-judge-battery.test.mjs; run by the CI workflow |
+Negative controls: khora committed pin 0055d480 fails 26 rows, holodeck pin 63e9309 fails 35, khora 170e0ae fails 3; the parent of each of the 12 judge fix commits fails 4-26 rows.

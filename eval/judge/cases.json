@@ -1,0 +1,2827 @@
+{
+  "schema": "JudgeCases@1",
+  "judge": "fold-chat-falsify-answer.js falsifyAnswer(sentences, passages)",
+  "verdicts": [
+    "corroborated",
+    "held",
+    "weak",
+    "contested",
+    "unsupported"
+  ],
+  "rows": [
+    {
+      "id": "bounds-bound-sentence-not-clash",
+      "family": "bounds",
+      "claims": [
+        "The tenth tallest mountain in North America is Mount Bona, reaching 5,044 meters (16,550 feet)."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Seven of the tallest mountains reach elevations higher than 15,000 feet: Denali, Mount Saint Elias, Mount Bona. The tenth tallest mountain in North America is Mount Bona, reaching 5,044 meters (16,550 feet)."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#23 3ad435d",
+      "source_file": "fold-chat-falsify-bounds.test.mjs:6",
+      "note": "a 'higher than 15,000 feet' bound in another sentence is not a rival figure"
+    },
+    {
+      "id": "bounds-false-number-three-prizes-1903",
+      "family": "bounds",
+      "claims": [
+        "Marie Curie won three Nobel Prizes in 1903."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "todo",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (false-number, named known break)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:26",
+      "note": "KNOWN BREAK, main fails it: the source gives one prize in 1903; judge says weak, not contested. [khora tag: MISSED (only flagged)]"
+    },
+    {
+      "id": "bounds-other-peak-not-rival",
+      "family": "bounds",
+      "claims": [
+        "Aconcagua is the highest mountain in South America and the Andes, reaching about 22,837 ft (6,961 m) above sea level in Mendoza, Argentina."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Aconcagua is the highest mountain in South America and the Andes, reaching about 22,837 ft (6,961 m) above sea level in Mendoza, Argentina."
+        },
+        {
+          "ref": "b",
+          "title": "b",
+          "text": "Cerro Bonete is a peak in the Andes of Argentina, reaching about 6,793 m above sea level in La Rioja."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#23 3ad435d",
+      "source_file": "fold-chat-falsify-bounds.test.mjs:12",
+      "note": "another peak's figure in a same-frame sentence is no rival to Aconcagua"
+    },
+    {
+      "id": "bounds-own-subject-rival-contests",
+      "family": "bounds",
+      "claims": [
+        "Aconcagua is the highest mountain in South America, reaching about 6,961 m above sea level in Mendoza."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Aconcagua is the highest mountain in South America, reaching about 5,000 m above sea level in Mendoza."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "bounds-other-peak-not-rival",
+      "origin": "#23 3ad435d",
+      "source_file": "fold-chat-falsify-bounds.test.mjs:20",
+      "note": "CONTROL: the subject's own different figure still contests"
+    },
+    {
+      "id": "copula-canberra-plain-held",
+      "family": "copula",
+      "claims": [
+        "Canberra is the capital of Australia."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Canberra is the capital city of Australia."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "copula-dolphins-fish-not-held",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-copula.test.mjs:17",
+      "note": "CONTROL: plain copula held"
+    },
+    {
+      "id": "copula-canberra-pronoun-held",
+      "family": "copula",
+      "claims": [
+        "Canberra is the capital of Australia."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Located in the Australian Capital Territory, it is the capital of Australia. Canberra was founded in 1913."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "copula-dolphins-fish-not-held",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-copula.test.mjs:18",
+      "note": "CONTROL: copula behind a pronoun held"
+    },
+    {
+      "id": "copula-dolphins-fish-not-held",
+      "family": "copula",
+      "claims": [
+        "Dolphins are fish."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Like most nektonic animals, dolphins are carnivorous, feed largely on fish and squid."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-copula.test.mjs:11",
+      "note": "'Dolphins are fish' is not held where fish is only what dolphins eat"
+    },
+    {
+      "id": "copula-dolphins-mammals-held",
+      "family": "copula",
+      "claims": [
+        "Dolphins are mammals."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Dolphins are mammals that live in the sea."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "copula-dolphins-fish-not-held",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-copula.test.mjs:16",
+      "note": "CONTROL: plain copula held"
+    },
+    {
+      "id": "copula-radium-green-not-held",
+      "family": "copula",
+      "claims": [
+        "Radium glows faintly green."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Radium is a radioactive element. Pure radium is silvery-white, and it reacts with nitrogen in the air, producing a faint blue glow."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held"
+        ]
+      },
+      "kind": "todo",
+      "control_of": "",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-copula.test.mjs:21",
+      "note": "a rival colour (green vs stated blue) in the same slot should not be held; main fails (observed held), upstream marks it todo"
+    },
+    {
+      "id": "direction-reversed-into-contested",
+      "family": "direction",
+      "claims": [
+        "The light reaction converts chemical energy into solar energy."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "The light reaction converts solar energy into chemical energy; the reaction also produces ATP."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-direction.test.mjs:8",
+      "note": "the reversed 'into' conversion is contested"
+    },
+    {
+      "id": "direction-stated-held",
+      "family": "direction",
+      "claims": [
+        "The light reaction converts solar energy into chemical energy."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "The light reaction converts solar energy into chemical energy; the reaction also produces ATP."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "direction-reversed-into-contested",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-direction.test.mjs:12",
+      "note": "CONTROL: stated direction held"
+    },
+    {
+      "id": "direction-stated-plus-atp-held",
+      "family": "direction",
+      "claims": [
+        "The light reaction converts solar energy into chemical energy and produces ATP."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "The light reaction converts solar energy into chemical energy; the reaction also produces ATP."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "direction-reversed-into-contested",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-direction.test.mjs:12",
+      "note": "CONTROL: stated direction plus ATP held"
+    },
+    {
+      "id": "heads-plural-not-rival",
+      "family": "heads",
+      "claims": [
+        "Marie Curie won two Nobel Prizes."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900. Marie Curie died in 1934 of aplastic anemia."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "866a600",
+      "source_file": "fold-chat-falsify-heads.test.mjs:12",
+      "note": "'Nobel Prizes' vs 'Nobel Prize' is one being, not a rival"
+    },
+    {
+      "id": "heads-real-rival-contests",
+      "family": "heads",
+      "claims": [
+        "Pierre Curie died in 1934 of aplastic anemia."
+      ],
+      "sources": [
+        {
+          "ref": "c.md",
+          "title": "c.md",
+          "text": "Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900. Marie Curie died in 1934 of aplastic anemia. Pierre Curie died in 1906 when a wagon ran him over."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "heads-plural-not-rival",
+      "origin": "866a600",
+      "source_file": "fold-chat-falsify-heads.test.mjs:22",
+      "note": "CONTROL: a real rival death year for Pierre contests"
+    },
+    {
+      "id": "heads-right-given-name-held",
+      "family": "heads",
+      "claims": [
+        "Marie Curie died in 1934 of aplastic anemia."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900. Marie Curie died in 1934 of aplastic anemia."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "heads-surname-not-person",
+      "origin": "866a600",
+      "source_file": "fold-chat-falsify-heads.test.mjs:19",
+      "note": "CONTROL: right given name held"
+    },
+    {
+      "id": "heads-surname-not-person",
+      "family": "heads",
+      "claims": [
+        "Pierre Curie died in 1934 of aplastic anemia."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900. Marie Curie died in 1934 of aplastic anemia."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "866a600",
+      "source_file": "fold-chat-falsify-heads.test.mjs:15",
+      "note": "a shared surname does not make Pierre the source's Marie"
+    },
+    {
+      "id": "refine-head-token-name",
+      "family": "identity",
+      "claims": [
+        "Joe Biden won the 2020 presidential election."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Biden won the 2020 presidential election."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "22e1c24",
+      "source_file": "fold-chat-falsify-refine.test.mjs:19",
+      "note": "Joe Biden is present where page says Biden"
+    },
+    {
+      "id": "language-es-right-capital-canberra",
+      "family": "language",
+      "claims": [
+        "Canberra es la capital de Australia."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "Canberra",
+          "text": "Canberra es la capital de Australia."
+        },
+        {
+          "ref": "2",
+          "title": "Australia",
+          "text": "La capital de Australia es Canberra, una ciudad planificada."
+        }
+      ],
+      "expect": {
+        "in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "language-es-wrong-capital-sidney",
+      "origin": "audit (measured hole 2 control)",
+      "source_file": "task brief: audit hole 2 (Spanish source texts are my rendering of the brief's description)",
+      "note": "Control: the right Spanish claim is still supported."
+    },
+    {
+      "id": "language-es-wrong-capital-sidney",
+      "family": "language",
+      "claims": [
+        "Sídney es la capital de Australia."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "Canberra",
+          "text": "Canberra es la capital de Australia."
+        },
+        {
+          "ref": "2",
+          "title": "Australia",
+          "text": "La capital de Australia es Canberra, una ciudad planificada."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "todo",
+      "control_of": "",
+      "origin": "audit (measured hole 2)",
+      "source_file": "task brief: audit hole 2 (Spanish source texts are my rendering of the brief's description)",
+      "note": "Spanish wrong capital (Sídney) is corroborated by Spanish sources naming Canberra; main fails."
+    },
+    {
+      "id": "language-es-wrong-year-1940",
+      "family": "language",
+      "claims": [
+        "Marie Curie descubrió el radio en 1898.",
+        "Marie Curie murió en 1940."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": [
+        {
+          "in": [
+            "corroborated",
+            "held",
+            "weak",
+            "contested",
+            "unsupported"
+          ]
+        },
+        {
+          "in": [
+            "contested",
+            "unsupported",
+            "weak"
+          ]
+        }
+      ],
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (lang-es)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:46",
+      "note": "Spanish claim with a wrong year: battery wants bad, alt flag; correct is contested, judge only flags (cross-language gap). Graded index 1. [khora tag: MISSED (only flagged); battery marks hard]"
+    },
+    {
+      "id": "lists-bullet-third-fact-not-in-source",
+      "family": "lists",
+      "claims": [
+        "Marie Curie discovered radium in 1898",
+        "Marie Curie died in 1934 of aplastic anemia",
+        "Marie Curie won the Nobel Prize in 1920"
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": [
+        {
+          "in": [
+            "corroborated",
+            "held"
+          ]
+        },
+        {
+          "in": [
+            "corroborated",
+            "held"
+          ]
+        },
+        {
+          "in": [
+            "unsupported",
+            "weak",
+            "contested"
+          ]
+        }
+      ],
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (list-item)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:41",
+      "note": "Bullets taken as sentences (the 'Key facts:' heading dropped); the 1920 bullet is not in the source: battery wants flag, alt bad, judge says contested. [khora tag: FALSE-SUPPORT]"
+    },
+    {
+      "id": "lists-iam-verbatim-held",
+      "family": "lists",
+      "claims": [
+        "IAM has 13,353 text lines from 657 writers."
+      ],
+      "sources": [
+        {
+          "ref": "page",
+          "title": "page",
+          "text": "The IAM database contains forms of handwritten English text: 1,539 pages, 13,353 text lines, from 657 writers."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#18 acea7cb",
+      "source_file": "fold-chat-falsify-lists.test.mjs:18",
+      "note": "verbatim figure sentence is held, not unsupported"
+    },
+    {
+      "id": "lists-table-row-wrong-death-year",
+      "family": "lists",
+      "claims": [
+        "| Marie Curie | 1934 |",
+        "| Pierre Curie | 1910 |"
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": [
+        {
+          "in": [
+            "corroborated",
+            "held"
+          ]
+        },
+        {
+          "in": [
+            "contested",
+            "unsupported",
+            "weak"
+          ]
+        }
+      ],
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (table-row)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:42",
+      "note": "Rows judged as separate claims (header/separator dropped; the whole table as one claim returns weak): the 1910 row is wrong; battery wants bad, alt flag; correct is contested, judge flags. [khora tag: MISSED (only flagged); battery marks hard]"
+    },
+    {
+      "id": "lists-xfund-restated-not-contested",
+      "family": "lists",
+      "claims": [
+        "XFUND (multilingual extension of FUNSD, seven languages, 199 pages each)"
+      ],
+      "sources": [
+        {
+          "ref": "page",
+          "title": "page",
+          "text": "XFUND — Multilingual extension of FUNSD covering seven languages (Chinese, Japanese, Spanish, French, Italian, German, Portuguese) with 199 pages each."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#18 acea7cb",
+      "source_file": "fold-chat-falsify-lists.test.mjs:11",
+      "note": "a dense list entry restated is not contradicted"
+    },
+    {
+      "id": "lists-xfund-wrong-figure-not-held",
+      "family": "lists",
+      "claims": [
+        "XFUND (multilingual extension of FUNSD, seven languages, 299 pages each)"
+      ],
+      "sources": [
+        {
+          "ref": "page",
+          "title": "page",
+          "text": "XFUND — Multilingual extension of FUNSD covering seven languages with 199 pages each."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "lists-xfund-restated-not-contested",
+      "origin": "#18 acea7cb",
+      "source_file": "fold-chat-falsify-lists.test.mjs:29",
+      "note": "CONTROL: wrong figure (299 vs 199) is not held"
+    },
+    {
+      "id": "heads-negation-other-year-no-denial",
+      "family": "negation",
+      "claims": [
+        "Marie Curie won a Nobel Prize in 1903."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900. Marie Curie died in 1934 of aplastic anemia."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "866a600",
+      "source_file": "fold-chat-falsify-heads.test.mjs:26",
+      "note": "a negation about 1900 does not contest a claim about 1903"
+    },
+    {
+      "id": "heads-negation-same-year-contests",
+      "family": "negation",
+      "claims": [
+        "Marie Curie won a Nobel Prize in 1900."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900. Marie Curie died in 1934 of aplastic anemia."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "heads-negation-other-year-no-denial",
+      "origin": "866a600",
+      "source_file": "fold-chat-falsify-heads.test.mjs:29",
+      "note": "CONTROL: negation of the same year contests"
+    },
+    {
+      "id": "negation-appositive-hides-not-everest",
+      "family": "negation",
+      "claims": [
+        "Mount Everest is not the highest mountain above sea level."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "S1",
+          "text": "Everest, at 8,849 m, is the highest mountain above sea level."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "todo",
+      "control_of": "",
+      "origin": "audit (measured hole 3)",
+      "source_file": "task brief: audit hole 3",
+      "note": "Negated claim should be contested, but an appositive in the source hides the conflict; main returns held."
+    },
+    {
+      "id": "negation-appositive-positive-everest",
+      "family": "negation",
+      "claims": [
+        "Mount Everest is the highest mountain above sea level."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "S1",
+          "text": "Everest, at 8,849 m, is the highest mountain above sea level."
+        }
+      ],
+      "expect": {
+        "in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "negation-appositive-hides-not-everest",
+      "origin": "audit (measured hole 3 control)",
+      "source_file": "task brief: audit hole 3",
+      "note": "Control: the positive claim against the appositive source is still supported."
+    },
+    {
+      "id": "negation-did-not-discover",
+      "family": "negation",
+      "claims": [
+        "Marie Curie did not discover radium."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "verbatim-curie-radium-1898",
+      "origin": "24160b46 opencode-battery (false-negation)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:21",
+      "note": "A negation flip of a stated fact is contradicted. [khora tag: FALSE-SUPPORT/MISSED]"
+    },
+    {
+      "id": "negation-never-won-chemistry",
+      "family": "negation",
+      "claims": [
+        "Marie Curie never won a Nobel Prize in Chemistry."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (false-negation-2)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:22",
+      "note": "A 'never' negation flip of a stated prize is contradicted. [khora tag: FALSE-SUPPORT/MISSED]"
+    },
+    {
+      "id": "negation-plain-not-everest",
+      "family": "negation",
+      "claims": [
+        "Mount Everest is not the highest mountain above sea level."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "S1",
+          "text": "Mount Everest is the highest mountain above sea level."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "negation-appositive-hides-not-everest",
+      "origin": "audit (measured hole 3 control)",
+      "source_file": "task brief: audit hole 3",
+      "note": "Control: the plain-sentence version of the same negation is contested."
+    },
+    {
+      "id": "negation-won-prize-1900-source-says-not",
+      "family": "negation",
+      "claims": [
+        "Marie Curie won a Nobel Prize in 1900."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (false-negated-fact)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:27",
+      "note": "The source states she did NOT win in 1900, so the affirmative is contradicted. [khora tag: FALSE-SUPPORT/MISSED]"
+    },
+    {
+      "id": "refine-control-real-reversal",
+      "family": "negation",
+      "claims": [
+        "Joe Biden won the 2020 presidential election."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Joe Biden did not win the 2020 presidential election."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "refine-head-token-name",
+      "origin": "22e1c24",
+      "source_file": "fold-chat-falsify-refine.test.mjs:31",
+      "note": "a real reversal still contradicts"
+    },
+    {
+      "id": "refine-predicate-negation-not-reversal",
+      "family": "negation",
+      "claims": [
+        "Donald Trump has consistently refused to concede the results."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Donald Trump did not concede the results after the 2020 election."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "22e1c24",
+      "source_file": "fold-chat-falsify-refine.test.mjs:11",
+      "note": "refused to concede is not contradicted by did not concede"
+    },
+    {
+      "id": "nounverb-plural-subject-not-verb",
+      "family": "nounverb",
+      "claims": [
+        "Dolphins vary in size, from Māui’s dolphins at 1.7 m to orcas at 8 m."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins ( 1.7 m ) to large Orcas ( 8 m )."
+        },
+        {
+          "ref": "b",
+          "title": "b",
+          "text": "This includes the Yangtze River dolphin, the Maui dolphin, the Ganges River dolphin, and the short-beaked common dolphin."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#25 e121498",
+      "source_file": "fold-chat-falsify-nounverb.test.mjs:6",
+      "note": "a repeated plural subject noun is no shared verb of a role swap"
+    },
+    {
+      "id": "browser-eiffel-held-without-process",
+      "family": "other",
+      "claims": [
+        "The Eiffel Tower is 330 metres tall."
+      ],
+      "sources": [
+        {
+          "ref": "p1",
+          "title": "p1",
+          "text": "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris. The Eiffel Tower is 330 metres (1,083 ft) tall."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "D2 cfee716",
+      "source_file": "fold-chat-falsify-browser.test.mjs:22",
+      "note": "Eiffel height claim is held (original test runs it with the process global deleted; here run in plain node)"
+    },
+    {
+      "id": "other-hedge-not-supported",
+      "family": "other",
+      "claims": [
+        "Marie Curie may have discovered radium in 1899, some historians say."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (uncovered-hedge)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:31",
+      "note": "A hedged wrong-year claim is never called supported (battery accepts skip, flag or bad; judge says contested). [khora tag: FALSE-SUPPORT]"
+    },
+    {
+      "id": "other-lowercase-checkable-claim",
+      "family": "other",
+      "claims": [
+        "radium was discovered by two people working together."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "in": [
+          "unsupported",
+          "weak"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (lowercase-fact)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:34",
+      "note": "A lowercase claim with no name or number: battery wants flag (alt ok or bad also accepted by khora); judge flags it. [khora tag: UNDER-SUPPORT if flagged but source states it]"
+    },
+    {
+      "id": "other-uncovered-born-in-warsaw",
+      "family": "other",
+      "claims": [
+        "Marie Curie was born in Warsaw."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "in": [
+          "unsupported",
+          "weak"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (uncovered-fact)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:29",
+      "note": "A fact the source never mentions is flagged, neither supported nor contradicted. [khora tag: FALSE-SUPPORT/FALSE-ALARM]"
+    },
+    {
+      "id": "other-uncovered-quote-1930",
+      "family": "other",
+      "claims": [
+        "Marie Curie said \"nothing in life is to be feared, it is only to be understood\" in 1930."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "in": [
+          "unsupported",
+          "weak"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (uncovered-quote)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:30",
+      "note": "A quote the source never has is flagged unsupported. [khora tag: FALSE-SUPPORT/FALSE-ALARM]"
+    },
+    {
+      "id": "pairing-right-pairing-held-1",
+      "family": "pairing",
+      "claims": [
+        "Māui’s dolphins reach 1.7 m and orcas 8 m."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins ( 1.7 m ) to large Orcas ( 8 m )."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "pairing-swapped-figures-contested",
+      "origin": "#29 bd5f3bb",
+      "source_file": "fold-chat-falsify-pairing.test.mjs:12",
+      "note": "CONTROL: right pairing held, wording 1"
+    },
+    {
+      "id": "pairing-right-pairing-held-2",
+      "family": "pairing",
+      "claims": [
+        "Dolphins vary in size, from Māui’s dolphins at 1.7 m to orcas at 8 m."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins ( 1.7 m ) to large Orcas ( 8 m )."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "pairing-swapped-figures-contested",
+      "origin": "#29 bd5f3bb",
+      "source_file": "fold-chat-falsify-pairing.test.mjs:12",
+      "note": "CONTROL: right pairing held, wording 2"
+    },
+    {
+      "id": "pairing-right-pairing-held-3",
+      "family": "pairing",
+      "claims": [
+        "Orcas at 8 m and Māui’s dolphins at 1.7 m differ greatly in size."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins ( 1.7 m ) to large Orcas ( 8 m )."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "pairing-swapped-figures-contested",
+      "origin": "#29 bd5f3bb",
+      "source_file": "fold-chat-falsify-pairing.test.mjs:12",
+      "note": "CONTROL: right pairing held, wording 3"
+    },
+    {
+      "id": "pairing-swapped-figures-contested",
+      "family": "pairing",
+      "claims": [
+        "Māui’s dolphins reach 8 m and orcas only 1.7 m."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins ( 1.7 m ) to large Orcas ( 8 m )."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#29 bd5f3bb",
+      "source_file": "fold-chat-falsify-pairing.test.mjs:8",
+      "note": "figures swapped between names are contested"
+    },
+    {
+      "id": "photo-co2-spelling-html",
+      "family": "photo",
+      "claims": [
+        "CO2 is fixed in the Calvin cycle using the energy produced as ATP and NADPH."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "In the Calvin cycle, CO<sub>2</sub> is fixed into glucose using the energy produced as ATP and NADPH."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#26",
+      "source_file": "fold-chat-falsify-photo.test.mjs:15",
+      "note": "CO2 is one name however the page spells it (CO<sub>2</sub>)"
+    },
+    {
+      "id": "photo-co2-spelling-plain",
+      "family": "photo",
+      "claims": [
+        "CO2 is fixed in the Calvin cycle using the energy produced as ATP and NADPH."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "In the Calvin cycle, CO2 is fixed into glucose using the energy produced as ATP and NADPH."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#26",
+      "source_file": "fold-chat-falsify-photo.test.mjs:15",
+      "note": "CO2 is one name however the page spells it (CO2)"
+    },
+    {
+      "id": "photo-co2-spelling-subscript",
+      "family": "photo",
+      "claims": [
+        "CO2 is fixed in the Calvin cycle using the energy produced as ATP and NADPH."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "In the Calvin cycle, CO₂ is fixed into glucose using the energy produced as ATP and NADPH."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#26",
+      "source_file": "fold-chat-falsify-photo.test.mjs:15",
+      "note": "CO2 is one name however the page spells it (CO₂)"
+    },
+    {
+      "id": "photo-verbatim-co2-elsewhere",
+      "family": "photo",
+      "claims": [
+        "Chlorophyll absorbs energy from the light waves, which is converted into chemical energy in the form of the molecules ATP and NADPH."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Chlorophyll absorbs energy from the light waves, which is converted into chemical energy in the form of the molecules ATP and NADPH. In the Calvin cycle, CO2 is fixed into glyceraldehyde-3-phosphate using the energy produced as ATP and NADPH."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#26",
+      "source_file": "fold-chat-falsify-photo.test.mjs:17",
+      "note": "verbatim sentence is not swapped by a truncated CO from CO2 elsewhere"
+    },
+    {
+      "id": "short-dolphins-fish-far-apart",
+      "family": "short",
+      "claims": [
+        "Dolphins are fish."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "In Shark Bay in Western Australia, dolphins fit marine sponges over their beaks to protect them from sharp, harmful rocks as they forage for fish."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "short-dolphins-mammals-in-order",
+      "origin": "6fed04b / #28",
+      "source_file": "fold-chat-falsify-short.test.mjs:17",
+      "note": "Dolphins are fish is not held by a sentence naming fish many words after dolphins"
+    },
+    {
+      "id": "short-dolphins-fish-other-order",
+      "family": "short",
+      "claims": [
+        "Dolphins are fish."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Dolphins are aquatic mammals within the infraorder Cetacea. They feed on fish and squid. Unlike fish, dolphins breathe air."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "short-dolphins-mammals-in-order",
+      "origin": "6fed04b / #28",
+      "source_file": "fold-chat-falsify-short.test.mjs:9",
+      "note": "Dolphins are fish is not held by sentences naming both words in another order"
+    },
+    {
+      "id": "short-dolphins-fish-prey-sentence",
+      "family": "short",
+      "claims": [
+        "Dolphins are fish."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Many fish are prey of dolphins. Dolphins are highly intelligent."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "short-dolphins-mammals-in-order",
+      "origin": "6fed04b / #28",
+      "source_file": "fold-chat-falsify-short.test.mjs:10",
+      "note": "Dolphins are fish is not held by fish-are-prey-of-dolphins"
+    },
+    {
+      "id": "short-dolphins-mammals-in-order",
+      "family": "short",
+      "claims": [
+        "Dolphins are mammals."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Dolphins are mammals that live in the sea."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "6fed04b / #28",
+      "source_file": "fold-chat-falsify-short.test.mjs:13",
+      "note": "a short claim the source states in order is still held"
+    },
+    {
+      "id": "copula-radium-blue-held",
+      "family": "slot",
+      "claims": [
+        "The element radium glows faintly blue in the dark."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "Radium is a radioactive element. Pure radium is silvery-white, and it reacts with nitrogen in the air, producing a faint blue glow."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "copula-radium-green-not-held",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-copula.test.mjs:25",
+      "note": "CONTROL: the stated blue glow is held"
+    },
+    {
+      "id": "slot-1903-chemistry-rival",
+      "family": "slot",
+      "claims": [
+        "She won the 1903 Nobel Prize in Chemistry."
+      ],
+      "sources": [
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "In 1903 she shared the Nobel Prize in Physics with Pierre Curie and Henri Becquerel. In 1911 she was awarded the Nobel Prize in Chemistry."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-slot.test.mjs:12",
+      "note": "figure bound to a rival slot filler (1903 is Physics) is contested"
+    },
+    {
+      "id": "slot-1911-physics-rival",
+      "family": "slot",
+      "claims": [
+        "She won the 1911 Nobel Prize in Physics."
+      ],
+      "sources": [
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "In 1903 she shared the Nobel Prize in Physics with Pierre Curie and Henri Becquerel. In 1911 she was awarded the Nobel Prize in Chemistry."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-slot.test.mjs:12",
+      "note": "figure bound to a rival slot filler (1911 is Chemistry) is contested"
+    },
+    {
+      "id": "slot-control-1903-physics",
+      "family": "slot",
+      "claims": [
+        "She won the 1903 Nobel Prize in Physics."
+      ],
+      "sources": [
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "In 1903 she shared the Nobel Prize in Physics with Pierre Curie and Henri Becquerel. In 1911 she was awarded the Nobel Prize in Chemistry."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-1903-chemistry-rival",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-slot.test.mjs:21",
+      "note": "true pairing 1903 Physics is held"
+    },
+    {
+      "id": "slot-control-1911-chemistry",
+      "family": "slot",
+      "claims": [
+        "She won the 1911 Nobel Prize in Chemistry."
+      ],
+      "sources": [
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "In 1903 she shared the Nobel Prize in Physics with Pierre Curie and Henri Becquerel. In 1911 she was awarded the Nobel Prize in Chemistry."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-1911-physics-rival",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-slot.test.mjs:21",
+      "note": "true pairing 1911 Chemistry is held"
+    },
+    {
+      "id": "slot-control-no-figure-chemistry",
+      "family": "slot",
+      "claims": [
+        "She won the Nobel Prize in Chemistry."
+      ],
+      "sources": [
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "In 1903 she shared the Nobel Prize in Physics with Pierre Curie and Henri Becquerel. In 1911 she was awarded the Nobel Prize in Chemistry."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-1903-chemistry-rival",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-slot.test.mjs:24",
+      "note": "without a figure the slot is not exclusive (Chemistry)"
+    },
+    {
+      "id": "slot-control-no-figure-physics",
+      "family": "slot",
+      "claims": [
+        "She won the Nobel Prize in Physics."
+      ],
+      "sources": [
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "In 1903 she shared the Nobel Prize in Physics with Pierre Curie and Henri Becquerel. In 1911 she was awarded the Nobel Prize in Chemistry."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-1911-physics-rival",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-slot.test.mjs:24",
+      "note": "without a figure the slot is not exclusive (Physics)"
+    },
+    {
+      "id": "slot-control-spans-two-sentences",
+      "family": "slot",
+      "claims": [
+        "The bond-buying programme began in 2008, when the central bank cut rates to zero."
+      ],
+      "sources": [
+        {
+          "ref": "q",
+          "title": "q",
+          "text": "The bond-buying programme began in 2008. It started when the central bank cut rates to zero."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-1911-physics-rival",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-slot.test.mjs:30",
+      "note": "a claim that genuinely spans two sentences still holds"
+    },
+    {
+      "id": "slot-control-word-never-written",
+      "family": "slot",
+      "claims": [
+        "In 2004 he founded the company in Massachusetts."
+      ],
+      "sources": [
+        {
+          "ref": "f",
+          "title": "f",
+          "text": "In 2004 he founded the company in Cambridge with four classmates."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-1911-physics-rival",
+      "origin": "11d2848",
+      "source_file": "fold-chat-falsify-slot.test.mjs:26",
+      "note": "a source that never writes the claim's word has said less, not contradicted it"
+    },
+    {
+      "id": "slot-false-cause-radiation",
+      "family": "slot",
+      "claims": [
+        "Pierre Curie died in 1906 of radiation exposure."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "todo",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (false-cause, named known break)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:24",
+      "note": "KNOWN BREAK, main fails it: the source gives a different cause (wagon) for Pierre's death yet the judge holds the claim. [khora tag: FALSE-SUPPORT]"
+    },
+    {
+      "id": "slot-false-place-train-for-wagon",
+      "family": "slot",
+      "claims": [
+        "Pierre Curie died in 1906 when a train ran him over in Paris."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "todo",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (false-place, named known break)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:25",
+      "note": "KNOWN BREAK, main fails it: a train for a wagon is a wrong instrument; judge holds it (profile only shows residue 'train'). [khora tag: FALSE-SUPPORT]"
+    },
+    {
+      "id": "slot-profile-right-supported",
+      "family": "slot",
+      "claims": [
+        "Marie Curie died in 1934 of aplastic anemia."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia."
+        }
+      ],
+      "expect": {
+        "in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-profile.test (different year contradicts)",
+      "source_file": "/Users/mlacy/.khora/opencode-profile.test.mjs:50",
+      "note": "Control: the exact stated claim is supported. The evidence-ref assertion (curie.md:1) is not tabled."
+    },
+    {
+      "id": "slot-profile-wrong-year-contradicts",
+      "family": "slot",
+      "claims": [
+        "Marie Curie discovered radium in 1899."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "slot-profile-right-supported",
+      "origin": "24160b46 opencode-profile.test (different year contradicts)",
+      "source_file": "/Users/mlacy/.khora/opencode-profile.test.mjs:50",
+      "note": "A different year (1899 vs 1898) contradicts. Profile asserts contradicted; the why-text check is not tabled."
+    },
+    {
+      "id": "slot-right-capital-canberra",
+      "family": "slot",
+      "claims": [
+        "Canberra is the capital city of Australia."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "Canberra",
+          "text": "Canberra is the capital city of Australia."
+        },
+        {
+          "ref": "2",
+          "title": "Australia",
+          "text": "The capital of Australia is Canberra, a planned city."
+        }
+      ],
+      "expect": {
+        "in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-wrong-capital-melbourne",
+      "origin": "audit (measured hole 1 control)",
+      "source_file": "task brief: audit hole 1",
+      "note": "Control: the right capital is still supported."
+    },
+    {
+      "id": "slot-right-capital-canberra-short",
+      "family": "slot",
+      "claims": [
+        "Canberra is the capital of Australia."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "Canberra",
+          "text": "Canberra is the capital city of Australia."
+        },
+        {
+          "ref": "2",
+          "title": "Australia",
+          "text": "The capital of Australia is Canberra, a planned city."
+        }
+      ],
+      "expect": {
+        "in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-wrong-capital-sydney",
+      "origin": "audit (measured hole 1 control)",
+      "source_file": "task brief: audit hole 1",
+      "note": "Control: the right capital in the shorter wording is still supported."
+    },
+    {
+      "id": "slot-wrong-capital-melbourne",
+      "family": "slot",
+      "claims": [
+        "Melbourne is the capital city of Australia."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "Canberra",
+          "text": "Canberra is the capital city of Australia."
+        },
+        {
+          "ref": "2",
+          "title": "Australia",
+          "text": "The capital of Australia is Canberra, a planned city."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "todo",
+      "control_of": "",
+      "origin": "audit (measured hole 1)",
+      "source_file": "task brief: audit hole 1",
+      "note": "Wrong capital (Melbourne) is corroborated by sources naming Canberra; main fails."
+    },
+    {
+      "id": "slot-wrong-capital-sydney",
+      "family": "slot",
+      "claims": [
+        "Sydney is the capital of Australia."
+      ],
+      "sources": [
+        {
+          "ref": "1",
+          "title": "Canberra",
+          "text": "Canberra is the capital city of Australia."
+        },
+        {
+          "ref": "2",
+          "title": "Australia",
+          "text": "The capital of Australia is Canberra, a planned city."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "todo",
+      "control_of": "",
+      "origin": "audit (measured hole 1)",
+      "source_file": "task brief: audit hole 1",
+      "note": "Wrong capital (Sydney) is held against sources naming Canberra; main fails."
+    },
+    {
+      "id": "slot-wrong-year-1899",
+      "family": "slot",
+      "claims": [
+        "Marie Curie discovered radium in 1899."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (false-year)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:20",
+      "note": "A wrong year (1899 for 1898) is contradicted. [khora tag: FALSE-SUPPORT/MISSED if not]"
+    },
+    {
+      "id": "refine-compound-clauses-two-sentences",
+      "family": "split",
+      "claims": [
+        "Joe Biden won the 2020 election and Donald Trump disputed the result."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Joe Biden won the 2020 election. Officials counted for days. Donald Trump disputed the result."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "22e1c24",
+      "source_file": "fold-chat-falsify-refine.test.mjs:24",
+      "note": "compound claim with clauses in different sentences is held"
+    },
+    {
+      "id": "refine-control-unwitnessed-clause",
+      "family": "split",
+      "claims": [
+        "Joe Biden won the 2020 election and Donald Trump won the 2020 election."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Joe Biden won the 2020 election."
+        }
+      ],
+      "expect": {
+        "in": [
+          "unsupported",
+          "weak"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "refine-compound-clauses-two-sentences",
+      "origin": "22e1c24",
+      "source_file": "fold-chat-falsify-refine.test.mjs:41",
+      "note": "an unwitnessed clause keeps a compound claim unstated"
+    },
+    {
+      "id": "split-abbrev-dr-eg",
+      "family": "split",
+      "claims": [
+        "Dr. Marie Curie discovered radium in 1898 e.g. with her husband.",
+        "She won a Nobel Prize in 1903."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": [
+        {
+          "in": [
+            "corroborated",
+            "held",
+            "weak",
+            "contested",
+            "unsupported"
+          ]
+        },
+        {
+          "in": [
+            "corroborated",
+            "held"
+          ]
+        }
+      ],
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (split-abbrev)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:39",
+      "note": "Sentences are pre-split by hand (the splitter is not the judge); graded index 1 'She won a Nobel Prize in 1903' is supported. [khora tag: UNDER-SUPPORT/FALSE-ALARM]"
+    },
+    {
+      "id": "split-decimal-neighbour-sentence",
+      "family": "split",
+      "claims": [
+        "Radium decays with a half-life of about 1600 years.",
+        "Marie Curie discovered radium in 1898."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": [
+        {
+          "in": [
+            "corroborated",
+            "held",
+            "weak",
+            "contested",
+            "unsupported"
+          ]
+        },
+        {
+          "in": [
+            "corroborated",
+            "held"
+          ]
+        }
+      ],
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (split-decimal)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:40",
+      "note": "Graded index 1: a supported claim next to a number-bearing uncovered sentence stays supported. [khora tag: UNDER-SUPPORT/FALSE-ALARM]"
+    },
+    {
+      "id": "refine-control-different-person",
+      "family": "subject",
+      "claims": [
+        "Joe Biden won the 2020 presidential election."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Donald Trump won the 2020 presidential election."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "refine-head-token-name",
+      "origin": "22e1c24",
+      "source_file": "fold-chat-falsify-refine.test.mjs:36",
+      "note": "a different person is not accepted"
+    },
+    {
+      "id": "refine-control-subject-is-page-object",
+      "family": "subject",
+      "claims": [
+        "Donald Trump won the 2020 United States presidential election."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Joe Biden won the 2020 United States presidential election, defeating incumbent Donald Trump."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "refine-control-subject-true-claim-held",
+      "origin": "22e1c24",
+      "source_file": "fold-chat-falsify-refine.test.mjs:53",
+      "note": "false claim whose subject is the page's object is not cleared"
+    },
+    {
+      "id": "refine-control-subject-true-claim-held",
+      "family": "subject",
+      "claims": [
+        "Joe Biden won the 2020 presidential election."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Joe Biden won the 2020 United States presidential election, defeating incumbent Donald Trump."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "22e1c24",
+      "source_file": "fold-chat-falsify-refine.test.mjs:57",
+      "note": "same page still holds the true claim about its subject"
+    },
+    {
+      "id": "subject-objects-not-subject-aconcagua",
+      "family": "subject",
+      "claims": [
+        "Aconcagua is the highest mountain outside Asia."
+      ],
+      "sources": [
+        {
+          "ref": "w",
+          "title": "w",
+          "text": "Aconcagua is the tallest mountain in South America at 6,961 m. Located in Mendoza Province, Argentina, near the Chilean border. It is the highest peak outside Asia and one of the Seven Summits."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#19",
+      "source_file": "fold-chat-falsify-subject.test.mjs:12",
+      "note": "Aconcagua is the highest mountain outside Asia is held"
+    },
+    {
+      "id": "subject-objects-not-subject-its",
+      "family": "subject",
+      "claims": [
+        "It's the highest mountain outside Asia and one of the Seven Summits (the highest peak on each continent)."
+      ],
+      "sources": [
+        {
+          "ref": "w",
+          "title": "w",
+          "text": "Aconcagua is the tallest mountain in South America at 6,961 m. Located in Mendoza Province, Argentina, near the Chilean border. It is the highest peak outside Asia and one of the Seven Summits."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#19",
+      "source_file": "fold-chat-falsify-subject.test.mjs:11",
+      "note": "names after the verb are objects, claim is held"
+    },
+    {
+      "id": "subject-profile-surname-alone-not-support",
+      "family": "subject",
+      "claims": [
+        "Pierre Curie died in 1934 of aplastic anemia."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-profile-right-supported",
+      "origin": "24160b46 opencode-profile.test (different year contradicts)",
+      "source_file": "/Users/mlacy/.khora/opencode-profile.test.mjs:50",
+      "note": "A shared surname with a different given name does not support: the surname alone is not the person."
+    },
+    {
+      "id": "subject-pronoun-order-she-is-marie",
+      "family": "subject",
+      "claims": [
+        "Pierre Curie met Marie Curie in Paris.",
+        "She died in 1934 of aplastic anemia."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": [
+        {
+          "in": [
+            "corroborated",
+            "held",
+            "weak",
+            "contested",
+            "unsupported"
+          ]
+        },
+        {
+          "in": [
+            "corroborated",
+            "held"
+          ]
+        }
+      ],
+      "kind": "pass",
+      "control_of": "subject-pronoun-wrong-he",
+      "origin": "24160b46 opencode-battery (pronoun-order)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:36",
+      "note": "Graded index 1: 'She' is Marie though Pierre is named first, so the 1934 death is supported. [khora tag: FALSE-ALARM; battery marks hard]"
+    },
+    {
+      "id": "subject-pronoun-she-carries-marie",
+      "family": "subject",
+      "claims": [
+        "Marie Curie was a physicist.",
+        "In 1934 she died of aplastic anemia."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": [
+        {
+          "in": [
+            "corroborated",
+            "held",
+            "weak",
+            "contested",
+            "unsupported"
+          ]
+        },
+        {
+          "in": [
+            "corroborated",
+            "held"
+          ]
+        }
+      ],
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (true-pronoun)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:17",
+      "note": "Graded claim is index 1: the pronoun 'she' carries Marie from the prior sentence and is supported. claims[0] ungraded (observed unsupported). [khora tag: UNDER-SUPPORT/FALSE-ALARM]"
+    },
+    {
+      "id": "subject-pronoun-wrong-he",
+      "family": "subject",
+      "claims": [
+        "Pierre Curie met Marie Curie.",
+        "He died in 1934."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": [
+        {
+          "in": [
+            "corroborated",
+            "held",
+            "weak",
+            "contested",
+            "unsupported"
+          ]
+        },
+        {
+          "verdict": "contested"
+        }
+      ],
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (pronoun-wrong-he)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:37",
+      "note": "Graded index 1: 'He' is Pierre, who died in 1906, so 1934 is contradicted. claims[0] ungraded. [khora tag: FALSE-SUPPORT/MISSED; battery marks hard]"
+    },
+    {
+      "id": "subject-swap-pierre-takes-marie-death",
+      "family": "subject",
+      "claims": [
+        "Pierre Curie died in 1934 of aplastic anemia."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (false-subject-swap)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:23",
+      "note": "The predicate belongs to Marie, not Pierre: a swapped subject is contradicted. [khora tag: FALSE-SUPPORT/MISSED; battery marks hard]"
+    },
+    {
+      "id": "lists-brutus-caesar-swap-contests",
+      "family": "swap",
+      "claims": [
+        "Brutus killed Caesar."
+      ],
+      "sources": [
+        {
+          "ref": "page",
+          "title": "page",
+          "text": "Caesar killed Brutus in the senate."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "lists-xfund-restated-not-contested",
+      "origin": "#18 acea7cb",
+      "source_file": "fold-chat-falsify-lists.test.mjs:25",
+      "note": "CONTROL: real agent/patient swap contests"
+    },
+    {
+      "id": "photo-active-passive-not-swap",
+      "family": "swap",
+      "claims": [
+        "The light reaction converts solar energy into chemical energy and produces ATP and NADP+."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "The light reaction converts solar energy into chemical energy; the reaction also produces ATP and NADP+. Chlorophyll absorbs energy from the light waves, which is converted into chemical energy in the form of the molecules ATP and NADPH."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#26",
+      "source_file": "fold-chat-falsify-photo.test.mjs:9",
+      "note": "active and passive tellings of one event are not a role swap"
+    },
+    {
+      "id": "swap-adjective-not-rival-curie",
+      "family": "swap",
+      "claims": [
+        "Marie Curie won the Nobel Prize in 1903."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Marie Curie, a Polish physicist, won the Nobel Prize in 1903."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "52ae5ff",
+      "source_file": "fold-chat-falsify-swap.test.mjs:24",
+      "note": "adjective Polish is not a rival name"
+    },
+    {
+      "id": "swap-adjective-not-rival-gelgi",
+      "family": "swap",
+      "claims": [
+        "Rumeysa Gelgi was the tallest woman ever."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Rumeysa Gelgi is a Turkish advocate and the tallest living woman."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "52ae5ff",
+      "source_file": "fold-chat-falsify-swap.test.mjs:24",
+      "note": "adjective Turkish is not a rival name"
+    },
+    {
+      "id": "swap-figure-inside-claim-not-rival",
+      "family": "swap",
+      "claims": [
+        "The tallest woman ever was 246.3 cm (8 ft 1 in) tall."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "The tallest woman ever was Zeng Jinlian at 246.3 cm (8 ft 1 in) tall."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "52ae5ff",
+      "source_file": "fold-chat-falsify-swap.test.mjs:19",
+      "note": "a figure already inside the claim is never its own rival"
+    },
+    {
+      "id": "swap-figure-with-real-rival",
+      "family": "swap",
+      "claims": [
+        "Mount Everest is 8,849 metres tall."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Mount Everest is 8,849 metres tall. K2 is 8,611 metres tall."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "52ae5ff",
+      "source_file": "fold-chat-falsify-swap.test.mjs:11",
+      "note": "a figure with a real rival in the source passes"
+    },
+    {
+      "id": "swap-indiscriminate-source-weak",
+      "family": "swap",
+      "claims": [
+        "Marie Curie won the Nobel Prize in 1903."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Marie Curie and Henri Becquerel won the Nobel Prize in 1903."
+        }
+      ],
+      "expect": {
+        "verdict": "weak"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "52ae5ff",
+      "source_file": "fold-chat-falsify-swap.test.mjs:28",
+      "note": "a source that cannot tell two names apart still fails the claim"
+    },
+    {
+      "id": "swap-name-with-real-rival",
+      "family": "swap",
+      "claims": [
+        "Albert Einstein won the Nobel Prize in 1921."
+      ],
+      "sources": [
+        {
+          "ref": "x",
+          "title": "x",
+          "text": "Albert Einstein won the Nobel Prize in 1921. Marie Curie won it in 1903."
+        }
+      ],
+      "expect": {
+        "verdict": "held"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "52ae5ff",
+      "source_file": "fold-chat-falsify-swap.test.mjs:15",
+      "note": "a name with a real rival in the source passes"
+    },
+    {
+      "id": "verbatim-real-swap-caught",
+      "family": "swap",
+      "claims": [
+        "Caesar killed Brutus in 44 BC."
+      ],
+      "sources": [
+        {
+          "ref": "w",
+          "title": "w",
+          "text": "Brutus killed Caesar in 44 BC."
+        }
+      ],
+      "expect": {
+        "verdict": "contested"
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#22",
+      "source_file": "fold-chat-falsify-verbatim.test.mjs:16",
+      "note": "a real swap is still caught"
+    },
+    {
+      "id": "tag-bare-quote-held",
+      "family": "tag",
+      "claims": [
+        "Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins (1.7 m) to large Orcas (8 m)."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "General notes: Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins (1.7 m) to large Orcas (8 m)."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#24",
+      "source_file": "fold-chat-falsify-tag.test.mjs:15",
+      "note": "bare verbatim quote is held"
+    },
+    {
+      "id": "tag-markdown-source-tag",
+      "family": "tag",
+      "claims": [
+        "Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins (1.7 m) to large Orcas (8 m). ([MarineBio](https://www.marinebio.org/creatures/dolphins/biology/))."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "General notes: Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins (1.7 m) to large Orcas (8 m)."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "tag-bare-quote-held",
+      "origin": "#24",
+      "source_file": "fold-chat-falsify-tag.test.mjs:16",
+      "note": "a closing markdown-link source tag is provenance, judged like the bare quote"
+    },
+    {
+      "id": "tag-plain-source-tag",
+      "family": "tag",
+      "claims": [
+        "Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins (1.7 m) to large Orcas (8 m). (MarineBio, “Dolphin Biology”)."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "General notes: Dolphins are a diverse group of animals, ranging from the small Māui’s dolphins (1.7 m) to large Orcas (8 m)."
+        }
+      ],
+      "expect": {
+        "in": [
+          "held",
+          "corroborated"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "tag-bare-quote-held",
+      "origin": "#24",
+      "source_file": "fold-chat-falsify-tag.test.mjs:16",
+      "note": "a closing plain source tag is provenance, judged like the bare quote"
+    },
+    {
+      "id": "verbatim-ada-line-1-not-contested",
+      "family": "verbatim",
+      "claims": [
+        "Augusta Ada Byron King, Countess of Lovelace, born on 10 December 1815 in London, was the daughter of the poet George Gordon Byron, known as Lord Byron."
+      ],
+      "sources": [
+        {
+          "ref": "s0",
+          "title": "s0",
+          "text": "Augusta Ada Byron King, Countess of Lovelace, born on 10 December 1815 in London, was the daughter of the poet George Gordon Byron, known as Lord Byron."
+        },
+        {
+          "ref": "s1",
+          "title": "s1",
+          "text": "Augusta Ada Byron is born 10th December 1815, as the daughter of Anne Isabella Noel-Byron (known as Annabella) and famous English poet Lord Byron."
+        },
+        {
+          "ref": "s2",
+          "title": "s2",
+          "text": "The woman most often known as 'Ada Lovelace' was born Ada Gordon in 1815, sole child of the brief marriage of the erratic poet George Gordon, Lord Byron."
+        },
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "Ada Lovelace was born Ada Byron. Her father Lord Byron was known as a poet. Annabella was known as the mother of Ada."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "verbatim-real-swap-caught",
+      "origin": "#22",
+      "source_file": "fold-chat-falsify-verbatim.test.mjs:12",
+      "note": "line 1 stated verbatim by one source is not contested by passive/naming verbs elsewhere"
+    },
+    {
+      "id": "verbatim-ada-line-2-not-contested",
+      "family": "verbatim",
+      "claims": [
+        "Augusta Ada Byron is born 10th December 1815, as the daughter of Anne Isabella Noel-Byron (known as Annabella) and famous English poet Lord Byron."
+      ],
+      "sources": [
+        {
+          "ref": "s0",
+          "title": "s0",
+          "text": "Augusta Ada Byron King, Countess of Lovelace, born on 10 December 1815 in London, was the daughter of the poet George Gordon Byron, known as Lord Byron."
+        },
+        {
+          "ref": "s1",
+          "title": "s1",
+          "text": "Augusta Ada Byron is born 10th December 1815, as the daughter of Anne Isabella Noel-Byron (known as Annabella) and famous English poet Lord Byron."
+        },
+        {
+          "ref": "s2",
+          "title": "s2",
+          "text": "The woman most often known as 'Ada Lovelace' was born Ada Gordon in 1815, sole child of the brief marriage of the erratic poet George Gordon, Lord Byron."
+        },
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "Ada Lovelace was born Ada Byron. Her father Lord Byron was known as a poet. Annabella was known as the mother of Ada."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "verbatim-real-swap-caught",
+      "origin": "#22",
+      "source_file": "fold-chat-falsify-verbatim.test.mjs:12",
+      "note": "line 2 stated verbatim by one source is not contested by passive/naming verbs elsewhere"
+    },
+    {
+      "id": "verbatim-ada-line-3-not-contested",
+      "family": "verbatim",
+      "claims": [
+        "The woman most often known as 'Ada Lovelace' was born Ada Gordon in 1815, sole child of the brief marriage of the erratic poet George Gordon, Lord Byron."
+      ],
+      "sources": [
+        {
+          "ref": "s0",
+          "title": "s0",
+          "text": "Augusta Ada Byron King, Countess of Lovelace, born on 10 December 1815 in London, was the daughter of the poet George Gordon Byron, known as Lord Byron."
+        },
+        {
+          "ref": "s1",
+          "title": "s1",
+          "text": "Augusta Ada Byron is born 10th December 1815, as the daughter of Anne Isabella Noel-Byron (known as Annabella) and famous English poet Lord Byron."
+        },
+        {
+          "ref": "s2",
+          "title": "s2",
+          "text": "The woman most often known as 'Ada Lovelace' was born Ada Gordon in 1815, sole child of the brief marriage of the erratic poet George Gordon, Lord Byron."
+        },
+        {
+          "ref": "c",
+          "title": "c",
+          "text": "Ada Lovelace was born Ada Byron. Her father Lord Byron was known as a poet. Annabella was known as the mother of Ada."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "verbatim-real-swap-caught",
+      "origin": "#22",
+      "source_file": "fold-chat-falsify-verbatim.test.mjs:12",
+      "note": "line 3 stated verbatim by one source is not contested by passive/naming verbs elsewhere"
+    },
+    {
+      "id": "verbatim-buried-role-reading-no-outvote",
+      "family": "verbatim",
+      "claims": [
+        "The tallest building in Canada outside of Toronto is Stantec Tower in Edmonton, which has a height of 249 m (817 ft)."
+      ],
+      "sources": [
+        {
+          "ref": "a",
+          "title": "a",
+          "text": "The tallest building in Canada outside of Toronto is Stantec Tower in Edmonton, which has a height of 249 m (817 ft)."
+        },
+        {
+          "ref": "b",
+          "title": "b",
+          "text": "TD Tower, which is connected to the Pacific Centre shopping mall, overtook the Hotel Vancouver to briefly become the tallest building in Vancouver."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "#22",
+      "source_file": "fold-chat-falsify-verbatim.test.mjs:21",
+      "note": "a buried role reading from another source does not outvote a word-for-word statement"
+    },
+    {
+      "id": "verbatim-curie-paraphrase-discovery",
+      "family": "verbatim",
+      "claims": [
+        "Marie Curie's discovery of radium came in 1898."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (true-paraphrase)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:16",
+      "note": "A paraphrase of a stated fact is supported. [khora tag: UNDER-SUPPORT/FALSE-ALARM if not]"
+    },
+    {
+      "id": "verbatim-curie-radium-1898",
+      "family": "verbatim",
+      "claims": [
+        "Marie Curie discovered radium in 1898."
+      ],
+      "sources": [
+        {
+          "ref": "curie.md",
+          "title": "curie.md",
+          "text": "Marie Curie and Pierre Curie discovered radium in 1898. Marie Curie died in 1934 of aplastic anemia, likely caused by radiation exposure. Pierre Curie died in 1906 when a horse-drawn wagon ran him over in Paris. Marie Curie won the Nobel Prize in Physics in 1903 and the Nobel Prize in Chemistry in 1911. Marie Curie did not win a Nobel Prize in 1900."
+        }
+      ],
+      "expect": {
+        "in": [
+          "corroborated",
+          "held"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "",
+      "origin": "24160b46 opencode-battery (true-verbatim)",
+      "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:15",
+      "note": "Baseline: a claim stated verbatim in the source is supported. [khora tag: FALSE-ALARM/MISSED if not]"
+    }
+  ],
+  "not_tabled": [
+    {
+      "file": "fold-chat-falsify-browser.test.mjs",
+      "name": "D2: falsifyAnswer runs where `process` is not defined (a browser tab)",
+      "reason": "asserts the module runs with the process global deleted (exit status, no throw); the claim row is tabled separately but the no-process condition is a runner/environment test"
+    },
+    {
+      "file": "fold-chat-falsify-browser.test.mjs",
+      "name": "D2: the trace still works under Node when FCFA_TRACE is set",
+      "reason": "asserts exit status and claim count under an env var, not a verdict"
+    },
+    {
+      "file": "fold-chat-falsify-tag.test.mjs",
+      "name": "a trailing source tag is stripped; a figure in parentheses is kept",
+      "reason": "asserts withoutSourceTag() string output, not a claim verdict"
+    },
+    {
+      "file": "fold-chat-falsify-refine.test.mjs",
+      "name": "clausesOf never splits a bare list",
+      "reason": "asserts clausesOf() output, not a claim verdict"
+    },
+    {
+      "file": "fold-chat-falsify-swap.test.mjs",
+      "name": "a name in the stating sentence in another role is not a rival (recognised by Guinness World Records)",
+      "reason": "asserts only c.swap.to, no verdict assertion"
+    },
+    {
+      "file": "fold-chat-falsify.test.mjs",
+      "name": "all 23 tests",
+      "reason": "They test runFalsify, probesFor, judge, parseLifespan (module fold-chat-falsify.js: probes, refuters, standing, fetchLead stubs), not falsifyAnswer claim verdicts; the file never imports falsifyAnswer."
+    },
+    {
+      "file": "falsify-split-battery.test.mjs",
+      "name": "F1-F10",
+      "reason": "They test fold-chat-split.js (splitSlotParts, runSlotParts, bindPartAsk, partsContentAllowed) and answerwire storage; assertions are about parts, binding and joined answer text, not falsifyAnswer verdicts."
+    },
+    {
+      "file": "falsify-split-battery2.test.mjs",
+      "name": "G1-G10",
+      "reason": "Same split/bind/abbreviation-expansion/storage-tamper module tests; none call falsifyAnswer."
+    },
+    {
+      "file": "eval/ants/falsify-checks/f1",
+      "name": "cases/synthetic.json + score.mjs",
+      "reason": "Scored through fold-chat-present falsifiersOf over turnRecord records (answer vs material, check flags), not claim verdicts from falsifyAnswer."
+    },
+    {
+      "file": "eval/ants/falsify-checks/f2",
+      "name": "cases.json, cases-addC.json, f2.test.mjs",
+      "reason": "Uses computeCheck/attribute/salientSentences record checks; the per-case assertions are check outputs, and the file writes results-both-shapes.json so it was read but not run."
+    },
+    {
+      "file": "eval/ants/falsify-checks/f3",
+      "name": "cases.json, asks*.json",
+      "reason": "Cases (DEF-C01 etc.) go through mkRec/turnRecord/agreementOf and headline classes (honest/not run), not claim verdicts."
+    },
+    {
+      "file": "eval/ants/falsify-checks/f4",
+      "name": "cases.json, f4.test.mjs",
+      "reason": "Tests provenance pointer (which source sentence supports an answer, gold substring), not falsifyAnswer verdicts."
+    },
+    {
+      "file": "eval/controls.mjs, controls-baseline-live.json, controls-final.json",
+      "name": "NEG/POS/DER/XL/SELF/SCRIPT/HOLD classes",
+      "reason": "They exercise the grounding gate (fold-chat-ground turnRecord/attribute, entry.ref != null) over fetched Wikipedia articles, not falsifyAnswer; also need network-cached articles."
+    },
+    {
+      "file": "/Users/mlacy/.khora/opencode-battery.mjs:18",
+      "name": "true-words-count",
+      "reason": "'two Nobel Prizes' count is decided by the profile's numberWordsMissing/Janus count equation; falsifyAnswer alone returns weak (it cannot see the count), so it is a profile+Janus case."
+    },
+    {
+      "file": "/Users/mlacy/.khora/opencode-battery.mjs:33",
+      "name": "lowercase-false",
+      "reason": "'well after 1900' is an ordered claim decided by Janus's equation over the source year; falsifyAnswer alone returns unsupported (judge cannot read order)."
+    },
+    {
+      "file": "/Users/mlacy/.khora/opencode-battery.mjs:44",
+      "name": "echo-self",
+      "reason": "The echo is excluded by the profile's withoutOwn filter before the judge runs; falsifyAnswer given the echo passage returns held, so the case tests profile own-text logic, not the judge."
+    },
+    {
+      "file": "/Users/mlacy/.khora/opencode-battery.mjs:50-58",
+      "name": "code-key-bad, code-key-ok, code-import-alias, code-path-bad, code-nested-key, code-method, code-python-kw, code-const, code-shadow",
+      "reason": "Symbol/route cases: resolved by resolveSymbols against signatures, not by falsifyAnswer."
+    },
+    {
+      "file": "/Users/mlacy/.khora/opencode-profile.test.mjs:60",
+      "name": "what a support does not cover is shown as residue",
+      "reason": "Asserts the residue field, not a verdict (on main the judge holds both the train and wagon claims)."
+    },
+    {
+      "file": "/Users/mlacy/.khora/opencode-profile.test.mjs:38,43",
+      "name": "argument is not checked; lead she carries the last being",
+      "reason": "proseUnits unit typing and coreference, not a judge verdict."
+    },
+    {
+      "file": "/Users/mlacy/.khora/opencode-profile.test.mjs:68",
+      "name": "option key the signature does not take",
+      "reason": "Symbol resolution, not the judge."
+    },
+    {
+      "file": "/Users/mlacy/.khora/opencode-profile.test.mjs:80-105",
+      "name": "name only nominates / identity binds / research falsifies unsupported claim",
+      "reason": "whoIs, Wikidata structuredVerdict and researchClaims with canned fetch: identity and research, not falsifyAnswer."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.1 answer from local witnesses",
+      "reason": "Calls answerFromFold and asserts status and resource counters, not falsifyAnswer verdicts."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.4 contradictory witnesses preserved",
+      "reason": "answerFromFold on hyperedges with status contested; no claim strings or falsifyAnswer."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.6 genre suggests unwitnessed fact",
+      "reason": "Asserts derivation licensing and withheld standing, not a claim verdict."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.8 re-ingested answer, no self-corroboration",
+      "reason": "Asserts derivation witnesses array, not a claim verdict."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.9 current officeholder freshness",
+      "reason": "planNextEncounter method and decline reason; not a verdict."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.10 offline-only zero traffic",
+      "reason": "Resource counters only."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.11 private workspace query",
+      "reason": "Authorization and egress counters only."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.15 precise calculation",
+      "reason": "Math answer text and model-call count, not a verdict."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "§14.16 typed gap",
+      "reason": "Asserts unresolved status and gaps from answerFromFold, not falsifyAnswer."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/holodeck-falsify-battery.test.mjs",
+      "name": "SURFACE_GAPS (2,3,5,7,12,13,14,17,18,19,20) and the coverage-count test",
+      "reason": "Disclosed gaps with no test body; the count test checks the battery size."
+    },
+    {
+      "file": "/Users/mlacy/Downloads/workspace/holodeck/reading/corpus.falsify.test.mjs",
+      "name": "all 15 CLAIM tests (linking never merges, provenance and split, register split, undeclared source, reality fold, unrelated sources, sever overlay, order independence, nesting depth, nesting wall, shared surname identity, no identity test injected, duplicate copy)",
+      "reason": "They test khora reading-timeline links, referents, beings and splits. None calls falsifyAnswer or asserts a claim verdict."
+    }
+  ]
+}
