@@ -50,7 +50,7 @@
     "adapters/text/script-floor.js": "ac69d85347c477d169fe3ba15813a8e1f1537323faed17dedfd2e560fcf6a8af",
     "adapters/text/spans.js": "ed29b9710a1274463bdba47f08e1e1defb0e2de84c27cb3f851b36453ef8a2d8",
     "adapters/text/surfaces.js": "d623d8384a9f9e00478a82661171d394235310f5345be272db5c5a6200ae6f37",
-    "adapters/text/wordclass.js": "9025253abe7d903e0b6e859c32cbb7bfff84b0a8871f235c08abc03a4d627fee",
+    "adapters/text/wordclass.js": "1c59ea67aadae723a1d44811e6efe032faa534e370790e400bc0d8cf6c3b8f88",
     "interpretation/hl.js": "c7c24df9f7d3cde6c6e3ee9f51dbf504c893505363bf9f5e10bc1c75657c0607",
     "kernel/activation.js": "db42f97a3a7b07f34d16bc92ee277a407fd57d77cad53d9a61d2f9f04d5a2e45",
     "kernel/antimatter.js": "708acff0198d59384606f06fc79ee3542d5c6405a9e924725c9634e496bf9630",
@@ -142,6 +142,14 @@
         "organs/regime.js"
       ],
       "why": "these 7 files were synced/added to vendor/khora after the pinned commit (the 2026-10-11 'sync 4 drifted kernel files' change) without a pin update; each was verified byte-identical to khora origin/main 70e30145 before its hash was recorded. The top-level khora.commit still describes the other files."
+    },
+    {
+      "at": "2026-10-22",
+      "khora": "f4ad422b",
+      "files": [
+        "adapters/text/wordclass.js"
+      ],
+      "why": "wordclass.js was re-vendored on 2026-10-19 (the-fold fa05b59 and 7ce4080) after the pinned commit without a pin update, so scripts/vendor-self-check.mjs failed on main. The bytes are unchanged by this entry: the file was verified byte-identical to khora f4ad422b and to khora origin/main 0562f6e5 (git blob 6726787d, sha256 1c59ea67) before its hash was recorded. The top-level khora.commit still describes the other files."
     }
   ]
 }
