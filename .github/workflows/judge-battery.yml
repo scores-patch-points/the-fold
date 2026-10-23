@@ -1,0 +1,23 @@
+name: Judge battery
+
+# The falsify judge (fold-chat-falsify-answer.js) against the committed claim-and-source table eval/judge/cases.json.
+# kind:pass rows must hold; kind:todo rows are known breaks and may fail. See docs/JUDGE-BATTERY.md.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  judge-battery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: The battery as tests
+        run: node --test fold-chat-judge-battery.test.mjs
+      - name: The battery runner
+        run: node scripts/judge-battery.mjs --strict-todo
