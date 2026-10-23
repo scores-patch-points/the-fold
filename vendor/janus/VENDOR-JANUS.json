@@ -1,8 +1,8 @@
 {
   "repo": "scores-patch-points/janus",
   "janus": {
-    "ref": "2fed15e",
-    "source": "janus PR #6 (draft, unmerged) branch identity-resolve: native/organs/identity/resolve.mjs"
+    "ref": "243b939",
+    "source": "janus PR #6 (merged, 243b939; byte-identical on janus main 5f0233b): native/organs/identity/resolve.mjs"
   },
   "note": "FROZEN COPY. Refresh with `node scripts/vendor-janus.mjs --src <janus>/native/organs/identity`; verify with --check. Never edit by hand.",
   "files": {
