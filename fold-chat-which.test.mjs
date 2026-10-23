@@ -69,3 +69,17 @@ test("the vendored copy of janus's organ is byte-identical to its pin (and impor
   assert.match(out, /1 file\(s\) match the pin/);
   assert.doesNotMatch(fs.readFileSync(new URL("./vendor/janus/identity/resolve.mjs", import.meta.url), "utf8"), /^\s*import\s/m);
 });
+
+test("centred (opt-in): a thread the plain reading only asks about becomes an assertion on the right sense; a vague thread stays an ask; the default is unchanged", () => {
+  const planets = { term: "mercury", results: RESULTS, ask: "tell me about mercury", context: "We were talking about the planets of the Solar System, their orbits and how far each is from the Sun." };
+  const plain = whichSense(planets), cen = whichSense({ ...planets, centered: true });
+  assert.equal(plain.decision, "ask");
+  assert.equal(cen.decision, "assert");
+  assert.equal(cen.chosen.label, "Mercury (planet)");
+  assert.deepEqual(whichSense({ ...planets, centered: false }), plain, "centered: false is the default path");
+  const cars = whichSense({ term: "mercury", results: RESULTS, ask: "tell me about mercury", context: "Earlier I was shopping for a medium-priced car brand and its older models.", centered: true });
+  assert.equal(cars.decision, "assert");
+  assert.match(cars.chosen.label, /automobile/);
+  const vague = whichSense({ term: "mercury", results: RESULTS, ask: "tell me about mercury", context: "it was interesting and important and well known", centered: true });
+  assert.notEqual(vague.decision, "assert");
+});
