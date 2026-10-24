@@ -119,8 +119,17 @@ function sameSubject(negName, negPronoun, otherText, aroundText, claimHead, pred
     return !!claimHead && hay.includes(fold(claimHead));
   }
   if (!subjectNamesMatch(negName, String(otherText ?? "").slice(0, 200))) return false;
-  if (predStem && tokGap(otherText, negName.split(/\s+/).pop(), predStem) > 5) return false;
+  if (predStem && tokGap(withoutAppositive(otherText, negName), negName.split(/\s+/).pop(), predStem) > 5) return false;
   return true;
+}
+/** "Everest, at 8,849 m, is the highest…": a comma-bounded interjection right after the subject's name modifies that name;
+ *  it is lifted out before the subject–predicate distance is measured, so an appositive cannot hide a polarity flip
+ *  (judge table: negation-appositive-hides-not-everest). A comma inside a figure ("8,849") is not a boundary. */
+function withoutAppositive(text, name) {
+  const last = String(name ?? "").trim().split(/\s+/).pop();
+  if (!last) return String(text ?? "");
+  const esc = last.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return String(text ?? "").replace(new RegExp(`(${esc})\\s*,(?:[^,]|,(?=\\d))*?,(?!\\d)`, "iu"), "$1");
 }
 /** two names for the same being: containment either way ("The Berlin Wall" holds "The Wall"), or the
  *  same head word without a contradictory modifier ("Eastern Roman Empire" does NOT hold against
@@ -358,8 +367,11 @@ export function roleConfusion(claim, sent, cnames) {
   if (!cr || !sr) return null;
   // a role phrase with no content word ("he", "they were", "it") is VACUOUS — pronouns and
   // function words carry no role to mismatch (F2 C5 c12 "He received…" vs "Einstein received…").
+  // A phrase of figures and calendar words alone ("on 20 July 1969") is a TIME, not a participant: it carries no role either
+  // (F2 SEG c12 "launched on 16 July 1969 and landed on 20 July 1969" against "mission to land on the Moon").
+  // Scope: CALENDAR is the English month and day names, so the time reading is English-only here (declared, not universal).
   // Vacuity can only clear mismatches, never create them.
-  const vacuous = (ph) => !String(ph ?? "").split(/[^a-z0-9]+/i).filter((w) => w.length > 1 && !FW.has(w.toLowerCase())).length;
+  const vacuous = (ph) => !String(ph ?? "").split(/[^a-z0-9]+/i).filter((w) => w.length > 1 && !FW.has(w.toLowerCase()) && !/^\d+$/.test(w) && !CALENDAR.test(w[0].toUpperCase() + w.slice(1).toLowerCase())).length;
   const agentOk = vacuous(cr.agent) || vacuous(sr.agent) || !cr.agent || !sr.agent || phraseHas(cr.agent, sr.agent);
   const patientOk = vacuous(cr.patient) || vacuous(sr.patient) || !cr.patient || !sr.patient || phraseHas(cr.patient, sr.patient);
   if (!agentOk && !patientOk) return { confused: true, why: `reverses who did what to whom (${verb}): ${cr.agent.slice(0, 40)} / ${cr.patient.slice(0, 40)}` };
@@ -517,7 +529,11 @@ function judge(claim, cs, cfigs, cnames, sent, around, joined = false, whole = a
     const subj = words(cnames[0]).filter((w) => w.length > 1 && !FW.has(w));
     const head = subj[subj.length - 1];
     const openIdx = words(claim).indexOf(subj[0]);   // a SUBJECT name opens the claim ("The Eiffel Tower", "In 1903 Marie Curie"); one further in is an object
-    if (head && run.text && openIdx >= 0 && openIdx <= SUBJECT_REACH) { const stoks = words(sent); const hi = stoks.indexOf(head), ri = stoks.indexOf(fold(run.text).split(" ")[0]); if (hi >= 0 && ri >= 0 && hi > ri + 2) subjectMissing = true; }
+    // a COORDINATED subject ("Orcas at 8 m and Māui’s dolphins at 1.7 m differ…"): the next claim name joined to the first by
+    // and/or with no verb between is the subject too, and either may open the match (the source may list them the other way)
+    const coord = cnames.slice(1).find((n) => { const fc = fold(claim), a = fc.indexOf(fold(cnames[0])), b = fc.indexOf(fold(n)); if (a < 0 || b <= a) return false; const between = fc.slice(a + fold(cnames[0]).length, b); return /\b(?:and|or)\b/.test(between) && !between.split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 2).some(isVerbish); });
+    const heads = [head, coord ? words(coord).filter((w) => w.length > 1 && !FW.has(w)).pop() : null].filter(Boolean);
+    if (head && run.text && openIdx >= 0 && openIdx <= SUBJECT_REACH) { const stoks = words(sent); const ri = stoks.indexOf(fold(run.text).split(" ")[0]); if (ri >= 0 && heads.every((h) => { const hi = stoks.indexOf(h); return hi >= 0 && hi > ri + 2; })) subjectMissing = true; }
     // VETO, never a trigger: a sentence-initial capital the name-list dropped ("Mars has two small moons…",
     // where namesIn skips the opener) standing at the match's start clears a false miss. It cannot create
     // one — the Trump-won guard above still fires on its own terms.
@@ -621,10 +637,29 @@ function bestIn(src, claim, cs, cfigs, cnames) {
 }
 
 const CALENDAR = /^(?:January|February|March|April|May|June|July|August|September|October|November|December|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$/;
-/** The names a claim commits to — without a lone capitalised first word ("Quantitative easing began…" names nothing) and without months/days. Exported for the provenance non-claim gate (fold-chat-provenance.js), which needs the same strictness. */
-export function namesOf(s) {
+/** The names a claim commits to — without months/days, and without a lone capitalised first word ("Quantitative easing began…"
+ *  names nothing) UNLESS the texts at hand show it is a name (openerIsName, below). Exported for the provenance non-claim gate
+ *  (fold-chat-provenance.js), which calls it without a corpus and keeps the strict reading. */
+export function namesOf(s, corpus = "") {
   const first = (String(s).trim().match(/^[\p{L}'-]+/u) || [""])[0];
-  return namesIn(s).map((n) => n.replace(/^(?:In|On|At|By|From|Since|During|After|Before|The)\s+/u, "").replace(/['’]s$/u, "")).filter((n) => n && !CALENDAR.test(n) && !(n === first && !/\s/.test(n) && !/^\p{Lu}{2,}$/u.test(n)));
+  return namesIn(s).map((n) => n.replace(/^(?:In|On|At|By|From|Since|During|After|Before|The)\s+/u, "").replace(/['’]s$/u, "")).filter((n) => n && !CALENDAR.test(n) && !(n === first && !/\s/.test(n) && !/^\p{Lu}{2,}$/u.test(n) && !openerIsName(n, s, corpus)));
+}
+// function words of every language the prior lists (13, Universal Dependencies): the one multilingual closed class this module has
+const FW_ALL = new Set(Object.values(FUNCTION_WORDS || {}).flat().map((w) => fold(w)));
+/** Is a lone capitalised opener a NAME ("Sydney is the capital…") or a word the sentence position capitalised ("Dolphins are
+ *  fish", "Quantitative easing began…")? Measured on the texts at hand, never on a word list: the opener is a name when the claim
+ *  and its sources write the word nowhere with a lowercase initial (same folded form or stem). A word the sources write in
+ *  lowercase is a common word; a word they never write at all cannot be what they state, so it is held as a name the source
+ *  must carry (judge table: slot-wrong-capital-sydney, -melbourne, language-es-wrong-capital-sidney). Gates: a corpus must be
+ *  given (no corpus, no measurement, the strict reading stands); the opener is a function word of no language the prior lists;
+ *  the text is in a script with case (an opener in a caseless script is never capitalised, so this never fires there). */
+function openerIsName(first, s, corpus) {
+  if (!corpus) return false;
+  const f = fold(first);
+  if (f.length <= 2 || FW_ALL.has(f) || !/\p{Lu}/u.test(first) || !/\p{Ll}/u.test(String(s))) return false;
+  const k = groundStem(f);
+  const lower = (String(s) + " " + String(corpus)).match(/(?<![\p{L}\p{N}])\p{Ll}[\p{L}\p{N}'’-]*/gu) || [];
+  return !lower.some((w) => { const x = fold(w); return x === f || groundStem(x) === k; });
 }
 
 /** The swap: a competitor of the same kind from the witness's own source, put in place of the claim's figure/name. */
@@ -666,7 +701,7 @@ function swapTest(claim, cfigs, cnames, src, witness) {
     const comp = [...pool].find((x) => !inClaim.has(fold(x)) && !words(x).some((w) => inClaim.has(w)) && !FW.has(fold(x)) && !CALENDAR.test(x));
     if (!comp) continue;
     const swapped = claim.replace(n, comp);
-    const j = judge(swapped, contentStems(swapped), figuresIn(swapped), namesOf(swapped), witness.sentence, witness.sentence);
+    const j = judge(swapped, contentStems(swapped), figuresIn(swapped), namesOf(swapped, src.texts.join(" ")), witness.sentence, witness.sentence);
     return { armed: true, kind: "name", from: n, to: comp, discriminates: j.verdict !== "states" };
   }
   return { armed: false };
@@ -704,17 +739,19 @@ export function normalizeForms(text) {
 }
 export function falsifyAnswer(sentences, passages) {
   const sources = sourcesOf((passages || []).map((p) => (p && typeof p === "object" && typeof p.text === "string" ? { ...p, text: normalizeForms(p.text) } : p)));
+  // everything the turn read, as the corpus a lone capitalised opener is measured against (openerIsName)
+  const corpus = sources.map((x) => x.texts.join(" ")).join(" ");
   const claims = (sentences || []).map((raw, i) => {
     const shown = String(raw ?? "").trim();
     const s = withoutSourceTag(normalizeForms(shown));
-    const cs = contentStems(s), cfigs = figuresIn(s), cnames = namesOf(s);
+    const cs = contentStems(s), cfigs = figuresIn(s), cnames = namesOf(s, corpus);
     const per = sources.map((src) => {
       const b = bestIn(src, s, cs, cfigs, cnames);
       if (b.verdict !== "states") {
         // a compound claim whose every clause a source states (in different sentences) is stated by that source
         const cl = clausesOf(s);
         if (cl.length > 1) {
-          const each = cl.map((c) => bestIn(src, c, contentStems(c), figuresIn(c), namesOf(c)));
+          const each = cl.map((c) => bestIn(src, c, contentStems(c), figuresIn(c), namesOf(c, corpus)));
           if (each.every((x) => x.verdict === "states")) return { src: src.key, ...b, verdict: "states", why: "every clause is stated", clauseSupport: true };
         }
       }
