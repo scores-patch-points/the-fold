@@ -19,9 +19,8 @@ import { artifactsOf, previewable } from "./fold-chat-artifacts.js";
 import { mdHtml } from "./fold-chat-render.js";
 import * as memory from "./fold-chat-memory.js";
 import * as ground from "./fold-chat-ground.js";
-import { presentationOf, agreementOf, salientSentences } from "./fold-chat-present.js";
+import { salientSentences } from "./fold-chat-present.js";
 import { latticePrompt } from "./fold-chat-lattice.js";
-import { renderPresented, mountLive, armTailReplay, renderTapeStrip } from "./fold-chat-presentview.js";
 import * as shelf from "./fold-chat-book.js";
 import * as bookfold from "./fold-chat-bookfold.js";   // the mechanical FOLD of a shelfed book (no model): the chapter-reduction rung the shelf lacked
 import * as bookscenes from "./fold-chat-bookscenes.js";   // the SCENES BENEATH the fold: Murch-cut scenes, each event the book's own sentence, verbatim at its address
@@ -29,9 +28,6 @@ import * as web from "./fold-chat-web.js";
 import { falsifyAnswer, FAILING, claimSentences, routeOf, pickPassages, restateClaimMessages, replaceSentence, reImpress } from "./fold-chat-falsify-answer.js";
 // What this tab has already read, and which hosts turned it away: a follow-up about the same pages costs no fetch.
 const pageMemo = web.makeMemo();
-// The Sources tab's "this claim on the live web" link: the fold's own search, as it searches the record. Never a wedge —
-// a failed search renders "nothing came back" in the pane, it never throws the answer away.
-const srcSearch = async (q) => { try { return await web.searchWeb(q, { effort: "balanced", read: 2, memo: pageMemo }); } catch { return { results: [], passages: [], trace: [] }; } };
 import { classifyTurn, GENERATE_NUDGE, GENERATE_CREATIVE_NUDGE, checkable, recordable, skipsSearch, noClaimsLabel, KIND_PROMPT } from "./fold-chat-discourse.js";
 import { describeOutput, genVoidShape, voidsAfterSearch } from "./fold-chat-outputtype.js";   // what is asked to be PRODUCED: type, topic through the thread, needsSources, typed gaps (G1, 2026-10-07)
 import { evaluate as computeEvaluate, answerKeeps } from "./fold-chat-compute.js";
@@ -1543,16 +1539,6 @@ export function mount(root, opts = {}) {
     const face = rec?.facing || { sources: [], response: [] };
     const spread = el("div", "facing");
     const gap = meta?.gap || null;   // the typed gap (record.void), drawn in its own block
-    // HOW THE TURN WENT picks the drawing (fold-chat-present.js): one source, several that agree, sources that
-    // disagree, or part fact / part invention. A gap or a turn with no passages keeps the spread below.
-    if (String(content || "").trim() && !(gap && gapAnswerLine(gap))) {
-      const sess = meta?.sessionId ? sessions[meta.sessionId] : null;
-      const question = sess && meta.index != null ? String(askBefore(sess, meta.index) || "") : "";
-      const pres = presentationOf(rec, { question });
-      if (pres && pres.layout === "unsupported") pres.onSourcesOnly = () => { setAnswerMode("snips"); meta?.retry?.(); };
-      if (pres) { renderPresented(body, { rec, content, pres, mdHtml, question, senses: sensesEl(rec), model: [meta?.model, meta?.sealed ? "sealed-external" : client.isPageModel(meta?.model) ? "in this tab" : null].filter(Boolean).join(" \u00b7 ") || null, search: srcSearch }); return; }
-      if (Array.isArray(rec?.tape) && rec.tape.length) renderTapeStrip(body, rec, question);
-    }
 
     // --- RESPONSE page ------------------------------------------------------
     // The answer renders as FULL MARKDOWN (lists, bold, headings survive), so a
@@ -1684,8 +1670,8 @@ export function mount(root, opts = {}) {
         body.append(sb);
       }
     }
-    // THE PROVENANCE NARRATION, gated by the switch; the sentences may carry their own evidence (presentview).
-    if (layerEnabled(layers, "provenance") && Array.isArray(prov.parts) && prov.parts.length && !body.querySelector(".pv-sen")) {
+    // THE PROVENANCE NARRATION, gated by the switch.
+    if (layerEnabled(layers, "provenance") && Array.isArray(prov.parts) && prov.parts.length) {
       const box = el("div", "prov");
       box.setAttribute("role", "note");
       for (const part of prov.parts) {
@@ -2478,15 +2464,14 @@ export function mount(root, opts = {}) {
     // into the "how this was answered" line when the answer lands, and replays from `record.feed` after a reload.
     const tt = newTurnTrace({ question: lastUserText(s) });
     const turnEvents = [];
-    let pvLive = null, pvStream = "";   // the live three-panel reading (fold-chat-presentview.js mountLive), when the turn reads sources
-    const feed = createFeed(body, { live: true, onStop: () => flight.stop(), viewSwitch: true });
+    const feed = createFeed(body, { live: true, onStop: () => flight.stop() });
     body.querySelector(".live-stat")?.remove();
     // THE ANIMATION IS GATED (user, 2026-10-11): a FOLLOW-UP that actually researches shows the live feed;
     // the FIRST turn and a turn that researches nothing do not — there it is just the quiet murmur until the
     // real answer. `feedGate.on` starts at "follow-up" and is refined below once `wantWeb` is known.
     const feedGate = { on: s.messages.filter((x) => x.role === "user").length > 1 };
     if (!feedGate.on) { try { feed.dispose(); feed.root.remove(); } catch (e) {} }
-    const feedPush = (evs) => { for (const e of evs) { turnEvents.push(e); if (feedGate.on) { try { feed.push(e); } catch (err) { try { console.error("[fold-chat] feed:", err); } catch {} } } try { pvLive?.event(e); } catch {} } };
+    const feedPush = (evs) => { for (const e of evs) { turnEvents.push(e); if (feedGate.on) { try { feed.push(e); } catch (err) { try { console.error("[fold-chat] feed:", err); } catch {} } } } };
     // THE TRAIL, IN PLAIN LANGUAGE (fold-chat-trail.js, user 2026-10-11): the discourse-aware thread spoken the
     // way the record speaks — no "relation · want · baton". Names the prior turn, its ask and what it held, and
     // says plainly what THIS one inherits (continues it with the carried sources / a new ask that searches / a
@@ -2635,13 +2620,11 @@ export function mount(root, opts = {}) {
     if (wantWeb) {
       if (question) {
         say(`turn · ${kindWord} · searching the web…`);
-        // THE LIVE PANEL (fold-chat-presentview.js): the reading drawn as it happens, above the step log.
-        try { pvLive = mountLive(body, { question: searchQ || question, mdHtml }); for (const e of turnEvents) pvLive.event(e); } catch (e) { pvLive = null; }
         if (follow.kind === "retry") feedPush(lineEvent(tt, "Picked your earlier question back up", { tone: "info", note: `nothing was written for \u201c${question.slice(0, 90)}\u201d, so I'm answering it now` }));
         // Every step the search takes arrives as an onStep event and becomes a row of the turn's live feed
         // (fold-chat-turnfeed.js eventsForStep): each source asked with its own clock and result count or failure
         // reason, each page read with "kept N of M chars", an honest "waiting on …" line when something is slow.
-        const onStep = (st) => { feedPush(eventsForStep(tt, st)); try { pvLive?.step(st); } catch {} };
+        const onStep = (st) => { feedPush(eventsForStep(tt, st)); };
         // THE SHELF: an ask that names a book the fold holds whole (fold-chat-book.js) is answered from the book itself,
         // read in full, before (and instead of) the web.
         const onShelf = shelf.bookFor(question);
@@ -2655,7 +2638,6 @@ export function mount(root, opts = {}) {
               webPassages = found.passages;
               webTrace = [{ scope: "book", engine: `${onShelf.title} · whole text`, n: found.matched, ok: true }, ...found.passages.map((p) => ({ read: p.url, via: "book", chars: p.text.length }))];
               bookFound = { ...found, book: onShelf, paras: parsed.paras.length, chars: parsed.chars };
-              try { pvLive?.book(onShelf, { ...found, paras: parsed.paras.length }); pvLive?.passages(found.passages); } catch {}
               sourceBlock = shelf.bookPrompt(onShelf, found, question) + "\n\n" + sourcesPrompt(webPassages);
               feedPush(lineEvent(tt, `Kept ${found.passages.length} scenes`, { tone: "ok", note: found.passages.map((p) => p.bookPlace.book.replace(/ \(.*\)/, "") + " · " + p.bookPlace.chapter).join(", ") }));
               say(`turn · ${kindWord} · read ${onShelf.title} · ${placeLabel(m)} · answering…`);
@@ -2673,7 +2655,6 @@ export function mount(root, opts = {}) {
                 const foldChars = fold.passages.reduce((a, p) => a + p.text.length, 0);
                 const foldLimits = { ...STRAND, maxPassages: Math.max(STRAND.maxPassages, fold.passages.length), totalChars: Math.max(STRAND.totalChars, foldChars + 400), minimal: false };
                 bookFound = { names: fold.cast.slice(0, 8), focal: null, matched: fold.withLine, chapters: fold.chapterCount, passages: fold.passages, book: onShelf, paras: parsed.paras.length, chars: parsed.chars, fold: true, foldLimits };
-                try { pvLive?.book(onShelf, { names: fold.cast.slice(0, 8), matched: fold.withLine, chapters: fold.books.length, paras: parsed.paras.length }); pvLive?.passages(fold.passages); } catch {}
                 sourceBlock = bookfold.foldPrompt(onShelf, fold, question) + "\n\n" + sourcesPrompt(webPassages);
                 feedPush(lineEvent(tt, `Folded ${fold.chapterCount} chapters into ${fold.books.length} books`, { tone: "ok", note: `${fold.withLine} chapters kept an event line; ${fold.foldedOut} lines about the telling folded out \u2014 no model` }));
                 // THE SCENES BENEATH (fold-chat-bookscenes.js): the seam cuts each chapter at Murch's blinks and binds each
@@ -2695,7 +2676,6 @@ export function mount(root, opts = {}) {
                       foldLimits.maxPassages = Math.max(foldLimits.maxPassages, webPassages.length);
                       foldLimits.totalChars = Math.max(foldLimits.totalChars, webPassages.reduce((a, p) => a + p.text.length, 0) + 400);
                       sourceBlock += "\n\n" + bookscenes.scenePromptFor(onShelf, scenes);
-                      try { pvLive?.passages(scenePassages); } catch {}
                     }
                     feedPush(lineEvent(tt, `Cut ${scenes.cut} scenes across ${scenes.per.length} books`, { tone: "ok", note: `${ev} events, every one verbatim at its address \u2014 no model wrote an event` }));
                   }
@@ -2780,12 +2760,11 @@ export function mount(root, opts = {}) {
           surfedUrls = webPassages.map((p) => String(p.url || p.source || "")).filter(Boolean);
           // THE WATCHER, fed the content that was surfed: for a source-ask, pages that do not bear on the thread's topic are set aside before anything is shown (never an empty hand).
           if (follow.kind === "source-ask" && watcherPre) { try { const kept = keepOnTopic(webPassages, watcherPre, priorForWatch); if (kept.length && kept.length < webPassages.length) { asideUrls = webPassages.filter((p) => !kept.includes(p)).map((p) => String(p.url || p.source || "")).filter(Boolean); feedPush(lineEvent(tt, "Set aside pages that do not bear on it", { tone: "info", note: `${webPassages.length - kept.length} of ${webPassages.length} \u00b7 read by what they say, not by their titles` })); webPassages = kept; } } catch (e) { /* an aid */ } }          turnPages = Array.isArray(w.pages) ? w.pages : [];
-          try { if (webPassages.length) pvLive?.passages(webPassages); } catch {}
           webTrace = w.trace || null;
           webResults = w.results || [];
           if (webPassages.length) {
-            // THE HOLOGRAPH THE MODEL READS: each passage cut to its most salient sentences — the same ones the panel parses —
-            // so a small model sees the claims, not a page's tagline. The full passages stay the material the answer is checked against.
+            // THE HOLOGRAPH THE MODEL READS: each passage cut to its most salient sentences (salientSentences, a local rule that
+            // stays in fold-chat-present.js until khora's reader replaces it), so a small model sees the claims, not a page's tagline. The full passages stay the material the answer is checked against.
             sourceBlock = sourcesPrompt(webPassages.map((p) => { const sal = salientSentences(p.text, searchQ, 4); return sal.length >= 2 ? { ...p, text: sal.join(" ") } : p; })) + (webPassages.some((p) => p.recipe) ? "\n\n" + CARD_PROMPT : "");
             // (the modelless reason lint runs ONCE, on the FINAL passages of the turn — after the search, the
             // encyclopedia's originals and the carried thread — see the modelBarred site below)
@@ -2990,9 +2969,6 @@ export function mount(root, opts = {}) {
         angelica = { verdict: { gap: "covered_by_lesson", topic: null, tool: null, why: "an earlier judgement already covers this decision — Angelica was not consulted" }, signature: sig, consulted: false };
       }
     }
-    // The reading panel's writing stage, fired once it is known who writes this turn: by:"mechanical" on a
-    // Sources-only / no-model turn, so the panel never claims a model wrote the sources' own words.
-    try { pvLive?.writing(modelBarred ? "mechanical" : "model"); } catch {}
     doorRefusal = null;   // set when Gary refuses the composed turn below: the model is then not asked (the turn falls back like any refused call)
     // THE LATTICE (fold-chat-lattice.js, user 2026-10-11: "complex prompting with nested reasoning — it needs to
     // actually think, climb the abstraction lattice") is computed BELOW, after the turn's flow is read — the
@@ -3130,7 +3106,7 @@ export function mount(root, opts = {}) {
             for (const n of body.querySelectorAll(".live-stat")) n.remove();
           }
           // THE PIVOT (docs/PIVOT.md): the model's words are a DRAFT that is read before anything is spoken, so they are never streamed to the page.
-          if (!pivotOn) { if (pvLive) { pvStream += t; pvLive.wrote(pvStream); } else body.append(document.createTextNode(t)); }
+          if (!pivotOn) body.append(document.createTextNode(t));
           flight.stage = pivotOn ? "drafting…" : "answering…";
           if (isLive()) { if (!pivotOn) E.thread.scrollTop = E.thread.scrollHeight; E.stage.textContent = pivotOn ? "drafting\u2026 (read before it is shown)" : "answering…"; }
         },
@@ -3176,8 +3152,7 @@ export function mount(root, opts = {}) {
         }
       }
       if (!skipModel) feedPush(endStep(tt, "write", { title: `Wrote the answer \u00b7 ${m.id}`, tone: "ok", note: out.tokens ? `${out.tokens} token${out.tokens === 1 ? "" : "s"}` : "" }));
-      // The live animation ends with the writing; the answer is HELD (not shown) until every sentence is checked.
-      try { pvLive?.writingDone?.(); } catch {}
+      // The answer is HELD (not shown) until every sentence is checked.
       if (!skipModel && wantWeb && webPassages.length && checkable(kind)) feedPush(lineEvent(tt, "Holding the answer until every sentence is checked", { tone: "info", note: "against everything read" }));
       if (isLive()) E.stage.textContent = "";
       body.classList.remove("live");
@@ -3262,7 +3237,7 @@ export function mount(root, opts = {}) {
         recLoop = { passes: [], cleared: false };
         const asPass = (ps) => ps.map((p) => ({ text: p.text, url: p.url || p.source, ref: p.ref }));
         const t0 = Date.now(), BUDGET = effort === "deep" ? 45000 : 25000;
-        const stepFn = (st) => { feedPush(eventsForStep(tt, st)); try { pvLive?.step(st); } catch {} };
+        const stepFn = (st) => { feedPush(eventsForStep(tt, st)); };
         const textBefore = text;
         const deferRec = (() => { try { return localStorage.getItem("fold-chat:e2recdefer") !== "off"; } catch { return true; } })();
         const runLaps = async (deferred) => {
@@ -3281,12 +3256,11 @@ export function mount(root, opts = {}) {
           if (Date.now() - t0 > BUDGET) { feedPush(lineEvent(tt, "Stopped going back", { tone: "info", note: "out of time \u2014 the sentences still failing are marked" })); break; }
           const pass = { lap, before: fz.summary, failing: failing.map((c) => ({ i: c.i, s: c.s, verdict: c.verdict, ...routeOf(c) })), added: 0, restated: [] };
           recLoop.passes.push(pass);          feedPush(lineEvent(tt, `\u25c9 Reframe, lap ${lap}: ${failing.length} sentence${failing.length === 1 ? "" : "s"} broke`, { tone: "warn", note: failing.map((c) => `s${c.i + 1} ${c.verdict}`).join(" \u00b7 ") + " \u2014 going back to search" }));
-          try { pvLive?.loop?.(lap, pass.failing); } catch {}
           // INS first: the whole pages already read, recalled for each failing claim (shadow → a new impression)
           const fresh = [];
           for (const f of pass.failing) for (const p of reImpress(f.s, turnPages)) fresh.push(p);
           pass.reImpressed = fresh.map((p) => ({ url: p.url, kept: p.shadow.kept, chars: p.shadow.chars, segments: p.shadow.segments.length, recalled: p.shadow.recalled }));
-          if (fresh.length) { webPassages = [...webPassages, ...fresh]; try { pvLive?.passages(fresh); } catch {} }
+          if (fresh.length) webPassages = [...webPassages, ...fresh];
           feedPush(lineEvent(tt, fresh.length ? `Looked again in the pages already read \u2014 ${fresh.length} new impression${fresh.length === 1 ? "" : "s"}` : "The pages already read hold nothing more about it", { tone: fresh.length ? "ok" : "info", note: fresh.length ? fresh.map((p) => `${p.shadow.segments.length} sentence(s) recalled from ${String(p.ref || "").split(" \u2014 ")[0]}`).join(" \u00b7 ").slice(0, 180) : `recalled each claim against ${turnPages.length} page shadow(s)` }));
           const fzI = fresh.length ? falsifyAnswer(sents, asPass(webPassages)) : fz;
           const stillI = new Set(fzI.claims.filter((c) => FAILING.has(c.verdict)).map((c) => c.i));
@@ -3305,7 +3279,7 @@ export function mount(root, opts = {}) {
             } catch (e) { if (ac.signal.aborted) throw e; }
           }
           pass.added = added.length;
-          if (added.length) { webPassages = [...webPassages, ...added]; try { pvLive?.passages(added); } catch {} }
+          if (added.length) webPassages = [...webPassages, ...added];
           feedPush(lineEvent(tt, added.length ? `Read ${added.length} more source${added.length === 1 ? "" : "s"}` : "Found nothing new", { tone: added.length ? "ok" : "info", note: pass.failing.map((f) => `\u201c${f.query}\u201d`).join(" \u00b7 ").slice(0, 180) }));
           // the cross-reference again on the wider ground; only what still fails is restated
           const fz2 = falsifyAnswer(sents, asPass(webPassages));
@@ -3329,7 +3303,6 @@ export function mount(root, opts = {}) {
           const rn = pass.restated.filter((x) => x.to).length;
           if (rn) feedPush(lineEvent(tt, `Restated ${rn} sentence${rn === 1 ? "" : "s"} from what was found`, { tone: "ok", note: "the rest of the answer is unchanged" }));
         }
-        if (text !== textBefore && pvStream) pvStream = text;
         if (!recLoop.passes.length && recLoop.cleared) recLoop.firstTry = true;
         };
         if (deferRec) { await runLaps(true); if (recPending) recRunLaps = async () => { recPending = false; recLoop.pending = false; await runLaps("after"); }; }
@@ -3550,7 +3523,6 @@ export function mount(root, opts = {}) {
         recLoop.processLine = recLoop.pending ? `reframe \u00b7 the first check broke ${(S.unsupported || 0) + (S.contested || 0) + (S.weak || 0)} sentence(s), marked; going back for more sources after the answer is shown` : lp ? `reframed · went back ${lp} lap${lp === 1 ? "" : "s"} · ${recLoop.passes.reduce((n, p) => n + p.added, 0)} more source(s) read · ${recLoop.passes.reduce((n, p) => n + p.restated.filter((x) => x.to).length, 0)} sentence(s) restated · ${recLoop.cleared ? "every sentence holds" : `${(S.unsupported || 0) + (S.contested || 0) + (S.weak || 0)} still failing, marked`}` : `reframe · every sentence held on the first try`;
       }
       if (record && bookFound) record.book = { title: bookFound.book.title, author: bookFound.book.author, translator: bookFound.book.translator, via: bookFound.book.via, paras: bookFound.paras, chars: bookFound.chars, names: bookFound.names, focal: bookFound.focal, matched: bookFound.matched, chapters: bookFound.chapters, used: bookFound.passages.length, scenes: bookFound.passages.map((p) => ({ ref: p.ref, url: p.url, place: p.bookPlace, text: p.text })) };
-      // Do the read pages agree on the answer's figure? (fold-chat-present.js — it decides how the answer is drawn)      if (record && !strand && text.trim() && webPassages.length) { try { const ag = agreementOf(text, webPassages); if (ag) record.agreement = ag; } catch {} }
       // Sentences the gate could not check because they are in another language than every source: a typed note, never a silent miss
       // (the gate compares wording, wording cannot cross a language, and the fold does not translate or call the sentence wrong).
       if (record && record.gaps && record.gaps.length) notices.push({ kind: "language-gap", text: ground.languageGapNote(record.gaps) });
@@ -3728,12 +3700,6 @@ export function mount(root, opts = {}) {
       const storedSnips = strand ? strand.snips.map(storeSnip) : null;
       const slotStored = slotTurn ? storeAnswerTurn(slotTurn) : null;   // plain JSON: survives a reload and the session merge as message.answerTurn
       if (strand) { const chk = verifySnips(storedSnips, webPassages); if (!chk.ok) console.error("[fold-chat] a stored snip is not in its page — a bug:", chk.bad.map((b) => b.text.slice(0, 60))); }
-      // THE TAPE: the live panel seals what it recorded onto the turn's record; the answer's own view takes it from here.
-      // With the Pivot on the model's words are never streamed (pvStream stays empty): the live panel is handed the SPOKEN text here, so the
-      // checks, the REC laps and the tape are still recorded (a turn whose panel never got its final text carried no check/loop entries at all).
-      if (pvLive) { const finalText = pvStream || String(text || ""); if (finalText.trim()) { try { pvLive.wrote(finalText, true); } catch {} } }
-      // the answer is out: the live panel stops and folds away now (no waiting for its animation to catch up)
-      if (pvLive) { try { const sealed = pvLive.finish(); if (record) record.tape = sealed.tape; armTailReplay(sealed.liveT); pvLive.close(); } catch (e) { try { pvLive.close(); } catch {} } }
       if (clarify && followup && !String(text || "").trim()) text = followup.question;   // the clarifying question IS the turn's words (app-authored)
       s.messages.push({ role: "assistant", content: text, at: now(), mode: "chat", answerMode, grounding: record, model: m.id, ...(murmur ? { murmur } : {}), ...(followup ? { followup } : {}), ...(pivotRes ? { pivot: storePivot(pivotRes) } : {}), ...(discourseWatch ? { watch: discourseWatch } : {}), ...(provenance ? { provenance } : {}), ...(strand ? { authored: "sources", ...(slotTurn ? { answerTurn: slotStored } : { snips: storedSnips }) } : {}), ...(fellBack ? { fellBackFrom: fellBack.fellBackFrom, answerMode: "snips" } : {}), ...(notices.length ? { notices } : {}) });
       if (record && record.wald) { if (waldLedgerUpdate(s, (led) => appendEntry(led, ledgerEntry({ droppedBefore: WALD_LEDGER_DROPPED, sid: s.id, turn, at: now(), head: `${kind}:${outType?.type || "-"}`, wald: record.wald, usedBy: Array.isArray(record.cited) && record.cited.length > 0 ? "cited" : strand ? "sources" : null })))) WALD_LEDGER_DROPPED = 0; }

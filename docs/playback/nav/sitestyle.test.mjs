@@ -8,10 +8,10 @@ import {
   TOKEN_KEYS, FONT_STACKS, parseColor, contrast, toOklch, fromOklch, toHex, fixContrast, classifyFont, parseCss, readHtml,
   firstStylesheetHref, prepare, extractSiteTokens, validateTokens, tokensToVars,
 } from "./sitestyle.mjs";
-import { typeOf } from "../../../fold-chat-present.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const X = (input, deps = { typeOf }) => extractSiteTokens(input, deps);
+// The SITE_TYPE table (typeOf) went with fold-chat-present.js on 2026-10-24, so the tokens are read with no site table.
+const X = (input, deps = {}) => extractSiteTokens(input, deps);
 const page = (css, extra = "", head = "") => `<!doctype html><html><head>${head}<style>${css}</style></head><body ${extra}>x</body></html>`;
 const rng = (seed) => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
 
@@ -103,22 +103,12 @@ test("fonts: unknown names fall to the nearest generic family; only OUR stacks l
   assert.equal(tokens.titleCase, "uppercase");
 });
 
-test("nothing usable -> the SITE_TYPE entry for the domain, else neutral", () => {
-  const w = X({ html: "<html><body>no css at all</body></html>", domain: "en.wikipedia.org", theme: "light" });
-  assert.equal(w.meta.usedFallback, true);
-  assert.equal(w.tokens.paper, "#ffffff");
-  assert.equal(w.tokens.ink, "#202122");                      // SITE_TYPE['wikipedia.org'].ink
-  assert.equal(w.tokens.rule, "#a2a9b1");                     // SITE_TYPE edge
-  assert.equal(w.tokens.bodyFont, FONT_STACKS.sans);          // wikipedia body is sans in SITE_TYPE
-  assert.equal(w.tokens.titleFont, FONT_STACKS.serif);        // 'Linux Libertine' title -> serif
-  const g = X({ html: "", domain: "gutenberg.org", theme: "light" });
-  assert.equal(g.tokens.titleCase, "uppercase");              // SITE_TYPE gutenberg
-  assert.equal(g.tokens.paper, "#fffffa");
+test("nothing usable -> neutral", () => {
   const n = X({ html: "", domain: "never-heard-of-it.example", theme: "light" });
   assert.equal(n.meta.usedFallback, true);
   assert.deepEqual(validateTokens(n.tokens), []);
   assert.equal(n.tokens.measure, 66);
-  const nd = X({ html: "", domain: "never-heard-of-it.example", theme: "dark" }, {});    // no typeOf at all
+  const nd = X({ html: "", domain: "never-heard-of-it.example", theme: "dark" });
   assert.equal(nd.meta.scheme, "derived-dark");
   assert.deepEqual(validateTokens(nd.tokens), []);
 });

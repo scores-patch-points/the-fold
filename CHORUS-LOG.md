@@ -88,3 +88,12 @@ fast: 5 files · gate tests 105 (97 pass, 0 fail, 8 todo = known breaks) · law:
 | Marshall | S1 | cases.json:726 | false-positive-on-review | "S1" is a source title |
 | Simon/Chekhov | wiring | scripts/judge-battery.mjs | clean | imported and tested by fold-chat-judge-battery.test.mjs; run by the CI workflow |
 Negative controls: khora committed pin 0055d480 fails 26 rows, holodeck pin 63e9309 fails 35, khora 170e0ae fails 3; the parent of each of the 12 judge fix commits fails 4-26 rows.
+
+## 2026-10-24 — remove the "present" panels (fold-chat-presentview.js, the drawing half of fold-chat-present.js) (remove-present-panels, staged 14 files)
+fast: 12 files · 34 affected test files, 402 tests, 0 fail (the ✖ lines are the judge battery's known-break todo rows) · law: ok (0 citations)
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Feynman | constant | styles/answer-evidence.css:4 | false-positive-on-review | a contrast ratio inside a header comment, no comparison |
+| Holmes | identity | README.md:216 | false-positive-on-review | the words "canonical khora" in prose |
+| Kondo | dead | docs/PLAYBACK-STEPS.md:3 | noted | kondo scan is identical on main and the branch; the offline scripts that import the removed exports (docs/playback/*/prep.mjs, extract.mjs, nav/contact.mjs; eval/ants/falsify-checks/f1, f2, f3) are dated records, left as they are, runnable at 86c556e |
+| Simon/Chekhov | untested | fold-chat-present.js | noted | what is left is salientSentences, a local rule kept only because fold-chat.js still calls it (sourcesPrompt, lattice L1); no test imports it, as before (the f2 harness reached it through the panel) |
