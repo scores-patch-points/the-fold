@@ -97,3 +97,15 @@ fast: 12 files · 34 affected test files, 402 tests, 0 fail (the ✖ lines are t
 | Holmes | identity | README.md:216 | false-positive-on-review | the words "canonical khora" in prose |
 | Kondo | dead | docs/PLAYBACK-STEPS.md:3 | noted | kondo scan is identical on main and the branch; the offline scripts that import the removed exports (docs/playback/*/prep.mjs, extract.mjs, nav/contact.mjs; eval/ants/falsify-checks/f1, f2, f3) are dated records, left as they are, runnable at 86c556e |
 | Simon/Chekhov | untested | fold-chat-present.js | noted | what is left is salientSentences, a local rule kept only because fold-chat.js still calls it (sourcesPrompt, lattice L1); no test imports it, as before (the f2 harness reached it through the panel) |
+
+## 2026-10-24 — re-vendor khora c30fd5cc (the master reader and its prior door) + janus b6852ea priors (reading-one-core, staged 57 files)
+fast: 57 files · 22 affected test files, 356 tests, 1 file fail: constitutive-cycle.test.mjs, which fails on remove-present-panels too (it imports ../penelope, absent beside this checkout) · full suite 3036 tests, the same 15 failures as the base · law: WARN 45 citations (false positive on review: khora's own P/S law inside the vendored files)
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Feynman | numeric constant | scripts/build-extension.mjs:93 | false-positive-on-review | `pass < 2` is the two-phase walk (static closure, then the dynamic targets), not a tuned number |
+| Dijkstra | allowlist | scripts/build-extension.mjs:27 | noted | a dynamic `import("node:…")` is treated as a Node-only branch by its prefix; a module reached only by import() that imports node: statically is not shipped (canon-ground.mjs). A static node: import is still a problem, as before |
+| Simon/Chekhov | untested vendored source | vendor/khora/native/the-fold/read-core.mjs (and its closure) | noted | nothing in the chat imports the reader yet; the next commits do (fold-chat-cut.js, then the names). The vendored closure loads under Node: canon-ground.mjs is carried as `nodeOnly` because grounding.js and kernel/self.js top-level-await it there |
+| Kondo | dead | vendor/khora/native/kernel/index.js | noted | dropped: it was hand-vendored in the 2026-10-14 refresh, nothing in the chat imports it, and it is not in any entry's closure. organs/reasoning-lint.js is now an ENTRY, and regime.js comes back through its multi-line import, which the vendor script now follows |
+| Holmes, Pearl, Ostrom, Frankfurt, Alexander, Greenberg, Levi-Strauss, Diaconis | — | vendored khora comments | false-positive-on-review | each hit is khora's own prose inside a frozen copy |
+| Marshall | P/S/II citations | vendored files | false-positive-on-review | khora's law, cited by khora; this diff cites none |
+clean: vendor-self-check 121/121 byte-identical; judge battery --strict-todo 95 pass / 8 known-break / 0 fail; pronoun ratchet 95/95

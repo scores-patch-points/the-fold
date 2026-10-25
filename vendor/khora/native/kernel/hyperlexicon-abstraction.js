@@ -302,22 +302,33 @@ export function abstractionAt(registry, { id = null, op = null, grain = null, te
  * the base ledger ALWAYS win (the given tier is never shadowed); coordinates
  * are consulted only when the base lookup returns no given affordance.
  */
-export function compositionCoords(hyperlexicon, left, right, { leftOp = null, leftGrain = null, rightOp = null, rightGrain = null } = {}) {
+export function compositionCoords(hyperlexicon, left, right, { leftOp = null, leftGrain = null, rightOp = null, rightGrain = null, universe = null } = {}) {
   const hl = normalizeHyperlexicon(hyperlexicon);
   const base = compositionAffordance(hl, left, right, { leftGrain, rightGrain });
   if (base?.standing === "given") return base;
 
   const lc = leftOp && leftGrain ? cellOf(leftOp, leftGrain) : null;
   const rc = rightOp && rightGrain ? cellOf(rightOp, rightGrain) : null;
-  const coordOf = (c, op, grain) => (c ? `cell:${c.op}·${c.grain}` : op && grain ? `cell:${op}·${grain}` : "*");
-  const leftCoord = coordOf(lc, leftOp, leftGrain);
-  const rightCoord = coordOf(rc, rightOp, rightGrain);
-
-  const keys = [
-    pairKey(leftCoord, rightCoord),
-    pairKey(leftCoord, "*"),
-    pairKey("*", rightCoord),
-  ];
+  // A coordinate cell, optionally tagged with the universe it was declared for
+  // (`cell:CON·Pattern@world`). A wildcard and an untagged cell are never
+  // tagged: a universe tag scopes a SPECIFIC cell, and an untagged cell is a
+  // UNIVERSAL license.
+  const coordOf = (c, op, grain, tag) => {
+    const cell = c ? `cell:${c.op}·${c.grain}` : op && grain ? `cell:${op}·${grain}` : "*";
+    return cell === "*" || !tag ? cell : `${cell}@${tag}`;
+  };
+  const keysFor = (tag) => {
+    const l = coordOf(lc, leftOp, leftGrain, tag);
+    const r = coordOf(rc, rightOp, rightGrain, tag);
+    return [pairKey(l, r), pairKey(l, "*"), pairKey("*", r)];
+  };
+  // W2 (REALITY-LEVELS-SPEC §11.2): when a universe is declared, a license
+  // tagged for THAT universe is consulted first, then the universal (untagged)
+  // key space. A license tagged for a DIFFERENT universe is never consulted —
+  // a composition earned reading the 1912 record does not carry into the
+  // screenplay's stipulated universe. Without a declared universe the lookup
+  // is byte-identical to before this parameter existed.
+  const keys = universe ? [...keysFor(universe), ...keysFor(null)] : keysFor(null);
   for (const key of keys) {
     const row = hl.composition[key];
     if (row?.standing === "given") return row;

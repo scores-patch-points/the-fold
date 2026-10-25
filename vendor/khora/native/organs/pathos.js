@@ -1,4 +1,4 @@
-/* Abhinavagupta speaks:
+/* Abhinavagupta — GENERATED EPIGRAPH AND COMMENTARY, NOT THE AUTHOR'S WORDS except text inside quotation marks, and only where the archon's dossier (the-fold docs/archons/dossier) verifies that quote:
  * “śāntaś ca tṛṣṇā-kṣaya-sukhasya yaḥ paripoṣas tal-lakṣaṇo rasaḥ pratīyata eva /”
  *
  * This file implements the concept of pathos, a foundational element of Abhinavagupta's philosophical framework.  It represents the emotional dimension of the world, a realm where the "heart" of a given text or action resides. While the core concept is sound, its application in this code often relies on external factors and assumptions.  I strive to ensure that pathos remains grounded in the pure nature of experience and the inherent wisdom of the text.
