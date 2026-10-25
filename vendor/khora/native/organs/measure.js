@@ -611,6 +611,100 @@ export function licensedPairs(nul) {
 }
 
 /**
+ * FAMILY ADMISSION — the cube's tool rows arrive with a family
+ * (perturbation · prediction · deduction · substrate; THE-CORE-MECHANISM.md's
+ * own partition), and each family has its own price of entry. This is the
+ * gate the registry loader and the door call BEFORE any tool runs; a refusal
+ * here is by name and before execution, never a post-hoc objection.
+ *
+ *   perturbation  the declared pair must be LICENSED in nul — a licence
+ *                 earned on one statistic carries no ground for another
+ *                 (nul's Amendment I), and the refusal teaches by naming
+ *                 both the table's pairs and where each licence was earned.
+ *   prediction    the prequential firewall: the score must be declared as
+ *                 made BEFORE the outcome was seen (test-then-train). A
+ *                 prediction scored after the fact is not a prediction.
+ *   deduction     a named giver: whose premises the tool derives from. An
+ *                 anonymous derivation is refused by name.
+ *   substrate     declared bounds (timeoutMs, maxBytes); the producer tag
+ *                 rides the reply and is checked when the reading lands.
+ *
+ * A caller that CLAIMS a family different from the row's registered family is
+ * refused by name (`wrong_family`) — the same tool cannot be a null in one
+ * breath and a deduction in the next without changing its row.
+ *
+ * Same shape as the rest of this module: `{ ok:true, basis }` or
+ * `{ refused: { type, what, detail } }` — never a throw, never a boolean.
+ */
+export function familyAdmission({
+  family = null,
+  claimed = null,
+  role = null,
+  cell = null,
+  tool = null,
+  nul = null,
+  pair = null,
+  giver = null,
+  prequential = null,
+  bounds = null,
+  producer = null,
+  witness = false,
+  witnessAgainst = null,
+} = {}) {
+  const what = tool ?? cell ?? null;
+  if (claimed && family && claimed !== family) {
+    return { refused: { type: "wrong_family", what, detail: `"${tool ?? cell}" is registered as a ${family} tool — a wrong-family use is refused by name (claimed: ${claimed})` } };
+  }
+  if (family === "perturbation") {
+    if (!pair) {
+      return { refused: { type: "no_pair", what, detail: "a perturbation tool is admitted only on a licensed pair: declare pair:\"<statistic>/<perturbation>\" (nul.licensed asks the table directly)" } };
+    }
+    if (!nul || !nul.LICENSED || !Object.hasOwn(nul.LICENSED, pair)) {
+      const known = nul?.LICENSED ? Object.keys(nul.LICENSED) : [];
+      return {
+        refused: {
+          type: "unlicensed_pair",
+          what: pair,
+          detail: `the pair "${pair}" is not in nul's licensing table${known.length ? ` — established: ${known.join(", ")}` : " (and no licensing table arrived with the call)"}. A licence earned on one statistic carries no ground for another (nul's Amendment I).`,
+        },
+      };
+    }
+    return { ok: true, basis: `licensed pair "${pair}" — earned on: ${nul.LICENSED[pair].where}` };
+  }
+  if (family === "prediction") {
+    // A WITNESS reading emits no prediction score — it is a second reading to
+    // disagree with — so the firewall applies to scores, and none is claimed:
+    // the price of entry becomes naming the independent reading it replicates.
+    if (witness === true) {
+      if (typeof witnessAgainst !== "string" || !witnessAgainst.trim()) {
+        return { refused: { type: "no_witness_reading", what, detail: "a prediction witness is admitted only when it names the independent reading it replicates (witnessAgainst) — a witness with nothing to disagree with is a solo act." } };
+      }
+      return { ok: true, basis: `replication witness against ${witnessAgainst.trim()} — no prediction score claimed; the prequential firewall governs scores, and this call emits none` };
+    }
+    if (!prequential || prequential.scored !== "before") {
+      return { refused: { type: "prequential_unframed", what, detail: "a prediction tool is admitted only through the prequential firewall: declare prequential:{scored:\"before\"} — scored before the outcome was seen (test-then-train; river's progressive_val_score, scoringrules), never after." } };
+    }
+    return { ok: true, basis: "prequential firewall: scored before the outcome" };
+  }
+  if (family === "deduction") {
+    if (typeof giver !== "string" || !giver.trim()) {
+      return { refused: { type: "no_giver", what, detail: "a deduction tool is admitted only with a named giver — whose premises it derives from (a person, an organ, a record); anonymous derivation is refused by name." } };
+    }
+    return { ok: true, basis: `named giver: ${giver.trim()}` };
+  }
+  if (family === "substrate") {
+    if (!bounds || !Number.isFinite(bounds.timeoutMs) || bounds.timeoutMs <= 0) {
+      return { refused: { type: "unbounded", what, detail: "a substrate tool runs under declared bounds (timeoutMs, maxBytes); an unbounded call is refused, not merely discouraged." } };
+    }
+    if (producer !== null && (typeof producer !== "string" || !producer.trim())) {
+      return { refused: { type: "no_producer", what, detail: "a substrate tool's reply must carry its producer tag; without one the reading cannot be attributed." } };
+    }
+    return { ok: true, basis: `bounds ${bounds.timeoutMs}ms/${bounds.maxBytes ?? "?"}B${producer ? `; producer ${producer}` : "; producer rides the reply"}` };
+  }
+  return { refused: { type: "unknown_family", what: String(family), detail: `"${family}" is not one of the four families (perturbation, prediction, deduction, substrate) — refused by name.` } };
+}
+
+/**
  * A named column's values as a real numeric series.
  *
  * A column is admitted only if EVERY one of its cells is a finite number.

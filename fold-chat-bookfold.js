@@ -19,8 +19,9 @@
 //   import { plotFold, foldPrompt } from "./fold-chat-bookfold.js";
 //   const fold = plotFold(raw, parsed, book, question);   // parsed = fold-chat-book.js::parse()
 
+import { abbreviationsOf } from "./fold-chat-cut.js";
+import { splitSentences } from "./vendor/khora/native/adapters/text/spans.js";
 const WORD = /[A-Za-zÀ-Þà-þ][A-Za-zÀ-þ'’-]+/g;
-const SENT = /(?:[^.!?]|\.(?=\d))+[.!?]+|.+$/g;
 // A line ABOUT the telling is not an event: the book talking about its own narration.
 const META = /\b(chapter|narrat|the author|this book|the reader|as we have seen|as we know|i shall|i will|we shall|we have)\b/i;
 // Words a book capitalizes without naming a being (address, titles, the telling's furniture).
@@ -60,10 +61,11 @@ export function foldCast(raw, { min = 25, max = 240 } = {}) {
  *  Returns { best:{t,off,len,sc,named}|null, foldedMeta } — foldedMeta counts the telling-lines cut. */
 export function eventLine(text, cast) {
   const ss = [];
-  let x; const re = new RegExp(SENT.source, "g");
-  while ((x = re.exec(text))) {
-    const t = x[0].replace(/\s+/g, " ").trim();
-    if (t.length >= 30 && t.length <= 500) ss.push({ t, off: x.index, len: x[0].length });
+  // the chat's one cut over the whole stretch (khora's splitter with this text's abbreviations; a hard-wrapped book line is one
+  // line of a sentence, so the stretch is cut as khora cuts a paragraph, newlines read as spaces)
+  for (const x of splitSentences(String(text), { abbreviations: abbreviationsOf(text) })) {
+    const t = x.text.replace(/\s+/g, " ").trim();
+    if (t.length >= 30 && t.length <= 500) ss.push({ t, off: x.offset, len: x.text.length });
   }
   let best = null, foldedMeta = 0;
   for (const sen of ss) {

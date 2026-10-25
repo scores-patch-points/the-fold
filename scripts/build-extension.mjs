@@ -24,14 +24,27 @@ export const EXTRA_ENTRIES = Object.freeze(["fold-chat-sandframe.js"]);
 
 /** Relative specifiers a JS module imports/re-exports (static and literal dynamic). */
 export function importsOf(src) {
+  return [...new Set([...staticImportsOf(src), ...dynamicImportsOf(src)])];
+}
+/** The static half: import / export … from, and a bare side-effect import. */
+export function staticImportsOf(src) {
   const code = String(src);
   const out = new Set();
-  const add = (s) => out.add(s);
-  for (const m of code.matchAll(/\b(?:import|export)\b[^'"`;()]*?\bfrom\s*(["'])([^"']+)\1/g)) add(m[2]);
-  for (const m of code.matchAll(/(?:^|[;{}\s])import\s*(["'])([^"']+)\1/g)) add(m[2]);
-  for (const m of code.matchAll(/\bimport\s*\(\s*(["'])([^"']+)\1\s*\)/g)) add(m[2]);
+  for (const m of code.matchAll(/\b(?:import|export)\b[^'"`;()]*?\bfrom\s*(["'])([^"']+)\1/g)) out.add(m[2]);
+  for (const m of code.matchAll(/(?:^|[;{}\s])import\s*(["'])([^"']+)\1/g)) out.add(m[2]);
   return [...out];
 }
+/** The dynamic half: a literal import("…"). */
+export function dynamicImportsOf(src) {
+  return [...new Set([...String(src).matchAll(/\bimport\s*\(\s*(["'])([^"']+)\1\s*\)/g)].map((m) => m[2]))];
+}
+
+/** The priors khora's prior door (vendor/khora/native/the-fold/prior-source.mjs) FETCHES in a page, by name, from
+ *  vendor/khora/native/priors/: reading-rules.json, which the door preloads at its own import. A prior a module imports as
+ *  JSON (fold-chat-cut.js: punctuation-eng.json, dotted-eng.json) ships by that import; the ones a page fetches are shipped
+ *  when the door is. */
+export const DOOR = "vendor/khora/native/the-fold/prior-source.mjs";
+export const DOOR_PRIORS = Object.freeze(["reading-rules.json"].map((n) => "vendor/khora/native/priors/" + n));
 
 /** What an HTML page loads, and what its CSP would refuse. */
 export function inspectHtml(html) {
@@ -69,7 +82,22 @@ export function collect(root = ROOT, manifest = JSON.parse(fs.readFileSync(path.
   for (const v of Object.values(manifest.icons || {})) entry(v);
   for (const v of Object.values((manifest.action && manifest.action.default_icon) || {})) entry(v);
 
+  // A NODE-ONLY BRANCH is not a page import. khora's prior door and reading rules reach node:fs only through a literal
+  // import("node:fs") behind an IS_NODE test, and organs/grounding.js / kernel/self.js reach the-fold/canon-ground.mjs (which
+  // imports node: statically) only through an import() behind the same test. A page never takes those branches, so they are
+  // neither shipped nor a problem; they are listed in `nodeOnly`. A module reached by a static import anywhere still ships, and
+  // a static non-relative import is still a problem.
+  const nodeOnly = [];
+  const dynamicTargets = [];
   const seen = new Set();
+  const staticNode = (abs) => { try { return staticImportsOf(fs.readFileSync(abs, "utf8")).some((x) => /^node:/.test(x)); } catch { return false; } };
+  for (let pass = 0; pass < 2; pass++) {
+  if (pass === 1) for (const { rel: d, from } of dynamicTargets) {
+    if (seen.has(d)) continue;
+    const abs = path.join(root, d);
+    if (fs.existsSync(abs) && staticNode(abs)) { nodeOnly.push(from + " → " + d); seen.add(d); continue; }
+    queue.push(d);
+  }
   while (queue.length) {
     const rel = path.posix.normalize(queue.pop());
     if (seen.has(rel)) continue;
@@ -86,15 +114,22 @@ export function collect(root = ROOT, manifest = JSON.parse(fs.readFileSync(path.
       for (const s of [...r.scripts, ...r.links]) if (!/^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(s)) queue.push(here(s.split(/[?#]/)[0]));
     } else if (/\.(?:m?js)$/i.test(rel)) {
       const src = fs.readFileSync(abs, "utf8");
-      for (const spec of importsOf(src)) {
+      for (const spec of staticImportsOf(src)) {
         if (!/^\.{1,2}\//.test(spec)) { problems.push(rel + ": imports " + JSON.stringify(spec) + " (only relative imports can ship)"); continue; }
         queue.push(here(spec));
       }
+      for (const spec of dynamicImportsOf(src)) {
+        if (/^node:/.test(spec)) { nodeOnly.push(rel + " → " + spec); continue; }
+        if (!/^\.{1,2}\//.test(spec)) { problems.push(rel + ": imports " + JSON.stringify(spec) + " (only relative imports can ship)"); continue; }
+        dynamicTargets.push({ rel: here(spec), from: rel });
+      }
+      if (rel === DOOR) for (const p of DOOR_PRIORS) queue.push(p);
       const bare = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/.*$/gm, "$1");
       if (/\beval\s*\(|\bnew\s+Function\s*\(/.test(bare)) warnings.push(rel + ": eval / new Function (an extension page's CSP refuses it)");
     }
   }
-  return { files: [...files].sort(), problems, warnings };
+  }
+  return { files: [...files].sort(), problems, warnings, nodeOnly: [...new Set(nodeOnly)].sort() };
 }
 
 export function build({ root = ROOT, outDir = path.join(root, "dist", "extension"), allHosts = false } = {}) {

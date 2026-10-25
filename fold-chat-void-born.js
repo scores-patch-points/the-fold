@@ -29,6 +29,7 @@ import { verdictOfSupport } from "./vendor/khora/native/interpretation/hl.js";
 import { terrainEvidence } from "./vendor/khora/native/kernel/terrain-induction.js";
 import { clausesOf, datesIn, quantitiesIn } from "./fold-chat-answerspan.js";
 import { stemOf } from "./fold-chat-frame.js";
+import { abbreviationsOf } from "./fold-chat-cut.js";
 
 const fold = (s) => String(s ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 const QUANT_DIM = Object.freeze({ length: "len", mass: "mass", temperature: "temp" });
@@ -37,7 +38,7 @@ const OP_OF_FIELD = Object.freeze({ slot: "NUL", anchor: "SIG", admits: "INS", e
 
 function sentencesOf(text) {
   const out = []; let from = 0;
-  for (const s of splitSentences(String(text ?? ""))) {
+  for (const s of splitSentences(String(text ?? ""), { abbreviations: abbreviationsOf(String(text ?? "")) })) {
     const t = typeof s === "string" ? s : s.text ?? String(s);
     const at = text.indexOf(t, from);
     if (at < 0) continue;

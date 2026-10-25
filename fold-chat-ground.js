@@ -32,6 +32,7 @@
 import { segments, SITE_NAMES } from "./fold-chat-mind.js";
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
 import { detectLang } from "./fold-chat-lang.js";
+import { cutText, cutLines } from "./fold-chat-cut.js";
 
 export const MIN_RUN = 2;
 // A run of shared tokens only warrants a claim if at least one token is
@@ -76,35 +77,10 @@ const substantiveRun = (toks) => {
   return subs.length >= 2 && subs.some((t) => !isFigure(t));
 };
 
-// A trailing token that only LOOKS like a sentence end: titles, a multi-dot
-// abbreviation (D.C., U.S., a.m.), or a lone initial (J. R. R. Tolkien).
-const ABBREV = /\b(?:mr|mrs|ms|dr|prof|sr|jr|st|vs|etc|no|fig|inc|ltd|co|gov|dept|approx|est|mt|ave|blvd|rd|gen|col|capt|lt|sgt|hon|rev|pres|vol|ed|pp?)\.$|(?:\b[A-Za-z]\.){2,}$|\b[A-Z]\.$/i;
-
-/** Split an answer into sentences. A newline boundary is unconditional; only
- *  a ./!/? boundary can be an abbreviation in disguise. */
+/** Split an answer into sentences: the chat's one cut (fold-chat-cut.js — khora's splitter, janus's measured and dotted-word
+ *  priors). A line break always ends one. */
 export function splitSentences(text) {
-  // CJK full stops are followed by no space at all: a boundary is made after each one.
-  const src = String(text ?? "").replace(/([。！？]+['"”’)\]」』]*)(?=\S)/gu, "$1\n");
-  const pieces = [];
-  let start = 0;
-  const re = /(?<=[.!?।॥؟。！？])\s+|\n+/g;
-  let m;
-  while ((m = re.exec(src)) !== null) {
-    const piece = src.slice(start, m.index);
-    const boundaryIsSentencePunct = /[.!?]$/.test(src.slice(0, m.index));
-    if (boundaryIsSentencePunct && ABBREV.test(piece.trimEnd())) continue;
-    const trimmed = piece.trim();
-    if (trimmed) pieces.push(trimmed);
-    start = m.index + m[0].length;
-  }
-  const tail = src.slice(start).trim();
-  if (tail) pieces.push(tail);
-  const out = [];
-  for (const piece of pieces) {
-    if (out.length && /^\[[^\]\s]+#\d+-\d+\]/.test(piece)) out[out.length - 1] += " " + piece;
-    else out.push(piece);
-  }
-  return out;
+  return cutText(text);
 }
 
 function fold(s) {
@@ -130,17 +106,11 @@ export function excerpt(text, span, { max = 240 } = {}) {
   const LOOK = 200;
   const from = Math.max(0, span.start - LOOK);
   const to = Math.min(s.length, span.end + LOOK);
-  const beforeTxt = s.slice(from, span.start);
-  // a sentence ends at ./!/? FOLLOWED BY SPACE (never inside "8,848.86" or "3.14"), at a CJK/Devanagari/Arabic terminator, or at a newline
-  // (and never after a title or initial: "St.", "Dr.", "J.")
-  const endsHere = (abs) => !(s[abs] === "." && ABBREV.test(s.slice(Math.max(0, abs - 12), abs + 1)));
-  let bIdx = -1;
-  for (const m of beforeTxt.matchAll(/[.!?](?=\s|$)|[。！？।॥؟]|\n/gu)) if (endsHere(from + m.index)) bIdx = m.index;
-  const start = bIdx >= 0 ? from + bIdx + 1 : from;
-  const afterTxt = s.slice(span.end, to);
-  let aIdx = -1;
-  for (const m of afterTxt.matchAll(/[.!?](?=\s|$)|[。！？।॥؟]|\n/gu)) if (endsHere(span.end + m.index)) { aIdx = m.index; break; }
-  const end = aIdx >= 0 ? span.end + aIdx + 1 : to;
+  // the sentence(s) the span stands in, by the chat's one cut (fold-chat-cut.js: never inside "8,848.86", never after a dotted word
+  // or an initial — "St.", "Dr.", "J." — a line break always ends one), within the window around the span
+  const cover = cutLines(s.slice(from, to)).filter((x) => from + x.end > span.start && from + x.start < span.end);
+  const start = cover.length ? Math.min(from + cover[0].start, span.start) : from;
+  const end = cover.length ? Math.max(from + cover[cover.length - 1].end, span.end) : to;
   let before = oneLine(s.slice(start, span.start));
   const mark = oneLine(s.slice(span.start, span.end));
   let after = oneLine(s.slice(span.end, end));
@@ -398,19 +368,9 @@ const stemOf = (t) => {
 // EXACTLY as the gate does; nothing here changes what the gate does.
 export { figuresIn, figureMatches, stemOf, COMMON_CAP };
 export const unitOfWord = (w) => UNITS.get(foldWord(String(w ?? ""))) || null;
-const SENT_END = /[.!?]+["')\]]*\s+|[。！？।॥؟]+["')\]]*\s*|\n+/gu;
+// where each sentence of a text starts, by the chat's one cut (fold-chat-cut.js)
 function sentenceStarts(text) {
-  const starts = [0];
-  for (const m of text.matchAll(SENT_END)) {
-    const end = m.index + m[0].length;
-    if (end >= text.length) break;
-    if (/^[.!?]/.test(m[0])) {
-      const from = starts[starts.length - 1];
-      if (ABBREV.test(text.slice(from, m.index + m[0].trimEnd().length).trimEnd())) continue;
-    }
-    starts.push(end);
-  }
-  return starts;
+  return [0, ...cutLines(text).slice(1).map((x) => x.start)];
 }
 function indexMaterial(m) {
   const text = String(m.text || "").slice(0, 20000);

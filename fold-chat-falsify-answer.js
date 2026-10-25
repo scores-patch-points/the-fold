@@ -18,6 +18,7 @@
 import { figuresIn, figureMatches, namesIn, stemOf as groundStem } from "./fold-chat-ground.js";
 import { impressionOf } from "./fold-chat-impression.js";
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
+import { cutText } from "./fold-chat-cut.js";
 
 export const FALSIFY = Object.freeze({ RUN: 4, STATE_OVERLAP: 0.5, STATE_MIN_SHARED: 3, ABOUT_OVERLAP: 0.4, SYNDICATED_RUN: 12, MAX_SENTS_PER_SOURCE: 400 });
 // The words of HEDGING and REPORTING ("some claim", "experts say", "it is widely considered"): they frame a claim, they
@@ -166,8 +167,8 @@ const flipsPolarity = (claim, sent, cs, ss, around = "", cHead = "") => {
   return sn ? negationFlips(sent, claim, cs, around, cHead) : negationFlips(claim, sent, ss, around, cHead);
 };
 const domainOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
-const SENT = /(?<=[.!?。！？])\s+(?=[\p{Lu}\p{N}"“(])/u;
-const sentencesOf = (t) => String(t ?? "").replace(/\s+/g, " ").split(SENT).map((s) => s.trim()).filter((s) => s.length >= 12);
+// the chat's one cut (fold-chat-cut.js): khora's splitter with janus's measured and dotted-word priors
+const sentencesOf = (t) => cutText(String(t ?? "").replace(/\s+/g, " ")).map((s) => s.trim()).filter((s) => s.length >= 12);
 
 /** Longest run of consecutive words two texts share (folded), and the run itself as the SOURCE wrote it. */
 function longestRun(claim, sent) {
@@ -375,7 +376,7 @@ export function roleConfusion(claim, sent, cnames) {
     // while "Wellington led" / "Blücher led" names two beings. A stack = both names in one sentence
     // joined by in/near/of with no verb between (a verb between means separate clauses, separate beings).
     const stacked = (x, y) => {
-      const both = [String(claim), String(sent)].join(" ").split(/(?<=[.!?])\s+/);
+      const both = cutText([String(claim), String(sent)].join(" "));
       const fx = fold(x), fy = fold(y);
       return both.some((s) => {
         const ls = fold(s), ix = ls.indexOf(fx), iy = ls.indexOf(fy);

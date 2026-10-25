@@ -267,11 +267,24 @@ export const INFLECTIONAL_SUFFIXES_META = Object.freeze({ giver: "lang/en", scop
 // ── script/latn — Latin-script typographic conventions ──────────────────────
 
 /** Sentence-ending punctuation marks. */
-export const SENTENCE_TERMINATORS = Object.freeze(new Set([".", "!", "?", "…"]));
-export const SENTENCE_TERMINATORS_META = Object.freeze({ giver: "script/latn", scope: null });
+export const SENTENCE_TERMINATORS = Object.freeze(new Set([
+  ".", "!", "?", "…",
+  // Other scripts' own terminators, declared by the script they belong to
+  // (Unicode block names, not a language list): CJK ideographic and
+  // halfwidth full stop / question / exclamation, Arabic question mark and
+  // full stop (Urdu), Devanagari danda / double danda, Armenian full stop,
+  // Ethiopic full stop.
+  "。", "！", "？", "｡", "؟", "۔", "।", "॥", "։", "።",
+]));
+export const SENTENCE_TERMINATORS_META = Object.freeze({ giver: "script/latn + script/hani,jpan,arab,deva,armn,ethi (Unicode terminator characters)", scope: null });
+
+/** Terminators of scripts that write NO space after a sentence (CJK). Latin
+ * `.` followed by a non-space is a decimal point or an abbreviation; an
+ * ideographic full stop followed by the next sentence is a boundary. */
+export const UNSPACED_TERMINATORS = Object.freeze(new Set(["。", "！", "？", "｡"]));
 
 /** Closing quote marks. */
-export const CLOSING_QUOTES = Object.freeze(new Set(['"', "'", "”", "’"]));
+export const CLOSING_QUOTES = Object.freeze(new Set(['"', "'", "”", "’", "」", "』", "”", "）", "»"]));
 export const CLOSING_QUOTES_META = Object.freeze({ giver: "script/latn", scope: null });
 
 /**

@@ -19,6 +19,7 @@
 // candidate must never enter the projection, and a unit with no passing byte is
 // left UNFILLED (a named gap), never invented.
 
+import { cutText } from "./fold-chat-cut.js";
 export const BUILD_LOG_SCHEMA = "BuildLog@1";
 export const PROJECTION_SCHEMA = "BuildProjection@1";
 
@@ -217,7 +218,7 @@ export function snipFor(unit, material) {
     if (score > bestScore) { bestScore = score; best = ms[i]; bestIdx = i; }
   }
   if (!best || bestScore < 2) return null;
-  const snip = String(best.text).split(/(?<=[.!?])\s+/).slice(0, 3).join(" ").trim();
+  const snip = cutText(String(best.text).replace(/\s+/g, " ")).slice(0, 3).join(" ").trim();   // the chat's one cut
   return { code: snip, address: `${best.source || best.url || "material"}#${bestIdx}` };
 }
 

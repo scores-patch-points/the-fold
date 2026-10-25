@@ -121,6 +121,7 @@ import * as locale from "./fold-chat-locale.js";             // local time + coa
 import { parseExport, mineMemories } from "./fold-chat-import.js";   // bring another chat system's export into the fold
 import { QUESTIONS as INTERVIEW, nextQuestion as nextInterview, entryFor as interviewEntry, progress as interviewProgress } from "./fold-chat-interview.js";   // the fold asking, so it can help
 import { attestedNames } from "./fold-chat-lang-facts.js";   // Champollion: a name from RECURRENCE, any script — offered as a suggestion, never auto-stored
+import { cutText } from "./fold-chat-cut.js";
 
 const PRESETS = Object.freeze({
   plain: { label: "Plain", system: "You are a helpful assistant. Reply directly, briefly, and naturally, the way a person would. If the person just says hi or asks how you are, answer in kind and offer to help — do not ask them for files or material." },
@@ -2586,7 +2587,7 @@ export function mount(root, opts = {}) {
     if (!srcRecall && watcherPre && follow.mode === "thread") { const cr = challengeReply(watcherPre, priorForWatch); if (cr) { srcRecall = { provenance: cr.provenance, turn: null, text: cr.text, fromBaton: true, challenge: true }; threadTurn = null; } }
     // "find a primary source" with nothing already verified to read back: go and FIND one for the LAST ANSWER's claim (fold-chat-primary.js: search, read and the model's number-pointing are the chat's own, injected). The turn's words are the app's.
     const primaryAsk = !srcRecall && follow.kind === "source-ask" && follow.mode === "web" && watcherPre && watcherPre.sub === "new" && watcherPre.thread && watcherPre.thread.has && String(watcherPre.thread.answer || "").trim()
-      ? { claim: String(watcherPre.thread.answer).replace(/\s+/g, " ").trim().split(/(?<=[.!?])\s+/)[0], turn: watcherPre.thread.turn } : null;
+      ? { claim: cutText(String(watcherPre.thread.answer).replace(/\s+/g, " ").trim())[0], turn: watcherPre.thread.turn } : null;
     // a piece that needs no sources (a poem, a joke, a tagline) is not front-loaded with a search; an ask whose typed gap already holds (no topic, no material, an unsupported type) is not searched either
     const needlessSearch = producing && !outType.needsSources;
     const activeGap = !!(producing && outType.voidIfMissing.some((g) => g.active === true));

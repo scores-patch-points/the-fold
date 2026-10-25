@@ -30,6 +30,7 @@ import { declareVoid } from "./vendor/khora/native/the-fold/void-shape.js";
 import { cellOf } from "./vendor/khora/native/kernel/cube.js";
 import { extractSurfaces } from "./vendor/khora/native/adapters/text/surfaces.js";   // PERCEPTION: the khora's own reading of the ask (eval/void PREREG Amendment 1)
 import { splitSentences } from "./vendor/khora/native/adapters/text/spans.js";
+import { abbreviationsOf } from "./fold-chat-cut.js";
 import { withExperiencer } from "./vendor/khora/native/organs/experiencer.js";          // PATHOS: every void names who it is for (Panini)
 
 export const VOID_GRAMMAR = Object.freeze({
@@ -82,7 +83,7 @@ export async function declareAskVoid(question, { fw = null, lang = "en", resolve
   let referents = frame && frame.ok ? frame.referents : [];
   // PERCEPTION, the second witness: the khora's surfaces of the ask itself
   let perceived = [];
-  try { perceived = extractSurfaces(splitSentences(said)).map((x) => x.surface).sort((a, b) => b.length - a.length); } catch { perceived = []; }
+  try { perceived = extractSurfaces(splitSentences(said, { abbreviations: abbreviationsOf(said) })).map((x) => x.surface).sort((a, b) => b.length - a.length); } catch { perceived = []; }
   let anchorBy = referents.length ? ["title-door"] : [];
   if (!referents.length && perceived.length && typeof resolveTitles === "function") {
     let table = null;

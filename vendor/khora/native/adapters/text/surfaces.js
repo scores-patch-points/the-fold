@@ -564,10 +564,11 @@ export const createSurfaceEvidence = () => ({
   capCounts: new Map(),   // surface -> times seen capitalised, NOT sentence-initial
   lowerCounts: new Map(), // lowercased form -> times seen lowercase anywhere
   sentenceIndex: new Map(), // surface -> Set(sentence order)
+  lowerSentenceIndex: new Map(), // lowercased form -> Set(sentence order) — the case-free path's reach
 });
 
 export const accumulateSurfaceEvidence = (sentences, evidence, { abbreviations = null } = {}) => {
-  const { capCounts, lowerCounts, sentenceIndex } = evidence;
+  const { capCounts, lowerCounts, sentenceIndex, lowerSentenceIndex } = evidence;
   // ABBREVIATIONS DO NOT BREAK A RUN — a period is the one punctuation mark
   // with a genuine dual role (sentence end OR abbreviation marker), unlike
   // comma/semicolon/colon/dash, which are unambiguous separators in every
@@ -643,6 +644,11 @@ export const accumulateSurfaceEvidence = (sentences, evidence, { abbreviations =
       if (LOWER_TOKEN.test(toks[i])) {
         const k = diaNorm(toks[i]);
         lowerCounts.set(k, (lowerCounts.get(k) ?? 0) + 1);
+        // The case-free path's reach: which lowercased form appears in
+        // which sentence, so the floor can ask "seen in N distinct
+        // sentences" rather than "seen N times in one sentence".
+        if (!lowerSentenceIndex.has(k)) lowerSentenceIndex.set(k, new Set());
+        lowerSentenceIndex.get(k).add(sent.order);
       }
     }
     // capitalised runs, skipping the sentence-initial token: it is capitalised
@@ -691,7 +697,7 @@ export const accumulateSurfaceEvidence = (sentences, evidence, { abbreviations =
 };
 
 export const surfacesFromEvidence = (evidence, { functionWords = null, abbreviations = null, minGlyphs = 2 } = {}) => {
-  const { capCounts, lowerCounts, sentenceIndex } = evidence;
+  const { capCounts, lowerCounts, sentenceIndex, lowerSentenceIndex } = evidence;
   const abbrev = abbreviations ? new Set(abbreviations) : null;
   // The physics filter (eoreader5, measured): a NAME essentially never appears
   // lowercased, while a sentence/dialogue opener ("Well", "Why") constantly
@@ -723,17 +729,45 @@ export const surfacesFromEvidence = (evidence, { functionWords = null, abbreviat
     if (words.length === 1) {
       if (abbrev && abbrev.has(surface)) continue;
       const lower = lowerCounts.get(diaNorm(surface)) ?? 0;
-      // The closed-class veto fires only on a word this text has ALSO written
-      // lowercase (found 2026-09-28: a biography's subject is its most frequent
-      // token, so the share-derived closed class held "merkel" and "murat" and
-      // the veto ran BEFORE the lower === 0 evidence the comment above calls
-      // the strongest there is — every bare-surname mention of the page's own
-      // topic was dropped). A function word is lowercase by nature; a word
-      // never seen lowercase is not one by this text's own evidence.
+      // THE CLOSED-CLASS VETO — a word this text itself also wrote lowercase,
+      // and whose frequency share says it is a function word, is refused
+      // whether or not it recurs. This is the case-free half of the floor.
       if (functionWords && lower > 0 && functionWords.has(diaNorm(surface))) continue;
-      if (lower > 0 && !capitalisationIsSignificant(cap, lower)) continue;
+      // THE AMBIGUOUS-CASE TEST applies only where BOTH forms exist in the
+      // same text (cap > 0 AND lower > 0): here capitalisation *is* evidence
+      // and the binomial asks whether it exceeds chance at this word's own
+      // sample size.
+      //   CAP = 0 — the whole text is lowercased / non-standard English: there
+      //   is no orthographic evidence to compare against, and that absence is
+      //   not a refusal. A recurring single word that is NOT in the text's own
+      //   closed class and never appears sentence-initially-as-a-name is a
+      //   being BY RECURRENCE AND COMPANY ALONE — capitalisation is *a*
+      //   signal, not *the* signal (THE-CASE-FREE-CAST, 2026-10-09).
+      if (lower > 0 && cap > 0 && !capitalisationIsSignificant(cap, lower)) continue;
     }
     surfaces.push({ surface, mentions: cap, sentences: sentenceIndex.get(surface).size });
+  }
+  // THE CASE-FREE FLOOR (2026-10-09, THE-CASE-FREE-CAST). When the text gives
+  // NO orthographic signal — `capCounts` empty or negligible relative to
+  // `lowerCounts` (an all-lowercase text, a dialect stream, OCR, a script that
+  // does not case) — the capitalisation ladder above has nothing to stand on and
+  // would hand back nothing. The floor is the same one the rest of the fold
+  // uses for any language: RECURRENCE + NOT-CLOSED-CLASS. A token that recurs
+  // in this text and is not in this text's own Zipf-derived function-word set
+  // is a being by company (accumulated in `lowerCounts` when every form is
+  // lowercased and the capitalisation detector never fires). Capitalisation is
+  // *a* signal, never *the* signal; its absence is not a refusal.
+  if (capCounts.size === 0 && functionWords) {
+    const floor = 3; // recurrence: three distinct witnesses, the SAME floor relations-gfp's minRec uses
+    for (const [surface, sentSet] of lowerSentenceIndex.entries()) {
+      if (surface.replace(/[^\p{L}\p{N}]/gu, "").length < minGlyphs) continue;
+      if (functionWords.has(surface)) continue;
+      if (surface.split(/\s+/).some(isRomanNumeral)) continue;
+      if (sentSet.size < 3) continue;
+      const mentions = lowerCounts.get(surface) ?? 0;
+      if (mentions < floor) continue;
+      surfaces.push({ surface, mentions, sentences: sentSet.size });
+    }
   }
   return surfaces.sort((a, b) => b.mentions - a.mentions);
 };

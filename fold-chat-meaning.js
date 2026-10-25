@@ -18,6 +18,7 @@
 // nothing and every pair is a typed gap. It is therefore OFF by default (fold-chat-origin.js takes a ledger only when a caller passes one), and
 // stays so until a corpus of real turns shows it earning more than it costs. Declared, not measured (Constitution II.11).
 import { splitSentences } from "./vendor/khora/native/adapters/text/spans.js";
+import { abbreviationsOf } from "./fold-chat-cut.js";
 import { extractSurfaces } from "./vendor/khora/native/adapters/text/surfaces.js";
 import { discoverRelationVocab, extractRelations } from "./vendor/khora/native/adapters/text/relations.js";
 
@@ -38,7 +39,7 @@ export function readLedger(sources, { fw = null } = {}) {
     const list = (Array.isArray(sources) ? sources : []).filter((s) => s && typeof s.text === "string" && s.text.trim()).map((s) => ({ ref: String(s.ref ?? ""), text: s.text.slice(0, MEANING.maxChars) }));
     if (!list.length) return empty;
     const pooled = list.map((s) => s.text).join("\n\n");
-    const surfaces = extractSurfaces(splitSentences(pooled));
+    const surfaces = extractSurfaces(splitSentences(pooled, { abbreviations: abbreviationsOf(pooled) }));
     const vocab = discoverRelationVocab(pooled, { surfaces, functionWords: fw, minSurfaces: MEANING.minSurfaces });
     if (!vocab.verbs.size) return { ...empty, sources: list.map((s) => s.ref) };
     const notes = [];

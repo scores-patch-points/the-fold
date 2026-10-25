@@ -33,6 +33,7 @@ import { junkOf, wallOf } from "./fold-chat-junk.js";
 import { maskNavRegion } from "./fold-chat-region.js";
 import { answerSpan, verifyRewrite } from "./fold-chat-answerspan.js";
 import { partsContentAllowed } from "./fold-chat-split.js";
+import { endsWithAbbreviation } from "./fold-chat-cut.js";
 
 export const STRAND = Object.freeze({
   perPassageChars: 700,    // how much of one source a strand quotes (impression budget)
@@ -167,14 +168,13 @@ function leadOf(text, chars) {
   const t = String(text ?? "");
   const sents = sentencesWithOffsets(t);
   if (!sents.length) return null;
-  // A "sentence" that ends in an abbreviation (St., Dr., No., a lone initial) is not over: never stop on one.
-  const ABBREV = /(?:\b(?:mr|mrs|ms|dr|prof|sr|jr|st|vs|etc|no|fig|inc|ltd|co|mt|ave|gen|col|capt|lt|sgt|rev|vol|approx|est)\.|\b[A-Z]\.)$/i;
+  // A "sentence" that ends on a dotted word or a lone initial is not over: never stop on one (fold-chat-cut.js knows which).
   let end = sents[0].end, last = 0;
   for (let i = 1; i < sents.length; i++) {
     if (sents[i].end - sents[0].start > chars || !/^\s*$/.test(t.slice(end, sents[i].start))) break;
     end = sents[i].end; last = i;
   }
-  while (last > 0 && ABBREV.test(t.slice(sents[last].start, end).trim())) { last--; end = sents[last].end; }
+  while (last > 0 && endsWithAbbreviation(t.slice(sents[last].start, end).trim())) { last--; end = sents[last].end; }
   return { start: sents[0].start, end, ellipsisBefore: false, ellipsisAfter: end < t.trimEnd().length };
 }
 

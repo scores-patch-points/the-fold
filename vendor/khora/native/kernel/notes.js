@@ -85,6 +85,8 @@ const norm = (v) => String(v ?? "").trim().toLowerCase();
 
 /** The one identity for an arrangement, so two sightings of it are one task. */
 export const noteId = (end1, label, end2) => `${norm(end1)}|${norm(label)}|${norm(end2)}`;
+/** The typed report `hear` carries when a heard note would have re-zeroed an open void (see `hear`). */
+export const HEARD_NOT_REZEROED = "heard-not-rezeroed";
 /** A cut's id is its link's id under this prefix: the same ends, never the same note. */
 export const CUT_PREFIX = "cut:";
 export const isCutId = (id) => typeof id === "string" && id.startsWith(CUT_PREFIX);
@@ -345,9 +347,17 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
     .filter((s) => s && (s.at || (s.ref != null && s.start != null && s.end != null)))
     .map(({ start, end, ...rest }) => ({ ...rest, ref: rest.ref ?? null, at: rest.at ?? `${rest.ref}#${start}-${end}` }));
 
-  const canonId = (end1, label, end2, end1Face, end2Face) => {
+  // The ends a sighting is KNOWN by: the identity organ's canonical form where
+  // it speaks, else the face the caller carried, else the raw end. `canonId`
+  // is these three, normalised — one derivation, so a void (below) is matched
+  // on the very ends the note's id was built from.
+  const canonEnds = (end1, label, end2, end1Face = null, end2Face = null) => {
     const c = identity ? identity(end1, label, end2) : null;
-    return noteId(c?.end1 || end1Face || end1, c?.label || label, c?.end2 || end2Face || end2);
+    return { end1: c?.end1 || end1Face || end1, label: c?.label || label, end2: c?.end2 || end2Face || end2 };
+  };
+  const canonId = (end1, label, end2, end1Face, end2Face) => {
+    const c = canonEnds(end1, label, end2, end1Face, end2Face);
+    return noteId(c.end1, c.label, c.end2);
   };
 
   /**
@@ -355,7 +365,7 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
    * — one sighting of one arrangement, admitted. Returns the log UNCHANGED
    * when the sighting moved neither the witness set nor the span set.
    */
-  function hear(log, { end1, label, end2, spans = [], witness = null, because = null, end1Face = null, end2Face = null, cut = false }) {
+  function hear(log, { end1, label, end2, spans = [], witness = null, because = null, end1Face = null, end2Face = null, cut = false, report = true }) {
     // THE CUT (S69 / the-fold P104 — docs/THE-NULL-STATES.md, SEG·Figure).
     // A denial is not a link with a minus sign: it is a figure SEPARATED
     // from an extent. It shares the link's ends and never its id, so it can
@@ -429,7 +439,7 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
     for (const s of addressed(spans)) if (!at.has(s.at)) { at.add(s.at); merged.push(s); }
     if (prior && witnesses.length === prior.witnesses.length && merged.length === (prior.spans?.length ?? 0)) return log;
     const birthOp = cut ? "SEG" : "INS";
-    return append(log, {
+    const next = append(log, {
       kind: prior ? ENTRY_KINDS.SUPERSEDE : ENTRY_KINDS.PROPOSE,
       task_id: id,
       operator: prior ? "SYN" : birthOp,
@@ -449,6 +459,18 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
       ...(unbridged ? { unbridged } : {}),
       ...(because != null ? { because } : {}),
     });
+    // `hear` is the RAW door and stays one: only `admit` re-zeroes a void
+    // (and lands a contest, requires spans, runs the gate). A hearing that
+    // would have re-zeroed an open void says so rather than leaving the void
+    // quietly open: the returned log carries `heardNotRezeroed`, typed, as a
+    // non-enumerable report beside the log (never an entry, never on the
+    // record — the log's own shape is unchanged). The door that re-zeroes is
+    // `admit`, or `rezeroVoid` for a filling that arrived another way.
+    if (!report || cut || !tasks.some((t) => t.void === true)) return next;
+    const open = foldVoids(next).filter((v) => voidFills({ end1, label, end2, end1Face, end2Face }, v));
+    if (!open.length) return next;
+    const flagged = open.map((v) => Object.freeze({ type: HEARD_NOT_REZEROED, void: v.id, by: baseId, detail: "heard through hear(), which never re-zeroes a void; admit() or rezeroVoid() does" }));
+    return Object.freeze(Object.defineProperty({ ...next }, "heardNotRezeroed", { value: Object.freeze(flagged), enumerable: false }));
   }
 
   /**
@@ -482,7 +504,7 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
       // (`decider`, set by the face that read the span); the kernel
       // carries it as `because` and never reads a medium's own field.
       const decider = cut ? (typeof a?.decider === "string" && a.decider.trim() ? a.decider : null) : null;
-      next = hear(next, { end1, label, end2, spans, witness, end1Face: a.end1Face ?? null, end2Face: a.end2Face ?? null, cut, ...(decider ? { because: decider } : {}) });
+      next = hear(next, { end1, label, end2, spans, witness, end1Face: a.end1Face ?? null, end2Face: a.end2Face ?? null, cut, report: false, ...(decider ? { because: decider } : {}) });
       const linkId = canonId(end1, label, end2, a.end1Face ?? null, a.end2Face ?? null);
       heard.push({ id: (cut ? CUT_PREFIX : "") + linkId, end1, label, end2, ...(cut ? { cut: true } : {}) });
       // THE CONTEST, AT THE DOOR (S69): a cut meeting its link — either
@@ -491,7 +513,7 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
       // its walls (a source that witnesses the link cannot also deny it; a
       // repeat is a no-op), so the door never convicts and never doubles.
       const tasks = projectTasks(next);
-      if (!cut) { const rz = rezeroVoids(next, { linkId, end1, label, end2, witness }); if (rz.rezeroed.length) { next = rz.log; for (const r of rz.rezeroed) rezeroed.push(r); } }
+      if (!cut) { const rz = rezeroVoids(next, { linkId, end1, label, end2, end1Face: a.end1Face ?? null, end2Face: a.end2Face ?? null, witness }); if (rz.rezeroed.length) { next = rz.log; for (const r of rz.rezeroed) rezeroed.push(r); } }
       if (cut) {
         const link = tasks.find((t) => t.task_id === linkId);
         const src = witness ? sourceOfWitness(witness) : null;
@@ -846,7 +868,7 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
     // A void over ends the ledger already holds a live link for is not a
     // void: refused, with the filling named — the search has already found
     // what it sought.
-    const filler = fold(log).find((n) => matchesVoid(n, { end1, label, end2 }));
+    const filler = fold(log).find((n) => voidFills(n, { end1, label, end2 }));
     if (filler) return { log, refused: { type: "not_empty", noteId: filler.id, detail: "a live link already fills this extent" } };
     const prior = projectTasks(log).find((t) => t.task_id === id) ?? null;
     const reached = scope.total == null ? null : Number(scope.read ?? 0) >= Number(scope.total);
@@ -861,6 +883,22 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
   }
 
   const matchesVoid = (n, v) => noteId(n.end1, "", "") === noteId(v.end1, "", "") && noteId("", n.label, "") === noteId("", v.label, "") && (v.end2 == null || noteId("", "", n.end2) === noteId("", "", v.end2));
+
+  /**
+   * Does an arrival fill a void? On the RAW ends (as before), or on the
+   * CANONICAL ends — the ones its note's id is built from. With an identity
+   * organ the heard id is canonical while a void is declared in whatever ends
+   * its caller held, so a raw-only match let a void survive its own filler.
+   * A void's wildcard end (`end2` null) is read in the arrival's own context.
+   * No identity organ: the second clause is the first (unchanged).
+   */
+  const voidFills = (a, v) => {
+    if (matchesVoid(a, v)) return true;
+    if (!identity) return false;
+    const ac = canonEnds(a.end1, a.label, a.end2, a.end1Face ?? null, a.end2Face ?? null);
+    const vc = canonEnds(v.end1, v.label, v.end2 ?? a.end2);
+    return matchesVoid(ac, { end1: vc.end1, label: vc.label, end2: v.end2 == null ? null : vc.end2 });
+  };
 
   /** Void id -> the arrival that re-zeroed it (the latest). */
   function fillings(log) {
@@ -881,11 +919,11 @@ export function makeNotes({ taskLog = nativeTaskLog, cellOf = nativeCellOf, iden
   }
 
   /** One arrival re-zeros every live void it fills. Called by the door; returns the log and what was re-zeroed. */
-  function rezeroVoids(log, { linkId, end1, label, end2, witness }) {
+  function rezeroVoids(log, { linkId, end1, label, end2, end1Face = null, end2Face = null, witness }) {
     let next = log;
     const rezeroed = [];
     for (const v of foldVoids(next)) {
-      if (!matchesVoid({ end1, label, end2 }, v)) continue;
+      if (!voidFills({ end1, label, end2, end1Face, end2Face }, v)) continue;
       const recId = `rec:${next.nextSeq}`;
       next = append(next, {
         kind: ENTRY_KINDS.EVIDENCE, task_id: recId, operator: "REC", operator_basis: OPERATOR_BASIS.PRODUCED, grain: GROUND,

@@ -74,13 +74,18 @@ export function pathosTurn({
   heldSinceLast = true,
   reScope = null,
   turn = null,
+  fold = null,
+  delta = null,
+  beforeFold = null,
 } = {}) {
   for (const name of ["pathosOf", "reGroundCondition", "reGround", "landReGround"]) {
     if (typeof organs?.[name] !== "function") {
       throw new TypeError(`pathosTurn requires the pathos organ ${name} — injected, never re-implemented`);
     }
   }
-  const read = organs.pathosOf({ text, experiencer, state });
+  // fold/delta/beforeFold, when the caller's record can supply them, MEASURE the curve (collapse can then fire);
+  // without a fold the curve stays the disclosed gap.
+  const read = organs.pathosOf({ text, experiencer, state, fold, delta, beforeFold });
   const condition = organs.reGroundCondition(read);
   // The organ's own bound (its header): one concession per failing register
   // per pass, and a ground that holds is never conceded. The live stream's

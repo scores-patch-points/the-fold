@@ -20,6 +20,7 @@ import { pacingGrade } from "./vendor/khora/native/organs/pacing.js";
 import { discoverRelationVocab, extractRelations } from "./vendor/khora/native/adapters/text/relations.js";
 import { extractSurfaces, discoverReferents } from "./vendor/khora/native/adapters/text/surfaces.js";
 import { chaptersOf, foldCast } from "./fold-chat-bookfold.js";
+import { abbreviationsOf } from "./fold-chat-cut.js";
 
 const deaccent = (s) => String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -40,7 +41,7 @@ export function bookGrammar(raw, book, { progress = null } = {}) {
   if (GRAMMAR.has(book.id)) return GRAMMAR.get(book.id);
   progress?.("reading the grammar of the whole book\u2026 (one pass, then it is cached)");
   const closed = closedClass(raw);
-  const sentences = splitSentences(String(raw));
+  const sentences = splitSentences(String(raw), { abbreviations: abbreviationsOf(String(raw)) });
   const surfaces = extractSurfaces(sentences, { functionWords: closed });
   const discovered = discoverReferents(surfaces);
   const cast = foldCast(raw).map((c) => c.key);
@@ -53,7 +54,7 @@ export function bookGrammar(raw, book, { progress = null } = {}) {
 /** The sentences of a text with their character offsets, relative to the text. The vendored
  *  splitSentences names the start `offset` (spans.js:431): `{ text, offset, order }`. */
 function sentenceStarts(text) {
-  const sents = splitSentences(String(text)).sort((a, b) => a.offset - b.offset);
+  const sents = splitSentences(String(text), { abbreviations: abbreviationsOf(String(text)) }).sort((a, b) => a.offset - b.offset);
   return { sents, starts: sents.map((s) => s.offset) };
 }
 
