@@ -5,6 +5,7 @@
 //   EXTRACT a URL → the page's own tables, lists, links and structured data, parsed by the app (no model), with
 //           CSV / JSON to download. Works from this machine's own fetch (extension / bridge) or the page text.
 import * as web from "./fold-chat-web.js";
+import { cutText } from "./fold-chat-cut.js";
 
 const STOP = new Set("about after also been before being between both could does each from have into more most much only other over such than that their them then there these they this those through very were what when where which while will with would your".split(" "));
 export const words = (s) => (String(s).toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []).filter((w) => !STOP.has(w));
@@ -26,7 +27,7 @@ export function topicOf(ask) {
 }
 
 /* ============================ ESSAY ============================ */
-const sentencesOf = (t) => one(t).split(/(?<=[.!?])\s+(?=[A-Z0-9"\u201c(])/).map((s) => s.trim()).filter((s) => s.length >= 40 && s.length <= 380 && !/cookie|subscribe|sign up|javascript|\u00a9|all rights|click here/i.test(s));
+const sentencesOf = (t) => cutText(one(t)).map((s) => s.trim()).filter((s) => s.length >= 40 && s.length <= 380 && !/cookie|subscribe|sign up|javascript|\u00a9|all rights|click here/i.test(s));
 const overlap = (a, bSet) => { let n = 0; for (const w of a) if (bSet.has(w)) n++; return n; };
 const nums = (s) => (String(s).match(/\d[\d,.]*\d|\d/g) || []).map((x) => x.replace(/,/g, ""));
 

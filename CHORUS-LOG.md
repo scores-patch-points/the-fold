@@ -109,3 +109,14 @@ fast: 57 files · 22 affected test files, 356 tests, 1 file fail: constitutive-c
 | Holmes, Pearl, Ostrom, Frankfurt, Alexander, Greenberg, Levi-Strauss, Diaconis | — | vendored khora comments | false-positive-on-review | each hit is khora's own prose inside a frozen copy |
 | Marshall | P/S/II citations | vendored files | false-positive-on-review | khora's law, cited by khora; this diff cites none |
 clean: vendor-self-check 121/121 byte-identical; judge battery --strict-todo 95 pass / 8 known-break / 0 fail; pronoun ratchet 95/95
+
+## 2026-10-25 — the chat's one sentence cut: every splitter through fold-chat-cut.js (khora splitSentences + janus measured and dotted-word priors) (reading-one-core, staged)
+fast: 25 files · 50 affected test files, 614 tests, 0 fail beyond the known TODO rows · law: ok (0 citations) · full suite 3036 tests, the same 15 failures as main
+| lens | citation | file:line | verdict | one line |
+|---|---|---|---|---|
+| Simon/Chekhov | new source | fold-chat-cut.js | fixed | fold-chat-cut.test.mjs: dotted words kept whole, "ports." ends a sentence, ranges slice back exactly, a line always ends one |
+| Greenberg | language scope | fold-chat-cut.js:17 | fixed | the cut reads English's priors only; the header now says so and what another language's text gets |
+| Feynman | numeric constant | fold-chat-bookfold.js:68 | noted | the 30–500 character bounds were already there; this line only swapped its splitter |
+| Dijkstra | case folding | fold-chat-cut.js:17 | noted | case variants of a known abbreviation, inside the English scope above |
+| Kondo | removed | fold-chat-ground.js, fold-chat-junk.js (ABBREV), five local SENT regexes | noted | typed abbreviation lists and local splitters removed by design (no typed list); in git history at 4a900d3 |
+clean: Holmes, Pearl, Alexander (vendored khora prose; the union of abbreviation sources is not a corroboration claim); vendor-self-check byte-identical; judge battery --strict-todo 95 pass / 8 known-break / 0 fail; pronoun ratchet 95/95; fold-chat-cube 12/12; the chat page loads with no console errors

@@ -64,6 +64,7 @@ export const PRIORS = [
   "frame-eng.json",
   "role-config-eng.json",
   "contractions-eng.json",
+  "dotted-eng.json",        // the hyperlexicon's dotted words read ahead (fold-chat-cut.js; read-core.mjs::abbreviationsFor)
 ];
 
 // What the chat runs. Add an organ here when the chat starts using it.

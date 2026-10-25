@@ -57,9 +57,8 @@ export function deriveClaims(passages, { relations = null } = {}) {
     const rel = relations || RELATIONS_OF(lang);
     const verbList = [...(rel.acyclic || []), ...(rel.functional || []), ...(rel.symmetric || [])];
     const verbs = new Set(verbList.map(fold));
-    const sents = script === "han"
-      ? text.split(/[\u3002\uFF01\uFF1F!?]/u).map((s) => s.trim()).filter(Boolean)
-      : text.split(/(?<=[.!?。！？])\s+/u).slice(0, 60);
+    // the chat's one cut (fold-chat-cut.js): khora's splitter, which cuts after 。！？ unspaced as well
+    const sents = cutText(text).slice(0, 60);
     for (const s of sents) {
       if (script === "han" || script === "hebrew") {
         // pivot-less scripts: the verb pivots the span; a clause boundary stands in for caps. Hebrew is
@@ -124,6 +123,7 @@ export function lintTurn({ passages = [], relations = null, strictness = "strict
 /** The murmur lines — rendered in the language of the read (i18n registry): what was recovered, what the
  *  lint found, and the honest "nothing to lint" gap, all in-language. */
 import { murmurSay } from "./fold-chat-murmur-i18n.js";
+import { cutText } from "./fold-chat-cut.js";
 function murmurLinesGov({ claims = [], findings = [] }, lang = "en") {
   const L = lang || "en";
   const lines = [];

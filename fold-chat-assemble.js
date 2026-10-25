@@ -47,6 +47,7 @@ const norm = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
 
 // ── words (fast path for spaced scripts; the script's own segmenter only where words are not spaced) ──────────
 import { foldText } from "./fold-chat-foldtext.js";   // the khora's fold scope (II.13): Latin vowel accents only
+import { cutLines } from "./fold-chat-cut.js";
 const foldTok = (s) => foldText(s);
 const ASCII_LETTERS = /^[a-z]+$/;
 const stem = (t) => (ASCII_LETTERS.test(t) ? stemOf(t) : t);
@@ -58,30 +59,10 @@ function wordsIn(text, script) {
   return foldTok(s).match(/[\p{L}\p{N}]+/gu) || [];
 }
 
-const ABBREV = /(?:\b(?:mr|mrs|ms|dr|prof|sr|jr|st|vs|etc|no|fig|inc|ltd|co|mt|ave|gen|col|capt|lt|sgt|rev|vol|approx|est)\.|\b\p{Lu}\.|(?:\b\p{L}\.){2,})$/iu;
-/** Sentences with offsets. A stop ends a sentence only before whitespace (so "8,848.86", "3.5" and "U.S." stay whole); 。！？ end one anywhere; a
- *  line ends one. (fold-chat-impression.js::sentencesWithOffsets drops the head of any sentence that holds a decimal point — docs/BACKWARDS-GROUNDING.md —
- *  so the assembler cuts its own holons.) */
+/** Sentences with offsets: the chat's one cut (fold-chat-cut.js — khora's splitter with janus's measured and dotted-word priors):
+ *  "8,848.86", "3.5" and "U.S." stay whole; 。！？ end one anywhere; a line ends one. Ranges slice back exactly. */
 export function sentenceSpans(text) {
-  const src = String(text ?? "");
-  const out = [];
-  let from = 0;
-  const push = (to) => {
-    const raw = src.slice(from, to);
-    const lead = raw.length - raw.trimStart().length;
-    const t = raw.trim();
-    if (t) out.push({ text: t, start: from + lead, end: from + lead + t.length });
-    from = to;
-  };
-  const re = /[.!?]+["')\]”’]*(?=\s|$)|[。！？]+["')\]”’」』]*|\n+/gu;
-  let m;
-  while ((m = re.exec(src)) !== null) {
-    const end = m.index + m[0].length;
-    if (/^[.!?]/.test(m[0]) && ABBREV.test(src.slice(from, m.index + 1).trimEnd())) continue;
-    push(end);
-  }
-  push(src.length);
-  return out;
+  return cutLines(text);
 }
 
 const hostRef = (u) => { try { return decodeURIComponent(new URL(String(u)).pathname.split("/").filter(Boolean).pop() || String(u)); } catch { return String(u || ""); } };

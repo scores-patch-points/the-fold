@@ -10,13 +10,14 @@
 // replaced by khora's reader, not extended.
 
 // ───────── salience: which sentences of a passage are worth reading closely ─────────
+import { cutText } from "./fold-chat-cut.js";
 const BOILER = /\b(?:our|we|us|you|your|subscribe|newsletter|channel|click|cookies?|sign up|log ?in|follow us|read more|share this|advertis\w*|sponsored|copyright|all rights)\b/i;
 const FUNCW = new Set("the a an and or but of in to with by for on at from as is are was were be been being has have had it its this that these those which who what when where why how than then so also there their they he she we you i".split(" "));
 /** The n sentences of `text` that carry the most about `query`: words shared with the query count most, then names and
  *  figures, then content density; site boilerplate ("on our channel", "subscribe") and fragments score down. */
 export function salientSentences(text, query, n = 3) {
   const q = new Set((String(query).toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) || []).filter((w) => !FUNCW.has(w)));
-  const sents = String(text || "").replace(/\s+/g, " ").split(/(?<=[.!?])\s+(?=[\p{Lu}\d"“(])/u).map((s) => s.trim()).filter((s) => s.length >= 30 && s.length <= 360);
+  const sents = cutText(String(text || "").replace(/\s+/g, " ")).map((s) => s.trim()).filter((s) => s.length >= 30 && s.length <= 360);   // the chat's one cut
   const scored = sents.map((s, i) => {
     const words = s.match(/[\p{L}\p{N}]+/gu) || [];
     const content = words.filter((w) => w.length > 3 && !FUNCW.has(w.toLowerCase()));

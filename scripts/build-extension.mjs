@@ -40,8 +40,9 @@ export function dynamicImportsOf(src) {
 }
 
 /** The priors khora's prior door (vendor/khora/native/the-fold/prior-source.mjs) FETCHES in a page, by name, from
- *  vendor/khora/native/priors/: reading-rules.json, which the door preloads at its own import. No import reaches a prior,
- *  so the ones a page fetches are shipped when the door is. */
+ *  vendor/khora/native/priors/: reading-rules.json, which the door preloads at its own import. A prior a module imports as
+ *  JSON (fold-chat-cut.js: punctuation-eng.json, dotted-eng.json) ships by that import; the ones a page fetches are shipped
+ *  when the door is. */
 export const DOOR = "vendor/khora/native/the-fold/prior-source.mjs";
 export const DOOR_PRIORS = Object.freeze(["reading-rules.json"].map((n) => "vendor/khora/native/priors/" + n));
 

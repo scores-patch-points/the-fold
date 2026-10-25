@@ -22,6 +22,7 @@ import { extractSurfaces } from "./vendor/khora/native/adapters/text/surfaces.js
 import { terrainEvidence } from "./vendor/khora/native/kernel/terrain-induction.js";   // Kanada (khora terrainInduction, renamed from kind-induction)
 import { clausesOf, datesIn, quantitiesIn } from "./fold-chat-answerspan.js";
 import { stemOf } from "./fold-chat-frame.js";
+import { abbreviationsOf } from "./fold-chat-cut.js";
 
 const fold = (s) => String(s ?? "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 const STOP_NP = new Set(["in", "on", "at", "of", "for", "from", "to", "by", "with", "that", "which", "who", "and", "located", "where", "since"]);
@@ -31,7 +32,7 @@ const QUANT_DIM = Object.freeze({ length: "len", mass: "mass", temperature: "tem
 /** Sentences with their byte offsets in the passage (khora's splitter; offsets found by forward search, so a repeated sentence keeps its own). */
 function sentencesOf(text) {
   const out = []; let from = 0;
-  for (const s of splitSentences(String(text ?? ""))) {
+  for (const s of splitSentences(String(text ?? ""), { abbreviations: abbreviationsOf(String(text ?? "")) })) {
     const t = typeof s === "string" ? s : s.text ?? String(s);
     const at = text.indexOf(t, from);
     if (at < 0) continue;

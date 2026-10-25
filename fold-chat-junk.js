@@ -28,6 +28,7 @@
 import { CHROME, STRONG, WALL, WALL_WEAK } from "./fold-chat-junk-lexicon.js";
 import { segments, scriptOf, isUnspaced, capitalisationIsSignificant, fold } from "./fold-chat-mind.js";
 import { FUNCTION_WORDS } from "./fold-chat-function-words.js";
+import { cutText, endsWithAbbreviation } from "./fold-chat-cut.js";
 
 export const JUNK = Object.freeze({
   DOMINATED: 0.5, LEAD_MIN: 3, LEAD_UNITS: 2, WINDOW: 40, STEP: 20, COVER: 0.4, STOPLESS_MIN: 12, FW_MAX: 0.1, CODE_SYMBOLS: 0.06, TITLE_SHARE: 0.6,
@@ -54,27 +55,12 @@ const isLetter = (ch) => /[\p{L}\p{N}]/u.test(ch);
 const letters = (s) => (s.match(/[\p{L}\p{N}]/gu) || []).length;
 const BAD_HTTP = (s) => Number.isFinite(+s) && +s >= 400;
 
-/** Units of a text: runs between line breaks, ellipses, ' | ' and sentence stops (a stop is . ! ? 。！？ followed by space, so
- *  4.97 and 3.5 stay whole; a stop after a known abbreviation does not end a unit). */
-const ABBREV = /(?:^|[\s(])(?:mr|mrs|ms|dr|prof|sr|jr|st|vs|etc|no|nos|fig|figs|eq|inc|ltd|co|corp|mt|ave|gen|col|capt|lt|sgt|rev|vol|vols|pp|ca|approx|est|dept|univ|e\.g|i\.e|cf|al)\.$/iu;
-/** Does this text END on an abbreviation, a lone initial, or a run of dotted initials, so its final
- *  "." is not a sentence stop? "U.S."/"D.C." end in an initial preceded by another dotted initial —
- *  the single-initial rule needs [\s(] before it and misses the second dot (F4 S06: "…first U.S.|patent…"
- *  split a sentence in two). Same accepted ambiguity as Fig./Dr.: "…in the U.S. He…" reads as one unit. */
-export const endsWithAbbreviation = (t) => { const x = String(t ?? "").replace(/["')\]”’]+$/u, ""); return ABBREV.test(x) || /(?:^|[\s(])(?:\p{Lu}\.){2,}$/u.test(x) || /(?:^|[\s(])\p{Lu}\.$/u.test(x); };
+/** Units of a text: runs between line breaks, ellipses and ' | ', each cut into sentences by the chat's one cut
+ *  (fold-chat-cut.js: khora's splitter; 4.97 and 3.5 stay whole; a dotted word or a lone initial does not end a unit). */
+export { endsWithAbbreviation };
 export function unitsOf(text) {
   const out = [];
-  for (const line of String(text ?? "").split(/\n+|\s…\s|…|\s\|\s/u)) {
-    let cur = "";
-    for (const piece of line.split(/(?<=[.!?。！？]["')\]”’]*)\s+(?=\S)/u)) {
-      cur = cur ? cur + " " + piece : piece;
-      const t = cur.trim();
-      if (/\.["')\]”’]*$/u.test(t) && endsWithAbbreviation(t)) continue;   // 'Fig.' / 'Dr.' / 'J.' do not end a unit
-      if (t) out.push(t);
-      cur = "";
-    }
-    if (cur.trim()) out.push(cur.trim());
-  }
+  for (const line of String(text ?? "").split(/\n+|\s…\s|…|\s\|\s/u)) for (const t of cutText(line)) if (t.trim()) out.push(t.trim());
   return out;
 }
 function windowsOf(u) {
