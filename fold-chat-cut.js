@@ -1,8 +1,9 @@
 // fold-chat-cut.js — THE CHAT'S ONE SENTENCE CUT (2026-10-25). khora's spans.js::splitSentences — the cut every reader in the suite
 // shares — told which dotted tokens are words by janus's priors, vendored with khora: English's MEASURED punctuation prior
-// (punctuation-eng.json) and the hyperlexicon's dotted words READ AHEAD (dotted-eng.json: the forms the local Wiktionary lists with
-// their period, "etc.", "e.g.", "U.S." …, kept where this text never writes the token without its period — organs/lexicon.js::
-// dottedIn), plus the text's own (spans.js::deriveAbbreviations). No typed list. A line is the outer unit: a line break always ends
+// (punctuation-eng.json) and the hyperlexicon's dotted words READ AHEAD (dotted-eng.json: the forms the hyperlexicon's givers write
+// with their period, read off janus's ledger as written — its giver is the ledger, named by its head; "etc.", "e.g.", "U.S." …, kept
+// where this text never writes the token without its period — organs/lexicon.js::dottedIn), plus the text's own
+// (spans.js::deriveAbbreviations). No typed list. A line is the outer unit: a line break always ends
 // a sentence, as every splitter this replaced did; inside a line the cut is khora's (a decimal point is not a stop; 。！？ are).
 // SCOPE: English. The priors are English's (janus has punctuation and dotted-word priors for no other language yet); a text in
 // another language is cut by khora's splitter with English's dotted words, which it rarely writes, and its own derived ones.
