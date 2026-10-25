@@ -1,12 +1,12 @@
 {
   "repo": "scores-patch-points/khora",
   "khora": {
-    "commit": "d941c007a899655a872bb3e0d80efeccc1feee98",
+    "commit": "e1e1dac03989ab260f26e2aa388be75eb75c940f",
     "dirtyNative": 0
   },
   "janus": {
     "repo": "scores-patch-points/janus",
-    "commit": "7b1851809b858b90e99098194747657fe4e051f0",
+    "commit": "6a19908",
     "priors": [
       "pos-eng.json",
       "pos-eng-lexicon.json",
@@ -142,7 +142,7 @@
     "organs/hyperlexicon.js": "3dd9681c0b478b3c597242a6d4d82df9994c08f9bc7514635fc53029c1555dbe",
     "organs/kind-standing.js": "752d029ce14c98d6f03d3af7b1b882270709444cf609816b485210e579f13850",
     "organs/kondo.js": "c780907da4c1716f5b5581d501111ae1837a5a19ab659cb2ffb4276bfaeaf17e",
-    "organs/lexicon.js": "4ea09c53f868a96155a2d4308ef080ea29386fbacc019e862f868e38724b5193",
+    "organs/lexicon.js": "008dcd29cf5ab0b9ef3251e04a44a032a901bf9a15d2da07ed92585e309f6c26",
     "organs/measure.js": "76f35ef4624a7eb6bc04742927ef21d54553041ad11383561df5c328812d4f69",
     "organs/pacing.js": "eceb0e1caf66ae8aee1d2fec9346af5da831747e1e4cbaba5f847bb211982366",
     "organs/pathos.js": "c7205657f39051aa19b545cffcd8fff1d907bf2e9e5795020b9f1ab1530b8d49",
@@ -155,7 +155,7 @@
     "organs/web.js": "4ebd01fb6b5e56c15716bb32f911ce2a2ca142db5a3125ee317cda62cf71bdbe",
     "organs/witness-sentences.js": "0b74074189e392a8f671a91c2db25483c1753e883968649cad316bc20644d4a9",
     "priors/contractions-eng.json": "3fb6e26a248b65b8b50b9f90ec92b39960fbf57a1f64d3a851b49e69839e43c5",
-    "priors/dotted-eng.json": "bf938a0d1e8ba13591d18f2743a9a0a9ad1a9bbf9fb3c5dc1e7850e229509108",
+    "priors/dotted-eng.json": "f90659e0c3a9eb554eca5edbff3e28b861634280fae7793fd4deffc75324ebcb",
     "priors/frame-eng.json": "469a9551aa0820e7c29cf0d2131e4d07a0b7157066710c839464f5c0b689e4ca",
     "priors/morphology-eng.json": "77f972b82800b561a17f37513adf710f96eded2da9e25ca1ec43c1ba45779915",
     "priors/pos-eng-lexicon.json": "94a349809a843c404264f04622944fde42e3d074ba982f07ffb7cfb705c7c1ac",
@@ -177,7 +177,7 @@
     "the-fold/pathos-turn.js": "a8bf846b9d7114cdaa22c509a60ce449ee75ccdda012814f9503d1ae544ce15a",
     "the-fold/prior-source.mjs": "362c5123c7967be8a849b047480137c30c02a3d08f6e2355631fc5f92f3baac3",
     "the-fold/priors-home.js": "96faa853b4611824a5753cb16c866e1c95143d9e82ba767078366ef89dc61ad7",
-    "the-fold/read-core.mjs": "52358d905b2e8345d5a0fa08d6658d59b3d74ea0089fee639e830f44cee5af5d",
+    "the-fold/read-core.mjs": "84922da4302083618be723df2ecf1513e1301ea56e4a46c6b7ac3fc587651b38",
     "the-fold/read-quality.mjs": "623d98ba9af54ad1b95c8b7dbfffb81189b516c8391fdf30b76192459fd3a11c",
     "the-fold/reading-log.js": "dddf5189b0d5ddd24a7ba4cc9121879f3ac56cf40fa55ca16b2d0b253e38bc0c",
     "the-fold/record-log.js": "3bf3a2787ee8fddfaf9cdfdc36c6e189bdbecb485203e1c4ba8fae269db40ada",
