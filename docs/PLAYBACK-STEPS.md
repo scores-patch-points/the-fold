@@ -1,5 +1,7 @@
 # The reading playback, step by step: how to make each of the nine steps legible and meaningful
 
+Superseded (2026-10-24): the panels this note redesigns, `fold-chat-presentview.js` and the drawing half of `fold-chat-present.js`, were removed from the chat (they read with their own local rules; reading belongs to canonical khora). The note is kept as a record.
+
 Status: design note (agent C, 2026-10-06). Nothing here is built. I read code and docs only; I did not run the app, so every statement about what is on screen is from reading `fold-chat-presentview.js`, `fold-chat-present.js` and the `.pv-*` CSS in `index.html`, not from a screenshot. Nothing below is a measured result.
 
 The user's words this answers, verbatim: "improve each of the steps of the reading playback to be more intuitive and actually meaningful"; "the animation is not legible when narrow"; "this is hard to read"; "lots of chrome"; "i dont like the underlining of everything and highlighting of everything"; "lets be able to expand from these atoms to the source content and navigate through the content"; "the modal ... should be more graphical, like some of the images in the animation" (the SEG stage: grid, SUBJ/VERB/OBJ boxes, a favicon at the start of each row).

@@ -141,8 +141,7 @@ function subjectNamesMatch(a, bText) {
 }
 /** A polarity flip counts only for the SAME proposition: sides differ on negation, the negated predicate
  *  (first content after the negator) is what the other side commits to, and the negated clause's subject
- *  is the other side's subject. Exported: fold-chat-present.js :: scopeHas delegates to it so the k6 branch
- *  and the cross-reference branch judge polarity by one rule (F2 C1/C5). */
+ *  is the other side's subject (F2 C1/C5). */
 export function negationFlips(negText, otherText, otherStems, aroundText = "", claimHead = "") {
   const t = stripVoid(negText);
   if (!NEG.test(t) && !PNEG.test(t)) return false;

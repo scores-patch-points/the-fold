@@ -200,18 +200,20 @@ memory for the turn (never stored or sent), and the failing claim is recalled ag
 goes on to SIG, a new search with the claim as the query. The
 cross-reference re-runs on the wider ground, and SYN restates only the sentences still failing. A restatement
 replaces a sentence only if it then holds; otherwise the sentence stays and is marked. Two laps at most, 25 s (45 s
-on Deep); Fast skips it. The laps are on the record (`record.loop`), in the Checks tab, and on the replay's tape.
-In the reading panel this is the only motion: an arc from ∗ back to ○ and the levels lighting in reverse. Everything
-else there is still.
+on Deep); Fast skips it. The laps are on the record (`record.loop`) and in the turn's feed (`record.feed`).
 
 ## What an answer shows at rest
 
-Under a presented answer, one summary line: **`3 sources · 2 of 3 sentences backed · held 9 checks ·
-Answered in 22 s · gemma2:2b`**. Each part opens the turn's one inspector at its tab — **Sources** (the
-passages, in their sites' type), **Checks** (the attempts to break it), **Process** (the replay, the steps,
-web reads, route and the JSON log). The sentences carry the evidence: an unbacked sentence is dotted
-(click → Checks); hovering a backed one lights its passage (click → Sources). Only a failed turn shows a banner. Message actions (copy, retry, ⋯) appear on hover or
+The answer is drawn as the facing page (`renderFacingPage` in `fold-chat.js`): the answer as full Markdown, with a chip
+for each source the model cited with its own `[W#]` label. Under it, the source line (`fold-chat-provenance.js`) says what
+the app did and quotes the sources' own sentences. The layer switch (`fold-chat-layers.js`) adds the rest: with the
+Sources layer on, one collapsed line, **`2 passages from 2 sources`**, with a **`✱ 1 of 2 sentences has no source`** note
+when a sentence the model wrote has no source behind it, opens to each source's passages. Message actions (copy, retry, ⋯) appear on hover or
 focus, and on touch for the last message (tap any message to reveal its own).
+
+(The "present" panels that used to draw a turn here, `fold-chat-presentview.js` and the drawing half of
+`fold-chat-present.js`, were removed on 2026-10-24: they cut sentences and found names with their own local rules,
+and reading belongs to canonical khora.)
 
 ## Develop and test
 
