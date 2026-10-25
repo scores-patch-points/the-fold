@@ -130,16 +130,42 @@ export function abbreviationsFor(text, { priors = null, aliases = [], abbreviati
   return { set, n: set.size, prior: fromPrior.length, derived: derived.length, aliases: aliases.length, dotted: fromDotted.length, giver: priors?.punctuation?.giver ?? null };
 }
 
+// THE PRIOR IS THE GIVER READ AHEAD. janus's dotted-words prior is every dotted headword of one Wiktionary pack (letters and dots, at
+// most 12 characters), named by its file and snapshot. When the live lexicon answers from that same pack, a junction form outside the
+// prior is one the pack does not list with its period (the giver answers exact headwords only), and one inside it was settled by the
+// prior or is refused by the text's own bare use: no answer could keep an alias, so nothing is asked. The one case the prior leaves to
+// the live giver, a dotted headword longer than 12 characters, is still asked. Measured 2026-10-25: the Holodeck asked ~500 forms per
+// long document of a giver that answers one form in ~3.5 ms, one request at a time, and every reading waited on that queue.
+const samePack = (a, b) => !!(a && b && a.pack && a.pack === b.pack && (a.snapshot ?? null) === (b.snapshot ?? null));
+
 /** Ask the hyperlexicon about the dotted forms the priors and the text cannot settle; keep each one the text's own use allows. */
 export async function consultAliases(text, lexicon, { priors = null } = {}) {
   if (!lexicon) return { aliases: [], rows: [], giver: null, gap: "no hyperlexicon was handed to this read" };
   const known = new Set([...(priors?.punctuation?.abbreviations ?? []), ...deriveAbbreviations(String(text ?? ""))].map((a) => String(a).toLowerCase()));
   // what the dotted prior already settles is not asked again
   for (const f of priors?.dotted ? dottedIn(String(text ?? ""), priors.dotted, known) : []) known.add(f.slice(0, -1).toLowerCase());
-  const junctions = aliasJunctions(text, known);
+  let junctions = aliasJunctions(text, known);
   if (!junctions.size) return { aliases: [], rows: [], giver: lexicon.giver ?? null, gap: null };
+  if (priors?.dotted && priors.dottedGiver) {
+    // a giver that has not answered yet is asked one form first, to learn which pack it reads
+    if (!lexicon.giver) await lexicon.want([junctions.keys().next().value]);
+    if (samePack(priors.dottedGiver, lexicon.giver)) {
+      junctions = new Map([...junctions].filter(([f]) => f.length > 12));
+      if (!junctions.size) return { aliases: [], rows: [], giver: lexicon.giver, gap: null, settled: `the dotted-words prior is this giver's own pack (${priors.dottedGiver.pack})` };
+    }
+  }
   await lexicon.want(junctions.keys());
   const rows = resolveAliases(lexicon, junctions, text);
+  // the treebank's own evidence, the rule janus's dotted prior is built by (scripts/build-dotted-priors.mjs): a giver lists "ports."
+  // (portraits) and "Apr." beside the words "ports" and "APR", and a text that writes the word only at a stop cannot refuse them by
+  // its own use. A single-dot form whose base the class prior attests as a word is kept only where the class prior also attests the
+  // dotted token ("Inc.", "Dr.", "etc."). With no class prior the rule cannot be read, and the text's own use decides alone.
+  const attested = (f) => Object.values(priors?.posPrior?.forms?.[String(f).toLowerCase()] ?? {}).some((n) => n > 0);
+  if (priors?.posPrior?.forms) for (const r of rows) {
+    if (!r.kept || r.form.split(".").length !== 2) continue;
+    const base = r.form.slice(0, -1);
+    if (attested(base) && !attested(r.form)) Object.assign(r, { kept: false, why: `the treebank writes “${base}” as a word and never “${r.form}”` });
+  }
   const last = lexicon.log?.[lexicon.log.length - 1];
   return { aliases: rows.filter((r) => r.kept).map((r) => r.form), rows, giver: lexicon.giver ?? null, gap: last?.gap ?? null };
 }
@@ -389,5 +415,5 @@ export async function readDocument(text, { language = null, lexicon = null, prio
   const stem = (language ? stemOf(language) : null) ?? (heard?.language ? stemOf(heard.language) ?? heard.language : null) ?? "eng";
   const pr = priors ?? priorsFor(stem);
   const c = await consultAliases(str, lexicon, { priors: pr });
-  return readWith(str, { ...opts, language, priors: pr, aliases: [...(opts.aliases ?? []), ...c.aliases], aliasReport: { giver: c.giver, rows: c.rows, gap: c.gap } });
+  return readWith(str, { ...opts, language, priors: pr, aliases: [...(opts.aliases ?? []), ...c.aliases], aliasReport: { giver: c.giver, rows: c.rows, gap: c.gap, ...(c.settled ? { settled: c.settled } : {}) } });
 }
