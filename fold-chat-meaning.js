@@ -17,10 +17,12 @@
 // slots and the few that do are not synonyms; on a lone claim plus one page the reader admits no verb at all. So on ONE turn this earns almost
 // nothing and every pair is a typed gap. It is therefore OFF by default (fold-chat-origin.js takes a ledger only when a caller passes one), and
 // stays so until a corpus of real turns shows it earning more than it costs. Declared, not measured (Constitution II.11).
-import { splitSentences } from "./vendor/khora/native/adapters/text/spans.js";
-import { abbreviationsOf } from "./fold-chat-cut.js";
-import { extractSurfaces } from "./vendor/khora/native/adapters/text/surfaces.js";
-import { discoverRelationVocab, extractRelations } from "./vendor/khora/native/adapters/text/relations.js";
+// THE ONE READER (the Isthmus, khora native/docs/THE-ISTHMUS.md; THE-READING-PIPELINE.md: "nothing assembles a second reader"): the ledger is
+// what khora's master pipeline hears (vendor/khora/native/the-fold/read-core.mjs::readWith, byte-identical to khora main), each source in
+// the language it is heard in, never a reader assembled here from the cut, the surfaces and the relation vocabulary. Before 2026-10-26 this
+// file assembled that second reader itself (splitSentences + extractSurfaces + discoverRelationVocab + extractRelations, English closed
+// classes); the measured null below was that reader's.
+import { readWith } from "./vendor/khora/native/the-fold/read-core.mjs";
 
 export const MEANING = Object.freeze({
   giver: "the user's definition of identity/meaning (2026-10-06) via fold-stress-session/hyperlexicon-meaning.mjs; declared, not measured (II.11)",
@@ -38,16 +40,16 @@ export function readLedger(sources, { fw = null } = {}) {
   try {
     const list = (Array.isArray(sources) ? sources : []).filter((s) => s && typeof s.text === "string" && s.text.trim()).map((s) => ({ ref: String(s.ref ?? ""), text: s.text.slice(0, MEANING.maxChars) }));
     if (!list.length) return empty;
-    const pooled = list.map((s) => s.text).join("\n\n");
-    const surfaces = extractSurfaces(splitSentences(pooled, { abbreviations: abbreviationsOf(pooled) }));
-    const vocab = discoverRelationVocab(pooled, { surfaces, functionWords: fw, minSurfaces: MEANING.minSurfaces });
-    if (!vocab.verbs.size) return { ...empty, sources: list.map((s) => s.ref) };
-    const notes = [];
-    for (const s of list) for (const t of extractRelations(s.text, { verbs: vocab.verbs, functionWords: fw })) {
-      const end1 = fold(t.end1 ?? t.subject), label = fold(t.label ?? t.verb), end2 = fold(t.end2 ?? t.object);
-      if (end1 && label && end2) notes.push({ ref: s.ref, end1, label, end2, polarity: t.polarity === "-" ? "-" : "+" });
+    const notes = [], verbs = new Set(), languages = [];
+    for (const s of list) {
+      const W = readWith(s.text, { address: s.ref, minCharacters: 0, quality: false });
+      if (W.language) languages.push({ ref: s.ref, ...W.language });
+      for (const e of W.edges ?? []) {
+        const end1 = fold(e.end1Face ?? e.end1), label = fold(e.label), end2 = fold(e.end2Face ?? e.end2);
+        if (end1 && label && end2) { notes.push({ ref: s.ref, end1, label, end2, polarity: e.polarity === "-" ? "-" : "+" }); verbs.add(label); }
+      }
     }
-    return { notes, verbs: vocab.verbs, sources: list.map((s) => s.ref) };
+    return { notes, verbs, sources: list.map((s) => s.ref), languages, reader: "khora read-core readWith (vendored)" };
   } catch { return empty; }
 }
 

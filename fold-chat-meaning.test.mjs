@@ -38,10 +38,15 @@ test("sameMeaning: typed outcomes — other (each fills slots, never a common on
   assert.equal(sameMeaning("runs", "flows", null).verdict, "refused");
 });
 
-test("readLedger: the vocabulary is MEASURED from the text — a lone claim and one page admit no verb, so every pair is a typed gap (the measured null)", () => {
+test("readLedger: a lone claim and one page earn no synonymy — every pair is a typed gap, read by THE reader (the measured null)", () => {
   const l = readLedger([{ ref: "claim", text: "She won the 1911 Nobel Prize in Chemistry for discovering radium." }, { ref: "page", text: "The Nobel Prize in Chemistry 1911 was awarded to Marie Curie. Marie Curie worked in Paris." }], { fw: FW });
-  assert.equal(l.verbs.size, 0); assert.deepEqual(l.notes, []);
+  // the one reader (vendored read-core readWith) hears relations here that the old assembled reader admitted none of (measured: "worked in",
+  // "1911 was awarded to", "in"); what the null protects is unchanged — no pair of the claim's and the page's words is one meaning
+  assert.equal(l.reader, "khora read-core readWith (vendored)");
+  assert.ok(l.notes.every((n) => n.ref === "claim" || n.ref === "page"));
   assert.equal(sameMeaning("won", "awarded", l).verdict, "refused");
+  assert.equal(sameMeaning("won", "awarded", l, { exclude: ["claim", "page"] }).verdict, "refused", "FALSIFIER: the sources under test witnessed their own synonymy");
+  assert.ok(l.languages.every((x) => x.stem && x.source), "each source says which language it was read in, and how that was decided");
   for (const bad of [null, [], [{ ref: "x", text: "" }], [{ ref: "x" }]]) assert.deepEqual(readLedger(bad, { fw: FW }).notes, [], "nothing it is given can make it throw");
 });
 
