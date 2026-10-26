@@ -473,11 +473,11 @@
           "held"
         ]
       },
-      "kind": "todo",
+      "kind": "pass",
       "control_of": "",
       "origin": "audit (measured hole 2)",
       "source_file": "task brief: audit hole 2 (Spanish source texts are my rendering of the brief's description)",
-      "note": "Spanish wrong capital (Sídney) is corroborated by Spanish sources naming Canberra; main fails."
+      "note": "Fixed: the opener rule is measured on the texts, not on English words, so Sídney is held as a missing name in Spanish too; a caseless script never reaches it."
     },
     {
       "id": "language-es-wrong-year-1940",
@@ -730,11 +730,11 @@
       "expect": {
         "verdict": "contested"
       },
-      "kind": "todo",
+      "kind": "pass",
       "control_of": "",
       "origin": "audit (measured hole 3)",
       "source_file": "task brief: audit hole 3",
-      "note": "Negated claim should be contested, but an appositive in the source hides the conflict; main returns held."
+      "note": "Fixed: the comma appositive after the subject (', at 8,849 m,') is lifted out before the subject–predicate distance is measured (withoutAppositive), so the flip is read."
     },
     {
       "id": "negation-appositive-positive-everest",
@@ -1733,11 +1733,11 @@
           "held"
         ]
       },
-      "kind": "todo",
+      "kind": "pass",
       "control_of": "",
       "origin": "audit (measured hole 1)",
       "source_file": "task brief: audit hole 1",
-      "note": "Wrong capital (Melbourne) is corroborated by sources naming Canberra; main fails."
+      "note": "Fixed: as slot-wrong-capital-sydney; Melbourne is missing from both sources, so neither states the claim."
     },
     {
       "id": "slot-wrong-capital-sydney",
@@ -1763,11 +1763,11 @@
           "held"
         ]
       },
-      "kind": "todo",
+      "kind": "pass",
       "control_of": "",
       "origin": "audit (measured hole 1)",
       "source_file": "task brief: audit hole 1",
-      "note": "Wrong capital (Sydney) is held against sources naming Canberra; main fails."
+      "note": "Fixed: a lone capitalised opener the texts never write in lowercase is a name the source must carry (namesOf/openerIsName); Sydney is missing, so the claim is weak, not held."
     },
     {
       "id": "slot-wrong-year-1899",
@@ -2188,6 +2188,30 @@
       "origin": "24160b46 opencode-battery (false-subject-swap)",
       "source_file": "/Users/mlacy/.khora/opencode-battery.mjs:23",
       "note": "The predicate belongs to Marie, not Pierre: a swapped subject is contradicted. [khora tag: FALSE-SUPPORT/MISSED; battery marks hard]"
+    },
+    {
+      "id": "subject-opener-name-apollo-dates-not-contested",
+      "family": "subject",
+      "claims": [
+        "Apollo 11 launched on 16 July 1969 and landed on 20 July 1969."
+      ],
+      "sources": [
+        {
+          "ref": "Wikipedia — Apollo 11",
+          "title": "Apollo 11",
+          "text": "Apollo 11 was the first crewed mission to land on the Moon. Neil Armstrong and Buzz Aldrin landed the lunar module Eagle on 20 July 1969, while Michael Collins remained in orbit. Armstrong became the first person to walk on the Moon at 02:56 UTC on 21 July. The mission launched on 16 July 1969 from Kennedy Space Center in Florida. The crew returned to Earth on 24 July."
+        }
+      ],
+      "expect": {
+        "not_in": [
+          "contested"
+        ]
+      },
+      "kind": "pass",
+      "control_of": "slot-wrong-capital-sydney",
+      "origin": "F2 SEG c12 (eval/ants/falsify-checks/f2/cases.json), a clean answer",
+      "source_file": "eval/ants/falsify-checks/f2/f2.test.mjs:52 (SEG S6 truthful)",
+      "note": "Control for the opener rule: once Apollo is a name, the role reader must not read the date phrases ('on 20 July 1969' / 'on the Moon') as swapped participants; a phrase of figures and calendar words is a time, not a role."
     },
     {
       "id": "lists-brutus-caesar-swap-contests",

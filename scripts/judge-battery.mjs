@@ -109,4 +109,7 @@ async function main() {
   else console.log(summary + "\n  judge " + opt.judge + " sha256 " + sha);
   process.exit(fail > 0 || (opt.strictTodo && fixed > 0) ? 1 : 0);
 }
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();
+// Run as a script: compare REAL paths. argv[1] keeps a symlink the loader resolves ("/tmp" is "/private/tmp" on macOS), and the
+// old equality made the runner a silent no-op with exit 0 there — a pass nobody ran. A vendor gate must never see that.
+const isMain = () => { try { return !!process.argv[1] && fs.realpathSync(path.resolve(process.argv[1])) === fileURLToPath(import.meta.url); } catch { return false; } };
+if (isMain()) await main();
