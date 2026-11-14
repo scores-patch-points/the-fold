@@ -28,3 +28,11 @@ test("Janus + fold answer chains, lookups, aliases, sums and unanswerables with 
   assert.equal(log.byKind("call").length, 0, "no model call");
   for (const [t, v] of Object.entries(by)) assert.equal(v.right, v.n, `${t}: ${JSON.stringify(v.wrong)}`);
 });
+
+test("world fix 4: no alias is another person's name, at any scored size", async () => {
+  for (const people of [17, 167, 300]) {
+    const w = mixedWorld({ people, distractors: 0, seed: 1 });
+    const names = new Set(w.names);
+    assert.deepEqual([...w.truth.alias.keys()].filter((a) => names.has(a)), []);
+  }
+});

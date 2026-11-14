@@ -1,2 +1,3 @@
 done ablation full {"calls":41,"over":[],"uncounted":[],"maxEstimate":300,"maxEngine":265,"ok":true}
 done ablation -stopRule {"calls":41,"over":[],"uncounted":[],"maxEstimate":300,"maxEngine":265,"ok":true}
+done ablation -memo {"calls":41,"over":[],"uncounted":[],"maxEstimate":300,"maxEngine":265,"ok":true}

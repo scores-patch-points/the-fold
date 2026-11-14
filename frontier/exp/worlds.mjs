@@ -5,12 +5,17 @@ import { rng, names } from "../synth.mjs";
 const CITIES = ["Lisbon", "Osaka", "Quito", "Tromso", "Accra", "Perth", "Leeds", "Hanoi", "Cusco", "Graz"];
 const DREL = ["neighbour", "cousin", "rival", "landlord", "tailor", "barber"];
 
+export const WORLD_VERSION = 2;
 export function mixedWorld({ people = 300, chains = 8, chainLen = 12, distractors = 1000, seed = 1 } = {}) {
   const r = rng(seed), N = names(people, seed);
   const lines = [], truth = { mentor: new Map(), age: new Map(), city: new Map(), alias: new Map() };
   for (let c = 0; c < chains; c++) for (let i = 0; i < chainLen; i++) { const a = N[c * (chainLen + 1) + i], b = N[c * (chainLen + 1) + i + 1]; truth.mentor.set(a, b); lines.push(`${a}'s mentor is ${b}.`); }
   for (const p of N) { const age = 20 + Math.floor(r() * 60), city = CITIES[Math.floor(r() * CITIES.length)]; truth.age.set(p, age); truth.city.set(p, city); lines.push(`${p}'s age is ${age}.`, `${p}'s city is ${city}.`); }
-  const aliasPool = names(people + 80, seed + 999).slice(people);
+  // world fix 4 (2026-11-14): an alias must never be another person's name. Before this, a drawn alias could equal a real person
+  // (seed 1: "Drapelvo" at 1e4, "Rapelvo" at 1e5/1e6), so the registry declared two different people one, and the answer key disagreed
+  // with the world's own declarations. Rows from before the fix carry world_version 1.
+  const taken = new Set(N);
+  const aliasPool = names(people + 160, seed + 999).filter((a) => !taken.has(a));
   N.filter(() => r() < 0.15).forEach((p, i) => { if (aliasPool[i]) { truth.alias.set(aliasPool[i], p); lines.push(`${p}'s alias is ${aliasPool[i]}.`); } });
   for (let i = 0; i < distractors; i++) lines.push(`${N[Math.floor(r() * N.length)]}'s ${DREL[Math.floor(r() * DREL.length)]} is ${N[Math.floor(r() * N.length)]}.`);
   for (let i = lines.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [lines[i], lines[j]] = [lines[j], lines[i]]; }
