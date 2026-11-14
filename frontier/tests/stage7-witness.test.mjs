@@ -47,3 +47,12 @@ test("witness: supported / contradicted / unknown on cited spans", () => {
   assert.equal(witness(log, { value: "Paris", cites: [s.id] }).verdict, "unknown");
   assert.equal(witness(log, { value: "7", cites: ["ev999"] }).verdict, "contradicted");
 });
+
+test("fix 2: a value that merely occurs in a cited span is not support; the span must state the slot", () => {
+  const log = makeLog({ now: () => 0 });
+  const s = log.append({ kind: "fact", by: "t", body: { text: "Orkadra's mentor is Marmarten." } });
+  const slot = (anchor, relation) => ({ anchors: [anchor], relation });
+  assert.equal(witness(log, { value: "Marmarten", cites: [s.id], slot: slot("Orkadra", "mentor") }).verdict, "supported");
+  assert.equal(witness(log, { value: "Marmarten", cites: [s.id], slot: slot("Marmarten", "mentor") }).verdict, "unknown", "self-loop: the value is the anchor");
+  assert.equal(witness(log, { value: "Marmarten", cites: [s.id], slot: slot("Orkadra", "dentist") }).verdict, "unknown", "the span does not state the relation");
+});

@@ -37,7 +37,8 @@ export function makeApparatus({ log, mouth = null, ground, contentOf = null, swi
       const v = res.value ?? {};
       if (v.value == null || v.value === "") continue;
       const cites = (Array.isArray(v.cite) ? v.cite : []).filter((id) => c.spanIds.includes(id));
-      const w = sw.witnesses ? witness(log, { value: v.value, cites: cites.length ? cites : c.spanIds, shapeKey: null }) : { verdict: "unwitnessed" };
+      const anchors = shape.anchor ? (sw.identity ? identityAt(log).classOf(shape.anchor).members : [shape.anchor]) : [];
+      const w = sw.witnesses ? witness(log, { value: v.value, cites: cites.length ? cites : c.spanIds, shapeKey: null, slot: sw.slotWitness === false ? null : { anchors, relation: shape.relation } }) : { verdict: "unwitnessed" };
       if (sw.witnesses && w.verdict !== "supported") continue;
       return { value: v.value, cites: cites.length ? cites : c.spanIds, call: res.call, verdict: w.verdict };
     }

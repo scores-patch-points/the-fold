@@ -7,7 +7,11 @@
 const norm = (s) => String(s ?? "").normalize("NFKC").toLowerCase().replace(/[\s,]+/g, " ").trim();
 const numbersIn = (s) => [...String(s).matchAll(/-?\d[\d,]*(?:\.\d+)?/g)].map((m) => m[0].replace(/,/g, ""));
 
-export function witness(log, { value, cites = [], shapeKey = null, answerId = null, by = "witness:mechanical" }) {
+// SLOT (fix 2, 2026-11-14, after the first scaling rows): a value merely OCCURRING in a cited span is not support. With a slot
+// {anchors, relation}, "supported" also needs the same span to name one of the anchors and every word of the relation, and the value must
+// not be the anchor itself. A span that carries the value but not the slot is "unknown".
+const words = (s) => String(s ?? "").toLowerCase().split(/[_\s]+/).filter(Boolean);
+export function witness(log, { value, cites = [], shapeKey = null, answerId = null, by = "witness:mechanical", slot = null }) {
   const spans = cites.map((id) => log.get(id)).filter(Boolean);
   const texts = spans.map((e) => e.body.text ?? JSON.stringify(e.body.value ?? e.body));
   let verdict = "unknown", why = "no cited span carries the value";
@@ -15,7 +19,9 @@ export function witness(log, { value, cites = [], shapeKey = null, answerId = nu
   else if (spans.length < cites.length) { verdict = "contradicted"; why = "cites an id that is not in the log"; }
   else {
     const v = norm(typeof value === "object" ? JSON.stringify(value) : value);
-    if (v && texts.some((t) => norm(t).includes(v))) { verdict = "supported"; why = "value occurs in a cited span"; }
+    const states = (t) => !slot || ((slot.anchors ?? []).some((a) => norm(t).includes(norm(a))) && words(slot.relation).every((w) => norm(t).includes(w)) && !(slot.anchors ?? []).some((a) => norm(a) === v));
+    if (v && texts.some((t) => norm(t).includes(v) && states(t))) { verdict = "supported"; why = slot ? "a cited span states the slot and carries the value" : "value occurs in a cited span"; }
+    else if (v && slot && texts.some((t) => norm(t).includes(v))) { verdict = "unknown"; why = "the value occurs but no cited span states the slot"; }
     else if (/^-?\d/.test(v)) {
       const others = texts.flatMap(numbersIn).filter((n) => n !== v.replace(/ /g, ""));
       if (others.length && !texts.flatMap(numbersIn).includes(v.replace(/ /g, ""))) { verdict = "contradicted"; why = `cited spans give ${[...new Set(others)].slice(0, 3).join(", ")}`; }

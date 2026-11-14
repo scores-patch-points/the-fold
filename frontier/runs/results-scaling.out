@@ -2,3 +2,6 @@
 done size=1000 (1035 tok) arm=apparatus
 done size=1000 (1035 tok) arm=retrieval
 done size=1000 (1035 tok) arm=longctx
+10000 apparatus {"calls":33,"over":[],"uncounted":[],"maxEstimate":299,"maxEngine":254,"ok":true}
+done size=10000 (10068 tok) arm=apparatus
+done size=10000 (10068 tok) arm=retrieval

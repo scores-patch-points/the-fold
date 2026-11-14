@@ -93,7 +93,7 @@ if (mode === "scaling") {
     const env = await world(size, SEED);
     const qs = questions(env.w, { n: N, seed: SEED + 4 });
     for (const arm of String(args.arms ?? "apparatus,retrieval,longctx").split(",")) {
-      if (arm === "apparatus") { const a = await runApparatus(env, qs, {}, "apparatus"); console.log(size, arm, JSON.stringify(a)); }
+      if (arm === "apparatus") { const label = args.label ?? "apparatus"; const a = await runApparatus(env, qs, {}, label); console.log(size, label, JSON.stringify(a)); }
       else await runOneCall(env, qs, arm);
       console.log(`done size=${size} (${env.sizeTokens} tok) arm=${arm}`);
     }
