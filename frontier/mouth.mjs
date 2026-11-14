@@ -48,7 +48,7 @@ export function makeMouth({ log, transport, B = B_DEFAULT, by = "mouth", maxOut 
         throw new OverBudget({ tokens: ctx, B, seam });
       }
       const res = await transport.send({ system, user, schema, numCtx: B + maxOut });
-      const call = log.append({ kind: "call", by, deps, body: { seam, model: transport.model, B, ctxEstimate: ctx, ctxEngine: res.promptTokens, outTokens: res.outTokens, ms: res.ms, value: res.value } });
+      const call = log.append({ kind: "call", by, deps, body: { seam, model: transport.model, B, ctxEstimate: ctx, ctxEngine: res.promptTokens, outTokens: res.outTokens, ms: res.ms, engineMs: res.engineNs != null ? Math.round(res.engineNs / 1e6) : null, value: res.value } });
       if (res.promptTokens != null && res.promptTokens > B) {
         log.append({ kind: "refusal", by: "invariant", deps: [call.id], body: { gap: "over_budget_engine", seam, tokens: res.promptTokens, B } });
         throw new OverBudget({ tokens: res.promptTokens, B, seam, engine: true });

@@ -11,19 +11,21 @@ import { assemble } from "./assemble.mjs";
 import { witness, regressionGate } from "./witness.mjs";
 import { makeIndex } from "./index.mjs";
 import { OverBudget } from "./mouth.mjs";
+import { identityAt } from "./identity.mjs";
 
 export const READ_SCHEMA = { type: "object", properties: { value: { type: ["string", "null"] }, cite: { type: "array", items: { type: "string" } } }, required: ["value", "cite"] };
 const READ_SYSTEM = "You answer ONE slot from the evidence lines only. Each line starts with [event-id]. Reply as JSON {\"value\": string or null, \"cite\": [event-ids you used]}. If the evidence does not state the answer, value is null. Give the shortest exact value (a name, number, date or place), copied from the evidence.";
 
 export function makeApparatus({ log, mouth = null, ground, contentOf = null, switches = {} }) {
-  const sw = { stopRule: true, memo: true, instruments: true, witnesses: true, writeBack: true, k: 8, ...switches };
+  const sw = { stopRule: true, memo: true, instruments: true, witnesses: true, writeBack: true, identity: true, k: 8, ...switches };
   const memo = sw.memo ? makeMemo() : null;
   const index = makeIndex(log);
   const turns = [];
 
   async function readSeam(shape, deps) {
     if (!mouth) { log.append({ kind: "gap", by: "apparatus", deps, body: { gap: "no_mouth", slot: shape.relation } }); return null; }
-    const q = [shape.anchor, String(shape.relation ?? "").replace(/_/g, " "), shape.slot].filter(Boolean).join(" ");
+    const names = sw.identity && shape.anchor ? identityAt(log).classOf(shape.anchor).members : [shape.anchor];
+    const q = [...names, String(shape.relation ?? "").replace(/_/g, " "), shape.slot].filter(Boolean).join(" ");
     const ids = index.search(q, sw.k);
     if (!ids.length) { log.append({ kind: "gap", by: "apparatus", deps, body: { gap: "surf_needed", query: q } }); return null; }
     const { calls, refused } = assemble({ log, B: mouth.B, system: READ_SYSTEM, seam: `read:${shape.relation}`, shape: { anchor: shape.anchor, relation: shape.relation, slot: shape.slot }, spanIds: ids, contentOf, schema: READ_SCHEMA });
@@ -51,7 +53,11 @@ export function makeApparatus({ log, mouth = null, ground, contentOf = null, swi
       const parts = [];
       for (const d of shape.dependency) { const r = await resolve(d, deps); if (r.status !== "ok") return { status: "gap", gap: "dependency_gap", detail: r, deps }; parts.push(r); }
       const name = fields.instrument ?? { sum: "sum", diff: "diff", compare: "greater", ratio: "ratio", daysBetween: "daysBetween", before: "before", greater: "greater" }[shape.kind];
-      if (!sw.instruments) return { status: "needs_model", parts, name, deps: [...deps, ...parts.flatMap((p) => p.support)] };
+      if (!sw.instruments) { // ABLATION: the model does the arithmetic (what the apparatus forbids)
+        if (!mouth) return { status: "gap", gap: "no_mouth", deps };
+        const res = await mouth.ask({ system: "Compute exactly. Reply JSON {\"value\": number or boolean}.", user: `Operation: ${name}\nInputs in order: ${parts.map((p) => JSON.stringify(p.value)).join(", ")}`, schema: { type: "object", properties: { value: { type: ["number", "boolean"] } }, required: ["value"] }, seam: `arith:${name}`, deps });
+        return { status: "ok", value: res.value?.value ?? null, support: [res.call.id, ...parts.flatMap((p) => p.support)], via: "model-arith" };
+      }
       const r = runInstrument(log, name, parts.map((p) => p.value), { deps: [...deps, ...parts.flatMap((p) => p.support).filter((id) => log.has(id))] });
       return r.ok ? { status: "ok", value: r.value, support: [r.event.id, ...parts.flatMap((p) => p.support)], via: "instrument" } : { status: "gap", gap: r.gap, deps };
     }
