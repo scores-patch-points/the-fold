@@ -1,0 +1,22 @@
+{
+  "note": "The engine pin for frontier/. eoreader7 is scores-patch-points/khora (khora README: 'Khora (formerly EOReader 7)'). This file did not exist before 2026-11-14; the frontier build created it as the pin. frontier/contract.mjs refuses to run against a khora checkout at any other commit unless FRONTIER_ALLOW_DRIFT=1, and then logs the drift.",
+  "engine": "scores-patch-points/khora",
+  "commit": "d3ce14a714adc6dbbf373695a414e79555a11187",
+  "resolve": "env KHORA_DIR, else ../khora relative to this repo root",
+  "entries": {
+    "readDocument": "native/reading.js",
+    "findClaimCycle": "native/organs/reasoning-lint.js",
+    "lintInferences": "native/organs/reasoning-lint.js",
+    "logos": "native/organs/logos.js",
+    "stigmergy": "native/kernel/stigmergy.js",
+    "regimeOf": "native/organs/regime.js",
+    "isSettled": "native/organs/regime.js"
+  },
+  "siblings": {
+    "janus": {
+      "repo": "scores-patch-points/janus",
+      "commit": "b1cc37f189e28d85c3bc2539039dc0f676002159",
+      "note": "janus native/organs/logos.js re-exports khora's; read, not imported"
+    }
+  }
+}
