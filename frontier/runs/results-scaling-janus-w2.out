@@ -1,0 +1,8 @@
+1000 apparatus-janus-w2 {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done size=1000 (1034 tok) arm=apparatus
+10000 apparatus-janus-w2 {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done size=10000 (10065 tok) arm=apparatus
+100000 apparatus-janus-w2 {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done size=100000 (107646 tok) arm=apparatus
+1000000 apparatus-janus-w2 {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done size=1000000 (1090871 tok) arm=apparatus

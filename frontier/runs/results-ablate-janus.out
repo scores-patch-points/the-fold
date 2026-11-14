@@ -1,0 +1,7 @@
+done ablation full {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done ablation -stopRule {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done ablation -memo {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done ablation -instruments {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done ablation -witnesses {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done ablation -identity {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done ablation -writeBack {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}

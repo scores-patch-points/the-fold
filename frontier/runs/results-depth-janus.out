@@ -1,0 +1,15 @@
+depth 2 clean ledger-janus: filled yes (truth yes) calls 0
+depth 2 broken ledger-janus: open no (truth no) calls 0
+depth 2 faulted ledger-janus: filled_with_flags yes-conditional (truth yes-conditional) calls 0
+depth 5 clean ledger-janus: filled yes (truth yes) calls 0
+depth 5 broken ledger-janus: open no (truth no) calls 0
+depth 5 faulted ledger-janus: filled_with_flags yes-conditional (truth yes-conditional) calls 0
+depth 10 clean ledger-janus: filled yes (truth yes) calls 0
+depth 10 broken ledger-janus: open no (truth no) calls 0
+depth 10 faulted ledger-janus: filled_with_flags yes-conditional (truth yes-conditional) calls 0
+depth 20 clean ledger-janus: filled yes (truth yes) calls 0
+depth 20 broken ledger-janus: open no (truth no) calls 0
+depth 20 faulted ledger-janus: filled_with_flags yes-conditional (truth yes-conditional) calls 0
+depth 50 clean ledger-janus: filled yes (truth yes) calls 0
+depth 50 broken ledger-janus: open no (truth no) calls 0
+depth 50 faulted ledger-janus: filled_with_flags yes-conditional (truth yes-conditional) calls 0
