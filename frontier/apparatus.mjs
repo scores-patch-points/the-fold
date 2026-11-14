@@ -12,6 +12,7 @@ import { witness, regressionGate } from "./witness.mjs";
 import { makeIndex } from "./index.mjs";
 import { OverBudget } from "./mouth.mjs";
 import { identityAt } from "./identity.mjs";
+import { readSpansWithJanus } from "./janus-read.mjs";
 
 export const READ_SCHEMA = { type: "object", properties: { value: { type: ["string", "null"] }, cite: { type: "array", items: { type: "string" } } }, required: ["value", "cite"] };
 const READ_SYSTEM = "You answer ONE slot from the evidence lines only. Each line starts with [event-id]. Reply as JSON {\"value\": string or null, \"cite\": [event-ids you used]}. If the evidence does not state the answer, value is null. Give the shortest exact value (a name, number, date or place), copied from the evidence.";
@@ -78,7 +79,17 @@ export function makeApparatus({ log, mouth = null, ground, contentOf = null, swi
       return { status: "ok", value: f.answer.value, support: f.support, via: f.memoHit ? "memo" : "fold" };
     }
     if (f.answer.status !== "gap") return { status: f.answer.status, values: f.answer.values, support: f.support, via: "fold" };
-    // the fold left a gap on a value slot: the one seam the apparatus cannot close by itself
+    // the fold left a gap on a value slot. JANUS FIRST (switch `janus`): read the retrieved spans through Janus's grammar into facts, fold again.
+    if (sw.janus) {
+      const names = sw.identity && shape.anchor ? identityAt(log).classOf(shape.anchor).members : [shape.anchor];
+      const ids = index.search([...names, String(shape.relation ?? "").replace(/_/g, " ")].filter(Boolean).join(" "), sw.k);
+      await readSpansWithJanus(log, ids);
+      const f2 = wave({ log, shape, ground, memo: null, stopRule: sw.stopRule, deps });
+      if (f2.answer.status === "ok") return { status: "ok", value: f2.answer.value, support: f2.support, via: "janus+fold" };
+      if (f2.answer.status !== "gap") return { status: f2.answer.status, values: f2.answer.values, support: f2.support, via: "janus+fold" };
+      if (sw.janusOnly) { const g = log.append({ kind: "gap", by: "apparatus", deps, body: { gap: "absent_fact", anchor: shape.anchor, relation: shape.relation, after: "janus" } }); return { status: "gap", gap: "absent_fact", deps: [g.id] }; }
+    }
+    // the one seam the apparatus cannot close by itself: the mouth
     const r = await readSeam(shape, deps);
     if (!r) { const g = log.append({ kind: "gap", by: "apparatus", deps, body: { gap: "absent_fact", anchor: shape.anchor, relation: shape.relation } }); return { status: "gap", gap: "absent_fact", deps: [g.id] }; }
     let support = r.cites;

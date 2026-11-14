@@ -16,7 +16,16 @@
     "janus": {
       "repo": "scores-patch-points/janus",
       "commit": "b1cc37f189e28d85c3bc2539039dc0f676002159",
-      "note": "janus native/organs/logos.js re-exports khora's; read, not imported"
+      "resolve": "env JANUS_DIR, else ../janus",
+      "entries": {
+        "nlEot": "native/organs/nl-eot.mjs"
+      },
+      "note": "janus reads (UD grammar -> EOT arcs, no model); frontier/janus-read.mjs projects arcs to slot claims"
+    },
+    "penelope": {
+      "repo": "scores-patch-points/penelope",
+      "commit": "040cae89549cad0f9cb8171971c8d9a427ec8bfa",
+      "note": "read, not imported: her rule (the mouth only for what nothing else can say) is the seam order; her mark door is the pharos path (penelope-sink.mjs)"
     }
   }
 }

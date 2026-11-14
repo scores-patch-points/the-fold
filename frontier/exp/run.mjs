@@ -53,7 +53,7 @@ async function world(size, seed) {
 
 async function runApparatus(env, qs, switches, arm, { twice = false } = {}) {
   const { log, surf, ground } = env;
-  const mouth = makeMouth({ log, B, transport: ollamaTransport({ model: MODEL }) });
+  const mouth = switches.janusOnly ? null : makeMouth({ log, B, transport: ollamaTransport({ model: MODEL }) });
   const app = makeApparatus({ log, mouth, ground, contentOf: surf.contentOf, switches });
   for (const pass of twice ? [1, 2] : [1]) for (const q of qs) {
     const from = log.size(), t0 = Date.now();
@@ -93,7 +93,7 @@ if (mode === "scaling") {
     const env = await world(size, SEED);
     const qs = questions(env.w, { n: N, seed: SEED + 4 });
     for (const arm of String(args.arms ?? "apparatus,retrieval,longctx").split(",")) {
-      if (arm === "apparatus") { const label = args.label ?? "apparatus"; const a = await runApparatus(env, qs, {}, label); console.log(size, label, JSON.stringify(a)); }
+      if (arm === "apparatus") { const label = args.label ?? "apparatus"; const a = await runApparatus(env, qs, args.switches ? JSON.parse(args.switches) : {}, label); console.log(size, label, JSON.stringify(a)); }
       else await runOneCall(env, qs, arm);
       console.log(`done size=${size} (${env.sizeTokens} tok) arm=${arm}`);
     }

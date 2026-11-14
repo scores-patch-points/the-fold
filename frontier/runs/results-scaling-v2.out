@@ -1,0 +1,8 @@
+1000 apparatus-v2 {"calls":26,"over":[],"uncounted":[],"maxEstimate":293,"maxEngine":240,"ok":true}
+done size=1000 (1035 tok) arm=apparatus
+10000 apparatus-v2 {"calls":33,"over":[],"uncounted":[],"maxEstimate":299,"maxEngine":254,"ok":true}
+done size=10000 (10068 tok) arm=apparatus
+100000 apparatus-v2 {"calls":35,"over":[],"uncounted":[],"maxEstimate":300,"maxEngine":265,"ok":true}
+done size=100000 (107647 tok) arm=apparatus
+1000000 apparatus-v2 {"calls":35,"over":[],"uncounted":[],"maxEstimate":301,"maxEngine":268,"ok":true}
+done size=1000000 (1090871 tok) arm=apparatus
