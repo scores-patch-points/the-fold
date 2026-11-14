@@ -6,7 +6,7 @@
 import { assemble } from "./assemble.mjs";
 import { BLOCKING } from "./ledger.mjs";
 
-export async function deductionWorld({ log, surf, depth = 20, contestAt = null, seed = 1, breakAt = null, decoys = 0 }) {
+export async function deductionWorld({ log, surf, depth = 20, contestAt = null, seed = 1, breakAt = null, decoys = 0, reader = "pattern" }) {
   // breakAt: the rule P<breakAt> → P<breakAt+1> is withheld (the goal is then NOT derivable). decoys: extra rules that lead off the chain
   // ("If Pk then Qk.") and between decoy atoms, so a worker must read which line starts at its frontier.
   const lines = Array.from({ length: depth }, (_, k) => (k === breakAt ? null : `If P${k} then P${k + 1}.`)).filter(Boolean);
@@ -15,7 +15,14 @@ export async function deductionWorld({ log, surf, depth = 20, contestAt = null, 
   for (let i = lines.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [lines[i], lines[j]] = [lines[j], lines[i]]; }
   const text = lines.join(" ");
   const { spans } = await surf.ingest(text, { source: `deduction-d${depth}-s${seed}` });
-  const rules = spans.map((s) => { const m = s.body.text.match(/^If (\w+) then (\w+)\.$/); return log.append({ kind: "claim", by: "reader:rule", deps: [s.id], body: { end1: m[1], label: "implies", end2: m[2], cites: [s.id], premises: [], text: s.body.text } }); });
+  // rules become claims. reader "janus": Janus reads each span (no model, no pattern); "pattern": the declared synthetic pattern (stage tests)
+  let ruleTriples;
+  if (reader === "janus") {
+    const { readSpansWithJanus } = await import("./janus-read.mjs");
+    await readSpansWithJanus(log, spans.map((s) => s.id));
+    ruleTriples = log.byKind("fact").filter((f) => f.body.relation === "implies" && f.by === "reader:janus-nl-eot").map((f) => ({ span: log.get(f.deps[0]), a: f.body.anchor, b: f.body.value }));
+  } else ruleTriples = spans.map((s) => { const m = s.body.text.match(/^If (\w+) then (\w+)\.$/); return { span: s, a: m[1], b: m[2] }; });
+  const rules = ruleTriples.map(({ span: s, a, b }) => log.append({ kind: "claim", by: "reader:rule", deps: [s.id], body: { end1: a, label: "implies", end2: b, cites: [s.id], premises: [], text: s.body.text } }));
   const ruleOf = (k) => rules.find((c) => c.body.end1 === `P${k}` && c.body.end2 === `P${k + 1}`);
   const goal = log.append({ kind: "goal", by: "asker", body: { end1: "P0", label: "implies", end2: `P${depth}` } });
   if (contestAt != null && ruleOf(contestAt)) log.append({ kind: "contest", by: "source:second-witness", deps: [ruleOf(contestAt).id], body: { target: ruleOf(contestAt).id, detail: `a second source denies P${contestAt} implies P${contestAt + 1}` } });
@@ -89,4 +96,28 @@ export function stepWitness(log, claimEv) {
   const x = fr ? fr.body.end2 : b.end1;
   const ok = via && via.body.end1 === x && via.body.end2 === b.end2;
   return ok ? null : { rule: "step_contradicted", detail: `rule ${b.via} (${via?.body.end1}→${via?.body.end2}) does not take ${x} to ${b.end2}`, ref: "frontier deduce.mjs::stepWitness" };
+}
+
+/** A worker with NO model: from the frontier X, take an untried rule from X whose end can still reach the goal (reachability over the
+ *  rule claims: following CON links, an instrument). If no rule from any frontier reaches the goal, nothing is added: the goal is not
+ *  derivable under the declared rules, which is exactly what "open" then means. Faults are planted the same way as for the model worker. */
+export function makeInstrumentWorker({ faults = {} } = {}) {
+  let step = 0;
+  return async (item, { log, goal }) => {
+    if (item.kind === "contest") return { route: item.id };
+    if (item.kind !== "goal") return null;
+    step++;
+    const f = frontierOf(log, goal);
+    if (!f) return null;
+    const { fr, x } = f;
+    if (faults.circularAt === step && fr)
+      return { claim: { end1: x, label: "implies", end2: goal.body.end1, premises: [fr.id], cites: [fr.id], inference: { relation: "implies", yields: "implies" }, text: `${x} implies ${goal.body.end1} (planted circular step)` }, by: "worker:planted-fault" };
+    const rules = log.byKind("claim").filter((c) => c.by === "reader:rule");
+    const next = new Map(); for (const r of rules) { if (!next.has(r.body.end1)) next.set(r.body.end1, []); next.get(r.body.end1).push(r.body.end2); }
+    const reaches = (from) => { const seen = new Set([from]), q = [from]; while (q.length) { const v = q.shift(); if (v === goal.body.end2) return true; for (const w of next.get(v) ?? []) if (!seen.has(w)) { seen.add(w); q.push(w); } } return false; };
+    const via = f.untried.find((r) => reaches(r.body.end2));
+    if (!via) return null;
+    const premises = [...(fr ? [fr.id] : []), via.id];
+    return { claim: { end1: goal.body.end1, label: "implies", end2: via.body.end2, premises, cites: premises, inference: { relation: "implies", yields: "implies" }, via: via.id, from: fr?.id ?? null, text: `${goal.body.end1} implies ${via.body.end2}` }, by: "worker:instrument-reach", tokens: 0 };
+  };
 }

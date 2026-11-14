@@ -1,0 +1,8 @@
+1000 apparatus-janus-w2-HELDOUT {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done size=1000 (1050 tok) arm=apparatus
+10000 apparatus-janus-w2-HELDOUT {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done size=10000 (10056 tok) arm=apparatus
+100000 apparatus-janus-w2-HELDOUT {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done size=100000 (107777 tok) arm=apparatus
+1000000 apparatus-janus-w2-HELDOUT {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true}
+done size=1000000 (1091188 tok) arm=apparatus

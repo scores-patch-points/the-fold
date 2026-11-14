@@ -75,3 +75,21 @@ test("H7 risk, pre-registered: a wrong step whose inference LOOKS licensed passe
   const withWitness = await go(stepWitness);
   assert.ok(withWitness.flags.some((f) => f.rule === "step_contradicted"));
 });
+
+test("stage 9b: Janus reads the rules and a reachability instrument picks each step — depth 50 with decoys, faults caught, zero model calls", { timeout: 600000 }, async () => {
+  const { makeInstrumentWorker, stepWitness } = await import("../deduce.mjs");
+  for (const [faults, contestAt, want] of [[{}, null, "filled"], [{ circularAt: 20 }, 37, "filled_with_flags"]]) {
+    const log = makeLog({ now: () => 0 });
+    const surf = makeSurf({ log, read: synthCut });
+    const { goal } = await deductionWorld({ log, surf, depth: 50, decoys: 50, seed: 7, contestAt, reader: "janus" });
+    const r = await runLedger({ log, goal, worker: makeInstrumentWorker({ faults }), licences: LICENCES, logos: true, witness: stepWitness, maxSteps: 200 });
+    assert.equal(r.status, want);
+    assert.equal(log.byKind("call").length, 0);
+    if (faults.circularAt) { assert.ok(r.flags.some((f) => f.rule === "circular")); assert.ok(r.flags.some((f) => f.rule === "contested_premise")); }
+  }
+  // broken chain: not derivable, said so without wandering
+  const log = makeLog({ now: () => 0 }); const surf = makeSurf({ log, read: synthCut });
+  const { goal } = await deductionWorld({ log, surf, depth: 50, decoys: 50, seed: 7, breakAt: 25, reader: "janus" });
+  const r = await runLedger({ log, goal, worker: makeInstrumentWorker(), licences: LICENCES, logos: true, witness: stepWitness, maxSteps: 200 });
+  assert.equal(r.status, "open"); assert.ok(r.steps <= 3, `steps ${r.steps}`);
+});

@@ -11,7 +11,7 @@ import { makeLog } from "../log.mjs";
 import { makeSurf } from "../surf.mjs";
 import { makeMouth, ollamaTransport, budgetAudit } from "../mouth.mjs";
 import { runLedger } from "../ledger.mjs";
-import { deductionWorld, makeWorker, stepWitness } from "../deduce.mjs";
+import { deductionWorld, makeWorker, stepWitness, makeInstrumentWorker } from "../deduce.mjs";
 import { synthCut } from "../synth.mjs";
 
 const args = Object.fromEntries(process.argv.slice(2).map((a, i, xs) => (a.startsWith("--") ? [a.slice(2), xs[i + 1]] : null)).filter(Boolean));
@@ -26,11 +26,12 @@ const row = (o) => appendFileSync(OUT, COLS.map((c) => csv(o[c])).join(",") + "\
 const LICENCES = new Set(["implies→implies"]);
 const callStats = (log) => { const c = log.byKind("call"); return { calls: c.length, max_ctx_est: Math.max(0, ...c.map((x) => x.body.ctxEstimate)), max_ctx_engine: Math.max(0, ...c.map((x) => x.body.ctxEngine ?? 0)), engine_ms: c.reduce((n, x) => n + (x.body.engineMs ?? 0), 0) }; };
 
+let ARM_READER = "pattern";
 async function instance(depth, kind) {
   const log = makeLog();
   const surf = makeSurf({ log, read: synthCut });
   const mid = Math.max(1, Math.floor(depth / 2));
-  const w = await deductionWorld({ log, surf, depth, seed: SEED * 100 + depth, decoys: depth, breakAt: kind === "broken" ? mid : null, contestAt: kind === "faulted" ? Math.max(1, Math.floor((3 * depth) / 4)) : null });
+  const w = await deductionWorld({ log, surf, depth, seed: SEED * 100 + depth, decoys: depth, reader: ARM_READER, breakAt: kind === "broken" ? mid : null, contestAt: kind === "faulted" ? Math.max(1, Math.floor((3 * depth) / 4)) : null });
   return { log, surf, ...w, truth: kind === "broken" ? "no" : "yes", faults: kind === "faulted" && depth >= 3 ? { circularAt: Math.ceil(depth / 2) } : {} };
 }
 
@@ -43,6 +44,8 @@ for (const depth of String(args.depths ?? "2,5,10,20,50").split(",").map(Number)
       if ((arm === "onecall" || arm === "stepcall") && kind === "faulted") continue; // faults are planted in the ledger's steps; a one-call arm has none to plant
       if (arm === "ledger-random" && kind !== "clean") continue;
       if (arm === "ledger-nologos" && kind === "broken") continue;
+      ARM_READER = arm === "ledger-janus" ? "janus" : "pattern";
+      if (arm === "ledger-janus" && kind === "faulted") {} // runs, faults planted as for the model ledger
       const inst = await instance(depth, kind);
       const { log, surf, goal } = inst;
       const mouth = makeMouth({ log, B, transport: ollamaTransport({ model: MODEL }) });
@@ -54,7 +57,7 @@ for (const depth of String(args.depths ?? "2,5,10,20,50").split(",").map(Number)
           const res = await mouth.ask({ system: "You decide whether a conclusion follows from rules by chaining 'If X then Y'. Reply JSON.", user: q, schema: arm === "stepcall" ? STEP : ONE, seam: arm });
           answer = res.value?.answer ?? null; r.status = "answered";
         } else {
-          r = await runLedger({ log, goal, worker: makeWorker({ mouth, faults: inst.faults, contentOf: surf.contentOf }), licences: LICENCES, logos: arm !== "ledger-nologos", witness: arm === "ledger-nologos" ? null : stepWitness, steer: arm === "ledger-random" ? "random" : "trail", seed: SEED, maxSteps: 3 * depth + 12, B });
+          r = await runLedger({ log, goal, worker: arm === "ledger-janus" ? makeInstrumentWorker({ faults: inst.faults }) : makeWorker({ mouth, faults: inst.faults, contentOf: surf.contentOf }), licences: LICENCES, logos: arm !== "ledger-nologos", witness: arm === "ledger-nologos" ? null : stepWitness, steer: arm === "ledger-random" ? "random" : "trail", seed: SEED, maxSteps: 3 * depth + 12, B });
           answer = r.status === "filled" ? "yes" : r.status === "filled_with_flags" ? "yes-conditional" : "no";
         }
       } catch (e) { r.status = "error"; answer = String(e.message).slice(0, 60); }

@@ -41,6 +41,24 @@ export function claimsOfRecord(rec) {
       if (anchor && relation && value) out.push({ anchor, relation: relation.toLowerCase(), value });
     }
   }
+  // frame 2 (declared here): a conditional. The node carrying the "if" marker is the antecedent A; a node with an advmod arc to "then" is
+  // the consequent C  →  claim (A, implies, C). Reads Janus's markers and arcs only; the UD parse of "If P0 then P1." puts P0 at the root
+  // and P1 as its object, which this frame does not depend on.
+  const ifMarked = m.nodes.filter((n) => (n.markers ?? []).some((k) => (m.markers ?? []).some((mk) => mk.key === k && mk.rel === "mark" && String(mk.lemma).toLowerCase() === "if")));
+  const thenKey = m.nodes.find((n) => String(n.lemma).toLowerCase() === "then")?.key;
+  if (ifMarked.length === 1 && thenKey) for (const a of m.arcs) {
+    if (a.rel !== "advmod" || a.to !== thenKey || !node[a.from]) continue;
+    let A = ifMarked[0], C = node[a.from];
+    if (A.key === C.key) {
+      // frame 2b: the parser attached "if" to the clause head, which also carries "then" (measured: 28 of 100 conditionals on the dev
+      // world, seed 7). The head is then the consequent and its single compound dependent the antecedent. Reported to janus as a parse issue.
+      const deps = m.arcs.filter((b) => b.from === C.key && b.rel === "compound" && node[b.to]);
+      if (deps.length !== 1) continue;
+      A = node[deps[0].to];
+    }
+    const anchor = surfaceOf(text, A.lemma), value = surfaceOf(text, C.lemma);
+    if (anchor && value) out.push({ anchor, relation: "implies", value });
+  }
   return out;
 }
 
