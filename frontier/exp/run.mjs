@@ -23,7 +23,7 @@ const args = Object.fromEntries(process.argv.slice(3).map((a, i, xs) => (a.start
 const MODEL = args.model ?? "qwen3:4b", N = Number(args.n ?? 24), SEED = Number(args.seed ?? 1), B = Number(args.B ?? 4000);
 const OUT = fileURLToPath(new URL(`../${args.out ?? "runs/results/out.csv"}`, import.meta.url));
 const TOKLOG = OUT.replace(/\.csv$/, ".token-log.jsonl");
-const COLS = ["seed", "model", "arm", "size_tokens", "qtype", "q", "status", "value", "truth", "correct", "gap", "calls", "max_ctx_est", "max_ctx_engine", "sum_ctx_est", "wall_ms", "engine_ms", "fold_sha", "khora_sha"];
+const COLS = ["seed", "model", "arm", "size_tokens", "qtype", "q", "status", "value", "truth", "correct", "gap", "calls", "max_ctx_est", "max_ctx_engine", "sum_ctx_est", "wall_ms", "engine_ms", "fold_sha", "khora_sha", "janus_reads"];
 mkdirSync(dirname(OUT), { recursive: true });
 if (!existsSync(OUT)) writeFileSync(OUT, COLS.join(",") + "\n");
 const FOLD_SHA = execFileSync("git", ["rev-parse", "--short", "HEAD"], { encoding: "utf8" }).trim();
@@ -61,7 +61,7 @@ async function runApparatus(env, qs, switches, arm, { twice = false } = {}) {
     const calls = log.byKind("call").filter((c) => c.seq >= from);
     const s = score(q, r.value, r.status);
     row({ seed: SEED, model: MODEL, arm: twice ? `${arm}#pass${pass}` : arm, size_tokens: env.sizeTokens, qtype: q.t, q: q.nl, status: r.status, value: r.value, truth: q.truth, correct: s.correct ? 1 : 0, gap: s.gap ? 1 : 0, calls: calls.length,
-      max_ctx_est: Math.max(0, ...calls.map((c) => c.body.ctxEstimate)), max_ctx_engine: Math.max(0, ...calls.map((c) => c.body.ctxEngine ?? 0)), sum_ctx_est: calls.reduce((n, c) => n + c.body.ctxEstimate, 0), wall_ms: Date.now() - t0, engine_ms: calls.reduce((n, c) => n + (c.body.engineMs ?? 0), 0), fold_sha: FOLD_SHA, khora_sha: KHORA_SHA });
+      max_ctx_est: Math.max(0, ...calls.map((c) => c.body.ctxEstimate)), max_ctx_engine: Math.max(0, ...calls.map((c) => c.body.ctxEngine ?? 0)), sum_ctx_est: calls.reduce((n, c) => n + c.body.ctxEstimate, 0), wall_ms: Date.now() - t0, engine_ms: calls.reduce((n, c) => n + (c.body.engineMs ?? 0), 0), fold_sha: FOLD_SHA, khora_sha: KHORA_SHA, janus_reads: log.byKind("read").filter((e) => e.seq >= from).length });
     tok(log, from);
   }
   return budgetAudit(log);
@@ -104,7 +104,8 @@ if (mode === "scaling") {
   for (const arm of only) {
     const env = await world(Number(args.size ?? 1e5), SEED); // a fresh log per arm: no arm inherits another's write-back
     const qs = questions(env.w, { n: N, seed: SEED + 4 });
-    const a = await runApparatus(env, qs, ARMS[arm], arm, { twice: true });
+    const base = args.base ? JSON.parse(args.base) : {};
+    const a = await runApparatus(env, qs, { ...base, ...ARMS[arm] }, `${args.label ?? ""}${arm}`, { twice: true });
     console.log(`done ablation ${arm}`, JSON.stringify(a));
   }
 }

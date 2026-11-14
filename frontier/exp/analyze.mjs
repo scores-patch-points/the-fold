@@ -56,38 +56,48 @@ if (sc) {
 }
 
 // ── ablations ────────────────────────────────────────────────────
-const ab = parse("ablations.csv");
+for (const [abFile, abTitle] of [["ablations.csv", "model reads (qwen3:4b), PARTIAL: stopped after 5 of 7 arms"], ["ablations-janus.csv", "Janus reads, no model"]]) {
+const ab = parse(abFile);
 if (ab) {
-  md += "## Ablations (size 1e5, each question asked twice on one fresh log per arm)\n\n| arm | pass | exact | unanswerable → gap | wrong (non-gap) | calls total | Δ calls vs full | Δ exact vs full (pts) |\n|---|---|---|---|---|---|---|---|\n";
+  md += `## Ablations: ${abTitle} (size 1e5, each question asked twice on one fresh log per arm)\n\n| arm | pass | exact | unanswerable → gap | wrong (non-gap) | calls total | Δ calls vs full | Δ exact vs full (pts) |\n|---|---|---|---|---|---|---|---|\n`;
   const base = {};
-  for (const [armp, rs] of Object.entries(group(ab, "arm"))) { const [arm, pass] = armp.split("#"); const un = rs.filter((r) => r.truth === ""); const k = sum(rs, (r) => r.correct), wrong = rs.filter((r) => r.correct === "0" && r.gap === "0").length, calls = sum(rs, (r) => r.calls); if (arm === "full") base[pass] = { k, calls, n: rs.length }; }
+  for (const [armp, rs] of Object.entries(group(ab, "arm"))) { const [arm, pass] = armp.split("#"); const un = rs.filter((r) => r.truth === ""); const k = sum(rs, (r) => r.correct), wrong = rs.filter((r) => r.correct === "0" && r.gap === "0").length, calls = sum(rs, (r) => r.calls); if (arm.endsWith("full")) base[pass] = { k, calls, n: rs.length }; }
   for (const [armp, rs] of Object.entries(group(ab, "arm"))) { const [arm, pass] = armp.split("#"); const un = rs.filter((r) => r.truth === ""); const k = sum(rs, (r) => r.correct), wrong = rs.filter((r) => r.correct === "0" && r.gap === "0").length, calls = sum(rs, (r) => r.calls); const b = base[pass]; md += `| ${arm} | ${pass} | ${pct(k, rs.length)} | ${pct(sum(un, (r) => r.gap), un.length)} | ${wrong} | ${calls} | ${b ? calls - b.calls : "—"} | ${b ? (((k - b.k) / rs.length) * 100).toFixed(0) : "—"} |\n`; }
   md += "\nPer question type, pass 1:\n\n| arm | " + Object.keys(group(ab, "qtype")).join(" | ") + " |\n|---|" + Object.keys(group(ab, "qtype")).map(() => "---").join("|") + "|\n";
   for (const [armp, rs] of Object.entries(group(ab.filter((r) => r.arm.endsWith("#pass1")), "arm"))) md += `| ${armp.split("#")[0]} | ` + Object.keys(group(ab, "qtype")).map((q) => { const x = rs.filter((r) => r.qtype === q); return `${sum(x, (r) => r.correct)}/${x.length}`; }).join(" | ") + " |\n";
   md += "\n";
 }
+}
 
 // ── H7 depth ─────────────────────────────────────────────────────
-const dp = parse("depth.csv");
+for (const [dpFile, dpTitle] of [["depth.csv", "scored seed 1"], ["depth-heldout.csv", "HELD-OUT seed 2"]]) {
+const dp = parse(dpFile);
 if (dp) {
-  md += "## H7: stigmergic depth (generated deductions, decoys = depth, qwen3:4b)\n\n| depth | instance | arm | answer (truth) | correct | calls | steps | max ctx | logos/witness flags | planted circular caught | planted contest caught | model step faults caught |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n";
+  md += `## H7: stigmergic depth, ${dpTitle} (generated deductions, decoys = depth)\n\n| depth | instance | arm | answer (truth) | correct | calls | steps | max ctx | logos/witness flags | planted circular caught | planted contest caught | model step faults caught |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n`;
   for (const r of dp) md += `| ${r.depth} | ${r.instance} | ${r.arm} | ${r.answer} (${r.truth}) | ${r.correct} | ${r.calls} | ${r.steps} | ${r.max_ctx_est} | ${r.flags || "—"} | ${r.planted_circular_caught || "—"} | ${r.planted_contest_caught || "—"} | ${r.model_step_faults} |\n`;
   const accBy = {};
   for (const r of dp.filter((r) => r.instance !== "faulted")) (accBy[r.arm] ??= {})[r.depth] = [...((accBy[r.arm] ?? {})[r.depth] ?? []), +r.correct];
-  md += "\n" + svgLines({ title: "Accuracy vs depth (clean + broken instances)", xlab: "depth", ylab: "accuracy", logx: false, series: Object.entries(accBy).map(([name, m]) => ({ name, pts: Object.entries(m).map(([d, xs]) => [+d, xs.reduce((a, b) => a + b, 0) / xs.length]) })), file: "depth-accuracy.svg" }) + "\n\n";
+  md += "\n" + svgLines({ title: "Accuracy vs depth (clean + broken instances)", xlab: "depth", ylab: "accuracy", logx: false, series: Object.entries(accBy).map(([name, m]) => ({ name, pts: Object.entries(m).map(([d, xs]) => [+d, xs.reduce((a, b) => a + b, 0) / xs.length]) })), file: dpFile.replace(".csv", "-accuracy.svg") }) + "\n\n";
+}
 }
 
 // ── H6 compounding ───────────────────────────────────────────────
-const cp = parse("compound.csv");
+for (const [cpFile, cpTitle] of [["compound.csv", "model reads"], ["compound-janus.csv", "Janus reads, no model (cost = Janus sentence reads)"]]) {
+const cp = parse(cpFile);
 if (cp) {
-  md += "## H6: compounding (200 related questions, one growing log per arm)\n\n| arm | exact | calls total | calls in q 1–50 | calls in q 151–200 | answered without a model call |\n|---|---|---|---|---|---|\n";
+  md += `## H6: compounding, ${cpTitle} (200 related questions, one growing log per arm)\n\n| arm | exact | calls total | calls in q 1–50 | calls in q 151–200 | Janus reads total | reads q 1–50 | reads q 151–200 |\n|---|---|---|---|---|---|---|---|\n`;
   const series = [];
   for (const [arm, rs] of Object.entries(group(cp, "arm"))) {
     const seg = (a, b) => sum(rs.filter((r) => +r.i >= a && +r.i < b), (r) => r.calls);
-    md += `| ${arm} | ${pct(sum(rs, (r) => r.correct), rs.length)} | ${sum(rs, (r) => r.calls)} | ${seg(0, 50)} | ${seg(150, 200)} | ${pct(rs.filter((r) => r.calls === "0" && r.status === "ok").length, rs.length)} |\n`;
+    const rseg = (a, b) => sum(rs.filter((r) => +r.i >= a && +r.i < b), (r) => r.janus_reads);
+    md += `| ${arm} | ${pct(sum(rs, (r) => r.correct), rs.length)} | ${sum(rs, (r) => r.calls)} | ${seg(0, 50)} | ${seg(150, 200)} | ${sum(rs, (r) => r.janus_reads)} | ${rseg(0, 50)} | ${rseg(150, 200)} |\n`;
     const pts = []; let c = 0; rs.sort((a, b) => a.i - b.i).forEach((r) => { c += +r.calls; if ((+r.i + 1) % 20 === 0) pts.push([+r.i + 1, c]); }); series.push({ name: arm, pts });
   }
-  md += "\n" + svgLines({ title: "Cumulative model calls over the question stream", xlab: "question #", ylab: "calls", logx: false, series, file: "compound-calls.svg" }) + "\n\n";
+  md += "\n" + svgLines({ title: "Cumulative model calls over the question stream", xlab: "question #", ylab: "calls", logx: false, series, file: cpFile.replace(".csv", "-calls.svg") }) + "\n\n";
 }
+}
+// held-out scaling (seed 2)
+const ho = parse("heldout.csv");
+if (ho) { md += "## HELD-OUT (world seed 2, untouched until the final check)\n\n| size | arm | exact | wrong | gaps | model calls |\n|---|---|---|---|---|---|\n"; for (const [size, rs] of Object.entries(group(ho, "size_tokens"))) md += `| ${size} | ${rs[0].arm} | ${pct(sum(rs, (r) => r.correct), rs.length)} | ${rs.filter((r) => r.correct === "0" && r.gap === "0").length} | ${sum(rs, (r) => r.gap)} | ${sum(rs, (r) => r.calls)} |\n`; md += "\n"; }
 writeFileSync(R("summary.md"), md);
 console.log(md.slice(0, 4000));

@@ -83,7 +83,7 @@ export function makeApparatus({ log, mouth = null, ground, contentOf = null, swi
     if (sw.janus) {
       const names = sw.identity && shape.anchor ? identityAt(log).classOf(shape.anchor).members : [shape.anchor];
       const ids = index.search([...names, String(shape.relation ?? "").replace(/_/g, " ")].filter(Boolean).join(" "), sw.k);
-      await readSpansWithJanus(log, ids);
+      await readSpansWithJanus(log, ids, { reuse: sw.writeBack });
       const f2 = wave({ log, shape, ground, memo: null, stopRule: sw.stopRule, deps });
       if (f2.answer.status === "ok") return { status: "ok", value: f2.answer.value, support: f2.support, via: "janus+fold" };
       if (f2.answer.status !== "gap") return { status: f2.answer.status, values: f2.answer.values, support: f2.support, via: "janus+fold" };

@@ -1,0 +1,3 @@
+done full {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true} corpus tokens 107646
+done -writeBack {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true} corpus tokens 107646
+done -writeBack-memo {"calls":0,"over":[],"uncounted":[],"maxEstimate":0,"maxEngine":0,"ok":true} corpus tokens 107646

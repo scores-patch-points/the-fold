@@ -64,9 +64,9 @@ export function claimsOfRecord(rec) {
 
 /** Read span events through Janus and write each claim as a `fact` (byline reader:janus-nl-eot, deps = the span). Spans already read are
  *  skipped (the read is itself a log event). Returns the new fact ids. */
-export async function readSpansWithJanus(log, spanIds) {
+export async function readSpansWithJanus(log, spanIds, { reuse = true } = {}) {
   const g = await janusReader();
-  const done = new Set(log.byKind("read").map((e) => e.deps[0]));
+  const done = reuse ? new Set(log.byKind("read").map((e) => e.deps[0])) : new Set(); // reuse=false: the ablation that forgets past reads
   const facts = [];
   for (const id of spanIds) {
     if (done.has(id)) continue;
