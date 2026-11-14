@@ -40,7 +40,7 @@ export async function logosCheck(log, claimEv, { licences, logos = true }) {
 /** Open items, folded from the log (no hidden queue). */
 // BLOCKING flags stop a claim from carrying the chain (it asserts what does not follow). A contested premise does NOT block: the step
 // is valid relative to its premise; the claim carries the taint forward (descent) and the goal can only be "filled_with_flags".
-export const BLOCKING = new Set(["circular", "unlicensed"]);
+export const BLOCKING = new Set(["circular", "unlicensed", "step_contradicted"]);
 export function openItems(log, goal) {
   const items = [];
   const flagged = new Set(log.byKind("flag").filter((f) => BLOCKING.has(f.body.rule)).map((f) => f.deps[0]));
@@ -53,7 +53,7 @@ export function openItems(log, goal) {
 
 /** Run workers until the goal is filled or nothing open can make a difference. `worker(item, cone, ctx)` returns ONE step:
  *  { claim: {end1,label,end2,premises,inference,text} } | { gap } | { route: contestId } | null (nothing to add). */
-export async function runLedger({ log, goal, worker, licences, logos = true, steer = "trail", maxSteps = 200, seed = 1, B = 4000 }) {
+export async function runLedger({ log, goal, worker, licences, logos = true, steer = "trail", maxSteps = 200, seed = 1, B = 4000, witness = null }) {
   const rand = mkRng(seed);
   let trails = [];
   let steps = 0, idle = 0;
@@ -71,6 +71,8 @@ export async function runLedger({ log, goal, worker, licences, logos = true, ste
     if (out.gap) { log.append({ kind: "gap", by: "worker", deps: [pick.id], body: { gap: out.gap, ledger: true } }); continue; }
     const c = log.append({ kind: "claim", by: out.by ?? "worker", deps: [pick.id, ...(out.claim.premises ?? [])].filter((id) => log.has(id)), body: out.claim });
     const flags = await logosCheck(log, c, { licences, logos });
+    const wf = witness ? witness(log, c) : null;
+    if (wf) { log.append({ kind: "flag", by: "witness", deps: [c.id], body: wf }); flags.push(wf); }
     trails = depositFromWitness(trails, { head: "ledger", route: pick.kind, verdict: flags.length ? "contradicted" : "supported", tokens: out.tokens ?? 0, at: steps });
   }
   const flagged = new Set(log.byKind("flag").filter((f) => f.body.rule !== "unrouted_contest").map((f) => f.deps[0]));

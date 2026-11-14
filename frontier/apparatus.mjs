@@ -81,7 +81,10 @@ export function makeApparatus({ log, mouth = null, ground, contentOf = null, swi
     const r = await readSeam(shape, deps);
     if (!r) { const g = log.append({ kind: "gap", by: "apparatus", deps, body: { gap: "absent_fact", anchor: shape.anchor, relation: shape.relation } }); return { status: "gap", gap: "absent_fact", deps: [g.id] }; }
     let support = r.cites;
-    if (sw.writeBack) { const fe = log.append({ kind: "fact", by: `mouth:${mouth.model}`, deps: [r.call.id, ...r.cites], body: { anchor: shape.anchor, relation: shape.relation, value: r.value, read: true } }); support = [fe.id, ...r.cites]; }
+    if (sw.writeBack) {
+      const value = sw.traceShuffle ? sw.traceShuffle(shape.relation, r.value) : r.value; // ABLATION ONLY: poisoned traces
+      const fe = log.append({ kind: "fact", by: `mouth:${mouth.model}`, deps: [r.call.id, ...r.cites], body: { anchor: shape.anchor, relation: shape.relation, value, read: true } }); support = [fe.id, ...r.cites];
+    }
     return { status: "ok", value: r.value, support, via: "seam", verdict: r.verdict };
   }
 

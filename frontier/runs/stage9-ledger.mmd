@@ -1,93 +1,93 @@
 graph TD
   ev41["GOAL ev41: P0 implies P20"]
-  ev21["ev21: P0 implies P1<br/>cites ev1"]
+  ev21["ev21: P3 implies P4<br/>cites ev1"]
   ev1([ev1]) -.-> ev21
-  ev22["ev22: P1 implies P2<br/>cites ev2"]
+  ev22["ev22: P6 implies P7<br/>cites ev2"]
   ev2([ev2]) -.-> ev22
-  ev23["ev23: P2 implies P3<br/>cites ev3"]
+  ev23["ev23: P13 implies P14<br/>cites ev3"]
   ev3([ev3]) -.-> ev23
-  ev24["ev24: P3 implies P4<br/>cites ev4"]
+  ev24["ev24: P11 implies P12<br/>cites ev4"]
   ev4([ev4]) -.-> ev24
-  ev25["ev25: P4 implies P5<br/>cites ev5"]
+  ev25["ev25: P18 implies P19<br/>cites ev5"]
   ev5([ev5]) -.-> ev25
-  ev26["ev26: P5 implies P6<br/>cites ev6"]
+  ev26["ev26: P7 implies P8<br/>cites ev6"]
   ev6([ev6]) -.-> ev26
-  ev27["ev27: P6 implies P7<br/>cites ev7"]
+  ev27["ev27: P2 implies P3<br/>cites ev7"]
   ev7([ev7]) -.-> ev27
-  ev28["ev28: P7 implies P8<br/>cites ev8"]
+  ev28["ev28: P1 implies P2<br/>cites ev8"]
   ev8([ev8]) -.-> ev28
-  ev29["ev29: P8 implies P9<br/>cites ev9"]
+  ev29["ev29: P19 implies P20<br/>cites ev9"]
   ev9([ev9]) -.-> ev29
-  ev30["ev30: P9 implies P10<br/>cites ev10"]
+  ev30["ev30: P14 implies P15<br/>cites ev10"]
   ev10([ev10]) -.-> ev30
   ev31["ev31: P10 implies P11<br/>cites ev11"]
   ev11([ev11]) -.-> ev31
-  ev32["ev32: P11 implies P12<br/>cites ev12"]
+  ev32["ev32: P5 implies P6<br/>cites ev12"]
   ev12([ev12]) -.-> ev32
-  ev33["ev33: P12 implies P13<br/>cites ev13"]
+  ev33["ev33: P17 implies P18<br/>cites ev13"]
   ev13([ev13]) -.-> ev33
-  ev34["ev34: P13 implies P14<br/>cites ev14"]
+  ev34["ev34: P8 implies P9<br/>cites ev14"]
   ev14([ev14]) -.-> ev34
-  ev35["ev35: P14 implies P15<br/>cites ev15"]
+  ev35["ev35: P4 implies P5<br/>cites ev15"]
   ev15([ev15]) -.-> ev35
   ev36["ev36: P15 implies P16<br/>cites ev16"]
   ev16([ev16]) -.-> ev36
   ev37["ev37: P16 implies P17<br/>cites ev17"]
   ev17([ev17]) -.-> ev37
-  ev38["ev38: P17 implies P18<br/>cites ev18"]
+  ev38["ev38: P9 implies P10<br/>cites ev18"]
   ev18([ev18]) -.-> ev38
-  ev39["ev39: P18 implies P19<br/>cites ev19"]
+  ev39["ev39: P0 implies P1<br/>cites ev19"]
   ev19([ev19]) -.-> ev39
-  ev40["ev40: P19 implies P20<br/>cites ev20"]
+  ev40["ev40: P12 implies P13<br/>cites ev20"]
   ev20([ev20]) -.-> ev40
-  ev44["ev44: P0 implies P1 ⚑ unrouted_contest<br/>cites ev21"]
-  ev21 --> ev44
+  ev44["ev44: P0 implies P1 ⚑ unrouted_contest<br/>cites ev39"]
+  ev39 --> ev44
   style ev44 fill:#fdd
-  ev48["ev48: P0 implies P2<br/>cites ev44 ev22"]
+  ev48["ev48: P0 implies P2<br/>cites ev44 ev28"]
   ev44 --> ev48
-  ev22 --> ev48
-  ev50["ev50: P0 implies P3<br/>cites ev48 ev23"]
+  ev28 --> ev48
+  ev50["ev50: P0 implies P3<br/>cites ev48 ev27"]
   ev48 --> ev50
-  ev23 --> ev50
-  ev52["ev52: P0 implies P4<br/>cites ev50 ev24"]
+  ev27 --> ev50
+  ev52["ev52: P0 implies P4<br/>cites ev50 ev21"]
   ev50 --> ev52
-  ev24 --> ev52
-  ev54["ev54: P0 implies P5<br/>cites ev52 ev25"]
+  ev21 --> ev52
+  ev54["ev54: P0 implies P5<br/>cites ev52 ev35"]
   ev52 --> ev54
-  ev25 --> ev54
+  ev35 --> ev54
   ev55["ev55: P5 implies P0 ⚑ circular<br/>cites ev54"]
   ev54 --> ev55
   style ev55 fill:#fdd
-  ev58["ev58: P0 implies P6<br/>cites ev54 ev26"]
+  ev58["ev58: P0 implies P6<br/>cites ev54 ev32"]
   ev54 --> ev58
-  ev26 --> ev58
-  ev60["ev60: P0 implies P7<br/>cites ev58 ev27"]
+  ev32 --> ev58
+  ev60["ev60: P0 implies P7<br/>cites ev58 ev22"]
   ev58 --> ev60
-  ev27 --> ev60
-  ev62["ev62: P0 implies P8<br/>cites ev60 ev28"]
+  ev22 --> ev60
+  ev62["ev62: P0 implies P8<br/>cites ev60 ev26"]
   ev60 --> ev62
-  ev28 --> ev62
-  ev64["ev64: P0 implies P9<br/>cites ev62 ev29"]
+  ev26 --> ev62
+  ev64["ev64: P0 implies P9<br/>cites ev62 ev34"]
   ev62 --> ev64
-  ev29 --> ev64
-  ev66["ev66: P0 implies P10<br/>cites ev64 ev30"]
+  ev34 --> ev64
+  ev66["ev66: P0 implies P10<br/>cites ev64 ev38"]
   ev64 --> ev66
-  ev30 --> ev66
+  ev38 --> ev66
   ev68["ev68: P0 implies P11<br/>cites ev66 ev31"]
   ev66 --> ev68
   ev31 --> ev68
-  ev70["ev70: P0 implies P12<br/>cites ev68 ev32"]
+  ev70["ev70: P0 implies P12<br/>cites ev68 ev24"]
   ev68 --> ev70
-  ev32 --> ev70
-  ev72["ev72: P0 implies P13<br/>cites ev70 ev33"]
+  ev24 --> ev70
+  ev72["ev72: P0 implies P13<br/>cites ev70 ev40"]
   ev70 --> ev72
-  ev33 --> ev72
-  ev74["ev74: P0 implies P14<br/>cites ev72 ev34"]
+  ev40 --> ev72
+  ev74["ev74: P0 implies P14<br/>cites ev72 ev23"]
   ev72 --> ev74
-  ev34 --> ev74
-  ev76["ev76: P0 implies P15 ⚑ contested_premise<br/>cites ev74 ev35"]
+  ev23 --> ev74
+  ev76["ev76: P0 implies P15 ⚑ contested_premise<br/>cites ev74 ev30"]
   ev74 --> ev76
-  ev35 --> ev76
+  ev30 --> ev76
   style ev76 fill:#fdd
   ev79["ev79: P0 implies P16<br/>cites ev76 ev36"]
   ev76 --> ev79
@@ -95,13 +95,13 @@ graph TD
   ev81["ev81: P0 implies P17<br/>cites ev79 ev37"]
   ev79 --> ev81
   ev37 --> ev81
-  ev83["ev83: P0 implies P18<br/>cites ev81 ev38"]
+  ev83["ev83: P0 implies P18<br/>cites ev81 ev33"]
   ev81 --> ev83
-  ev38 --> ev83
-  ev85["ev85: P0 implies P19<br/>cites ev83 ev39"]
+  ev33 --> ev83
+  ev85["ev85: P0 implies P19<br/>cites ev83 ev25"]
   ev83 --> ev85
-  ev39 --> ev85
-  ev87["ev87: P0 implies P20<br/>cites ev85 ev40"]
+  ev25 --> ev85
+  ev87["ev87: P0 implies P20<br/>cites ev85 ev29"]
   ev85 --> ev87
-  ev40 --> ev87
-  ev35 -. contest ev42 by source:second-witness .-x ev35
+  ev29 --> ev87
+  ev30 -. contest ev42 by source:second-witness .-x ev30

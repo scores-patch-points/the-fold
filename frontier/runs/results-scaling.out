@@ -1,0 +1,4 @@
+1000 apparatus {"calls":23,"over":[],"uncounted":[],"maxEstimate":293,"maxEngine":240,"ok":true}
+done size=1000 (1035 tok) arm=apparatus
+done size=1000 (1035 tok) arm=retrieval
+done size=1000 (1035 tok) arm=longctx

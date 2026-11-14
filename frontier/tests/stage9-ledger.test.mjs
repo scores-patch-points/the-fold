@@ -59,3 +59,19 @@ test("a plausible-but-wrong step (skips a link) is caught as unlicensed when its
   const { r } = await run({ faults: { wrongAt: 9 }, contestAt: null });
   assert.ok(r.flags.some((f) => f.rule === "unlicensed"), JSON.stringify(r.flags));
 });
+
+test("H7 risk, pre-registered: a wrong step whose inference LOOKS licensed passes logos; only the step-witness catches it", async () => {
+  const { stepWitness } = await import("../deduce.mjs");
+  const go = async (witness) => {
+    const log = makeLog({ now: () => 0 });
+    const surf = makeSurf({ log, read: synthCut });
+    const { goal } = await deductionWorld({ log, surf, depth: 12 });
+    const mouth = makeMouth({ log, B: 4000, transport: stubTransport(stepStub) });
+    return runLedger({ log, goal, worker: makeWorker({ mouth, faults: { wrongLicensedAt: 5 }, contentOf: surf.contentOf }), licences: LICENCES, logos: true, witness, seed: 3 });
+  };
+  const logosOnly = await go(null);
+  assert.equal(logosOnly.flags.filter((f) => f.rule !== "unrouted_contest").length, 0, "logos passed the plausible wrong step");
+  assert.equal(logosOnly.status, "filled", "and the goal was 'filled' through it");
+  const withWitness = await go(stepWitness);
+  assert.ok(withWitness.flags.some((f) => f.rule === "step_contradicted"));
+});
