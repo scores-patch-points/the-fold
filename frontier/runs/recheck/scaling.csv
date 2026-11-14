@@ -1,0 +1,49 @@
+seed,model,arm,size_tokens,qtype,q,status,value,truth,correct,gap,calls,max_ctx_est,max_ctx_engine,sum_ctx_est,wall_ms,engine_ms,fold_sha,khora_sha,janus_reads
+1,none,recheck-janus,1034,chain3,Who is the mentor of the mentor of the mentor of Orkadra?,ok,Marnini,Marnini,1,0,0,0,0,0,25295,0,a5360cc,d3ce14a,15
+1,none,recheck-janus,1034,city,What is Rafenmi's city?,ok,Hanoi,Hanoi,1,0,0,0,0,0,71,0,a5360cc,d3ce14a,7
+1,none,recheck-janus,1034,alias_age,What is Fengazu's age?,ok,37,37,1,0,0,0,0,0,51,0,a5360cc,d3ce14a,8
+1,none,recheck-janus,1034,sum_age,What is Raordra's age plus Marmarten's age?,ok,94,94,1,0,0,0,0,0,354,0,a5360cc,d3ce14a,10
+1,none,recheck-janus,1034,diff_age,What is Raordra's age minus Nifenmar's age?,ok,21,21,1,0,0,0,0,0,46,0,a5360cc,d3ce14a,4
+1,none,recheck-janus,1034,unanswerable,Who is Rakasu's dentist?,gap,,,1,1,0,0,0,0,22,0,a5360cc,d3ce14a,4
+1,none,recheck-janus,1034,chain3,Who is the mentor of the mentor of the mentor of Orkadra?,ok,Marnini,Marnini,1,0,0,0,0,0,1,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,city,What is Marnini's city?,ok,Hanoi,Hanoi,1,0,0,0,0,0,11,0,a5360cc,d3ce14a,3
+1,none,recheck-janus,1034,alias_age,What is Tikasu's age?,ok,65,65,1,0,0,0,0,0,54,0,a5360cc,d3ce14a,6
+1,none,recheck-janus,1034,sum_age,What is Nifenmar's age plus Fenrazu's age?,ok,59,59,1,0,0,0,0,0,19,0,a5360cc,d3ce14a,2
+1,none,recheck-janus,1034,diff_age,What is Orkadra's age minus Rakasu's age?,ok,23,23,1,0,0,0,0,0,1,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,unanswerable,Who is Misura's dentist?,gap,,,1,1,0,0,0,0,21,0,a5360cc,d3ce14a,4
+1,none,recheck-janus,1034,chain3,Who is the mentor of the mentor of the mentor of Orkadra?,ok,Marnini,Marnini,1,0,0,0,0,0,0,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,city,What is Misura's city?,ok,Graz,Graz,1,0,0,0,0,0,0,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,alias_age,What is Tikasu's age?,ok,65,65,1,0,0,0,0,0,1,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,sum_age,What is Nifenmar's age plus Misura's age?,ok,67,67,1,0,0,0,0,0,0,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,diff_age,What is Orkadra's age minus Rafenmi's age?,ok,2,2,1,0,0,0,0,0,0,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,unanswerable,Who is Marnini's dentist?,gap,,,1,1,0,0,0,0,1,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,chain3,Who is the mentor of the mentor of the mentor of Orkadra?,ok,Marnini,Marnini,1,0,0,0,0,0,0,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,city,What is Marmarten's city?,ok,Graz,Graz,1,0,0,0,0,0,13,0,a5360cc,d3ce14a,3
+1,none,recheck-janus,1034,alias_age,What is Fengazu's age?,ok,37,37,1,0,0,0,0,0,1,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,sum_age,What is Mitenka's age plus Marnini's age?,ok,121,121,1,0,0,0,0,0,0,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,diff_age,What is Marmarten's age minus Vosura's age?,ok,14,14,1,0,0,0,0,0,1,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,1034,unanswerable,Who is Minilo's dentist?,gap,,,1,1,0,0,0,0,10,0,a5360cc,d3ce14a,5
+1,none,recheck-janus,10065,chain3,Who is the mentor of the mentor of the mentor of Tenlomar?,ok,Drasuzu,Drasuzu,1,0,0,0,0,0,522,0,a5360cc,d3ce14a,21
+1,none,recheck-janus,10065,city,What is Ranika's city?,ok,Lisbon,Lisbon,1,0,0,0,0,0,121,0,a5360cc,d3ce14a,8
+1,none,recheck-janus,10065,alias_age,What is Karavo's age?,ok,38,38,1,0,0,0,0,0,74,0,a5360cc,d3ce14a,7
+1,none,recheck-janus,10065,sum_age,What is Orfenlo's age plus Mizupel's age?,ok,121,121,1,0,0,0,0,0,221,0,a5360cc,d3ce14a,16
+1,none,recheck-janus,10065,diff_age,What is Fengasu's age minus Dradravo's age?,ok,0,0,1,0,0,0,0,0,212,0,a5360cc,d3ce14a,16
+1,none,recheck-janus,10065,unanswerable,Who is Tikaga's dentist?,gap,,,1,1,0,0,0,0,70,0,a5360cc,d3ce14a,8
+1,none,recheck-janus,10065,chain3,Who is the mentor of the mentor of the mentor of Martenka?,ok,Orkafen,Orkafen,1,0,0,0,0,0,291,0,a5360cc,d3ce14a,22
+1,none,recheck-janus,10065,city,What is Vozuga's city?,ok,Osaka,Osaka,1,0,0,0,0,0,88,0,a5360cc,d3ce14a,8
+1,none,recheck-janus,10065,alias_age,What is Fenorpel's age?,ok,71,71,1,0,0,0,0,0,59,0,a5360cc,d3ce14a,8
+1,none,recheck-janus,10065,sum_age,What is Radraka's age plus Orfenor's age?,ok,117,117,1,0,0,0,0,0,185,0,a5360cc,d3ce14a,15
+1,none,recheck-janus,10065,diff_age,What is Pelzusu's age minus Drapelvo's age?,ok,17,17,1,0,0,0,0,0,134,0,a5360cc,d3ce14a,15
+1,none,recheck-janus,10065,unanswerable,Who is Ramiga's dentist?,gap,,,1,1,0,0,0,0,54,0,a5360cc,d3ce14a,8
+1,none,recheck-janus,10065,chain3,Who is the mentor of the mentor of the mentor of Martenka?,ok,Orkafen,Orkafen,1,0,0,0,0,0,1,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,10065,city,What is Mivolo's city?,ok,Osaka,Osaka,1,0,0,0,0,0,79,0,a5360cc,d3ce14a,8
+1,none,recheck-janus,10065,alias_age,What is Fenorpel's age?,ok,71,71,1,0,0,0,0,0,0,0,a5360cc,d3ce14a,0
+1,none,recheck-janus,10065,sum_age,What is Marordra's age plus Dratenti's age?,ok,110,110,1,0,0,0,0,0,129,0,a5360cc,d3ce14a,14
+1,none,recheck-janus,10065,diff_age,What is Marnini's age minus Drasusu's age?,ok,-15,-15,1,0,0,0,0,0,38,0,a5360cc,d3ce14a,7
+1,none,recheck-janus,10065,unanswerable,Who is Dradrara's dentist?,gap,,,1,1,0,0,0,0,121,0,a5360cc,d3ce14a,6
+1,none,recheck-janus,10065,chain3,Who is the mentor of the mentor of the mentor of Suvoor?,ok,Mitenti,Mitenti,1,0,0,0,0,0,157,0,a5360cc,d3ce14a,22
+1,none,recheck-janus,10065,city,What is Gatilo's city?,ok,Quito,Quito,1,0,0,0,0,0,332,0,a5360cc,d3ce14a,7
+1,none,recheck-janus,10065,alias_age,What is Vodravo's age?,ok,43,43,1,0,0,0,0,0,96,0,a5360cc,d3ce14a,8
+1,none,recheck-janus,10065,sum_age,What is Votenfen's age plus Fenfenra's age?,ok,119,119,1,0,0,0,0,0,292,0,a5360cc,d3ce14a,15
+1,none,recheck-janus,10065,diff_age,What is Vosura's age minus Mikami's age?,ok,-2,-2,1,0,0,0,0,0,132,0,a5360cc,d3ce14a,12
+1,none,recheck-janus,10065,unanswerable,Who is Radrafen's dentist?,gap,,,1,1,0,0,0,0,170,0,a5360cc,d3ce14a,8

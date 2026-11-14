@@ -81,6 +81,18 @@ What these arms cover: **one sentence shape per frame**. The frames are "X's R i
 | | logos + step-witness | 50/50 caught |
 | Compounding, 200 related questions | Janus | 200/200 right. Janus sentence reads: 526 with read reuse vs 800 without; late questions read 46 vs 96 |
 
+## Independent check
+
+A fresh agent with no part in the build reran the following from their recorded seeds at `a5360cc`, editing nothing. Its report is [`runs/recheck/RECHECK.md`](runs/recheck/RECHECK.md).
+
+- Benchmark A: Janus scaling, seed 1, sizes 10³ and 10⁴.
+- Benchmark B: the Janus deduction sweep, held-out seed 2, depths 2–50.
+- Three ablations: without identity, without instruments, without write-back.
+
+All comparisons matched row for row (48/48, 15/15, and 0 differing ablation rows, read counts included). The tests passed 52/52. Every headline number it recounted agreed with the CSVs.
+
+Its one wording note: in the `apparatus-v2` row, "17 gaps" counts the gaps on answerable questions. The CSV has 33 gap rows in all, because the other 16 are the correct gaps on planted unanswerables.
+
 ## Generated tables
 
 Every table below is produced by `node frontier/exp/analyze.mjs` from the CSVs in `runs/results/`.

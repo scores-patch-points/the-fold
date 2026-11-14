@@ -1,0 +1,16 @@
+seed,model,depth,instance,arm,status,answer,truth,correct,flags,planted_circular_caught,planted_contest_caught,model_step_faults,calls,steps,max_ctx_est,max_ctx_engine,wall_ms,engine_ms,fold_sha
+2,none,2,clean,ledger-janus,filled,yes,yes,1,,,,0,0,2,0,0,254,0,a5360cc
+2,none,2,broken,ledger-janus,open,no,no,1,,,,0,0,1,0,0,0,0,a5360cc
+2,none,2,faulted,ledger-janus,filled_with_flags,yes-conditional,yes-conditional,1,contested_premise,,1,0,0,3,0,0,2,0,a5360cc
+2,none,5,clean,ledger-janus,filled,yes,yes,1,,,,0,0,5,0,0,1,0,a5360cc
+2,none,5,broken,ledger-janus,open,no,no,1,,,,0,0,1,0,0,0,0,a5360cc
+2,none,5,faulted,ledger-janus,filled_with_flags,yes-conditional,yes-conditional,1,circular|contested_premise,1,1,0,0,7,0,0,21,0,a5360cc
+2,none,10,clean,ledger-janus,filled,yes,yes,1,,,,0,0,10,0,0,2,0,a5360cc
+2,none,10,broken,ledger-janus,open,no,no,1,,,,0,0,1,0,0,0,0,a5360cc
+2,none,10,faulted,ledger-janus,filled_with_flags,yes-conditional,yes-conditional,1,circular|contested_premise,1,1,0,0,12,0,0,47,0,a5360cc
+2,none,20,clean,ledger-janus,filled,yes,yes,1,,,,0,0,20,0,0,5,0,a5360cc
+2,none,20,broken,ledger-janus,open,no,no,1,,,,0,0,1,0,0,0,0,a5360cc
+2,none,20,faulted,ledger-janus,filled_with_flags,yes-conditional,yes-conditional,1,circular|contested_premise,1,1,0,0,22,0,0,21,0,a5360cc
+2,none,50,clean,ledger-janus,filled,yes,yes,1,,,,0,0,50,0,0,40,0,a5360cc
+2,none,50,broken,ledger-janus,open,no,no,1,,,,0,0,1,0,0,0,0,a5360cc
+2,none,50,faulted,ledger-janus,filled_with_flags,yes-conditional,yes-conditional,1,circular|contested_premise,1,1,0,0,52,0,0,133,0,a5360cc
