@@ -33,3 +33,10 @@ test("a fake door on loopback receives marks with byline, witness, declare-once 
   assert.deepEqual(got[1].of, ["m1"]);
   assert.equal(s.status().sent, 3); assert.equal(s.status().refused, 1);
 });
+
+test("cells follow the EOQL 27-command table: bare = Figure, minus = Ground, plus = Pattern", async () => {
+  const { CELL_OF, EOQL_OF, cellOf } = await import("../penelope-sink.mjs");
+  assert.equal(cellOf("DEF-"), "DEF·Ground"); assert.equal(cellOf("INS"), "INS·Figure"); assert.equal(cellOf("INS+"), "INS·Pattern");
+  assert.equal(CELL_OF.ground, "DEF·Ground"); assert.equal(CELL_OF.instrument, "SYN·Figure"); assert.equal(CELL_OF.answer, "INS·Pattern");
+  for (const c of Object.values(EOQL_OF)) assert.match(c, /^(NUL|SIG|INS|SEG|CON|SYN|DEF|EVA|REC)[-+]?$/);
+});
