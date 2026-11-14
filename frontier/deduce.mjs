@@ -55,10 +55,13 @@ export function makeWorker({ mouth, faults = {}, contentOf }) {
     if (faults.circularAt === step && fr) // planted: a step that asserts the conclusion back onto the start (begging the question)
       return { claim: { end1: x, label: "implies", end2: goal.body.end1, premises: [fr.id], cites: [fr.id], inference: { relation: "implies", yields: "implies" }, text: `${x} implies ${goal.body.end1} (planted circular step)` }, by: "worker:planted-fault" };
     // the cone: untried rules from X, plus rules that END at X (they mention X but do not start there: the reading the model must do)
-    const ruleIds = [...f.untried.map((c) => c.id), ...log.byKind("claim").filter((c) => c.by === "reader:rule" && c.body.end2 === x).map((c) => c.id)];
-    const cone = [...(fr ? [fr.id] : []), ...ruleIds];
-    const { calls } = assemble({ log, B, system: STEP_SYSTEM, seam: "ledger-step", spanIds: cone, contentOf, frame: (b) => `GOAL: ${goal.body.end1} implies ${goal.body.end2}\nFRONTIER: ${fr ? fr.id : "(start: P0)"} — we have shown P0 implies ${x}\n${b}`, schema: STEP_SCHEMA });
-    const res = await mouth.ask({ system: calls[0].system, user: calls[0].user, schema: STEP_SCHEMA, seam: "ledger-step", deps: cone });
+    // a line the witness vetoed from THIS frontier is not offered again from it (the veto is a mark in the environment)
+    const vetoed = new Set(log.byKind("flag").filter((fl) => fl.body.rule === "step_contradicted").map((fl) => log.get(fl.deps[0])).filter((c) => (c?.body.from ?? null) === (fr?.id ?? null)).map((c) => c.body.via));
+    const ruleIds = [...f.untried.map((c) => c.id), ...log.byKind("claim").filter((c) => c.by === "reader:rule" && c.body.end2 === x && !vetoed.has(c.id)).map((c) => c.id)];
+    // fix 3: the frontier claim is stated on the FRONTIER line only; evidence lines are rules, so the model cannot cite the frontier as a rule
+    const cone = ruleIds;
+    const { calls } = assemble({ log, B, system: STEP_SYSTEM, seam: "ledger-step", spanIds: cone, contentOf, frame: (b) => `GOAL: ${goal.body.end1} implies ${goal.body.end2}\nFRONTIER: ${fr ? fr.id : "(start)"} — we have shown P0 implies ${x}. Pick a rule that starts with ${x}.\n${b}`, schema: STEP_SCHEMA });
+    const res = await mouth.ask({ system: calls[0].system, user: calls[0].user, schema: STEP_SCHEMA, seam: "ledger-step", deps: [...(fr ? [fr.id] : []), ...cone] });
     const v = res.value ?? {};
     const via = log.get(v.via);
     if (!via || via.kind !== "claim" || via.by !== "reader:rule") return { gap: "worker_could_not_step" };
@@ -73,8 +76,7 @@ export function makeWorker({ mouth, faults = {}, contentOf }) {
 export const stepStub = ({ user }) => {
   const fr = (user.match(/FRONTIER: (ev\d+)/) ?? [])[1] ?? null;
   const lines = [...user.matchAll(/\[(ev\d+)\] (.*)/g)].map((m) => ({ id: m[1], t: m[2] }));
-  const frLine = lines.find((l) => l.id === fr);
-  const x = frLine ? (frLine.t.match(/implies (P\d+)/) ?? [])[1] : "P0";
+  const x = (user.match(/we have shown P0 implies (\w+)/) ?? [])[1] ?? "P0";
   const rule = lines.find((l) => new RegExp(`^If ${x} then (P\\d+)\\.`).test(l.t) || new RegExp(`^${x} implies`).test(l.t));
   return rule ? { from: fr ?? "", via: rule.id, end2: (rule.t.match(/(P\d+)\.?$/) ?? [])[1] } : { from: "", via: "", end2: "" };
 };

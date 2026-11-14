@@ -5,3 +5,13 @@ done size=1000 (1035 tok) arm=longctx
 10000 apparatus {"calls":33,"over":[],"uncounted":[],"maxEstimate":299,"maxEngine":254,"ok":true}
 done size=10000 (10068 tok) arm=apparatus
 done size=10000 (10068 tok) arm=retrieval
+done size=10000 (10068 tok) arm=longctx
+100000 apparatus {"calls":35,"over":[],"uncounted":[],"maxEstimate":300,"maxEngine":265,"ok":true}
+done size=100000 (107647 tok) arm=apparatus
+done size=100000 (107647 tok) arm=retrieval
+done size=100000 (107647 tok) arm=longctx
+1000000 apparatus {"calls":35,"over":[],"uncounted":[],"maxEstimate":301,"maxEngine":268,"ok":true}
+done size=1000000 (1090871 tok) arm=apparatus
+done size=1000000 (1090871 tok) arm=retrieval
+done size=1000000 (1090871 tok) arm=longctx
+EXIT 0
